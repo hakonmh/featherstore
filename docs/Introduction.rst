@@ -23,11 +23,11 @@ Source Code
 
 LICENSE
 +++++++
-`MIT <https://github.com/Hakonmh/featherstore/blob/master/LICENSE>`_
+`MIT <https://github.com/hakonmh/featherstore/blob/master/LICENSE>`_
 
 Contributions
 +++++++++++++
 All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome.
 
 | Issues are posted on:
-| https://github.com/Hakonmh/featherstore/issues
+| https://github.com/hakonmh/featherstore/issues

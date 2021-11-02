@@ -93,4 +93,3 @@ FeatherStore can be installed by using `$ pip install featherstore`
 
 ## Documentation
 Want to know about all the features FeatherStore support? [Read the docs!](https://featherstore.readthedocs.io/en/latest/).
-# featherstore
