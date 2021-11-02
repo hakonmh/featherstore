@@ -1,0 +1,53 @@
+featherstore package
+====================
+
+Submodules
+----------
+
+featherstore.connection module
+------------------------------
+
+.. automodule:: featherstore.connection
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+featherstore.server module
+--------------------------
+
+.. automodule:: featherstore.server
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+featherstore.store module
+-------------------------
+
+.. automodule:: featherstore.store
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+featherstore.table module
+-------------------------
+
+.. automodule:: featherstore.table
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+featherstore.trash\_bin module
+------------------------------
+
+.. automodule:: featherstore.trash_bin
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: featherstore
+   :members:
+   :undoc-members:
+   :show-inheritance:

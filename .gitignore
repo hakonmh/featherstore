@@ -1,0 +1,11 @@
+/build/
+build/lib
+dist
+*.pyc
+.git
+__pycache__
+.vscode
+*.code-workspace
+.pytest_cache
+settings.json
+FinStore/
