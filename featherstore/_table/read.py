@@ -2,8 +2,8 @@ import pyarrow as pa
 from pyarrow import feather
 import pandas as pd
 
-from .._metadata import Metadata
-from .._utils import like_pattern_matching
+from featherstore._metadata import Metadata
+from featherstore._utils import like_pattern_matching
 
 
 def can_read_table(cols, rows, table_exists):

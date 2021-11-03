@@ -5,9 +5,9 @@ import pyarrow as pa
 import pandas as pd
 import polars as pl
 
-from ..connection import current_db
-from .._metadata import METADATA_FOLDER_NAME
-from .._utils import DEFAULT_ARROW_INDEX_NAME
+from featherstore.connection import current_db
+from featherstore._metadata import METADATA_FOLDER_NAME
+from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 
 
 def can_init_table(table_name, store_name):

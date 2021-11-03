@@ -6,8 +6,8 @@ from pyarrow import feather
 import pandas as pd
 import polars as pl
 
-from .. import _utils
-from .common import _get_cols
+from featherstore import _utils
+from featherstore._table.common import _get_cols
 
 
 def can_write_table(

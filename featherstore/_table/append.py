@@ -4,10 +4,10 @@ import pyarrow as pa
 import pandas as pd
 import polars as pl
 
-from .._metadata import Metadata
-from .. import _utils
-from .._utils import DEFAULT_ARROW_INDEX_NAME
-from .common import _get_cols
+from featherstore._metadata import Metadata
+from featherstore import _utils
+from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
+from featherstore._table.common import _get_cols
 
 
 def can_append_table(
