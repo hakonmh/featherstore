@@ -1,6 +1,7 @@
 /build/
 build/lib
 dist
+env
 *.pyc
 .git
 __pycache__
