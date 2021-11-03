@@ -1,12 +1,12 @@
 import os
 import polars as pl
 
-from .connection import current_db
-from . import _metadata
-from ._metadata import Metadata
-from . import _utils
+from featherstore.connection import current_db
+from featherstore import _metadata
+from featherstore._metadata import Metadata
+from featherstore import _utils
 
-from ._table.read import (
+from featherstore._table.read import (
     can_read_table,
     format_rows,
     get_partition_names,
@@ -17,20 +17,20 @@ from ._table.read import (
     can_be_converted_to_rangeindex,
     convert_to_rangeindex,
 )
-from ._table.write import (
+from featherstore._table.write import (
     can_write_table,
     calculate_rows_per_partition,
     make_partitions,
     assign_id_to_partitions,
     write_partitions,
 )
-from ._table.append import (
+from featherstore._table.append import (
     can_append_table,
     format_default_index,
     sort_columns,
     delete_last_partition,
 )
-from ._table.common import (
+from featherstore._table.common import (
     can_init_table,
     can_rename_table,
     combine_partitions,
@@ -260,7 +260,7 @@ class Table:
     def columns(self, new_cols):
         raise NotImplementedError
 
-    def _rename_columns(self, cols, new_col_names=None):
+    def _rename_columns(self, cols, *, to=None):
         raise NotImplementedError
 
     def _astype(self, cols, dtypes):
@@ -278,14 +278,15 @@ class Table:
     def _reset_index(self, drop_old=False):
         raise NotImplementedError
 
-    def rename_table(self, new_table_name):
+    def rename_table(self, *, to):
         """Renames the current table
 
         Parameters
         ----------
-        new_table_name : str
+        to : str
             The new name of the table.
         """
+        new_table_name = to
         new_path = f"{current_db()}/{self.store}/{new_table_name}"
         can_rename_table(new_table_name, self._table_path, new_path)
 

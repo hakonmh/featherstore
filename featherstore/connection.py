@@ -1,6 +1,6 @@
 import os
 from featherstore import _utils
-from ._utils import mark_as_hidden
+from featherstore._utils import mark_as_hidden
 
 DB_MARKER_NAME = ".featherstore"
 

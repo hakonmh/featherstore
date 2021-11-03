@@ -2,11 +2,11 @@ import os
 
 from featherstore import _utils
 
-from .table import Table
-from .trash_bin import TrashBin
-from .connection import connect, disconnect, current_db, DB_MARKER_NAME
-from ._metadata import Metadata, METADATA_FOLDER_NAME
-from ._utils import like_pattern_matching
+from featherstore.table import Table
+from featherstore.trash_bin import TrashBin
+from featherstore.connection import connect, disconnect, current_db, DB_MARKER_NAME
+from featherstore._metadata import Metadata, METADATA_FOLDER_NAME
+from featherstore._utils import like_pattern_matching
 
 
 def create_store(store_name, *, errors="raise"):
@@ -30,17 +30,17 @@ def create_store(store_name, *, errors="raise"):
         Metadata(store_path).create()
 
 
-def rename_store(store_name, new_store_name):
+def rename_store(store_name, *, to):
     """Renames a store
 
     Parameters
     ----------
     store_name : str
         The name of the store to be renamed
-    new_store_name : str
+    to : str
         The new name of the store.
     """
-    Store(store_name).rename(new_store_name)
+    Store(store_name).rename(to)
 
 
 def drop_store(store_name, *, errors="raise"):
@@ -103,14 +103,15 @@ class Store:
         self.store_name = store_name
         self.store_path = f"{current_db()}/{store_name}"
 
-    def rename(self, new_store_name):
+    def rename(self, *, to):
         """Renames the current store
 
         Parameters
         ----------
-        new_store_name : str
+        to : str
             The new name of the store.
         """
+        new_store_name = to
         _can_rename_store(new_store_name)
 
         new_path = f"{current_db()}/{new_store_name}"
@@ -247,17 +248,17 @@ class Store:
         """
         Table(table_name, self.store_name).append(df, warnings=warnings)
 
-    def rename_table(self, table_name, new_table_name):
+    def rename_table(self, table_name, *, to):
         """Renames a table
 
         Parameters
         ----------
         table_name : str
             The name of the table to be renamed
-        new_table_name : str
+        to : str
             The new name of the table.
         """
-        Table(table_name, self.store_name).rename_table(new_table_name)
+        Table(table_name, self.store_name).rename_table(to=to)
 
     def drop_table(self, table_name):
         """Deletes a table

@@ -6,7 +6,7 @@ def test_rename_table(database, connection, store):
     NEW_TABLE_NAME = 'new_table_name'
     df = make_table()
     store.write_table('table_name', df)
-    store.rename_table('table_name', NEW_TABLE_NAME)
+    store.rename_table('table_name', to=NEW_TABLE_NAME)
     table = store.table(NEW_TABLE_NAME)
     # Act
     table_names = store.list_tables()

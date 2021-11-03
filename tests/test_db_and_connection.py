@@ -57,7 +57,7 @@ def test_drop_store(database,
 def test_rename_store(basic_data,
                       database, connection, store):
     # Arrange
-    store.rename('new_store_name')
+    store.rename(to='new_store_name')
     # Act
     stores = fs.list_stores()
     store_name = store.store_name
@@ -65,4 +65,4 @@ def test_rename_store(basic_data,
     assert stores == ['new_store_name']
     assert store_name == 'new_store_name'
     # Teardown
-    store.rename(basic_data['store_name'])
+    store.rename(to=basic_data['store_name'])

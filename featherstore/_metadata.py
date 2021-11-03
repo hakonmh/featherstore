@@ -4,8 +4,8 @@ import json
 
 import pyarrow as pa
 
-from . import _utils
-from ._utils import DEFAULT_ARROW_INDEX_NAME
+from featherstore import _utils
+from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 
 METADATA_FOLDER_NAME = ".metadata"
 
