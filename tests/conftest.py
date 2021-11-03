@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from pandas._testing import rands_array
 
-DB_PATH = 'db'
+DB_PATH = 'tests/db'
 STORE_NAME = 'test_store'
 TABLE_NAME = 'table_name'
 TABLE_PATH = f'{DB_PATH}/{STORE_NAME}/{TABLE_NAME}'

@@ -1,6 +1,6 @@
 import os
 from featherstore import _utils
-from featherstore._utils import mark_as_hidden
+from featherstore._utils import mark_as_hidden, expand_home_dir_modifier
 
 DB_MARKER_NAME = ".featherstore"
 
@@ -34,6 +34,7 @@ def create_database(path, errors="raise"):
         in existing directory, by default 'raise'
     """
     _can_create_database(path, errors)
+    path = expand_home_dir_modifier(path)
     if not os.path.exists(path):
         os.mkdir(path)
     _make_database_marker(path)
@@ -65,7 +66,8 @@ class Connection:
 
     def __init__(self, connection_string):
         _can_connect(connection_string)
-        self._location = os.path.abspath(connection_string)
+        path = expand_home_dir_modifier(connection_string)
+        self._location = os.path.abspath(path)
 
     @classmethod
     def disconnect(cls):
@@ -84,6 +86,7 @@ def _can_create_database(db_path, errors):
     if not isinstance(db_path, str):
         raise TypeError(f"Database path must be str, is {type(db_path)}")
 
+    db_path = expand_home_dir_modifier(db_path)
     directory_exists = os.path.exists(db_path)
     if directory_exists:
         directory_is_not_empty = len(os.listdir(db_path)) > 0
@@ -97,7 +100,8 @@ def _can_connect(connection_string):
             f"connection_string must be of type str, is {type(connection_string)}"
         )
 
-    path = os.path.abspath(connection_string)
+    path = expand_home_dir_modifier(connection_string)
+    path = os.path.abspath(path)
     is_database = os.path.exists(f"{path}/{DB_MARKER_NAME}")
     if not is_database:
         raise ConnectionRefusedError(f"{connection_string} is not a database")

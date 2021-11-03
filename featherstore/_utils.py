@@ -20,6 +20,10 @@ def delete_folder_tree(path):
         pass
 
 
+def expand_home_dir_modifier(path):
+    return os.path.expanduser(path)
+
+
 def like_pattern_matching(like, str_list):
     like = _sql_str_pattern_to_regexp(like)
     regexp = re.compile(like)

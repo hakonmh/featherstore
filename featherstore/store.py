@@ -1,10 +1,9 @@
 import os
 
 from featherstore import _utils
-
 from featherstore.table import Table
 from featherstore.trash_bin import TrashBin
-from featherstore.connection import connect, disconnect, current_db, DB_MARKER_NAME
+from featherstore.connection import current_db, DB_MARKER_NAME
 from featherstore._metadata import Metadata, METADATA_FOLDER_NAME
 from featherstore._utils import like_pattern_matching
 
