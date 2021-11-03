@@ -1,5 +1,5 @@
 Store
--------------------------
+-----
 
 .. automodule:: featherstore.store
    :members:

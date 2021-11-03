@@ -1,3 +1,4 @@
+pydata-sphinx-theme
 numpy>=1.21.0
 pandas>=1.1.0
 polars>=0.9.1

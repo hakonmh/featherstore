@@ -4,6 +4,6 @@ API Reference
 .. toctree::
    :maxdepth: 4
 
-   Connection
-   Store
-   Table
+   API/Connection
+   API/Store
+   API/Table
