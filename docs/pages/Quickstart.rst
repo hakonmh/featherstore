@@ -4,7 +4,7 @@ This is a short introduction to FeatherStore, geared mainly for new users.
 
 Installation
 ------------
-To install FeatherStore, simply use *pip*
+To install FeatherStore, simply use pip
 
 .. code-block::
 

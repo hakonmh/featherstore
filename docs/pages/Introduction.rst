@@ -16,6 +16,17 @@ in the full data:
 
 To learn more, go to the `Quickstart <Quickstart.html>`_ page.
 
+Installation
+++++++++++++
+| The project is hosted on PyPI at:
+| https://pypi.org/project/FeatherStore/
+
+| To install FeatherStore, simply use pip
+
+.. code-block::
+
+    pip install featherstore
+
 Source Code
 +++++++++++
 | The source code is currently hosted on GitHub at:
