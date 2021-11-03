@@ -211,15 +211,15 @@ class Table:
             Whether or not to warn if a unsorted index is about to get sorted.
             Can be either 'warn' or 'ignore', by default 'warn'
         """
-        index_col_name = self._table_data["index_name"]
-        df = format_table(df, index_col_name, warnings)
-
         can_append_table(
             df,
             warnings,
             self._table_path,
             self._table_exists,
         )
+
+        index_col_name = self._table_data["index_name"]
+        df = format_table(df, index_col_name, warnings)
 
         has_default_index = self._table_data["has_default_index"]
         if has_default_index:
@@ -307,6 +307,8 @@ class Table:
 
     def read_partition_metadata(self, item=None):
         if item:
+            if item != 'name':
+                metadata = self._partition_data['name']
             metadata = self._partition_data[item]
         else:
             metadata = self._partition_data.read()

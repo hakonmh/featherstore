@@ -62,7 +62,16 @@ def _get_first_append_value(df, table_path, has_default_index):
     else:
         index_col = Metadata(table_path, "table")["index_name"]
         index_dtype = Metadata(table_path, "table")["index_dtype"]
-        append_data_start = df[index_col][0].as_py()
+        first_row = df[:1]
+
+        # To enable selecting index using column selection
+        if isinstance(first_row, (pd.DataFrame, pd.Series)):
+            if first_row.index.name is None:
+                first_row.index.name = DEFAULT_ARROW_INDEX_NAME
+            first_row = first_row.reset_index()
+
+        append_data_start = first_row[index_col]
+        append_data_start = _extract_value(append_data_start)
         append_data_start = _format_index_value(append_data_start, index_dtype)
     return append_data_start
 
@@ -72,6 +81,16 @@ def _get_last_stored_value(table_path):
     index_dtype = Metadata(table_path, "table")["index_dtype"]
     stored_data_end = _format_index_value(stored_data_end, index_dtype)
     return stored_data_end
+
+
+def _extract_value(value):
+    if isinstance(value, pa.ChunkedArray):
+        value, = value.to_pylist()
+    elif isinstance(value, (pl.Series, pd.Series)):
+        value, = value.to_list()
+    else:
+        raise TypeError("Couldn't convert first_append_value")
+    return value
 
 
 def _format_index_value(value, index_dtype):
