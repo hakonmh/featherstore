@@ -6,9 +6,9 @@ Table of Contents
 .. toctree::
    :maxdepth: 2
 
-   pages/Introduction
-   pages/Quickstart
-   pages/API Reference
+   Introduction
+   Quickstart
+   API Reference
 
 
 Indices and tables
