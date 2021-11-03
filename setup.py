@@ -11,7 +11,7 @@ setup(
     description='High performance datastore built upon Apache Arrow & Feather',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='',
+    url=r'https://github.com/Hakonmh/featherstore',
     author='Håkon Magne Holmen',
     author_email='haakonholmen@hotmail.com',
     license='MIT',
@@ -25,7 +25,7 @@ setup(
     ],
     python_requires='>=3.8',
     keywords='feather arrow pandas polars datastore',
-    packages=find_packages(where='featherstore'),
+    packages=find_packages(exclude=['tests', 'docs']),
     install_requires=[
         'numpy>=1.15.4',
         'pandas>=1.1.0',
@@ -33,6 +33,6 @@ setup(
         'pyarrow>=4.0.0',
     ],
     project_urls={
-        'Documentation': r''
+        'Documentation': r'https://featherstore.readthedocs.io/en/latest/'
     },
 )

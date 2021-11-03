@@ -6,6 +6,7 @@ dist
 __pycache__
 .vscode
 *.code-workspace
+*.egg-info
 .pytest_cache
 settings.json
 FinStore/
