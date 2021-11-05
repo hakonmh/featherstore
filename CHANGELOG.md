@@ -2,7 +2,7 @@
 -----
 
 **Warning**: This update causes some API-breaking changes:
-* `Table.read()` and `Store.read_table()` as now been renamed to `read_arrow()`
+* `Table.read()` and `Store.read_table()` has now been renamed to `read_arrow()`
 * The parameter `new_name` in `rename_*()` functions and methods have been changed to `to`
 
 Other changes:
