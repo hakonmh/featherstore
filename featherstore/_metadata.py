@@ -103,9 +103,7 @@ def make_table_metadata(df, collected_data):
     metadata["rows_per_partition"] = partition_size_in_rows
     metadata["partition_byte_size"] = partition_byte_size
     metadata["index_name"] = index_name = _get_index_name(df)
-    metadata["index_column_position"] = _get_index_position(
-        df, index_name
-    )
+    metadata["index_column_position"] = _get_index_position(df, index_name)
     metadata["index_dtype"] = _get_index_dtype(df)
     metadata["has_default_index"] = _has_default_index(df, index_name)
     metadata["columns"] = _get_column_names(df)

@@ -21,7 +21,7 @@ def can_read_table(cols, rows, table_exists, table_metadata):
     if not is_valid_row_format:
         raise TypeError("'rows' must be either List, or None")
 
-    index_dtype = table_metadata['index_dtype']
+    index_dtype = table_metadata["index_dtype"]
     if rows and not _rows_dtype_matches_index(rows, index_dtype):
         raise TypeError("'rows' type doesn't match table index")
 
@@ -173,6 +173,11 @@ def _convert_arrow_mask_to_polars(mask):
 def drop_default_index(df, index_col_name):
     df = df.drop([index_col_name])
     return df
+
+
+def can_be_converted_to_series(df):
+    num_cols = df.shape[1]
+    return num_cols == 1
 
 
 def can_be_converted_to_rangeindex(df):

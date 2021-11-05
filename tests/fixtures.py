@@ -1,5 +1,3 @@
-
-
 import pyarrow as pa
 import polars as pl
 import pandas as pd
@@ -16,7 +14,9 @@ def make_table(index=None, cols=5, *, astype="arrow"):
         df.index = index()
 
     if astype in ("arrow", "polars"):
-        df = pa.Table.from_pandas(df, )
+        df = pa.Table.from_pandas(
+            df,
+        )
         if not _is_default_index(df):
             df = _make_index_first_column(df)
     if astype == "polars":
@@ -25,9 +25,9 @@ def make_table(index=None, cols=5, *, astype="arrow"):
 
 
 def _is_default_index(df):
-    index_data = df.schema.pandas_metadata['index_columns'][0]
+    index_data = df.schema.pandas_metadata["index_columns"][0]
     try:
-        if index_data['name'] is None and index_data['kind'] == 'range':
+        if index_data["name"] is None and index_data["kind"] == "range":
             is_default_index = True
         else:
             is_default_index = False
@@ -82,8 +82,10 @@ def unsorted_datetime_index():
 
 
 def get_partition_size(df, num_partitions):
-    if isinstance(df, (pd.DataFrame, pd.Series)):
+    if isinstance(df, pd.DataFrame):
         byte_size = df.memory_usage(index=True).sum()
+    elif isinstance(df, pd.Series):
+        byte_size = df.memory_usage(index=True)
     elif isinstance(df, pl.DataFrame):
         byte_size = df.to_arrow().nbytes
     else:

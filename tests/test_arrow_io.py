@@ -8,9 +8,7 @@ from .fixtures import *
     [make_table(), make_table(sorted_datetime_index), make_table(sorted_string_index)],
     ids=["int index", "datetime index", "string index"],
 )
-def test_sorted_arrow_io(
-    original_df, basic_data, database, connection, store
-):
+def test_sorted_arrow_io(original_df, basic_data, database, connection, store):
     # Arrange
     partition_size = get_partition_size(original_df, basic_data["num_partitions"])
     store.write_table(
@@ -31,9 +29,7 @@ def test_sorted_arrow_io(
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_unsorted_arrow_io(
-    original_df, basic_data, database, connection, store
-):
+def test_unsorted_arrow_io(original_df, basic_data, database, connection, store):
     # Arrange
     index_name = original_df.schema.pandas_metadata["index_columns"][0]
     sorted_index = pa.compute.sort_indices(original_df[index_name])
@@ -61,9 +57,7 @@ def test_unsorted_arrow_io(
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_append_table(
-    original_df, basic_data, database, connection, store
-):
+def test_append_table(original_df, basic_data, database, connection, store):
     # Arrange
     slice_ = original_df.shape[0] // 2
     prewritten_df = original_df.slice(0, slice_)

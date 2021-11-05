@@ -7,14 +7,14 @@ import numpy as np
 import pandas as pd
 from pandas._testing import rands_array
 
-DB_PATH = 'tests/db'
-STORE_NAME = 'test_store'
-TABLE_NAME = 'table_name'
-TABLE_PATH = f'{DB_PATH}/{STORE_NAME}/{TABLE_NAME}'
+DB_PATH = "tests/db"
+STORE_NAME = "test_store"
+TABLE_NAME = "table_name"
+TABLE_PATH = f"{DB_PATH}/{STORE_NAME}/{TABLE_NAME}"
 NUMBER_OF_PARTITIONS = 5
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def database():
     # Setup
     fs.create_database(DB_PATH)
@@ -24,7 +24,7 @@ def database():
     shutil.rmtree(DB_PATH)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def connection():
     # Setup
     fs.connect(DB_PATH)
@@ -34,7 +34,7 @@ def connection():
     fs.disconnect()
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def store():
     # Setup
     fs.create_store(STORE_NAME)
@@ -47,12 +47,12 @@ def store():
     fs.drop_store(STORE_NAME)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def basic_data():
     data = {}
-    data['db_path'] = DB_PATH
-    data['store_name'] = STORE_NAME
-    data['table_name'] = TABLE_NAME
-    data['table_path'] = TABLE_PATH
-    data['num_partitions'] = NUMBER_OF_PARTITIONS
+    data["db_path"] = DB_PATH
+    data["store_name"] = STORE_NAME
+    data["table_name"] = TABLE_NAME
+    data["table_path"] = TABLE_PATH
+    data["num_partitions"] = NUMBER_OF_PARTITIONS
     return data

@@ -12,9 +12,7 @@ from .fixtures import *
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_sorted_pandas_io(
-    original_df, basic_data, database, connection, store
-):
+def test_sorted_pandas_io(original_df, basic_data, database, connection, store):
     # Arrange
     partition_size = get_partition_size(original_df, basic_data["num_partitions"])
     store.write_table(
@@ -35,9 +33,7 @@ def test_sorted_pandas_io(
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_unsorted_pandas_io(
-    original_df, basic_data, database, connection, store
-):
+def test_unsorted_pandas_io(original_df, basic_data, database, connection, store):
     # Arrange
     partition_size = get_partition_size(original_df, basic_data["num_partitions"])
     store.write_table(
@@ -75,19 +71,6 @@ def test_that_pandas_rangeindex_is_converted_back(
     assert df.index.name == original_df.index.name
 
 
-def test_pandas_series_io(
-    basic_data, database, connection, store
-):
-    # Arrange
-    original_df = make_table(sorted_string_index, cols=1, astype="pandas")
-    original_df_series = original_df.squeeze()
-    store.write_table(basic_data["table_name"], original_df_series)
-    # Act
-    df = store.read_pandas(basic_data["table_name"])
-    # Assert
-    assert df.equals(original_df)
-
-
 @pytest.mark.parametrize(
     "original_df",
     [
@@ -97,9 +80,7 @@ def test_pandas_series_io(
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_append_table(
-    original_df, basic_data, database, connection, store
-):
+def test_append_table(original_df, basic_data, database, connection, store):
     # Arrange
     slice_ = original_df.shape[0] // 2
     prewritten_df = original_df.iloc[:slice_]
@@ -119,9 +100,7 @@ def test_append_table(
     assert df.equals(original_df)
 
 
-def test_filter_columns(
-    basic_data, database, connection, store
-):
+def test_filter_columns(basic_data, database, connection, store):
     # Arrange
     original_df = make_table(cols=6, astype="pandas")
     cols = ["aapl", "MAST", "test", "4", "TSLA", "Åge"]

@@ -1,5 +1,4 @@
 import os
-import polars as pl
 
 from featherstore.connection import current_db
 from featherstore import _metadata
@@ -14,6 +13,7 @@ from featherstore._table.read import (
     read_partitions,
     filter_table_rows,
     drop_default_index,
+    can_be_converted_to_series,
     can_be_converted_to_rangeindex,
     convert_to_rangeindex,
     convert_partitions_to_polars,
@@ -121,8 +121,12 @@ class Table:
         """
         df = self.read_arrow(cols=cols, rows=rows)
         df = df.to_pandas()
+
+        if can_be_converted_to_series(df):
+            df = df.squeeze()
         if can_be_converted_to_rangeindex(df):
             df = convert_to_rangeindex(df)
+
         return df
 
     def read_polars(self, *, cols, rows):
@@ -323,8 +327,8 @@ class Table:
 
     def read_partition_metadata(self, item=None):
         if item:
-            if item != 'name':
-                metadata = self._partition_data['name']
+            if item != "name":
+                metadata = self._partition_data["name"]
             metadata = self._partition_data[item]
         else:
             metadata = self._partition_data.read()
