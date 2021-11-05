@@ -7,11 +7,11 @@
 
 Other changes:
 * Improved `read_polars()` performance
-* Index column is now sorted first when reading data as Arrow or Polars
+* Index column is now appears first when reading data as Arrow or Polars
 * `read_pandas()` now converts to Pandas Series where it is possible
 * Improved performance of all metadata handling
 
 0.0.1
 -----
 
-Initial release
+Initial release.
