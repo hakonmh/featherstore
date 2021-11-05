@@ -17,7 +17,7 @@ def test_sorted_arrow_io(
         basic_data["table_name"], original_df, partition_size=partition_size
     )
     # Act
-    df = store.read_table(basic_data["table_name"])
+    df = store.read_arrow(basic_data["table_name"])
     # Assert
     assert df.equals(original_df)
 
@@ -47,7 +47,7 @@ def test_unsorted_arrow_io(
         warnings="ignore",
     )
     # Act
-    df = store.read_table(basic_data["table_name"])
+    df = store.read_arrow(basic_data["table_name"])
     # Assert
     assert df.equals(sorted_original_df)
 
@@ -61,7 +61,7 @@ def test_unsorted_arrow_io(
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_arrow_append_table(
+def test_append_table(
     original_df, basic_data, database, connection, store
 ):
     # Arrange
@@ -78,6 +78,6 @@ def test_arrow_append_table(
     )
     store.append_table(basic_data["table_name"], appended_df)
     # Act
-    df = store.read_table(basic_data["table_name"])
+    df = store.read_arrow(basic_data["table_name"])
     # Assert
     assert df.equals(original_df)

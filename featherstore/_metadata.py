@@ -103,10 +103,10 @@ def make_table_metadata(df, collected_data):
     metadata["rows_per_partition"] = partition_size_in_rows
     metadata["partition_byte_size"] = partition_byte_size
     metadata["index_name"] = index_name = _get_index_name(df)
-    metadata["index_column_position"] = index_position = _get_index_position(
+    metadata["index_column_position"] = _get_index_position(
         df, index_name
     )
-    metadata["index_dtype"] = _get_index_dtype(df, index_position)
+    metadata["index_dtype"] = _get_index_dtype(df)
     metadata["has_default_index"] = _has_default_index(df, index_name)
     metadata["columns"] = _get_column_names(df)
     return metadata
@@ -193,9 +193,11 @@ def _get_index_position(df, index_name):
     return index_position
 
 
-def _get_index_dtype(df, index_position):
+def _get_index_dtype(df):
     schema = df[0].schema
-    index_dtype = schema.pandas_metadata["columns"][index_position]["pandas_type"]
+    # A better solution for when format_table is refactored:
+    # str(df[0].field(index_position).type)
+    index_dtype = schema.pandas_metadata["columns"][-1]["pandas_type"]
     if index_dtype == "datetime":
         index_dtype = "datetime64"
     return index_dtype

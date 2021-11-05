@@ -42,7 +42,11 @@ def can_rename_table(new_table_name, old_table_path, new_table_path):
 
 
 def combine_partitions(partitions):
-    full_table = pa.concat_tables(partitions)
+    if isinstance(partitions[0], pa.Table):
+        full_table = pa.concat_tables(partitions)
+    elif isinstance(partitions[0], pl.DataFrame):
+        # Rechunking introduces a significant performance penalty
+        full_table = pl.concat(partitions, rechunk=False)
     return full_table
 
 
@@ -59,15 +63,10 @@ def format_table(df, index, warning):
         new_metadata = json.dumps({"sorted": False})
 
     formatted_df = pa.Table.from_pandas(df, preserve_index=True)
+    formatted_df = _make_index_first_column(formatted_df)
     formatted_df = _add_schema_metadata(formatted_df, new_metadata)
+
     return formatted_df
-
-
-def _add_schema_metadata(df, new_metadata):
-    old_metadata = df.schema.metadata
-    combined_metadata = {**old_metadata, b"featherstore": new_metadata}
-    df = df.replace_schema_metadata(combined_metadata)
-    return df
 
 
 def _convert_to_pandas(df):
@@ -107,6 +106,21 @@ def _sort_index(df, warning):
 
         warnings.warn("Index is unsorted and will be sorted before storage")
     df = df.sort_index()
+    return df
+
+
+def _make_index_first_column(df):
+    index_name = df.schema.pandas_metadata["index_columns"]
+    column_names = df.column_names[:-1]
+    columns = index_name + column_names
+    df = df.select(columns)
+    return df
+
+
+def _add_schema_metadata(df, new_metadata):
+    old_metadata = df.schema.metadata
+    combined_metadata = {**old_metadata, b"featherstore": new_metadata}
+    df = df.replace_schema_metadata(combined_metadata)
     return df
 
 

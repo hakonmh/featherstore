@@ -1,12 +1,15 @@
+import datetime
+
 import pyarrow as pa
 from pyarrow import feather
 import pandas as pd
+import polars as pl
 
 from featherstore._metadata import Metadata
 from featherstore._utils import like_pattern_matching
 
 
-def can_read_table(cols, rows, table_exists):
+def can_read_table(cols, rows, table_exists, table_metadata):
     if not table_exists:
         raise FileNotFoundError("Table doesn't exixst")
 
@@ -16,7 +19,20 @@ def can_read_table(cols, rows, table_exists):
 
     is_valid_row_format = isinstance(rows, (list, pd.Index, type(None)))
     if not is_valid_row_format:
-        raise AttributeError("'rows' must be either List, or None")
+        raise TypeError("'rows' must be either List, or None")
+
+    index_dtype = table_metadata['index_dtype']
+    if rows and not _rows_dtype_matches_index(rows, index_dtype):
+        raise TypeError("'rows' type doesn't match table index")
+
+
+def _rows_dtype_matches_index(rows, index_dtype):
+    try:
+        _convert_row(rows[-1], to=index_dtype)
+        row_type_matches = True
+    except Exception:
+        row_type_matches = False
+    return row_type_matches
 
 
 def format_cols(cols, table_data):
@@ -42,7 +58,7 @@ def format_rows(rows, index_type):
 def _convert_row(row, *, to):
     if to == "datetime64":
         row = pd.to_datetime(row)
-    elif to == "string":
+    elif to == "string" or to == "unicode":
         row = str(row)
     elif to == "int64":
         row = int(row)
@@ -113,12 +129,26 @@ def read_partitions(partition_names, table_path, columns):
 def filter_table_rows(df, rows, index_col_name):
     should_be_filtered = rows is not None
     if should_be_filtered:
-        df = _row_filtering(df, rows, index_col_name)
+        index = df[index_col_name]
+        if isinstance(df, pa.Table):
+            mask = _make_arrow_filter_mask(index, rows)
+            df = df.filter(mask)
+        elif isinstance(df, pl.DataFrame):
+            index = _convert_polars_index_to_arrow(index, rows)
+            mask = _make_arrow_filter_mask(index, rows)
+            mask = _convert_arrow_mask_to_polars(mask)
+            df = df[mask]
     return df
 
 
-def _row_filtering(df, rows, index_col_name):
-    index = df[index_col_name]
+def _convert_polars_index_to_arrow(index, rows):
+    index = index.to_arrow()
+    if isinstance(rows[-1], datetime.datetime):
+        index = index.cast(pa.date64())
+    return index
+
+
+def _make_arrow_filter_mask(index, rows):
     keyword = str(rows[0]).lower()
     if keyword == "before":
         mask = pa.compute.greater_equal(rows[1], index)
@@ -131,8 +161,13 @@ def _row_filtering(df, rows, index_col_name):
     else:  # When a list of rows is provided
         row_array = pa.compute.SetLookupOptions(value_set=pa.array(rows))
         mask = pa.compute.is_in(index, options=row_array)
-    df = df.filter(mask)
-    return df
+    return mask
+
+
+def _convert_arrow_mask_to_polars(mask):
+    mask = pl.from_arrow(mask)
+    mask = pl.arg_where(mask)
+    return mask
 
 
 def drop_default_index(df, index_col_name):
@@ -159,3 +194,9 @@ def convert_to_rangeindex(df):
     df = df.reset_index(drop=True)
     df.index.name = index_name
     return df
+
+
+def convert_partitions_to_polars(partitions):
+    for idx, partition in enumerate(partitions):
+        partitions[idx] = pl.from_arrow(partition, rechunk=False)
+    return partitions

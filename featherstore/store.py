@@ -13,6 +13,7 @@ def create_store(store_name, *, errors="raise"):
 
     Parameters
     ----------
+
     store_name : str
         The name of the store to be created
     errors : str, optional
@@ -70,8 +71,8 @@ def list_stores(*, like=None):
         Filters out stores not matching string pattern, by default None.
         There are two wildcards that can be used in conjunction with 'like':
 
-        - The percent sign (%) represents zero, one, or multiple characters
-        - The underscore sign (_) represents one, single character
+        - The underscore sign (_) matches any single character
+        - The percent sign (%) matches any number of any characters
     """
     _can_list_stores(like)
 
@@ -127,8 +128,8 @@ class Store:
             Filters out tables not matching string pattern, by default None.
             There are two wildcards that can be used in conjunction with 'like':
 
-            - The percent sign (%) represents zero, one, or multiple characters
-            - The underscore sign (_) represents one, single character
+            - The underscore sign (_) matches any single character
+            - The percent sign (%) matches any number of any characters
         """
         _can_list_tables(like)
 
@@ -138,7 +139,7 @@ class Store:
             tables = like_pattern_matching(like, tables)
         return tables
 
-    def read_table(self, table_name, *, cols=None, rows=None):
+    def read_arrow(self, table_name, *, cols=None, rows=None):
         """Reads PyArrow Table from store
 
         Parameters
@@ -153,7 +154,7 @@ class Store:
             [keyword, value], where keyword can be either 'before', 'after',
             or 'between', by default None
         """
-        return Table(table_name, self.store_name).read(cols=cols, rows=rows)
+        return Table(table_name, self.store_name).read_arrow(cols=cols, rows=rows)
 
     def read_pandas(self, table_name, *, cols=None, rows=None):
         """Reads Pandas DataFrame from store

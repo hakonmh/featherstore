@@ -16,9 +16,31 @@ def make_table(index=None, cols=5, *, astype="arrow"):
         df.index = index()
 
     if astype in ("arrow", "polars"):
-        df = pa.Table.from_pandas(df)
+        df = pa.Table.from_pandas(df, )
+        if not _is_default_index(df):
+            df = _make_index_first_column(df)
     if astype == "polars":
         df = pl.from_arrow(df)
+    return df
+
+
+def _is_default_index(df):
+    index_data = df.schema.pandas_metadata['index_columns'][0]
+    try:
+        if index_data['name'] is None and index_data['kind'] == 'range':
+            is_default_index = True
+        else:
+            is_default_index = False
+    except Exception:
+        is_default_index = False
+    return is_default_index
+
+
+def _make_index_first_column(df):
+    index_name = df.schema.pandas_metadata["index_columns"]
+    column_names = df.column_names[:-1]
+    columns = index_name + column_names
+    df = df.select(columns)
     return df
 
 
@@ -68,3 +90,11 @@ def get_partition_size(df, num_partitions):
         byte_size = df.nbytes
     partition_size = byte_size // num_partitions
     return partition_size
+
+
+def hardcoded_string_index():
+    index = []
+    for x in range(ROWS):
+        index.append(f"row{x}")
+    index = pd.Series(index)
+    return index

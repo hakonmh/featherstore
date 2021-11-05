@@ -97,7 +97,7 @@ def test_pandas_series_io(
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_pandas_append_table(
+def test_append_table(
     original_df, basic_data, database, connection, store
 ):
     # Arrange
@@ -119,7 +119,7 @@ def test_pandas_append_table(
     assert df.equals(original_df)
 
 
-def test_pandas_filter_columns(
+def test_filter_columns(
     basic_data, database, connection, store
 ):
     # Arrange
@@ -133,14 +133,6 @@ def test_pandas_filter_columns(
     assert df.columns.tolist() == ["aapl", "MAST", "TSLA"]
 
 
-def hardcoded_string_index():
-    index = []
-    for x in range(ROWS):
-        index.append(f"row{x}")
-    index = pd.Series(index)
-    return index
-
-
 @pytest.mark.parametrize(
     ("original_df", "rows"),
     [
@@ -152,7 +144,7 @@ def hardcoded_string_index():
         (make_table(hardcoded_string_index, astype="pandas"), ["row10", "row3"]),
     ],
 )
-def test_pandas_filtering_rows_with_list(
+def test_filtering_rows_with_list(
     original_df, rows, basic_data, database, connection, store
 ):
     # Arrange
@@ -180,7 +172,7 @@ def test_pandas_filtering_rows_with_list(
         (3, 19),
     ],
 )
-def test_pandas_filter_columns_and_rows_between(
+def test_filtering_columns_and_rows_between(
     low, high, basic_data, database, connection, store
 ):
     # Arrange
@@ -207,7 +199,7 @@ def test_pandas_filter_columns_and_rows_between(
         "T9est",
     ],
 )
-def test_pandas_filtering_rows_before_low_with_string_index(
+def test_filtering_rows_before_low_with_string_index(
     high, basic_data, database, connection, store
 ):
     # Arrange
@@ -233,7 +225,7 @@ def test_pandas_filtering_rows_before_low_with_string_index(
         "2021-01-12",
     ],
 )
-def test_pandas_filtering_rows_after_low_with_datetime_index(
+def test_filtering_rows_after_low_with_datetime_index(
     low, basic_data, database, connection, store
 ):
     # Arrange

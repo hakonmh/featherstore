@@ -16,6 +16,7 @@ from featherstore._table.read import (
     drop_default_index,
     can_be_converted_to_rangeindex,
     convert_to_rangeindex,
+    convert_partitions_to_polars,
 )
 from featherstore._table.write import (
     can_write_table,
@@ -74,7 +75,7 @@ class Table:
         self._table_data = Metadata(self._table_path, "table")
         self._partition_data = Metadata(self._table_path, "partition")
 
-    def read(self, *, cols=None, rows=None):
+    def read_arrow(self, *, cols=None, rows=None):
         """Reads the data as a PyArrow Table
 
         Parameters
@@ -87,7 +88,7 @@ class Table:
             [keyword, value], where keyword can be either 'before', 'after',
             or 'between', by default None
         """
-        can_read_table(cols, rows, self._table_exists)
+        can_read_table(cols, rows, self._table_exists, self._table_data)
 
         index_col_name = self._table_data["index_name"]
         has_default_index = self._table_data["has_default_index"]
@@ -118,7 +119,7 @@ class Table:
             [keyword, value], where keyword can be either 'before', 'after',
             or 'between', by default None
         """
-        df = self.read(cols=cols, rows=rows)
+        df = self.read_arrow(cols=cols, rows=rows)
         df = df.to_pandas()
         if can_be_converted_to_rangeindex(df):
             df = convert_to_rangeindex(df)
@@ -137,8 +138,23 @@ class Table:
             [keyword, value], where keyword can be either 'before', 'after',
             or 'between', by default None
         """
-        df = self.read(cols=cols, rows=rows)
-        df = pl.from_arrow(df)
+        can_read_table(cols, rows, self._table_exists, self._table_data)
+
+        index_col_name = self._table_data["index_name"]
+        has_default_index = self._table_data["has_default_index"]
+        index_type = self._table_data["index_dtype"]
+
+        rows = format_rows(rows, index_type)
+        cols = format_cols(cols, self._table_data)
+
+        partition_names = get_partition_names(self, rows)
+        partitions = read_partitions(partition_names, self._table_path, cols)
+        partitions = convert_partitions_to_polars(partitions)
+        df = combine_partitions(partitions)
+        df = filter_table_rows(df, rows, index_col_name)
+        if has_default_index and rows is None:
+            df = drop_default_index(df, index_col_name)
+
         return df
 
     def write(
@@ -227,7 +243,7 @@ class Table:
         df = sort_columns(df, self._table_data)
 
         last_partition_min = self._partition_data["min"][-1]
-        last_partition = self.read(rows=["after", last_partition_min])
+        last_partition = self.read_arrow(rows=["after", last_partition_min])
         df = combine_partitions([last_partition, df])
 
         rows_per_partition = self._table_data["rows_per_partition"]
@@ -269,7 +285,7 @@ class Table:
     @property
     def index(self):
         """Returns the table index"""
-        index = self.read(cols=[])
+        index = self.read_arrow(cols=[])
         return index.to_pandas().index
 
     def _set_index(self, new_index, drop_old=False):
