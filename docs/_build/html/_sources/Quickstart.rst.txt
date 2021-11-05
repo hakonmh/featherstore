@@ -2,6 +2,10 @@ Quickstart
 ==========
 This is a short introduction to FeatherStore, geared mainly for new users.
 
+.. warning::
+    FeatherStore's API is considered unstable and is subject to
+    changes during the initial stages of development
+
 Installation
 ------------
 To install FeatherStore, simply use pip
@@ -97,7 +101,7 @@ We can now read the stored data as Pandas DataFrame, Polars DataFrame or PyArrow
 .. code-block:: python
 
     store.read_pandas('example_table')
-    # store.read_table('example_table') for reading to Arrow Tables
+    # store.read_arrow('example_table') for reading to Arrow Tables
     # store.read_polars('example_table') for reading to Polars DataFrames
 
     >>                 A         B         C         D

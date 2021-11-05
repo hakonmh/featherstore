@@ -227,8 +227,8 @@ be deleted first.</p>
 <dd class="field-odd"><p><strong>like</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Filters out stores not matching string pattern, by default None.
 There are two wildcards that can be used in conjunction with ‘like’:</p>
 <ul class="simple">
-<li><p>The percent sign (%) represents zero, one, or multiple characters</p></li>
-<li><p>The underscore sign (_) represents one, single character</p></li>
+<li><p>The underscore sign (_) matches any single character</p></li>
+<li><p>The percent sign (%) matches any number of any characters</p></li>
 </ul>
 </p>
 </dd>
@@ -265,8 +265,8 @@ There are two wildcards that can be used in conjunction with ‘like’:</p>
 <dd class="field-odd"><p><strong>like</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Filters out tables not matching string pattern, by default None.
 There are two wildcards that can be used in conjunction with ‘like’:</p>
 <ul class="simple">
-<li><p>The percent sign (%) represents zero, one, or multiple characters</p></li>
-<li><p>The underscore sign (_) represents one, single character</p></li>
+<li><p>The underscore sign (_) matches any single character</p></li>
+<li><p>The percent sign (%) matches any number of any characters</p></li>
 </ul>
 </p>
 </dd>
@@ -274,8 +274,8 @@ There are two wildcards that can be used in conjunction with ‘like’:</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="featherstore.store.Store.read_table">
-<span class="sig-name descname"><span class="pre">read_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store.read_table" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="featherstore.store.Store.read_arrow">
+<span class="sig-name descname"><span class="pre">read_arrow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store.read_arrow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads PyArrow Table from store</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

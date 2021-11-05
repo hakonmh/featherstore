@@ -10,5 +10,6 @@ __pycache__
 *.egg-info
 .pytest_cache
 settings.json
-FinStore/
+dev/
 tests/db
+*.lprof

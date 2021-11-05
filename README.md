@@ -1,6 +1,6 @@
 
 # FeatherStore
-[![docs](https://docs.rs/polars/badge.svg)](https://featherstore.readthedocs.io/en/latest/)
+[![docs](https://docs.rs/polars/badge.svg)](https://featherstore.readthedocs.io/en/latest/index.html)
 
 ## High performance datastore built upon Apache Arrow & Feather
 
@@ -58,7 +58,7 @@ store.list_tables()
 
 >>> # FeatherStore can read tables as Arrow Tables, Pandas DataFrames or Polars DataFrames
 store.read_pandas('example_table')
-# store.read_table('example_table') for reading to Arrow Tables
+# store.read_arrow('example_table') for reading to Arrow Tables
 # store.read_polars('example_table') for reading to Polars DataFrames
 
                    A         B         C         D
@@ -92,4 +92,4 @@ FeatherStore can be installed by using `$ pip install featherstore`
 * Numpy
 
 ## Documentation
-Want to know about all the features FeatherStore support? [Read the docs!](https://featherstore.readthedocs.io/en/latest/)
+Want to know about all the features FeatherStore support? [Read the docs!](https://featherstore.readthedocs.io/en/latest/index.html)

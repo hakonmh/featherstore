@@ -180,6 +180,11 @@
   <section id="quickstart">
 <h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h1>
 <p>This is a short introduction to FeatherStore, geared mainly for new users.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>FeatherStore’s API is considered unstable and is subject to
+changes during the initial stages of development</p>
+</div>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>To install FeatherStore, simply use pip</p>
@@ -258,7 +263,7 @@ in the full data.</p>
 a given operation.</p>
 <p>We can now read the stored data as Pandas DataFrame, Polars DataFrame or PyArrow Tables.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">read_pandas</span><span class="p">(</span><span class="s1">&#39;example_table&#39;</span><span class="p">)</span>
-<span class="c1"># store.read_table(&#39;example_table&#39;) for reading to Arrow Tables</span>
+<span class="c1"># store.read_arrow(&#39;example_table&#39;) for reading to Arrow Tables</span>
 <span class="c1"># store.read_polars(&#39;example_table&#39;) for reading to Polars DataFrames</span>
 
 <span class="o">&gt;&gt;</span>                 <span class="n">A</span>         <span class="n">B</span>         <span class="n">C</span>         <span class="n">D</span>
