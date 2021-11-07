@@ -1,7 +1,7 @@
 import os
-import orjson as json
-import msgpack
+import json
 
+import msgpack
 import pyarrow as pa
 
 from featherstore import _utils
@@ -12,9 +12,9 @@ METADATA_FOLDER_NAME = ".metadata"
 
 class Metadata:
     def __init__(self, base_path, db_name=None):
-        metadata_folder = f"{base_path}/{METADATA_FOLDER_NAME}"
+        metadata_folder = os.path.join(base_path, METADATA_FOLDER_NAME)
         if db_name:
-            self.db = f"{metadata_folder}/{db_name}"
+            self.db = os.path.join(metadata_folder, db_name)
         else:
             self.db = metadata_folder
 
@@ -32,18 +32,18 @@ class Metadata:
             self[key] = value
 
     def __getitem__(self, name: str):
-        path = f"{self.db}/{name}"
+        path = os.path.join(self.db, name)
         with open(path, "rb") as f:
             value = msgpack.loads(f.read())
         return value
 
     def __setitem__(self, name: str, value):
-        path = f"{self.db}/{name}"
+        path = os.path.join(self.db, name)
         with open(path, "wb") as f:
             f.write(msgpack.dumps(value))
 
     def __delitem__(self, name: str):
-        path = f"{self.db}/{name}"
+        path = os.path.join(self.db, name)
         os.remove(path)
 
     def __repr__(self):

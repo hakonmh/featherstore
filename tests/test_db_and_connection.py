@@ -8,7 +8,7 @@ from .fixtures import make_table, sorted_datetime_index
 
 def test_create_database():
     # Arrange
-    DATABASE_PATH = "tests/test_db"
+    DATABASE_PATH = os.path.join('tests', 'test_db')
     fs.create_database(DATABASE_PATH)
     # Act
     db_folder_exists = os.path.exists(DATABASE_PATH)

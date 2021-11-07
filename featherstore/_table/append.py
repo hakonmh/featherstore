@@ -107,18 +107,3 @@ def sort_columns(df, columns):
     if columns_not_sorted:
         df = df.select(columns)
     return df
-
-
-def delete_last_partition(table_path, last_partition_name):
-    partition_path = f"{table_path}/{last_partition_name}.feather"
-    os.remove(partition_path)
-
-
-def delete_last_partition_metadata(table_path, last_partition_name):
-    table_data = Metadata(table_path, 'table')
-    partition_data = Metadata(table_path, 'partition')
-
-    partition_names = table_data['partitions']
-    name_of_last_partition = partition_names.pop()
-    table_data['partitions'] = partition_names
-    del partition_data[name_of_last_partition]

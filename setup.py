@@ -7,7 +7,7 @@ with open(os.path.join(current_folder, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='FeatherStore',
-    version='0.0.1',
+    version='0.0.2',
     description='High performance datastore built upon Apache Arrow & Feather',
     long_description=long_description,
     long_description_content_type='text/markdown',

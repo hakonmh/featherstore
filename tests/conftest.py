@@ -1,16 +1,13 @@
 import featherstore as fs
 
 import pytest
+import os
 import shutil
-import pyarrow
-import numpy as np
-import pandas as pd
-from pandas._testing import rands_array
 
-DB_PATH = "tests/db"
+DB_PATH = os.path.join('tests', 'db')
 STORE_NAME = "test_store"
 TABLE_NAME = "table_name"
-TABLE_PATH = f"{DB_PATH}/{STORE_NAME}/{TABLE_NAME}"
+TABLE_PATH = os.path.join(DB_PATH, STORE_NAME, TABLE_NAME)
 NUMBER_OF_PARTITIONS = 5
 
 
@@ -21,7 +18,7 @@ def database():
     # Test
     yield
     # Teardown
-    shutil.rmtree(DB_PATH)
+    shutil.rmtree(DB_PATH, ignore_errors=False)
 
 
 @pytest.fixture(scope="session")

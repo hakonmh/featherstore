@@ -42,7 +42,7 @@ def create_database(path, errors="raise"):
 
 def _make_database_marker(db_path):
     """A database marker is used to tell FeatherStore that db_path is a database directory"""
-    db_marker_path = f"{db_path}/{DB_MARKER_NAME}"
+    db_marker_path = os.path.join(db_path, DB_MARKER_NAME)
     open(db_marker_path, "a").close()
     mark_as_hidden(db_marker_path)
 
@@ -102,7 +102,8 @@ def _can_connect(connection_string):
 
     path = expand_home_dir_modifier(connection_string)
     path = os.path.abspath(path)
-    is_database = os.path.exists(f"{path}/{DB_MARKER_NAME}")
+    db_marker_path = os.path.join(path, DB_MARKER_NAME)
+    is_database = os.path.exists(db_marker_path)
     if not is_database:
         raise ConnectionRefusedError(f"{connection_string} is not a database")
 

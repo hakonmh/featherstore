@@ -6,7 +6,7 @@ import pandas as pd
 import polars as pl
 
 from featherstore.connection import current_db
-from featherstore._metadata import METADATA_FOLDER_NAME
+from featherstore._metadata import Metadata, METADATA_FOLDER_NAME
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 
 
@@ -22,7 +22,7 @@ def can_init_table(table_name, store_name):
     if not isinstance(store_name, str):
         raise TypeError(f"{store_name} must be a str")
 
-    store_path = f"{current_db()}/{store_name}"
+    store_path = os.path.join(current_db(), store_name)
     if not os.path.exists(store_path):
         raise FileNotFoundError(f"Store doesn't exists: '{store_name}'")
 
@@ -122,6 +122,24 @@ def _add_schema_metadata(df, new_metadata):
     combined_metadata = {**old_metadata, b"featherstore": new_metadata}
     df = df.replace_schema_metadata(combined_metadata)
     return df
+
+
+def delete_partition(table_path, partition_name):
+    partition_path = os.path.join(table_path, f'{partition_name}.feather')
+    try:
+        os.remove(partition_path)
+    except PermissionError:
+        raise PermissionError('File still opened by memory-map')
+
+
+def delete_partition_metadata(table_path, partition_name):
+    table_data = Metadata(table_path, 'table')
+    partition_data = Metadata(table_path, 'partition')
+
+    partition_names = table_data['partitions']
+    partition_names = partition_names.remove(partition_name)
+    table_data['partitions'] = partition_names
+    del partition_data[partition_name]
 
 
 def _get_cols(df, has_default_index):

@@ -29,21 +29,21 @@ from featherstore._table.append import (
     can_append_table,
     format_default_index,
     sort_columns,
-    delete_last_partition,
-    delete_last_partition_metadata,
 )
 from featherstore._table.common import (
     can_init_table,
     can_rename_table,
     combine_partitions,
     format_table,
+    delete_partition,
+    delete_partition_metadata,
 )
 
 DEFAULT_PARTITION_SIZE = 128 * 1024 ** 2
 
 
 class Table:
-    def __init__(self, table_name, store):
+    def __init__(self, table_name, store_name):
         """A class for saving and loading DataFrames as partitioned Feather files.
 
         Tables supports several operations that can be done without loading in the
@@ -66,14 +66,14 @@ class Table:
         ----------
         table_name : str
             The name of the table
-        store : str
+        store_name : str
             The name of the store
         """
-        can_init_table(table_name, store)
+        can_init_table(table_name, store_name)
 
         self.table_name = table_name
-        self.store = store
-        self._table_path = f"{current_db()}/{store}/{table_name}"
+        self.store = store_name
+        self._table_path = os.path.join(current_db(), store_name, table_name)
         self._table_exists = os.path.exists(self._table_path)
         self._table_data = Metadata(self._table_path, "table")
         self._partition_data = Metadata(self._table_path, "partition")
@@ -257,6 +257,7 @@ class Table:
         df = combine_partitions([last_partition, df])
         rows_per_partition = self._table_data["rows_per_partition"]
         partitioned_df = make_partitions(df, rows_per_partition)
+        del last_partition, df  # Closes memory-map
         partitioned_df = assign_id_to_partitions(
             partitioned_df, partition_names_to_keep
         )
@@ -266,8 +267,8 @@ class Table:
             partitioned_df, partition_metadata, partition_names_to_keep, self._table_path
         )
 
-        delete_last_partition(self._table_path, last_partition_name)
-        delete_last_partition_metadata(self._table_path, last_partition_name)
+        delete_partition_metadata(self._table_path, last_partition_name)
+        delete_partition(self._table_path, last_partition_name)
 
         self._table_data.write(table_metadata)
         self._partition_data.write(partition_metadata)
@@ -321,7 +322,7 @@ class Table:
             The new name of the table.
         """
         new_table_name = to
-        new_path = f"{current_db()}/{self.store}/{new_table_name}"
+        new_path = os.path.join(current_db(), self.store, new_table_name)
         can_rename_table(new_table_name, self._table_path, new_path)
 
         os.rename(self._table_path, new_path)

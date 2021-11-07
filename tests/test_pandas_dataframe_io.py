@@ -1,5 +1,5 @@
 import pytest
-import random
+from random import sample
 from .fixtures import *
 
 
@@ -86,7 +86,7 @@ def test_append_table(original_df, basic_data, database, connection, store):
     prewritten_df = original_df.iloc[:slice_]
     appended_df = original_df.iloc[slice_:]
     cols = appended_df.columns
-    shuffled_cols = random.sample(tuple(cols), len(cols))
+    shuffled_cols = sample(tuple(cols), len(cols))
     appended_df = appended_df[shuffled_cols]
 
     partition_size = get_partition_size(original_df, basic_data["num_partitions"])

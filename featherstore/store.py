@@ -23,7 +23,7 @@ def create_store(store_name, *, errors="raise"):
     """
     _can_create_store(store_name, errors)
 
-    store_path = f"{current_db()}/{store_name}"
+    store_path = os.path.join(current_db(), store_name)
     store_already_exists = os.path.exists(store_path)
     if not store_already_exists:
         os.mkdir(store_path)
@@ -58,7 +58,7 @@ def drop_store(store_name, *, errors="raise"):
         'raise' or 'ignore', by default "raise"
     """
     _can_drop_store(store_name, errors)
-    store_path = f"{current_db()}/{store_name}"
+    store_path = os.path.join(current_db(), store_name)
     _utils.delete_folder_tree(store_path)
 
 
@@ -81,7 +81,7 @@ def list_stores(*, like=None):
         database_content = like_pattern_matching(like, database_content)
     stores = []
     for item in database_content:
-        path = f"{current_db()}/{item}"
+        path = os.path.join(current_db(), item)
         if os.path.isdir(path):
             item_is_store = METADATA_FOLDER_NAME in os.listdir(path)
             if item_is_store:
@@ -101,7 +101,7 @@ class Store:
         _can_init_store(store_name)
 
         self.store_name = store_name
-        self.store_path = f"{current_db()}/{store_name}"
+        self.store_path = os.path.join(current_db(), store_name)
 
     def rename(self, *, to):
         """Renames the current store
@@ -114,7 +114,7 @@ class Store:
         new_store_name = to
         _can_rename_store(new_store_name)
 
-        new_path = f"{current_db()}/{new_store_name}"
+        new_path = os.path.join(current_db(), new_store_name)
         os.rename(self.store_path, new_path)
         self.store_name = new_store_name
         self.store_path = new_path
@@ -327,7 +327,7 @@ def _can_create_store(store_name, errors):
     current_db()
     _utils.check_if_arg_errors_is_valid(errors)
 
-    store_path = f"{current_db()}/{store_name}"
+    store_path = os.path.join(current_db(), store_name)
     store_exists = os.path.exists(store_path)
     if store_exists and errors == "raise":
         raise FileExistsError("Store already exists")
@@ -340,7 +340,7 @@ def _can_drop_store(store_name, errors):
     current_db()
     _utils.check_if_arg_errors_is_valid(errors)
 
-    store_path = f"{current_db()}/{store_name}"
+    store_path = os.path.join(current_db(), store_name)
     store_exists = os.path.exists(store_path)
     if not store_exists and errors == "raise":
         raise FileExistsError("Store doesn't exists")
@@ -358,7 +358,7 @@ def _can_init_store(store_name):
     if not isinstance(store_name, str):
         TypeError(f"Store must be type int, is {type(store_name)}")
 
-    store_path = f"{current_db()}/{store_name}"
+    store_path = os.path.join(current_db(), store_name)
     store_exists = os.path.exists(store_path)
     if not store_exists:
         raise FileNotFoundError(f"Store doesn't exists: '{store_name}'")

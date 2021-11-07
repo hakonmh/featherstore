@@ -1,5 +1,6 @@
-from numbers import Integral
+import os
 import uuid
+from numbers import Integral
 
 import pyarrow as pa
 from pyarrow import feather
@@ -92,7 +93,7 @@ def _generate_unique_id():
 def write_partitions(partitions, table_path):
     for file_name, partition in partitions.items():
         partition = pa.Table.from_batches([partition])
-        file_path = f"{table_path}/{file_name}.feather"
+        file_path = os.path.join(table_path, f"{file_name}.feather")
         _write_feather(partition, file_path)
 
 

@@ -1,4 +1,5 @@
 import datetime
+import os
 
 import pyarrow as pa
 from pyarrow import feather
@@ -121,7 +122,7 @@ def read_partitions(partition_names, table_path, columns):
 
     partitions = []
     for partition_name in partition_names:
-        partition_path = f"{table_path}/{partition_name}.feather"
+        partition_path = os.path.join(table_path, f"{partition_name}.feather")
         partition = feather.read_table(partition_path, columns=columns, memory_map=True)
         partitions.append(partition)
     return partitions
