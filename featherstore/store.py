@@ -69,6 +69,7 @@ def list_stores(*, like=None):
     ----------
     like : str, optional
         Filters out stores not matching string pattern, by default None.
+
         There are two wildcards that can be used in conjunction with 'like':
 
         - The underscore sign (_) matches any single character
@@ -126,6 +127,7 @@ class Store:
         ----------
         like : str, optional
             Filters out tables not matching string pattern, by default None.
+
             There are two wildcards that can be used in conjunction with 'like':
 
             - The underscore sign (_) matches any single character
