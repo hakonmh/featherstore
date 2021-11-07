@@ -43,16 +43,6 @@ def can_write_table(
         raise FileExistsError(f"{table_name} already exists")
 
 
-def drop_default_index(df, index_col_name):
-    df = df.drop([index_col_name])
-    return df
-
-
-def combine_partitions(partitions):
-    full_table = pa.concat_tables(partitions)
-    return full_table
-
-
 def calculate_rows_per_partition(df, target_size):
     number_of_rows = df.shape[0]
     table_size_in_bytes = df.nbytes

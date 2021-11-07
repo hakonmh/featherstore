@@ -12,6 +12,7 @@ METADATA_FOLDER_NAME = ".metadata"
 
 class Metadata:
     def __init__(self, base_path, db_name=None):
+        _can_init_metadata(base_path, db_name)
         metadata_folder = os.path.join(base_path, METADATA_FOLDER_NAME)
         if db_name:
             self.db = os.path.join(metadata_folder, db_name)
@@ -48,16 +49,6 @@ class Metadata:
 
     def __repr__(self):
         return str(self.read())
-
-
-def read_metadata(base_path, file_name, item=None):
-    _can_read_metadata(base_path, file_name, item)
-    data_reader = Metadata(base_path, file_name)
-    if item:
-        metadata = data_reader[item]
-    else:
-        metadata = data_reader.read()
-    return metadata
 
 
 def get_partition_attr(table_path, item=None):
@@ -122,24 +113,17 @@ def update_table_metadata(df, partition_metadata, old_partition_names, table_pat
     return table_metadata
 
 
+def _can_init_metadata(base_path, db_name):
+    if not isinstance(base_path, str):
+        raise TypeError("Metadata 'base_path' must be of type 'str'")
+
+    if not isinstance(db_name, (str, type(None))):
+        raise TypeError("Metadata 'db_name' must be of type 'str' or 'None'")
+
+
 def _can_write_metadata(data):
     if not isinstance(data, dict):
         raise TypeError("Metadata must be of type 'dict'")
-
-
-def _can_read_metadata(base_path, file_name, item):
-    if not isinstance(base_path, str):
-        raise TypeError
-
-    if not isinstance(file_name, str):
-        raise TypeError
-
-    if not isinstance(item, (str, type(None))):
-        raise TypeError
-
-    metadata_obj = Metadata(base_path, file_name)
-    if not os.path.exists(metadata_obj.path):
-        raise FileNotFoundError(f"Metadata file doesn't exist: {metadata_obj.path}")
 
 
 def _has_default_index(df, index_name):
