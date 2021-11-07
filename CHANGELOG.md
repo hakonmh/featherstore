@@ -1,3 +1,8 @@
+0.0.3
+-----
+* Added missing dependencies
+* Updated docs
+
 0.0.2
 -----
 
