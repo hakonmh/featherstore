@@ -5,7 +5,7 @@ from pyarrow import feather
 import pandas as pd
 import polars as pl
 
-from featherstore._metadata import Metadata
+from featherstore._metadata import Metadata, get_partition_attr
 from featherstore._utils import like_pattern_matching
 
 
@@ -65,17 +65,16 @@ def _convert_row(row, *, to):
     return row
 
 
-def get_partition_names(table, rows):
+def get_partition_names(rows, table_path):
     if rows:
-        partition_names = _predicate_filtering(table, rows)
+        partition_names = _predicate_filtering(rows, table_path)
     else:
-        partition_names = table._partition_data["name"]
+        partition_names = Metadata(table_path, "table")["partitions"]
     return partition_names
 
 
-def _predicate_filtering(table, rows):
-    index_type = table._table_data["index_dtype"]
-    partition_stats = _get_partition_stats(table, index_type)
+def _predicate_filtering(rows, table_path):
+    partition_stats = _get_partition_stats(table_path)
     keyword = str(rows[0]).lower()
     if keyword == "before":
         mask = rows[1] >= partition_stats
@@ -99,11 +98,13 @@ def _predicate_filtering(table, rows):
     return partition_names
 
 
-def _get_partition_stats(table, index_type):
+def _get_partition_stats(table_path):
+    index_type = Metadata(table_path, "table")["index_dtype"]
+
     partition_stats = dict()
-    partition_stats["name"] = table._partition_data["name"]
-    partition_stats["min"] = table._partition_data["min"]
-    partition_stats["max"] = table._partition_data["max"]
+    partition_stats["name"] = Metadata(table_path, 'table')['partitions']
+    partition_stats["min"] = get_partition_attr(table_path, 'min')
+    partition_stats["max"] = get_partition_attr(table_path, 'max')
 
     partition_stats = pd.DataFrame(partition_stats)
     partition_stats.set_index("name", inplace=True)

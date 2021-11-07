@@ -1,6 +1,6 @@
 import os
-import shelve
-import json
+import orjson as json
+import msgpack
 
 import pyarrow as pa
 
@@ -11,40 +11,40 @@ METADATA_FOLDER_NAME = ".metadata"
 
 
 class Metadata:
-    def __init__(self, base_path, file_name=None):
-        self._folder = f"{base_path}/{METADATA_FOLDER_NAME}"
-        self.path = f"{self._folder}/{file_name}.mda"
+    def __init__(self, base_path, db_name=None):
+        metadata_folder = f"{base_path}/{METADATA_FOLDER_NAME}"
+        if db_name:
+            self.db = f"{metadata_folder}/{db_name}"
+        else:
+            self.db = metadata_folder
 
     def create(self):
-        if not os.path.exists(self._folder):
-            os.mkdir(self._folder)
-            _utils.mark_as_hidden(self._folder)
+        if not os.path.exists(self.db):
+            os.makedirs(self.db)
+            _utils.mark_as_hidden(self.db)
 
     def read(self):
-        with shelve.open(self.path, "r") as f:
-            data = dict(f.items())
-        return data
+        return {key: self[key] for key in os.listdir(self.db)}
 
     def write(self, new_data: dict):
         _can_write_metadata(new_data)
-        with shelve.open(self.path, "c") as f:
-            f.update(new_data)
+        for key, value in new_data.items():
+            self[key] = value
 
     def __getitem__(self, name: str):
-        with shelve.open(self.path, "r") as f:
-            data = f[name]
-        return data
+        path = f"{self.db}/{name}"
+        with open(path, "rb") as f:
+            value = msgpack.loads(f.read())
+        return value
 
     def __setitem__(self, name: str, value):
-        with shelve.open(self.path, "w") as f:
-            f[name] = value
+        path = f"{self.db}/{name}"
+        with open(path, "wb") as f:
+            f.write(msgpack.dumps(value))
 
     def __delitem__(self, name: str):
-        with shelve.open(self.path, "w") as f:
-            del f[name]
-
-    def __missing__(self, key):
-        raise KeyError(f"{key} not in {self.path}")
+        path = f"{self.db}/{name}"
+        os.remove(path)
 
     def __repr__(self):
         return str(self.read())
@@ -58,6 +58,68 @@ def read_metadata(base_path, file_name, item=None):
     else:
         metadata = data_reader.read()
     return metadata
+
+
+def get_partition_attr(table_path, item=None):
+    partitions_ordering = Metadata(table_path, 'table')['partitions']
+    partition_reader = Metadata(table_path, 'partition')
+    partition_data = partition_reader.read()
+
+    metadata = []
+    for key in partitions_ordering:
+        metadata.append(partition_data[key][item])
+    return metadata
+
+
+def make_table_metadata(df, collected_data):
+    partition_names = list(df.keys())
+    df = tuple(df.values())
+    partition_byte_size, partition_size_in_rows = collected_data
+
+    metadata = dict()
+    metadata["num_rows"] = _get_num_rows(df)
+    metadata["num_columns"] = _get_num_cols(df)
+    metadata["num_partitions"] = len(df)
+    metadata["rows_per_partition"] = partition_size_in_rows
+    metadata["partition_byte_size"] = int(partition_byte_size)
+    metadata["index_name"] = index_name = _get_index_name(df)
+    metadata["index_column_position"] = _get_index_position(df, index_name)
+    metadata["index_dtype"] = _get_index_dtype(df)
+    metadata["has_default_index"] = _has_default_index(df, index_name)
+    metadata["columns"] = _get_column_names(df)
+    metadata["partitions"] = partition_names
+    return metadata
+
+
+def make_partition_metadata(df):
+    metadata = {}
+    index_col_name = _get_index_name(df)
+    for name, partition in df.items():
+        data = {
+            'min': _get_index_min(partition, index_col_name),
+            'max': _get_index_max(partition, index_col_name),
+            'num_rows': partition.num_rows
+        }
+        metadata[name] = data
+    return metadata
+
+
+def update_table_metadata(df, partition_metadata, old_partition_names, table_path):
+    old_partition_metadata = _fetch_old_partition_metadata(
+        table_path, old_partition_names
+    )
+    partition_names = _reorder_partition_names(df, old_partition_names)
+
+    old_num_rows = [int(item['num_rows']) for item in old_partition_metadata.values()]
+    new_num_rows = [int(item['num_rows']) for item in partition_metadata.values()]
+    num_rows = old_num_rows + new_num_rows
+
+    table_metadata = {
+        "partitions": partition_names,
+        "num_partitions": len(partition_names),
+        "num_rows": sum(num_rows)
+    }
+    return table_metadata
 
 
 def _can_write_metadata(data):
@@ -78,36 +140,6 @@ def _can_read_metadata(base_path, file_name, item):
     metadata_obj = Metadata(base_path, file_name)
     if not os.path.exists(metadata_obj.path):
         raise FileNotFoundError(f"Metadata file doesn't exist: {metadata_obj.path}")
-
-
-def append_metadata(df, table_path):
-    partition_data = Metadata(table_path, "partition")
-    for name, items in make_partition_metadata(df).items():
-        partition_attr = partition_data[name]
-        del partition_attr[-1]
-        partition_attr.extend(items)
-        partition_data[name] = partition_attr
-    table_data = Metadata(table_path, "table")
-    table_data["num_partitions"] = len(partition_data["name"])
-    table_data["num_rows"] = sum(partition_data["num_rows"])
-
-
-def make_table_metadata(df, collected_data):
-    df = tuple(df.values())
-    partition_byte_size, partition_size_in_rows = collected_data
-
-    metadata = dict()
-    metadata["num_rows"] = _get_num_rows(df)
-    metadata["num_columns"] = _get_num_cols(df)
-    metadata["num_partitions"] = len(df)
-    metadata["rows_per_partition"] = partition_size_in_rows
-    metadata["partition_byte_size"] = partition_byte_size
-    metadata["index_name"] = index_name = _get_index_name(df)
-    metadata["index_column_position"] = _get_index_position(df, index_name)
-    metadata["index_dtype"] = _get_index_dtype(df)
-    metadata["has_default_index"] = _has_default_index(df, index_name)
-    metadata["columns"] = _get_column_names(df)
-    return metadata
 
 
 def _has_default_index(df, index_name):
@@ -137,27 +169,6 @@ def _index_was_sorted(df):
     metadata_dict = json.loads(featherstore_metadata)
     was_sorted = metadata_dict["sorted"]
     return was_sorted
-
-
-def make_partition_metadata(df):
-    metadata = {"name": [], "min": [], "max": [], "num_rows": []}
-    index_col_name = _get_index_name(df)
-    for name, partition in df.items():
-        metadata["name"].append(name)
-        metadata["min"].append(_get_index_min(partition, index_col_name))
-        metadata["max"].append(_get_index_max(partition, index_col_name))
-        metadata["num_rows"].append(partition.num_rows)
-    return metadata
-
-
-def _get_index_min(df, index_name):
-    first_index_value = str(df[index_name][0])
-    return first_index_value
-
-
-def _get_index_max(df, index_name):
-    last_index_value = str(df[index_name][-1])
-    return last_index_value
 
 
 def _get_num_rows(df):
@@ -205,3 +216,26 @@ def _get_column_names(df):
     schema = df[0].schema
     cols = schema.names
     return cols
+
+
+def _get_index_min(df, index_name):
+    first_index_value = str(df[index_name][0])
+    return first_index_value
+
+
+def _get_index_max(df, index_name):
+    last_index_value = str(df[index_name][-1])
+    return last_index_value
+
+
+def _fetch_old_partition_metadata(table_path, partition_names):
+    partition_data = Metadata(table_path, 'partition').read()
+    partition_data = {key: partition_data[key] for key in partition_names}
+    return partition_data
+
+
+def _reorder_partition_names(df, partition_names):
+    # TODO: Make logic for inserts and deletes
+    new_partition_names = list(df.keys())
+    partition_names = partition_names + new_partition_names
+    return partition_names

@@ -1,7 +1,7 @@
 import os
 
 from featherstore import _utils
-from featherstore.table import Table
+from featherstore.table import Table, DEFAULT_PARTITION_SIZE
 from featherstore.trash_bin import TrashBin
 from featherstore.connection import current_db, DB_MARKER_NAME
 from featherstore._metadata import Metadata, METADATA_FOLDER_NAME
@@ -27,7 +27,7 @@ def create_store(store_name, *, errors="raise"):
     store_already_exists = os.path.exists(store_path)
     if not store_already_exists:
         os.mkdir(store_path)
-        Metadata(store_path).create()
+    Metadata(store_path).create()
 
 
 def rename_store(store_name, *, to):
@@ -197,7 +197,7 @@ class Store:
         /,
         index=None,
         *,
-        partition_size=None,
+        partition_size=DEFAULT_PARTITION_SIZE,
         errors="raise",
         warnings="warn",
     ):

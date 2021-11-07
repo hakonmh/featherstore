@@ -4,6 +4,7 @@ import pyarrow as pa
 import pandas as pd
 import polars as pl
 
+from featherstore import _metadata
 from featherstore._metadata import Metadata
 from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
@@ -77,7 +78,7 @@ def _get_first_append_value(df, table_path, has_default_index):
 
 
 def _get_last_stored_value(table_path):
-    stored_data_end = Metadata(table_path, "partition")["max"][-1]
+    stored_data_end = _metadata.get_partition_attr(table_path, 'min')[-1]
     index_dtype = Metadata(table_path, "table")["index_dtype"]
     stored_data_end = _format_index_value(stored_data_end, index_dtype)
     return stored_data_end
@@ -101,8 +102,7 @@ def _format_index_value(value, index_dtype):
     return value
 
 
-def sort_columns(df, table_metadata):
-    columns = table_metadata["columns"]
+def sort_columns(df, columns):
     columns_not_sorted = df.column_names != columns
     if columns_not_sorted:
         df = df.select(columns)
@@ -112,3 +112,13 @@ def sort_columns(df, table_metadata):
 def delete_last_partition(table_path, last_partition_name):
     partition_path = f"{table_path}/{last_partition_name}.feather"
     os.remove(partition_path)
+
+
+def delete_last_partition_metadata(table_path, last_partition_name):
+    table_data = Metadata(table_path, 'table')
+    partition_data = Metadata(table_path, 'partition')
+
+    partition_names = table_data['partitions']
+    name_of_last_partition = partition_names.pop()
+    table_data['partitions'] = partition_names
+    del partition_data[name_of_last_partition]

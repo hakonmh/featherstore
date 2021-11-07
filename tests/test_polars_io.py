@@ -123,7 +123,7 @@ def test_filtering_columns_and_rows_between(
     store.write_table(
         basic_data["table_name"], original_df, partition_size=partition_size
     )
-    expected = original_df[low : (high + 1), COLUMNS]
+    expected = original_df[low: (high + 1), COLUMNS]
     # Act
     df = store.read_polars(basic_data["table_name"], cols=COLUMNS, rows=ROWS)
     index = df["__index_level_0__"]

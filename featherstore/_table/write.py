@@ -1,5 +1,5 @@
 from numbers import Integral
-from uuid import uuid4 as generate_unique_id
+import uuid
 
 import pyarrow as pa
 from pyarrow import feather
@@ -53,9 +53,6 @@ def combine_partitions(partitions):
 
 
 def calculate_rows_per_partition(df, target_size):
-    if target_size is None:
-        target_size = 128 * 1024 ** 2
-
     number_of_rows = df.shape[0]
     table_size_in_bytes = df.nbytes
     row_group_size = int(number_of_rows * target_size / table_size_in_bytes)
@@ -68,12 +65,28 @@ def make_partitions(df, partition_size):
     return partitions
 
 
-def assign_id_to_partitions(df):
+def assign_id_to_partitions(df, existing_ids=None):
+    if not existing_ids:
+        existing_ids = set()
+
+    ids = set()
+    num_partitions = len(df)
+    while num_partitions > len(ids):
+        new_id = _generate_unique_id()
+        if new_id not in existing_ids:
+            ids.add(new_id)
+
     id_mapping = {}
-    for partition in df:
-        identifier = str(generate_unique_id())
+    for identifier, partition in zip(ids, df):
         id_mapping[identifier] = partition
     return id_mapping
+
+
+def _generate_unique_id():
+    identifier = str(uuid.uuid4())
+    identifier = identifier.replace('-', '')
+    identifier = identifier[:6]
+    return identifier
 
 
 def write_partitions(partitions, table_path):

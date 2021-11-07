@@ -30,6 +30,7 @@ from featherstore._table.append import (
     format_default_index,
     sort_columns,
     delete_last_partition,
+    delete_last_partition_metadata,
 )
 from featherstore._table.common import (
     can_init_table,
@@ -37,6 +38,8 @@ from featherstore._table.common import (
     combine_partitions,
     format_table,
 )
+
+DEFAULT_PARTITION_SIZE = 128 * 1024 ** 2
 
 
 class Table:
@@ -97,7 +100,7 @@ class Table:
         rows = format_rows(rows, index_type)
         cols = format_cols(cols, self._table_data)
 
-        partition_names = get_partition_names(self, rows)
+        partition_names = get_partition_names(rows, self._table_path)
         partitions = read_partitions(partition_names, self._table_path, cols)
         df = combine_partitions(partitions)
         df = filter_table_rows(df, rows, index_col_name)
@@ -106,7 +109,7 @@ class Table:
 
         return df
 
-    def read_pandas(self, *, cols, rows):
+    def read_pandas(self, *, cols=None, rows=None):
         """Reads the data as a Pandas DataFrame
 
         Parameters
@@ -129,7 +132,7 @@ class Table:
 
         return df
 
-    def read_polars(self, *, cols, rows):
+    def read_polars(self, *, cols=None, rows=None):
         """Reads the data as a Polars DataFrame
 
         Parameters
@@ -151,7 +154,7 @@ class Table:
         rows = format_rows(rows, index_type)
         cols = format_cols(cols, self._table_data)
 
-        partition_names = get_partition_names(self, rows)
+        partition_names = get_partition_names(rows, self._table_path)
         partitions = read_partitions(partition_names, self._table_path, cols)
         partitions = convert_partitions_to_polars(partitions)
         df = combine_partitions(partitions)
@@ -167,7 +170,7 @@ class Table:
         /,
         index=None,
         *,
-        partition_size=None,
+        partition_size=DEFAULT_PARTITION_SIZE,
         errors="raise",
         warnings="warn",
     ):
@@ -238,25 +241,36 @@ class Table:
             self._table_exists,
         )
 
-        index_col_name = self._table_data["index_name"]
-        df = format_table(df, index_col_name, warnings)
+        partition_names = self._table_data["partitions"]
+        partition_names_to_keep = partition_names[:-1]
+        last_partition_name = partition_names[-1]
 
+        last_partition, = read_partitions([last_partition_name], self._table_path, None)
+
+        index = self._table_data["index_name"]
+        df = format_table(df, index, warnings)
         has_default_index = self._table_data["has_default_index"]
         if has_default_index:
             df = format_default_index(df, self._table_path)
-        df = sort_columns(df, self._table_data)
+        df = sort_columns(df, last_partition.column_names)
 
-        last_partition_min = self._partition_data["min"][-1]
-        last_partition = self.read_arrow(rows=["after", last_partition_min])
         df = combine_partitions([last_partition, df])
-
         rows_per_partition = self._table_data["rows_per_partition"]
         partitioned_df = make_partitions(df, rows_per_partition)
-        partitioned_df = assign_id_to_partitions(partitioned_df)
+        partitioned_df = assign_id_to_partitions(
+            partitioned_df, partition_names_to_keep
+        )
 
-        last_partition_name = self._partition_data["name"][-1]
-        _metadata.append_metadata(partitioned_df, self._table_path)
+        partition_metadata = _metadata.make_partition_metadata(partitioned_df)
+        table_metadata = _metadata.update_table_metadata(
+            partitioned_df, partition_metadata, partition_names_to_keep, self._table_path
+        )
+
         delete_last_partition(self._table_path, last_partition_name)
+        delete_last_partition_metadata(self._table_path, last_partition_name)
+
+        self._table_data.write(table_metadata)
+        self._partition_data.write(partition_metadata)
         write_partitions(partitioned_df, self._table_path)
 
     def _update(self, rows, values, edit_index=False):
@@ -327,8 +341,6 @@ class Table:
 
     def read_partition_metadata(self, item=None):
         if item:
-            if item != "name":
-                metadata = self._partition_data["name"]
             metadata = self._partition_data[item]
         else:
             metadata = self._partition_data.read()
