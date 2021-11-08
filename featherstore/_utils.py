@@ -38,7 +38,7 @@ def _sql_str_pattern_to_regexp(pattern):
         pattern = "^" + pattern
     if pattern[-1] != "%":
         pattern = pattern + "$"
-    pattern = pattern.replace("_", ".")
+    pattern = pattern.replace("?", ".")
     pattern = pattern.replace("%", ".*")
     return pattern.lower()
 

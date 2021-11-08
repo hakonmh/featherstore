@@ -2,7 +2,6 @@ import os
 
 from featherstore import _utils
 from featherstore.table import Table, DEFAULT_PARTITION_SIZE
-from featherstore.trash_bin import TrashBin
 from featherstore.connection import current_db, DB_MARKER_NAME
 from featherstore._metadata import Metadata, METADATA_FOLDER_NAME
 from featherstore._utils import like_pattern_matching
@@ -72,7 +71,7 @@ def list_stores(*, like=None):
 
         There are two wildcards that can be used in conjunction with 'like':
 
-        - The underscore sign (_) matches any single character
+        - Question mark (?) matches any single character
         - The percent sign (%) matches any number of any characters
     """
     _can_list_stores(like)
@@ -130,7 +129,7 @@ class Store:
 
             There are two wildcards that can be used in conjunction with 'like':
 
-            - The underscore sign (_) matches any single character
+            - Question mark (?) matches any single character
             - The percent sign (%) matches any number of any characters
         """
         _can_list_tables(like)
@@ -302,21 +301,6 @@ class Store:
         Table
         """
         return Table(table_name, self.store_name)
-
-    def _trash_bin(self):
-        return TrashBin(self._connection_string)
-
-    def _list_items_in_bin(self, *, like=None):
-        raise NotImplementedError
-
-    def _restore_from_bin(self, item_name):
-        raise NotImplementedError
-
-    def _delete_from_bin(self, item_name):
-        raise NotImplementedError
-
-    def _empty_bin(self):
-        raise NotImplementedError
 
 
 def _can_list_stores(like):

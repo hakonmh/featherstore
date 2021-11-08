@@ -44,7 +44,7 @@ def test_list_tables_like(database, connection, store):
         store.write_table(table_name, df)
     # Act
     tables_like_unbounded_wildcard = store.list_tables(like="A%")
-    tables_like_bounded_wildcards = store.list_tables(like="_A__")
+    tables_like_bounded_wildcards = store.list_tables(like="?A??")
     # Assert
     assert tables_like_unbounded_wildcard == ["AAPL", "AMZN", "a_table"]
     assert tables_like_bounded_wildcards == ["AAPL", "saab"]

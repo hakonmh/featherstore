@@ -84,9 +84,11 @@ def _convert_to_pandas(df):
     return pd_df
 
 
-def _set_index(df, index):
-    if index and df.index.name != index and index in df.columns:
-        df = df.set_index(index)
+def _set_index(df, index_name):
+    user_has_provided_index = bool(index_name)
+    index_name_not_index = index_name != df.index.name
+    if user_has_provided_index and index_name_not_index and index_name in df.columns:
+        df = df.set_index(index_name)
     if df.index.name == DEFAULT_ARROW_INDEX_NAME:
         df.index.name = None
     return df
