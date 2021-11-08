@@ -30,6 +30,10 @@ from featherstore._table.append import (
     format_default_index,
     sort_columns,
 )
+from featherstore._table.update import (
+    can_update_table,
+    update_data,
+)
 from featherstore._table.common import (
     can_init_table,
     can_rename_table,
@@ -207,6 +211,8 @@ class Table:
         )
 
         self.drop_table()
+        self._table_exists = False
+
         formatted_df = format_table(df, index, warnings)
         rows_per_partition = calculate_rows_per_partition(formatted_df, partition_size)
         partitioned_df = make_partitions(formatted_df, rows_per_partition)
@@ -222,6 +228,7 @@ class Table:
         self._table_data.write(table_metadata)
         self._partition_data.write(partition_metadata)
         write_partitions(partitioned_df, self._table_path)
+        self._table_exists = True
 
     def append(self, df, *, warnings="warn"):
         """Appends data to the current table
@@ -274,8 +281,38 @@ class Table:
         self._partition_data.write(partition_metadata)
         write_partitions(partitioned_df, self._table_path)
 
-    def _update(self, rows, values, edit_index=False):
-        raise NotImplementedError
+    def update(self, df):
+        """Updates data in the current table.
+
+        Parameters
+        ----------
+        df : Pandas DataFrame or Pandas Series
+            The updated data. The index of df is the rows to be updated, while the
+            columns of df are the new values.
+
+            To update values in the index use Table.drop followed by Table.insert.
+        """
+        can_update_table(
+            df,
+            self._table_path,
+            self._table_exists
+        )
+
+        index_type = self._table_data["index_dtype"]
+        rows = format_rows(df.index, index_type)
+
+        partition_names = get_partition_names(rows, self._table_path)
+        partitions = read_partitions(partition_names, self._table_path, columns=None)
+
+        old_df = combine_partitions(partitions)
+        df = update_data(old_df, to=df)
+        df = format_table(df, index=None, warnings=False)
+
+        rows_per_partition = self._table_data["rows_per_partition"]
+        partitioned_df = make_partitions(df, rows_per_partition)
+        partitioned_df = {name: df for name, df in zip(partition_names, partitioned_df)}
+
+        write_partitions(partitioned_df, self._table_path)
 
     def _insert(self, rows, values):
         raise NotImplementedError

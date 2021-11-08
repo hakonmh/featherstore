@@ -12,7 +12,7 @@ from featherstore._utils import like_pattern_matching
 
 def can_read_table(cols, rows, table_exists, table_metadata):
     if not table_exists:
-        raise FileNotFoundError("Table doesn't exixst")
+        raise FileNotFoundError("Table doesn't exist")
 
     is_valid_col_format = isinstance(cols, (list, type(None)))
     if not is_valid_col_format:
@@ -47,7 +47,7 @@ def format_cols(cols, table_data):
 
 
 def format_rows(rows, index_type):
-    if rows:
+    if rows is not None:
         keyword = str(rows[0]).lower()
         if keyword in {"between", "before", "after"}:
             rows[1:] = [_convert_row(item, to=index_type) for item in rows[1:]]

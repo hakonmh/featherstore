@@ -20,7 +20,7 @@ def can_append_table(
     _utils.check_if_arg_warnings_is_valid(warnings)
 
     if not table_exists:
-        raise FileNotFoundError()
+        raise FileNotFoundError("Table doesn't exist")
 
     if not isinstance(df, (pd.DataFrame, pd.Series, pl.DataFrame, pa.Table)):
         raise TypeError(f"'df' must be a DataFrame (is type {type(df)})")

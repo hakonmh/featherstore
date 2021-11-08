@@ -50,14 +50,14 @@ def combine_partitions(partitions):
     return full_table
 
 
-def format_table(df, index, warning):
+def format_table(df, index, warnings):
     df = _convert_to_pandas(df)
     df = _set_index(df, index)
     _check_index_constraints(df)
 
     index_is_sorted = df.index.is_monotonic_increasing
     if not index_is_sorted:
-        df = _sort_index(df, warning)
+        df = _sort_index(df, warnings)
         new_metadata = json.dumps({"sorted": True})
     else:
         new_metadata = json.dumps({"sorted": False})
@@ -100,10 +100,9 @@ def _check_index_constraints(df):
         raise ValueError("Values in Table.index must be unique")
 
 
-def _sort_index(df, warning):
-    if warning == "warn":
+def _sort_index(df, warnings):
+    if warnings == "warn":
         import warnings
-
         warnings.warn("Index is unsorted and will be sorted before storage")
     df = df.sort_index()
     return df

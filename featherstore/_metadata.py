@@ -52,13 +52,12 @@ class Metadata:
 
 
 def get_partition_attr(table_path, item=None):
-    partitions_ordering = Metadata(table_path, 'table')['partitions']
+    partitions_names = Metadata(table_path, 'table')['partitions']
     partition_reader = Metadata(table_path, 'partition')
-    partition_data = partition_reader.read()
-
     metadata = []
-    for key in partitions_ordering:
-        metadata.append(partition_data[key][item])
+    for name in partitions_names:
+        data = partition_reader[name][item]
+        metadata.append(data)
     return metadata
 
 
