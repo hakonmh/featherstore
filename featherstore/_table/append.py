@@ -36,23 +36,23 @@ def can_append_table(
     if append_data_start <= stored_data_end:
         raise ValueError(
             f"New_data.index can't be <= old_data.index[-1] ({append_data_start}"
-            f" <= {stored_data_end})"
-        )
+            f" <= {stored_data_end})")
 
 
 def format_default_index(df, table_path):
     """Formats the appended data's index to continue from where the stored
     data's index stops
     """
-    first_value = _get_first_append_value(df, table_path, has_default_index=True)
+    first_value = _get_first_append_value(df,
+                                          table_path,
+                                          has_default_index=True)
     index_col = df[DEFAULT_ARROW_INDEX_NAME]
     formatted_index_col = pa.compute.add(index_col, first_value)
 
     index_col_position = Metadata(table_path, "table")["index_column_position"]
     df = df.remove_column(index_col_position)
-    df = df.add_column(
-        index_col_position, DEFAULT_ARROW_INDEX_NAME, formatted_index_col
-    )
+    df = df.add_column(index_col_position, DEFAULT_ARROW_INDEX_NAME,
+                       formatted_index_col)
     return df
 
 

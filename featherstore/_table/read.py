@@ -123,7 +123,9 @@ def read_partitions(partition_names, table_path, columns):
     partitions = []
     for partition_name in partition_names:
         partition_path = os.path.join(table_path, f"{partition_name}.feather")
-        partition = feather.read_table(partition_path, columns=columns, memory_map=True)
+        partition = feather.read_table(partition_path,
+                                       columns=columns,
+                                       memory_map=True)
         partitions.append(partition)
     return partitions
 

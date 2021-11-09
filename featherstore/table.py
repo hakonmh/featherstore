@@ -43,7 +43,7 @@ from featherstore._table.common import (
     delete_partition_metadata,
 )
 
-DEFAULT_PARTITION_SIZE = 128 * 1024 ** 2
+DEFAULT_PARTITION_SIZE = 128 * 1024**2
 
 
 class Table:
@@ -214,14 +214,14 @@ class Table:
         self._table_exists = False
 
         formatted_df = format_table(df, index, warnings)
-        rows_per_partition = calculate_rows_per_partition(formatted_df, partition_size)
+        rows_per_partition = calculate_rows_per_partition(
+            formatted_df, partition_size)
         partitioned_df = make_partitions(formatted_df, rows_per_partition)
         partitioned_df = assign_id_to_partitions(partitioned_df)
 
         collected_metadata = (partition_size, rows_per_partition)
-        table_metadata = _metadata.make_table_metadata(
-            partitioned_df, collected_metadata
-        )
+        table_metadata = _metadata.make_table_metadata(partitioned_df,
+                                                       collected_metadata)
         partition_metadata = _metadata.make_partition_metadata(partitioned_df)
 
         self._create_table()
@@ -252,7 +252,8 @@ class Table:
         partition_names_to_keep = partition_names[:-1]
         last_partition_name = partition_names[-1]
 
-        last_partition, = read_partitions([last_partition_name], self._table_path, None)
+        last_partition, = read_partitions([last_partition_name],
+                                          self._table_path, None)
 
         index = self._table_data["index_name"]
         df = format_table(df, index, warnings)
@@ -265,13 +266,15 @@ class Table:
         rows_per_partition = self._table_data["rows_per_partition"]
         partitioned_df = make_partitions(df, rows_per_partition)
         del last_partition, df  # Closes memory-map
-        partitioned_df = assign_id_to_partitions(
-            partitioned_df, partition_names_to_keep
-        )
+        partitioned_df = assign_id_to_partitions(partitioned_df,
+                                                 partition_names_to_keep)
 
         partition_metadata = _metadata.make_partition_metadata(partitioned_df)
         table_metadata = _metadata.update_table_metadata(
-            partitioned_df, partition_metadata, partition_names_to_keep, self._table_path
+            partitioned_df,
+            partition_metadata,
+            partition_names_to_keep,
+            self._table_path
         )
 
         delete_partition_metadata(self._table_path, last_partition_name)
@@ -284,25 +287,25 @@ class Table:
     def update(self, df):
         """Updates data in the current table.
 
+        Note: You can't use this method to update index values. Updating index
+        values can be accomplished by deleting the old records and inserting new
+        ones with the updated index values.
+
         Parameters
         ----------
         df : Pandas DataFrame or Pandas Series
-            The updated data. The index of df is the rows to be updated, while the
-            columns of df are the new values.
-
-            To update values in the index use Table.drop followed by Table.insert.
+            The updated data. The index of df is the rows to be updated, while
+            the columns of df are the new values.
         """
-        can_update_table(
-            df,
-            self._table_path,
-            self._table_exists
-        )
+        can_update_table(df, self._table_path, self._table_exists)
 
         index_type = self._table_data["index_dtype"]
         rows = format_rows(df.index, index_type)
 
         partition_names = get_partition_names(rows, self._table_path)
-        partitions = read_partitions(partition_names, self._table_path, columns=None)
+        partitions = read_partitions(partition_names,
+                                     self._table_path,
+                                     columns=None)
 
         old_df = combine_partitions(partitions)
         df = update_data(old_df, to=df)
@@ -310,7 +313,9 @@ class Table:
 
         rows_per_partition = self._table_data["rows_per_partition"]
         partitioned_df = make_partitions(df, rows_per_partition)
-        partitioned_df = {name: df for name, df in zip(partition_names, partitioned_df)}
+        partitioned_df = {
+            name: df for name, df in zip(partition_names, partitioned_df)
+        }
 
         write_partitions(partitioned_df, self._table_path)
 
@@ -370,19 +375,12 @@ class Table:
         """Deletes the current table"""
         _utils.delete_folder_tree(self._table_path)
 
-    def read_table_metadata(self, item=None):
-        if item:
-            metadata = self._table_data[item]
-        else:
-            metadata = self._table_data.read()
-        return metadata
-
-    def read_partition_metadata(self, item=None):
-        if item:
-            metadata = self._partition_data[item]
-        else:
-            metadata = self._partition_data.read()
-        return metadata
+    @property
+    def shape(self):
+        """Returns the shape of the stored data as (rows, cols)"""
+        cols = self._table_data["num_cols"]
+        rows = self._table_data["num_rows"]
+        return (rows, cols)
 
     def _create_table(self):
         os.makedirs(self._table_path)

@@ -7,11 +7,11 @@ from pandas._testing import rands_array
 ROWS = 30
 
 
-def make_table(index=None, cols=5, *, astype="arrow"):
-    random_data = {f"c{x}": np.random.random(size=ROWS) for x in range(cols)}
+def make_table(index=None, rows=ROWS, cols=5, *, astype="arrow"):
+    random_data = {f"c{x}": np.random.random(size=rows) for x in range(cols)}
     df = pd.DataFrame(random_data)
     if index is not None:
-        df.index = index()
+        df.index = index(rows)
 
     if astype in ("arrow", "polars"):
         df = pa.Table.from_pandas(
@@ -44,38 +44,38 @@ def _make_index_first_column(df):
     return df
 
 
-def sorted_string_index():
+def sorted_string_index(rows):
     str_length = 5
-    index = rands_array(str_length, ROWS)
+    index = rands_array(str_length, rows)
     index = np.sort(index)
     index = pd.Series(index)
     return index
 
 
-def sorted_datetime_index():
-    index = pd.date_range(start="2021-01-01", periods=ROWS, freq="D")
+def sorted_datetime_index(rows):
+    index = pd.date_range(start="2021-01-01", periods=rows, freq="D")
     index = pd.Series(index, name="Date")
     return index
 
 
-def unsorted_int_index():
-    index = pd.RangeIndex(ROWS)
+def unsorted_int_index(rows):
+    index = pd.RangeIndex(rows)
     index = pd.Series(index)
     index = index.sample(frac=1)
     return index
 
 
-def unsorted_string_index():
+def unsorted_string_index(rows):
     str_length = 10
     index = set()
-    while len(index) < ROWS:
-        index = np.unique(rands_array(str_length, ROWS))
+    while len(index) < rows:
+        index = np.unique(rands_array(str_length, rows))
     index = pd.Series(index)
     return index
 
 
-def unsorted_datetime_index():
-    index = pd.date_range(start="2021-01-01", periods=ROWS, freq="D")
+def unsorted_datetime_index(rows):
+    index = pd.date_range(start="2021-01-01", periods=rows, freq="D")
     index = pd.Series(index, name="Date")
     index = index.sample(frac=1)
     return index
@@ -94,9 +94,9 @@ def get_partition_size(df, num_partitions):
     return partition_size
 
 
-def hardcoded_string_index():
+def hardcoded_string_index(rows):
     index = []
-    for x in range(ROWS):
+    for x in range(rows):
         index.append(f"row{x}")
     index = pd.Series(index)
     return index

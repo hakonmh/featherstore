@@ -94,14 +94,18 @@ def make_partition_metadata(df):
     return metadata
 
 
-def update_table_metadata(df, partition_metadata, old_partition_names, table_path):
+def update_table_metadata(df, partition_metadata, old_partition_names,
+                          table_path):
     old_partition_metadata = _fetch_old_partition_metadata(
-        table_path, old_partition_names
-    )
+        table_path, old_partition_names)
     partition_names = _reorder_partition_names(df, old_partition_names)
 
-    old_num_rows = [int(item['num_rows']) for item in old_partition_metadata.values()]
-    new_num_rows = [int(item['num_rows']) for item in partition_metadata.values()]
+    old_num_rows = [
+        int(item['num_rows']) for item in old_partition_metadata.values()
+    ]
+    new_num_rows = [
+        int(item['num_rows']) for item in partition_metadata.values()
+    ]
     num_rows = old_num_rows + new_num_rows
 
     table_metadata = {
@@ -172,7 +176,7 @@ def _get_index_name(df):
     else:
         partition = df[0]
     schema = partition.schema
-    (index_name,) = schema.pandas_metadata["index_columns"]
+    index_name, = schema.pandas_metadata["index_columns"]
     no_index_name = not isinstance(index_name, str)
     if no_index_name:
         index_name = "index"

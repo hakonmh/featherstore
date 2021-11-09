@@ -3,9 +3,11 @@
 **Warning**: This update causes some API-breaking changes:
 * `list_tables` and `list_store` argument `like` now uses `?` as single character
   wildcard instead of `_`.
+* Removed `read_table_metadata` and `read_partition_metadata`
 
 Other changes:
-* Added `Table.insert()`
+* Added `Table.shape`
+* Added `Table.update()`
 
 
 0.0.3

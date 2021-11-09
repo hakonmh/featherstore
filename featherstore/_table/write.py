@@ -8,12 +8,11 @@ import pandas as pd
 import polars as pl
 
 from featherstore import _utils
-from featherstore._table.common import _get_cols
+from featherstore._table.common import _get_cols, _check_column_constraints
 
 
-def can_write_table(
-    df, index, errors, warnings, partition_size, table_exists, table_name
-):
+def can_write_table(df, index, errors, warnings, partition_size, table_exists,
+                    table_name):
     _utils.check_if_arg_errors_is_valid(errors)
     _utils.check_if_arg_warnings_is_valid(warnings)
 
@@ -21,23 +20,18 @@ def can_write_table(
         raise TypeError(f"'df' must be a DataFrame (is type {type(df)})")
 
     if not isinstance(index, (str, type(None))):
-        raise TypeError(f"'index' must be a str or None (is type {type(index)})")
+        raise TypeError(
+            f"'index' must be a str or None (is type {type(index)})")
 
     cols = _get_cols(df, has_default_index=False)
     if isinstance(index, str) and index not in cols:
         raise IndexError("'index' not in table columns")
 
-    cols = pd.Index(cols)
-    if not cols.is_unique:
-        raise IndexError("Column names must be unique")
-
-    if "like" in cols.str.lower():
-        raise IndexError("df contains invalid column name 'like'")
+    _check_column_constraints(cols)
 
     if not isinstance(partition_size, (Integral, type(None))):
         raise ValueError(
-            f"'partition_size' must be int (is type {type(partition_size)})"
-        )
+            f"'partition_size' must be int (is type {type(partition_size)})")
 
     if table_exists and errors == "raise":
         raise FileExistsError(f"{table_name} already exists")
@@ -88,7 +82,8 @@ def write_partitions(partitions, table_path):
 
 
 def _write_feather(df, file_path):
-    CHUNKSIZE = 128 * 1024 ** 2  # bytes
-    feather.write_feather(
-        df, file_path, compression="uncompressed", chunksize=CHUNKSIZE
-    )
+    CHUNKSIZE = 128 * 1024**2  # bytes
+    feather.write_feather(df,
+                          file_path,
+                          compression="uncompressed",
+                          chunksize=CHUNKSIZE)

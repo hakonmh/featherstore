@@ -90,6 +90,7 @@ FeatherStore can be installed by using `$ pip install featherstore`
 * Pandas
 * Polars
 * Numpy
+* Msgpack
 
 ## Documentation
 Want to know about all the features FeatherStore support? [Read the docs!](https://featherstore.readthedocs.io/en/latest/index.html)

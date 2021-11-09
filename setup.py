@@ -16,7 +16,7 @@ setup(
     author_email='haakonholmen@hotmail.com',
     license='MIT',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 2 - Pre-Alpha',
         'Topic :: Database',
         'Topic :: Database :: Database Engines/Servers',
         'License :: OSI Approved :: MIT License',

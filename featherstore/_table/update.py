@@ -1,6 +1,9 @@
 import pandas as pd
-from featherstore._metadata import Metadata
-from featherstore._table.common import _check_index_constraints
+import pyarrow as pa
+
+from featherstore._metadata import Metadata, _get_index_dtype
+from featherstore._table.common import (_check_index_constraints,
+                                        _check_column_constraints)
 
 
 def can_update_table(df, table_path, table_exists):
@@ -9,26 +12,39 @@ def can_update_table(df, table_path, table_exists):
 
     if not isinstance(df, (pd.DataFrame, pd.Series)):
         raise TypeError(
-            f"'df' must be a pd.DataFrame or pd.Series (is type {type(df)})"
-        )
+            f"'df' must be a pd.DataFrame or pd.Series (is type {type(df)})")
 
-    _check_index_constraints(df)
+    if isinstance(df, pd.Series):
+        cols = [df.name]
+    else:
+        cols = df.columns
+
+    _check_index_constraints(df.index)
+    _check_column_constraints(cols)
 
     stored_data_cols = Metadata(table_path, "table")["columns"]
-    columns_not_in_stored_data = set(df.columns) - set(stored_data_cols)
+    columns_not_in_stored_data = set(cols) - set(stored_data_cols)
     if columns_not_in_stored_data:
-        raise ValueError(f"Columns {columns_not_in_stored_data} not in stored table")
+        raise ValueError(
+            f"Columns {columns_not_in_stored_data} not in stored table")
 
+    # Take one row and converts it to pa.Table to check its arrow datatype
+    first_row = df.head(1)
+    if isinstance(first_row, pd.Series):
+        first_row = first_row.to_frame()
+    arrow_df = pa.Table.from_pandas(first_row, preserve_index=True)
+
+    index_type = _get_index_dtype([arrow_df])
     stored_index_type = Metadata(table_path, "table")["index_dtype"]
-    index_type = str(df.index.dtype)
-    if 'datetime' in index_type:
-        index_type = 'datetime64'
     if index_type != stored_index_type:
-        raise ValueError("Index types do not match")
+        raise TypeError("Index types do not match")
 
 
 def update_data(old_df, *, to):
-    new_data = to
+    if isinstance(to, pd.Series):
+        new_data = to.to_frame()
+    else:
+        new_data = to
     old_df = old_df.to_pandas()
     _check_if_all_rows_is_in_old_data(old_df, new_data)
 

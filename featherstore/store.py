@@ -155,7 +155,8 @@ class Store:
             [keyword, value], where keyword can be either 'before', 'after',
             or 'between', by default None
         """
-        return Table(table_name, self.store_name).read_arrow(cols=cols, rows=rows)
+        return Table(table_name, self.store_name).read_arrow(cols=cols,
+                                                             rows=rows)
 
     def read_pandas(self, table_name, *, cols=None, rows=None):
         """Reads Pandas DataFrame from store
@@ -172,7 +173,8 @@ class Store:
             [keyword, value], where keyword can be either 'before', 'after',
             or 'between', by default None
         """
-        return Table(table_name, self.store_name).read_pandas(cols=cols, rows=rows)
+        return Table(table_name, self.store_name).read_pandas(cols=cols,
+                                                              rows=rows)
 
     def read_polars(self, table_name, *, cols=None, rows=None):
         """Reads Polars DataFrame from store
@@ -189,7 +191,8 @@ class Store:
             [keyword, value], where keyword can be either 'before', 'after',
             or 'between', by default None
         """
-        return Table(table_name, self.store_name).read_polars(cols=cols, rows=rows)
+        return Table(table_name, self.store_name).read_polars(cols=cols,
+                                                              rows=rows)
 
     def write_table(
         self,
@@ -357,8 +360,7 @@ def _can_init_store(store_name):
 def _can_rename_store(new_store_name):
     if not isinstance(new_store_name, str):
         raise TypeError(
-            f"New store name must be of type str, is {type(new_store_name)}"
-        )
+            f"New store name must be of type str, is {type(new_store_name)}")
 
     if new_store_name == DB_MARKER_NAME:
         raise ValueError(f"Table name {DB_MARKER_NAME} is forbidden")
@@ -366,4 +368,5 @@ def _can_rename_store(new_store_name):
 
 def _can_list_tables(like):
     if not isinstance(like, (str, type(None))):
-        raise TypeError(f"'like' must be either of type str or None, is {type(like)}")
+        raise TypeError(
+            f"'like' must be either of type str or None, is {type(like)}")
