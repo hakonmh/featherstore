@@ -57,12 +57,12 @@ class Table:
         - Appends
         - Fetching Columns
         - Fetching Index
+        - Updates
 
         It will also support the following operations down the line:
 
         - Inserts
-        - Updates
-        - Remove columns and rows
+        - Drop columns/Drop rows
         - Changing types
         - Changing index
 
@@ -78,7 +78,8 @@ class Table:
         self.table_name = table_name
         self.store = store_name
         self._table_path = os.path.join(current_db(), store_name, table_name)
-        self._table_exists = os.path.exists(self._table_path)
+        self.exists = os.path.exists(self._table_path)
+
         self._table_data = Metadata(self._table_path, "table")
         self._partition_data = Metadata(self._table_path, "partition")
 
@@ -89,13 +90,13 @@ class Table:
         ----------
         cols : list, optional
             list of column names or, filter-predicates in the form of
-            [like, pattern], by default None
+            `[like, pattern]`, by default `None`
         rows : list, optional
             list of index values or, filter-predicates in the form of
-            [keyword, value], where keyword can be either 'before', 'after',
-            or 'between', by default None
+            `[keyword, value]`, where keyword can be either `before`, `after`,
+            or `between`, by default `None`
         """
-        can_read_table(cols, rows, self._table_exists, self._table_data)
+        can_read_table(cols, rows, self.exists, self._table_data)
 
         index_col_name = self._table_data["index_name"]
         has_default_index = self._table_data["has_default_index"]
@@ -120,11 +121,11 @@ class Table:
         ----------
         cols : list, optional
             list of column names or, filter-predicates in the form of
-            [like, pattern], by default None
+            `[like, pattern]`, by default `None`
         rows : list, optional
             list of index values or, filter-predicates in the form of
-            [keyword, value], where keyword can be either 'before', 'after',
-            or 'between', by default None
+            `[keyword, value]`, where keyword can be either `before`, `after`,
+            or `between`, by default `None`
         """
         df = self.read_arrow(cols=cols, rows=rows)
         df = df.to_pandas()
@@ -143,13 +144,13 @@ class Table:
         ----------
         cols : list, optional
             list of column names or, filter-predicates in the form of
-            [like, pattern], by default None
+            `[like, pattern]`, by default `None`
         rows : list, optional
             list of index values or, filter-predicates in the form of
-            [keyword, value], where keyword can be either 'before', 'after',
-            or 'between', by default None
+            `[keyword, value]`, where keyword can be either `before`, `after`,
+            or `between`, by default `None`
         """
-        can_read_table(cols, rows, self._table_exists, self._table_data)
+        can_read_table(cols, rows, self.exists, self._table_data)
 
         index_col_name = self._table_data["index_name"]
         has_default_index = self._table_data["has_default_index"]
@@ -189,16 +190,16 @@ class Table:
             The DataFrame to be stored
         index : str, optional
             The name of the column to be used as index. Uses current index for
-            Pandas or a standard integer index for Arrow and Polars if 'index' not
-            provided, by default None
+            Pandas or a standard integer index for Arrow and Polars if `index` not
+            provided, by default `None`
         partition_size : int, optional
             The size of each partition in bytes, by default 128 MB
         errors : str, optional
             Whether or not to raise an error if the table already exist. Can be either
-            'raise' or 'ignore', 'ignore' overwrites existing table, by default 'raise'
+            `raise` or `ignore`, `ignore` overwrites existing table, by default `raise`
         warnings : str, optional
             Whether or not to warn if a unsorted index is about to get sorted.
-            Can be either 'warn' or 'ignore', by default 'warn'
+            Can be either `warn` or `ignore`, by default `warn`
         """
         can_write_table(
             df,
@@ -206,12 +207,12 @@ class Table:
             errors,
             warnings,
             partition_size,
-            self._table_exists,
+            self.exists,
             self.table_name,
         )
 
         self.drop_table()
-        self._table_exists = False
+        self.exists = False
 
         formatted_df = format_table(df, index, warnings)
         rows_per_partition = calculate_rows_per_partition(
@@ -228,7 +229,7 @@ class Table:
         self._table_data.write(table_metadata)
         self._partition_data.write(partition_metadata)
         write_partitions(partitioned_df, self._table_path)
-        self._table_exists = True
+        self.exists = True
 
     def append(self, df, *, warnings="warn"):
         """Appends data to the current table
@@ -239,13 +240,13 @@ class Table:
             The data to be appended
         warnings : str, optional
             Whether or not to warn if a unsorted index is about to get sorted.
-            Can be either 'warn' or 'ignore', by default 'warn'
+            Can be either `warn` or `ignore`, by default `warn`
         """
         can_append_table(
             df,
             warnings,
             self._table_path,
-            self._table_exists,
+            self.exists,
         )
 
         partition_names = self._table_data["partitions"]
@@ -294,10 +295,10 @@ class Table:
         Parameters
         ----------
         df : Pandas DataFrame or Pandas Series
-            The updated data. The index of df is the rows to be updated, while
-            the columns of df are the new values.
+            The updated data. The index of `df` is the rows to be updated, while
+            the columns of `df` are the new values.
         """
-        can_update_table(df, self._table_path, self._table_exists)
+        can_update_table(df, self._table_path, self.exists)
 
         index_type = self._table_data["index_dtype"]
         rows = format_rows(df.index, index_type)
@@ -307,9 +308,10 @@ class Table:
                                      self._table_path,
                                      columns=None)
 
-        old_df = combine_partitions(partitions)
-        df = update_data(old_df, to=df)
+        stored_df = combine_partitions(partitions)
+        df = update_data(stored_df, to=df)
         df = format_table(df, index=None, warnings=False)
+        del partitions, stored_df
 
         rows_per_partition = self._table_data["rows_per_partition"]
         partitioned_df = make_partitions(df, rows_per_partition)
@@ -377,7 +379,7 @@ class Table:
 
     @property
     def shape(self):
-        """Returns the shape of the stored data as (rows, cols)"""
+        """Returns the shape of the stored data as `(rows, cols)`"""
         cols = self._table_data["num_cols"]
         rows = self._table_data["num_rows"]
         return (rows, cols)

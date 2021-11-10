@@ -185,12 +185,12 @@ full data:</p>
 <li><p>Appends</p></li>
 <li><p>Fetching Columns</p></li>
 <li><p>Fetching Index</p></li>
+<li><p>Updates</p></li>
 </ul>
 <p>It will also support the following operations down the line:</p>
 <ul class="simple">
 <li><p>Inserts</p></li>
-<li><p>Updates</p></li>
-<li><p>Remove columns and rows</p></li>
+<li><p>Drop columns/Drop rows</p></li>
 <li><p>Changing types</p></li>
 <li><p>Changing index</p></li>
 </ul>
@@ -210,10 +210,10 @@ full data:</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>cols</strong> (<em>list</em><em>, </em><em>optional</em>) – list of column names or, filter-predicates in the form of
-[like, pattern], by default None</p></li>
+<cite>[like, pattern]</cite>, by default <cite>None</cite></p></li>
 <li><p><strong>rows</strong> (<em>list</em><em>, </em><em>optional</em>) – list of index values or, filter-predicates in the form of
-[keyword, value], where keyword can be either ‘before’, ‘after’,
-or ‘between’, by default None</p></li>
+<cite>[keyword, value]</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
+or <cite>between</cite>, by default <cite>None</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -227,10 +227,10 @@ or ‘between’, by default None</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>cols</strong> (<em>list</em><em>, </em><em>optional</em>) – list of column names or, filter-predicates in the form of
-[like, pattern], by default None</p></li>
+<cite>[like, pattern]</cite>, by default <cite>None</cite></p></li>
 <li><p><strong>rows</strong> (<em>list</em><em>, </em><em>optional</em>) – list of index values or, filter-predicates in the form of
-[keyword, value], where keyword can be either ‘before’, ‘after’,
-or ‘between’, by default None</p></li>
+<cite>[keyword, value]</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
+or <cite>between</cite>, by default <cite>None</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -244,10 +244,10 @@ or ‘between’, by default None</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>cols</strong> (<em>list</em><em>, </em><em>optional</em>) – list of column names or, filter-predicates in the form of
-[like, pattern], by default None</p></li>
+<cite>[like, pattern]</cite>, by default <cite>None</cite></p></li>
 <li><p><strong>rows</strong> (<em>list</em><em>, </em><em>optional</em>) – list of index values or, filter-predicates in the form of
-[keyword, value], where keyword can be either ‘before’, ‘after’,
-or ‘between’, by default None</p></li>
+<cite>[keyword, value]</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
+or <cite>between</cite>, by default <cite>None</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -264,13 +264,13 @@ or datetime. FeatherStore sorts the DataFrame by the index before storage.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Series</em><em>, </em><em>Pyarrow Table</em><em>, or </em><em>Polars DataFrame</em>) – The DataFrame to be stored</p></li>
 <li><p><strong>index</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the column to be used as index. Uses current index for
-Pandas or a standard integer index for Arrow and Polars if ‘index’ not
-provided, by default None</p></li>
+Pandas or a standard integer index for Arrow and Polars if <cite>index</cite> not
+provided, by default <cite>None</cite></p></li>
 <li><p><strong>partition_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The size of each partition in bytes, by default 128 MB</p></li>
 <li><p><strong>errors</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to raise an error if the table already exist. Can be either
-‘raise’ or ‘ignore’, ‘ignore’ overwrites existing table, by default ‘raise’</p></li>
+<cite>raise</cite> or <cite>ignore</cite>, <cite>ignore</cite> overwrites existing table, by default <cite>raise</cite></p></li>
 <li><p><strong>warnings</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to warn if a unsorted index is about to get sorted.
-Can be either ‘warn’ or ‘ignore’, by default ‘warn’</p></li>
+Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -285,8 +285,23 @@ Can be either ‘warn’ or ‘ignore’, by default ‘warn’</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Series</em><em>, </em><em>Pyarrow Table</em><em>, or </em><em>Polars DataFrame</em>) – The data to be appended</p></li>
 <li><p><strong>warnings</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to warn if a unsorted index is about to get sorted.
-Can be either ‘warn’ or ‘ignore’, by default ‘warn’</p></li>
+Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</cite></p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates data in the current table.</p>
+<p>Note: You can’t use this method to update index values. Updating index
+values can be accomplished by deleting the old records and inserting new
+ones with the updated index values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Pandas Series</em>) – The updated data. The index of <cite>df</cite> is the rows to be updated, while
+the columns of <cite>df</cite> are the new values.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -320,15 +335,11 @@ Can be either ‘warn’ or ‘ignore’, by default ‘warn’</p></li>
 <dd><p>Deletes the current table</p>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="featherstore.table.Table.read_table_metadata">
-<span class="sig-name descname"><span class="pre">read_table_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.read_table_metadata" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="featherstore.table.Table.read_partition_metadata">
-<span class="sig-name descname"><span class="pre">read_partition_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.read_partition_metadata" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="featherstore.table.Table.shape">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#featherstore.table.Table.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the shape of the stored data as <cite>(rows, cols)</cite></p>
+</dd></dl>
 
 </dd></dl>
 

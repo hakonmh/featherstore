@@ -17,8 +17,8 @@ def create_store(store_name, *, errors="raise"):
         The name of the store to be created
     errors : str, optional
         Whether or not to raise an error if the store already exist. Can be either
-        'raise' or 'ignore', 'ignore' overwrites the existing store and its tables,
-        by default "raise"
+        `raise` or `ignore`, `ignore` overwrites the existing store and its tables,
+        by default `raise`
     """
     _can_create_store(store_name, errors)
 
@@ -54,7 +54,7 @@ def drop_store(store_name, *, errors="raise"):
         The name of the store to be deleted
     errors : str, optional
         Whether or not to raise an error if the store doesn't exist. Can be either
-        'raise' or 'ignore', by default "raise"
+        `raise` or `ignore`, by default `raise`
     """
     _can_drop_store(store_name, errors)
     store_path = os.path.join(current_db(), store_name)
@@ -67,12 +67,12 @@ def list_stores(*, like=None):
     Parameters
     ----------
     like : str, optional
-        Filters out stores not matching string pattern, by default None.
+        Filters out stores not matching string pattern, by default `None`.
 
-        There are two wildcards that can be used in conjunction with 'like':
+        There are two wildcards that can be used in conjunction with `like`:
 
-        - Question mark (?) matches any single character
-        - The percent sign (%) matches any number of any characters
+        - Question mark (`?`) matches any single character
+        - The percent sign (`%`) matches any number of any characters
     """
     _can_list_stores(like)
 
@@ -91,7 +91,10 @@ def list_stores(*, like=None):
 
 class Store:
     def __init__(self, store_name):
-        """The basic unit for organization in FeatherStore for reading and writing tables.
+        """A class for doing basic tasks with tables within a store.
+
+        Stores are directories for organizing data in logical groups
+        within your FeatherStore database.
 
         Parameters
         ----------
@@ -127,10 +130,10 @@ class Store:
         like : str, optional
             Filters out tables not matching string pattern, by default None.
 
-            There are two wildcards that can be used in conjunction with 'like':
+            There are two wildcards that can be used in conjunction with `like`:
 
-            - Question mark (?) matches any single character
-            - The percent sign (%) matches any number of any characters
+            - Question mark (`?`) matches any single character
+            - The percent sign (`%`) matches any number of any characters
         """
         _can_list_tables(like)
 
@@ -149,11 +152,11 @@ class Store:
             The name of the table
         cols : list, optional
             list of column names or, filter-predicates in the form of
-            [like, pattern], by default None
+            `[like, pattern]`, by default `None`
         rows : list, optional
             list of index values or, filter-predicates in the form of
-            [keyword, value], where keyword can be either 'before', 'after',
-            or 'between', by default None
+            `[keyword, value]`, where keyword can be either `before`, `after`,
+            or `between`, by default `None`
         """
         return Table(table_name, self.store_name).read_arrow(cols=cols,
                                                              rows=rows)
@@ -167,11 +170,11 @@ class Store:
             The name of the table
         cols : list, optional
             list of column names or, filter-predicates in the form of
-            [like, pattern], by default None
+            `[like, pattern]`, by default `None`
         rows : list, optional
             list of index values or, filter-predicates in the form of
-            [keyword, value], where keyword can be either 'before', 'after',
-            or 'between', by default None
+            `[keyword, value]`, where keyword can be either `before`, `after`,
+            or `between`, by default `None`
         """
         return Table(table_name, self.store_name).read_pandas(cols=cols,
                                                               rows=rows)
@@ -185,11 +188,11 @@ class Store:
             The name of the table
         cols : list, optional
             list of column names or, filter-predicates in the form of
-            [like, pattern], by default None
+            `[like, pattern]`, by default `None`
         rows : list, optional
             list of index values or, filter-predicates in the form of
-            [keyword, value], where keyword can be either 'before', 'after',
-            or 'between', by default None
+            `[keyword, value]`, where keyword can be either `before`, `after`,
+            or `between`, by default `None`
         """
         return Table(table_name, self.store_name).read_polars(cols=cols,
                                                               rows=rows)
@@ -218,16 +221,16 @@ class Store:
             The name of the table the DataFrame will be stored as
         index : str, optional
             The name of the column to be used as index. Uses current index for
-            Pandas or a standard integer index for Arrow and Polars if 'index' not
-            provided, by default None
-        errors : str, optional
-            Whether or not to raise an error if the table already exist. Can be either
-            'raise' or 'ignore', 'ignore' overwrites existing table, by default 'raise'
-        warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
-            Can be either 'warn' or 'ignore', by default 'warn'
+            Pandas or a standard integer index for Arrow and Polars if `index` not
+            provided, by default `None`
         partition_size : int, optional
             The size of each partition in bytes, by default 128 MB
+        errors : str, optional
+            Whether or not to raise an error if the table already exist. Can be either
+            `raise` or `ignore`, `ignore` overwrites existing table, by default `raise`
+        warnings : str, optional
+            Whether or not to warn if a unsorted index is about to get sorted.
+            Can be either `warn` or `ignore`, by default `warn`
         """
         Table(table_name, self.store_name).write(
             df,
@@ -248,7 +251,7 @@ class Store:
             The data to be appended
         warnings : str, optional
             Whether or not to warn if a unsorted index is about to get sorted.
-            Can be either 'warn' or 'ignore', by default 'warn'
+            Can be either `warn` or `ignore`, by default `warn`
         """
         Table(table_name, self.store_name).append(df, warnings=warnings)
 
@@ -274,25 +277,10 @@ class Store:
         """
         Table(table_name, self.store_name).drop_table(table_name)
 
-    def table(self, table_name):
-        """Selects a Table object
+    def select_table(self, table_name):
+        """Selects a single table.
 
-        Table is a class for saving and loading DataFrames as partitioned Feather
-        files. Tables supports several operations that can be done without loading
-        in the full data:
-
-        - Predicate Filtering when reading
-        - Appends
-        - Fetching Columns
-        - Fetching Index
-
-        It will also support the following operations down the line:
-
-        - Inserts
-        - Updates
-        - Remove columns and rows
-        - Changing types
-        - Changing index
+        Table objects have more features for editing stored tables.
 
         Parameters
         ----------

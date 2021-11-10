@@ -30,8 +30,8 @@ def create_database(path, errors="raise"):
         Where to create the database.
     errors : str, optional
         Whether or not to raise an error if the database directory already exist.
-        Can be either 'raise' or 'ignore', 'ignore' tries to create a database
-        in existing directory, by default 'raise'
+        Can be either `raise` or `ignore`, `ignore` tries to create a database
+        in existing directory, by default `raise`
     """
     _can_create_database(path, errors)
     path = expand_home_dir_modifier(path)
@@ -41,7 +41,7 @@ def create_database(path, errors="raise"):
 
 
 def _make_database_marker(db_path):
-    """A database marker is used to tell FeatherStore that db_path is a database directory"""
+    """A database marker is used to tell FeatherStore that `db_path` is a database directory"""
     db_marker_path = os.path.join(db_path, DB_MARKER_NAME)
     open(db_marker_path, "a").close()
     mark_as_hidden(db_marker_path)

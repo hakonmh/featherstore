@@ -183,8 +183,8 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>store_name</strong> (<em>str</em>) – The name of the store to be created</p></li>
 <li><p><strong>errors</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to raise an error if the store already exist. Can be either
-‘raise’ or ‘ignore’, ‘ignore’ overwrites the existing store and its tables,
-by default “raise”</p></li>
+<cite>raise</cite> or <cite>ignore</cite>, <cite>ignore</cite> overwrites the existing store and its tables,
+by default <cite>raise</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -215,7 +215,7 @@ be deleted first.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>store_name</strong> (<em>str</em>) – The name of the store to be deleted</p></li>
 <li><p><strong>errors</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to raise an error if the store doesn’t exist. Can be either
-‘raise’ or ‘ignore’, by default “raise”</p></li>
+<cite>raise</cite> or <cite>ignore</cite>, by default <cite>raise</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -227,11 +227,11 @@ be deleted first.</p>
 <dd><p>Lists stores in database</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>like</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Filters out stores not matching string pattern, by default None.</p>
-<p>There are two wildcards that can be used in conjunction with ‘like’:</p>
+<dd class="field-odd"><p><strong>like</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Filters out stores not matching string pattern, by default <cite>None</cite>.</p>
+<p>There are two wildcards that can be used in conjunction with <cite>like</cite>:</p>
 <ul class="simple">
-<li><p>The underscore sign (_) matches any single character</p></li>
-<li><p>The percent sign (%) matches any number of any characters</p></li>
+<li><p>Question mark (<cite>?</cite>) matches any single character</p></li>
+<li><p>The percent sign (<cite>%</cite>) matches any number of any characters</p></li>
 </ul>
 </p>
 </dd>
@@ -242,7 +242,9 @@ be deleted first.</p>
 <dt class="sig sig-object py" id="featherstore.store.Store">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">Store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>The basic unit for organization in FeatherStore for reading and writing tables.</p>
+<p>A class for doing basic tasks with tables within a store.</p>
+<p>Stores are directories for organizing data in logical groups
+within your FeatherStore database.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>store_name</strong> (<em>str</em>) – The name of the store to be selected</p>
@@ -266,10 +268,10 @@ be deleted first.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>like</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Filters out tables not matching string pattern, by default None.</p>
-<p>There are two wildcards that can be used in conjunction with ‘like’:</p>
+<p>There are two wildcards that can be used in conjunction with <cite>like</cite>:</p>
 <ul class="simple">
-<li><p>The underscore sign (_) matches any single character</p></li>
-<li><p>The percent sign (%) matches any number of any characters</p></li>
+<li><p>Question mark (<cite>?</cite>) matches any single character</p></li>
+<li><p>The percent sign (<cite>%</cite>) matches any number of any characters</p></li>
 </ul>
 </p>
 </dd>
@@ -285,10 +287,10 @@ be deleted first.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>table_name</strong> (<em>str</em>) – The name of the table</p></li>
 <li><p><strong>cols</strong> (<em>list</em><em>, </em><em>optional</em>) – list of column names or, filter-predicates in the form of
-[like, pattern], by default None</p></li>
+<cite>[like, pattern]</cite>, by default <cite>None</cite></p></li>
 <li><p><strong>rows</strong> (<em>list</em><em>, </em><em>optional</em>) – list of index values or, filter-predicates in the form of
-[keyword, value], where keyword can be either ‘before’, ‘after’,
-or ‘between’, by default None</p></li>
+<cite>[keyword, value]</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
+or <cite>between</cite>, by default <cite>None</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -303,10 +305,10 @@ or ‘between’, by default None</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>table_name</strong> (<em>str</em>) – The name of the table</p></li>
 <li><p><strong>cols</strong> (<em>list</em><em>, </em><em>optional</em>) – list of column names or, filter-predicates in the form of
-[like, pattern], by default None</p></li>
+<cite>[like, pattern]</cite>, by default <cite>None</cite></p></li>
 <li><p><strong>rows</strong> (<em>list</em><em>, </em><em>optional</em>) – list of index values or, filter-predicates in the form of
-[keyword, value], where keyword can be either ‘before’, ‘after’,
-or ‘between’, by default None</p></li>
+<cite>[keyword, value]</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
+or <cite>between</cite>, by default <cite>None</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -321,10 +323,10 @@ or ‘between’, by default None</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>table_name</strong> (<em>str</em>) – The name of the table</p></li>
 <li><p><strong>cols</strong> (<em>list</em><em>, </em><em>optional</em>) – list of column names or, filter-predicates in the form of
-[like, pattern], by default None</p></li>
+<cite>[like, pattern]</cite>, by default <cite>None</cite></p></li>
 <li><p><strong>rows</strong> (<em>list</em><em>, </em><em>optional</em>) – list of index values or, filter-predicates in the form of
-[keyword, value], where keyword can be either ‘before’, ‘after’,
-or ‘between’, by default None</p></li>
+<cite>[keyword, value]</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
+or <cite>between</cite>, by default <cite>None</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -342,13 +344,13 @@ or datetime. FeatherStore sorts the DataFrame by the index before storage.</p>
 <li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Series</em><em>, </em><em>Pyarrow Table</em><em>, or </em><em>Polars DataFrame</em>) – The DataFrame to be stored</p></li>
 <li><p><strong>table_name</strong> (<em>str</em>) – The name of the table the DataFrame will be stored as</p></li>
 <li><p><strong>index</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the column to be used as index. Uses current index for
-Pandas or a standard integer index for Arrow and Polars if ‘index’ not
-provided, by default None</p></li>
-<li><p><strong>errors</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to raise an error if the table already exist. Can be either
-‘raise’ or ‘ignore’, ‘ignore’ overwrites existing table, by default ‘raise’</p></li>
-<li><p><strong>warnings</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to warn if a unsorted index is about to get sorted.
-Can be either ‘warn’ or ‘ignore’, by default ‘warn’</p></li>
+Pandas or a standard integer index for Arrow and Polars if <cite>index</cite> not
+provided, by default <cite>None</cite></p></li>
 <li><p><strong>partition_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The size of each partition in bytes, by default 128 MB</p></li>
+<li><p><strong>errors</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to raise an error if the table already exist. Can be either
+<cite>raise</cite> or <cite>ignore</cite>, <cite>ignore</cite> overwrites existing table, by default <cite>raise</cite></p></li>
+<li><p><strong>warnings</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to warn if a unsorted index is about to get sorted.
+Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -364,7 +366,7 @@ Can be either ‘warn’ or ‘ignore’, by default ‘warn’</p></li>
 <li><p><strong>table_name</strong> (<em>str</em>) – The name of the table you want to append to</p></li>
 <li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Series</em><em>, </em><em>Pyarrow Table</em><em>, or </em><em>Polars DataFrame</em>) – The data to be appended</p></li>
 <li><p><strong>warnings</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to warn if a unsorted index is about to get sorted.
-Can be either ‘warn’ or ‘ignore’, by default ‘warn’</p></li>
+Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -396,26 +398,10 @@ Can be either ‘warn’ or ‘ignore’, by default ‘warn’</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="featherstore.store.Store.table">
-<span class="sig-name descname"><span class="pre">table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store.table" title="Permalink to this definition">¶</a></dt>
-<dd><p>Selects a Table object</p>
-<p>Table is a class for saving and loading DataFrames as partitioned Feather
-files. Tables supports several operations that can be done without loading
-in the full data:</p>
-<ul class="simple">
-<li><p>Predicate Filtering when reading</p></li>
-<li><p>Appends</p></li>
-<li><p>Fetching Columns</p></li>
-<li><p>Fetching Index</p></li>
-</ul>
-<p>It will also support the following operations down the line:</p>
-<ul class="simple">
-<li><p>Inserts</p></li>
-<li><p>Updates</p></li>
-<li><p>Remove columns and rows</p></li>
-<li><p>Changing types</p></li>
-<li><p>Changing index</p></li>
-</ul>
+<dt class="sig sig-object py" id="featherstore.store.Store.select_table">
+<span class="sig-name descname"><span class="pre">select_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store.select_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selects a single table.</p>
+<p>Table objects have more features for editing stored tables.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>table_name</strong> (<em>str</em>) – The name of the table to be returned</p>
