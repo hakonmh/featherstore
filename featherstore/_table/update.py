@@ -3,7 +3,8 @@ import pyarrow as pa
 
 from featherstore._metadata import Metadata, _get_index_dtype
 from featherstore._table.common import (_check_index_constraints,
-                                        _check_column_constraints)
+                                        _check_column_constraints,
+                                        _coerce_column_dtypes)
 
 
 def can_update_table(df, table_path, table_exists):
@@ -22,7 +23,9 @@ def can_update_table(df, table_path, table_exists):
     _check_index_constraints(df.index)
     _check_column_constraints(cols)
 
+    index_name = Metadata(table_path, "table")['index_name']
     stored_data_cols = Metadata(table_path, "table")["columns"]
+    stored_data_cols.remove(index_name)
     columns_not_in_stored_data = set(cols) - set(stored_data_cols)
     if columns_not_in_stored_data:
         raise ValueError(
@@ -33,7 +36,6 @@ def can_update_table(df, table_path, table_exists):
     if isinstance(first_row, pd.Series):
         first_row = first_row.to_frame()
     arrow_df = pa.Table.from_pandas(first_row, preserve_index=True)
-
     index_type = _get_index_dtype([arrow_df])
     stored_index_type = Metadata(table_path, "table")["index_dtype"]
     if index_type != stored_index_type:
@@ -60,13 +62,3 @@ def _check_if_all_rows_is_in_old_data(old_df, df):
     rows_not_in_old_df = not all(index.isin(old_index))
     if rows_not_in_old_df:
         raise ValueError(f"Some rows not in stored table")
-
-
-def _coerce_column_dtypes(df, *, to):
-    cols = df.columns
-    dtypes = to[cols].dtypes
-    try:
-        df = df.astype(dtypes)
-    except ValueError:
-        raise TypeError("New and old column dtypes do not match")
-    return df

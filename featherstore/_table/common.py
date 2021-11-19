@@ -10,6 +10,10 @@ from featherstore._metadata import Metadata, METADATA_FOLDER_NAME
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 
 
+PARTITION_NAME_LENGTH = 14
+INSERTION_BUFFER_LENGTH = 10**6
+
+
 def can_init_table(table_name, store_name):
     current_db()
 
@@ -128,13 +132,17 @@ def delete_partition(table_path, partition_name):
 
 
 def delete_partition_metadata(table_path, partition_name):
-    table_data = Metadata(table_path, 'table')
     partition_data = Metadata(table_path, 'partition')
-
-    partition_names = table_data['partitions']
+    partition_names = partition_data.keys()
     partition_names = partition_names.remove(partition_name)
-    table_data['partitions'] = partition_names
     del partition_data[partition_name]
+
+
+def assign_ids_to_partitions(df, ids):
+    id_mapping = {}
+    for identifier, partition in zip(ids, df):
+        id_mapping[identifier] = partition
+    return id_mapping
 
 
 def _get_cols(df, has_default_index):
@@ -175,3 +183,24 @@ def _check_column_constraints(cols):
         raise IndexError("Column names must be unique")
     if "like" in cols.str.lower():
         raise IndexError("df contains invalid column name 'like'")
+
+
+def _coerce_column_dtypes(df, *, to):
+    cols = df.columns
+    dtypes = to[cols].dtypes
+    try:
+        df = df.astype(dtypes)
+    except ValueError:
+        raise TypeError("New and old column dtypes do not match")
+    return df
+
+
+def _convert_to_partition_id(partition_id):
+    partition_id = int(partition_id * INSERTION_BUFFER_LENGTH)
+    format_string = f'0{PARTITION_NAME_LENGTH}d'
+    partition_id = format(partition_id, format_string)
+    return partition_id
+
+
+def _convert_partition_id_to_int(partition_id):
+    return int(partition_id) // INSERTION_BUFFER_LENGTH

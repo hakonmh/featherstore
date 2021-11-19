@@ -1,5 +1,4 @@
 import os
-import uuid
 from numbers import Integral
 
 import pyarrow as pa
@@ -8,7 +7,11 @@ import pandas as pd
 import polars as pl
 
 from featherstore import _utils
-from featherstore._table.common import _get_cols, _check_column_constraints
+from featherstore._table.common import (
+    _get_cols,
+    _check_column_constraints,
+    _convert_to_partition_id,
+)
 
 
 def can_write_table(df, index, errors, warnings, partition_size, table_exists,
@@ -50,28 +53,12 @@ def make_partitions(df, partition_size):
     return partitions
 
 
-def assign_id_to_partitions(df, existing_ids=None):
-    if not existing_ids:
-        existing_ids = set()
-
-    ids = set()
-    num_partitions = len(df)
-    while num_partitions > len(ids):
-        new_id = _generate_unique_id()
-        if new_id not in existing_ids:
-            ids.add(new_id)
-
-    id_mapping = {}
-    for identifier, partition in zip(ids, df):
-        id_mapping[identifier] = partition
-    return id_mapping
-
-
-def _generate_unique_id():
-    identifier = str(uuid.uuid4())
-    identifier = identifier.replace('-', '')
-    identifier = identifier[:6]
-    return identifier
+def make_partition_ids(num_partitions):
+    partition_ids = list()
+    for partition_num in range(1, num_partitions + 1):
+        partition_id = _convert_to_partition_id(partition_num)
+        partition_ids.append(partition_id)
+    return partition_ids
 
 
 def write_partitions(partitions, table_path):

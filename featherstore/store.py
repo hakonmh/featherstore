@@ -3,7 +3,7 @@ import os
 from featherstore import _utils
 from featherstore.table import Table, DEFAULT_PARTITION_SIZE
 from featherstore.connection import current_db, DB_MARKER_NAME
-from featherstore._metadata import Metadata, METADATA_FOLDER_NAME
+from featherstore._metadata import METADATA_FOLDER_NAME
 from featherstore._utils import like_pattern_matching
 
 
@@ -26,7 +26,6 @@ def create_store(store_name, *, errors="raise"):
     store_already_exists = os.path.exists(store_path)
     if not store_already_exists:
         os.mkdir(store_path)
-    Metadata(store_path).create()
 
 
 def rename_store(store_name, *, to):
@@ -83,9 +82,7 @@ def list_stores(*, like=None):
     for item in database_content:
         path = os.path.join(current_db(), item)
         if os.path.isdir(path):
-            item_is_store = METADATA_FOLDER_NAME in os.listdir(path)
-            if item_is_store:
-                stores.append(item)
+            stores.append(item)
     return stores
 
 
@@ -138,7 +135,6 @@ class Store:
         _can_list_tables(like)
 
         tables = os.listdir(self.store_path)
-        tables.remove(METADATA_FOLDER_NAME)
         if like:
             tables = like_pattern_matching(like, tables)
         return tables
@@ -324,7 +320,7 @@ def _can_drop_store(store_name, errors):
 
     if store_exists:
         store_content = os.listdir(store_path)
-        store_is_empty = store_content == [".metadata"] or store_content == []
+        store_is_empty = len(store_content) == 0
         if not store_is_empty:
             raise OSError("Can't delete a store that contains tables")
 
@@ -339,10 +335,6 @@ def _can_init_store(store_name):
     store_exists = os.path.exists(store_path)
     if not store_exists:
         raise FileNotFoundError(f"Store doesn't exists: '{store_name}'")
-
-    folder_content = os.listdir(store_path)
-    if METADATA_FOLDER_NAME not in folder_content:
-        raise OSError(f"{store_name} is not a store folder")
 
 
 def _can_rename_store(new_store_name):

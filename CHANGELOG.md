@@ -1,6 +1,7 @@
 0.0.4
 -----
 **Warning**: This update causes some API-breaking changes:
+* `store.table` renamed to `store.select_table`
 * `list_tables` and `list_store` argument `like` now uses `?` as single character
   wildcard instead of `_`.
 * Removed `read_table_metadata` and `read_partition_metadata`
@@ -8,6 +9,7 @@
 Other changes:
 * Added `Table.shape`
 * Added `Table.update()`
+* Now uses `lsm` as metadata-backend
 
 
 0.0.3

@@ -1,1 +1,1 @@
-from featherstore._table import append, common, read, write, update
+from featherstore._table import append, common, read, write, update, insert

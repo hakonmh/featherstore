@@ -22,23 +22,30 @@ from featherstore._table.write import (
     can_write_table,
     calculate_rows_per_partition,
     make_partitions,
-    assign_id_to_partitions,
+    make_partition_ids,
     write_partitions,
 )
 from featherstore._table.append import (
     can_append_table,
     format_default_index,
     sort_columns,
+    append_new_partition_ids,
 )
 from featherstore._table.update import (
     can_update_table,
     update_data,
+)
+from featherstore._table.insert import (
+    can_insert_table,
+    insert_data,
+    insert_new_partition_ids,
 )
 from featherstore._table.common import (
     can_init_table,
     can_rename_table,
     combine_partitions,
     format_table,
+    assign_ids_to_partitions,
     delete_partition,
     delete_partition_metadata,
 )
@@ -218,7 +225,8 @@ class Table:
         rows_per_partition = calculate_rows_per_partition(
             formatted_df, partition_size)
         partitioned_df = make_partitions(formatted_df, rows_per_partition)
-        partitioned_df = assign_id_to_partitions(partitioned_df)
+        partition_names = make_partition_ids(len(partitioned_df))
+        partitioned_df = assign_ids_to_partitions(partitioned_df, partition_names)
 
         collected_metadata = (partition_size, rows_per_partition)
         table_metadata = _metadata.make_table_metadata(partitioned_df,
@@ -227,6 +235,7 @@ class Table:
 
         self._create_table()
         self._table_data.write(table_metadata)
+        # breakpoint()
         self._partition_data.write(partition_metadata)
         write_partitions(partitioned_df, self._table_path)
         self.exists = True
@@ -249,8 +258,7 @@ class Table:
             self.exists,
         )
 
-        partition_names = self._table_data["partitions"]
-        partition_names_to_keep = partition_names[:-1]
+        partition_names = self._partition_data.keys()
         last_partition_name = partition_names[-1]
 
         last_partition, = read_partitions([last_partition_name],
@@ -267,22 +275,24 @@ class Table:
         rows_per_partition = self._table_data["rows_per_partition"]
         partitioned_df = make_partitions(df, rows_per_partition)
         del last_partition, df  # Closes memory-map
-        partitioned_df = assign_id_to_partitions(partitioned_df,
-                                                 partition_names_to_keep)
 
-        partition_metadata = _metadata.make_partition_metadata(partitioned_df)
-        table_metadata = _metadata.update_table_metadata(
-            partitioned_df,
-            partition_metadata,
-            partition_names_to_keep,
-            self._table_path
+        new_partition_names = append_new_partition_ids(
+            len(partitioned_df), last_partition_name
         )
+        partitioned_df = assign_ids_to_partitions(partitioned_df, new_partition_names)
 
-        delete_partition_metadata(self._table_path, last_partition_name)
-        delete_partition(self._table_path, last_partition_name)
+        old_table_metadata = {'num_rows': None, 'num_partitions': None}
+        for key in old_table_metadata.keys():
+            old_table_metadata[key] = self._table_data[key]
+        old_partition_metadata = {last_partition_name: self._partition_data[last_partition_name]}
+        new_partition_metadata = _metadata.make_partition_metadata(partitioned_df)
+
+        table_metadata = _metadata.update_table_metadata(old_table_metadata,
+                                                         new_partition_metadata,
+                                                         old_partition_metadata)
 
         self._table_data.write(table_metadata)
-        self._partition_data.write(partition_metadata)
+        self._partition_data.write(new_partition_metadata)
         write_partitions(partitioned_df, self._table_path)
 
     def update(self, df):
@@ -321,8 +331,49 @@ class Table:
 
         write_partitions(partitioned_df, self._table_path)
 
-    def _insert(self, rows, values):
-        raise NotImplementedError
+    def insert(self, df):
+        """Insert one or more rows into the current table.
+
+        Parameters
+        ----------
+        df : Pandas DataFrame or Pandas Series
+            The data to be inserted. `df` must have the same index and column
+            types as the stored data.
+        """
+        can_insert_table(df, self._table_path, self.exists)
+
+        index_type = self._table_data["index_dtype"]
+        rows = format_rows(df.index, index_type)
+
+        partition_names = get_partition_names(rows, self._table_path)
+        partitions = read_partitions(partition_names,
+                                     self._table_path,
+                                     columns=None)
+        stored_df = combine_partitions(partitions)
+
+        df = insert_data(stored_df, to=df)
+        df = format_table(df, index=None, warnings=False)
+        # del partitions, stored_df
+
+        rows_per_partition = self._table_data["rows_per_partition"]
+        partition_metadata = self._partition_data.read()
+        # partitioned_df = _repartition_data(df, partition_metadata)
+        partitioned_df = make_partitions(df, rows_per_partition)
+        breakpoint()
+        partitioned_df = {
+            name: df for name, df in zip(partition_names, partitioned_df)
+        }
+
+        partition_metadata = _metadata.make_partition_metadata(partitioned_df)
+        table_metadata = _metadata.update_table_metadata(
+            partitioned_df,
+            partition_metadata,
+            self._table_path
+        )
+
+        self._table_data.write(table_metadata)
+        self._partition_data.write(partition_metadata)
+        write_partitions(partitioned_df, self._table_path)
 
     def _drop(self, cols=None, rows=None):
         raise NotImplementedError

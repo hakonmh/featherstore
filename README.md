@@ -1,6 +1,9 @@
 
 # FeatherStore
-[![docs](https://docs.rs/polars/badge.svg)](https://featherstore.readthedocs.io/en/latest/index.html)
+[![docs](https://img.shields.io/badge/docs-passing-brightgreen)](https://featherstore.readthedocs.io/en/latest/index.html)
+[![PyPI version](https://img.shields.io/pypi/v/FeatherStore?color=blue)](https://pypi.org/project/FeatherStore/)
+[![Dev Status](https://img.shields.io/pypi/status/featherstore?color=important)](https://pypi.org/project/FeatherStore/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/hakonmh/featherstore/blob/master/LICENSE)
 
 ## High performance datastore built upon Apache Arrow & Feather
 
@@ -90,7 +93,7 @@ FeatherStore can be installed by using `$ pip install featherstore`
 * Pandas
 * Polars
 * Numpy
-* Msgpack
+* lsm
 
 ## Documentation
 Want to know about all the features FeatherStore support? [Read the docs!](https://featherstore.readthedocs.io/en/latest/index.html)

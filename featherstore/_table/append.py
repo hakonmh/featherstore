@@ -8,7 +8,11 @@ from featherstore import _metadata
 from featherstore._metadata import Metadata
 from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
-from featherstore._table.common import _get_cols
+from featherstore._table.common import (
+    _get_cols,
+    _convert_to_partition_id,
+    _convert_partition_id_to_int
+)
 
 
 def can_append_table(
@@ -32,7 +36,7 @@ def can_append_table(
         raise ValueError("New and old columns doesn't match")
 
     append_data_start = _get_first_append_value(df, table_path, has_default_index)
-    stored_data_end = _get_last_stored_value(table_path)
+    stored_data_end = _metadata.get_partition_attr(table_path, 'min')[-1]
     if append_data_start <= stored_data_end:
         raise ValueError(
             f"New_data.index can't be <= old_data.index[-1] ({append_data_start}"
@@ -58,7 +62,7 @@ def format_default_index(df, table_path):
 
 def _get_first_append_value(df, table_path, has_default_index):
     if has_default_index:
-        stored_data_end = _get_last_stored_value(table_path)
+        stored_data_end = _metadata.get_partition_attr(table_path, 'min')[-1]
         append_data_start = int(stored_data_end) + 1
     else:
         index_col = Metadata(table_path, "table")["index_name"]
@@ -77,13 +81,6 @@ def _get_first_append_value(df, table_path, has_default_index):
     return append_data_start
 
 
-def _get_last_stored_value(table_path):
-    stored_data_end = _metadata.get_partition_attr(table_path, 'min')[-1]
-    index_dtype = Metadata(table_path, "table")["index_dtype"]
-    stored_data_end = _format_index_value(stored_data_end, index_dtype)
-    return stored_data_end
-
-
 def _extract_value(value):
     if isinstance(value, pa.ChunkedArray):
         value, = value.to_pylist()
@@ -95,10 +92,10 @@ def _extract_value(value):
 
 
 def _format_index_value(value, index_dtype):
+    if hasattr(value, 'as_py'):
+        value = value.as_py()
     if index_dtype == "datetime64":
         value = pd.Timestamp(value)
-    elif index_dtype == "int64":
-        value = int(value)
     return value
 
 
@@ -107,3 +104,13 @@ def sort_columns(df, columns):
     if columns_not_sorted:
         df = df.select(columns)
     return df
+
+
+def append_new_partition_ids(num_partitions, last_partition_id):
+    partition_ids = [last_partition_id]
+    range_start = _convert_partition_id_to_int(last_partition_id) + 1
+    range_end = range_start + num_partitions
+    for partition_num in range(range_start, range_end):
+        partition_id = _convert_to_partition_id(partition_num)
+        partition_ids.append(partition_id)
+    return partition_ids

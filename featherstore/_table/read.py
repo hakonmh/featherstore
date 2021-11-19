@@ -70,7 +70,7 @@ def get_partition_names(rows, table_path):
     if rows:
         partition_names = _predicate_filtering(rows, table_path)
     else:
-        partition_names = Metadata(table_path, "table")["partitions"]
+        partition_names = Metadata(table_path, 'partition').keys()
     return partition_names
 
 
@@ -103,7 +103,7 @@ def _get_partition_stats(table_path):
     index_type = Metadata(table_path, "table")["index_dtype"]
 
     partition_stats = dict()
-    partition_stats["name"] = Metadata(table_path, 'table')['partitions']
+    partition_stats["name"] = Metadata(table_path, 'partition').keys()
     partition_stats["min"] = get_partition_attr(table_path, 'min')
     partition_stats["max"] = get_partition_attr(table_path, 'max')
 

@@ -1,7 +1,8 @@
 import os
 import json
+import pickle
 
-import msgpack
+from lsm import LSM
 import pyarrow as pa
 
 from featherstore import _utils
@@ -11,49 +12,70 @@ METADATA_FOLDER_NAME = ".metadata"
 
 
 class Metadata:
-    def __init__(self, base_path, db_name=None):
-        _can_init_metadata(base_path, db_name)
-        metadata_folder = os.path.join(base_path, METADATA_FOLDER_NAME)
-        if db_name:
-            self.db = os.path.join(metadata_folder, db_name)
-        else:
-            self.db = metadata_folder
+    def __init__(self, path, file_name=None):
+        _can_init_metadata(path, file_name)
+        self._metadata_folder = os.path.join(path, METADATA_FOLDER_NAME)
+        self.db_path = os.path.join(self._metadata_folder, file_name)
+        self._connect()
 
     def create(self):
-        if not os.path.exists(self.db):
-            os.makedirs(self.db)
-            _utils.mark_as_hidden(self.db)
+        if not os.path.exists(self._metadata_folder):
+            os.makedirs(self._metadata_folder)
+            _utils.mark_as_hidden(self._metadata_folder)
+        self.db = LSM(self.db_path, binary=True, use_log=False)
+        self.db.open()
+        metadata_exists = os.path.exists(self.db_path)
+        if not metadata_exists:
+            pass
+
+    def _connect(self):
+        metadata_exists = os.path.exists(self.db_path)
+        if not hasattr(self, 'db') and metadata_exists:
+            self.db = LSM(self.db_path, binary=True)
+            self.db.open()
 
     def read(self):
-        return {key: self[key] for key in os.listdir(self.db)}
+        self._connect()
+        values = {key.decode(): pickle.loads(value) for key, value in self.db.items()}
+        return values
+
+    def keys(self):
+        self._connect()
+        keys = [key.decode() for key in self.db.keys()]
+        return keys
 
     def write(self, new_data: dict):
         _can_write_metadata(new_data)
-        for key, value in new_data.items():
-            self[key] = value
+        self._connect()
+        new_data = {key.encode(): pickle.dumps(value) for key, value in new_data.items()}
+        self.db.update(new_data)
+        self.db.flush()
 
-    def __getitem__(self, name: str):
-        path = os.path.join(self.db, name)
-        with open(path, "rb") as f:
-            value = msgpack.loads(f.read())
+    def __getitem__(self, key: str):
+        self._connect()
+        key = key.encode()
+        value = self.db[key]
+        value = pickle.loads(value)
         return value
 
-    def __setitem__(self, name: str, value):
-        path = os.path.join(self.db, name)
-        with open(path, "wb") as f:
-            f.write(msgpack.dumps(value))
+    def __setitem__(self, key: str, value):
+        self._connect()
+        key = key.encode()
+        value = pickle.dumps(value)
+        self.db[key] = value
 
-    def __delitem__(self, name: str):
-        path = os.path.join(self.db, name)
-        os.remove(path)
+    def __delitem__(self, key: str):
+        self._connect()
+        key = key.encode()
+        del self.db[key]
 
     def __repr__(self):
-        return str(self.read())
+        return self.db_path
 
 
 def get_partition_attr(table_path, item=None):
-    partitions_names = Metadata(table_path, 'table')['partitions']
     partition_reader = Metadata(table_path, 'partition')
+    partitions_names = partition_reader.keys()
     metadata = []
     for name in partitions_names:
         data = partition_reader[name][item]
@@ -65,19 +87,20 @@ def make_table_metadata(df, collected_data):
     partition_names = list(df.keys())
     df = tuple(df.values())
     partition_byte_size, partition_size_in_rows = collected_data
+    index_name = _get_index_name(df)
 
-    metadata = dict()
-    metadata["num_rows"] = _get_num_rows(df)
-    metadata["num_columns"] = _get_num_cols(df)
-    metadata["num_partitions"] = len(df)
-    metadata["rows_per_partition"] = partition_size_in_rows
-    metadata["partition_byte_size"] = int(partition_byte_size)
-    metadata["index_name"] = index_name = _get_index_name(df)
-    metadata["index_column_position"] = _get_index_position(df, index_name)
-    metadata["index_dtype"] = _get_index_dtype(df)
-    metadata["has_default_index"] = _has_default_index(df, index_name)
-    metadata["columns"] = _get_column_names(df)
-    metadata["partitions"] = partition_names
+    metadata = {
+        "num_rows": _get_num_rows(df),
+        "num_columns": _get_num_cols(df),
+        "num_partitions": len(df),
+        "rows_per_partition": partition_size_in_rows,
+        "partition_byte_size": int(partition_byte_size),
+        "index_name": index_name,
+        "index_column_position": _get_index_position(df, index_name),
+        "index_dtype": _get_index_dtype(df),
+        "has_default_index": _has_default_index(df, index_name),
+        "columns": _get_column_names(df),
+    }
     return metadata
 
 
@@ -94,8 +117,25 @@ def make_partition_metadata(df):
     return metadata
 
 
-def update_table_metadata(df, partition_metadata, old_partition_names,
-                          table_path):
+def update_table_metadata(table_metadata,
+                          new_partition_metadata,
+                          old_partition_metadata):
+    old_num_rows = [
+        item['num_rows'] for item in old_partition_metadata.values()
+    ]
+    new_num_rows = [
+        item['num_rows'] for item in new_partition_metadata.values()
+    ]
+
+    table_metadata = {
+        "num_partitions": table_metadata['num_partitions'] - len(old_partition_metadata) + len(new_partition_metadata),
+        "num_rows": table_metadata['num_rows'] - sum(old_num_rows) + sum(new_num_rows)
+    }
+    return table_metadata
+
+
+def update_table_metadata2(df, partition_metadata, old_partition_names,
+                           table_path):
     old_partition_metadata = _fetch_old_partition_metadata(
         table_path, old_partition_names)
     partition_names = _reorder_partition_names(df, old_partition_names)
@@ -109,7 +149,6 @@ def update_table_metadata(df, partition_metadata, old_partition_names,
     num_rows = old_num_rows + new_num_rows
 
     table_metadata = {
-        "partitions": partition_names,
         "num_partitions": len(partition_names),
         "num_rows": sum(num_rows)
     }
@@ -206,12 +245,12 @@ def _get_column_names(df):
 
 
 def _get_index_min(df, index_name):
-    first_index_value = str(df[index_name][0])
+    first_index_value = df[index_name][0].as_py()
     return first_index_value
 
 
 def _get_index_max(df, index_name):
-    last_index_value = str(df[index_name][-1])
+    last_index_value = df[index_name][-1].as_py()
     return last_index_value
 
 

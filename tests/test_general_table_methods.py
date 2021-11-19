@@ -7,7 +7,7 @@ def test_rename_table(database, connection, store):
     df = make_table()
     store.write_table("table_name", df)
     store.rename_table("table_name", to=NEW_TABLE_NAME)
-    table = store.table(NEW_TABLE_NAME)
+    table = store.select_table(NEW_TABLE_NAME)
     # Act
     table_names = store.list_tables()
     table_name = table.table_name
@@ -55,7 +55,7 @@ def test_get_columns(database, connection, store):
     df = make_table(sorted_datetime_index)
     expected = df.column_names
     store.write_table("table_name", df)
-    table = store.table("table_name")
+    table = store.select_table("table_name")
     # Act
     columns = table.columns
     # Assert
@@ -67,7 +67,7 @@ def test_get_index(database, connection, store):
     df = make_table(sorted_datetime_index, astype="pandas")
     expected = df.index
     store.write_table("table_name", df)
-    table = store.table("table_name")
+    table = store.select_table("table_name")
     # Act
     index = table.index
     # Assert
