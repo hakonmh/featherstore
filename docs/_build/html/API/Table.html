@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Table &#8212; FeatherStore 0.0.3 documentation</title>
     
   <link href="../_static/css/theme.css" rel="stylesheet">
@@ -171,7 +170,7 @@
               
               <div>
                 
-  <section id="module-featherstore.table">
+  <div class="section" id="module-featherstore.table">
 <span id="table"></span><h1>Table<a class="headerlink" href="#module-featherstore.table" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="featherstore.table.Table">
@@ -306,16 +305,44 @@ the columns of <cite>df</cite> are the new values.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.insert">
+<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert one or more rows into the current table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Pandas Series</em>) – The data to be inserted. <cite>df</cite> must have the same index and column
+types as the stored data.</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.columns">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">columns</span></span><a class="headerlink" href="#featherstore.table.Table.columns" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the table columns</p>
+<dd><p>Fetches the table columns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>columns</strong></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.index">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">index</span></span><a class="headerlink" href="#featherstore.table.Table.index" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the table index</p>
+<dd><p>Fetches the table index</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>index</strong></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Pandas Index</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -338,12 +365,20 @@ the columns of <cite>df</cite> are the new values.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.shape">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#featherstore.table.Table.shape" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the shape of the stored data as <cite>(rows, cols)</cite></p>
+<dd><p>Fetches the shape of the stored table as <cite>(rows, cols)</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>shape</strong></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple(int, int)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-</section>
+</div>
 
 
               </div>

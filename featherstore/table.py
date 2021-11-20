@@ -389,7 +389,12 @@ class Table:
 
     @property
     def columns(self):
-        """Returns the table columns"""
+        """Fetches the table columns
+
+        Returns
+        -------
+        columns : list
+        """
         return self._table_data["columns"]
 
     @columns.setter
@@ -404,7 +409,12 @@ class Table:
 
     @property
     def index(self):
-        """Returns the table index"""
+        """Fetches the table index
+
+        Returns
+        -------
+        index : Pandas Index
+        """
         index = self.read_arrow(cols=[])
         index = index.to_pandas().index
         return index
@@ -437,7 +447,12 @@ class Table:
 
     @property
     def shape(self):
-        """Returns the shape of the stored data as `(rows, cols)`"""
+        """Fetches the shape of the stored table as `(rows, cols)`
+
+        Returns
+        -------
+        shape : tuple(int, int)
+        """
         cols = self._table_data["num_cols"]
         rows = self._table_data["num_rows"]
         return (rows, cols)
