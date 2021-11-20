@@ -1,7 +1,6 @@
 import os
 
 from featherstore.connection import current_db
-from featherstore import _metadata
 from featherstore._metadata import Metadata
 from featherstore import _utils
 
@@ -23,6 +22,7 @@ from featherstore._table.write import (
     calculate_rows_per_partition,
     make_partitions,
     make_partition_ids,
+    make_table_metadata,
     write_partitions,
 )
 from featherstore._table.append import (
@@ -45,6 +45,8 @@ from featherstore._table.common import (
     can_rename_table,
     combine_partitions,
     format_table,
+    make_partition_metadata,
+    update_table_metadata,
     assign_ids_to_partitions,
     delete_partition,
     delete_partition_metadata,
@@ -229,9 +231,9 @@ class Table:
         partitioned_df = assign_ids_to_partitions(partitioned_df, partition_names)
 
         collected_metadata = (partition_size, rows_per_partition)
-        table_metadata = _metadata.make_table_metadata(partitioned_df,
-                                                       collected_metadata)
-        partition_metadata = _metadata.make_partition_metadata(partitioned_df)
+        table_metadata = make_table_metadata(partitioned_df,
+                                             collected_metadata)
+        partition_metadata = make_partition_metadata(partitioned_df)
 
         self._create_table()
         self._table_data.write(table_metadata)
@@ -285,11 +287,11 @@ class Table:
         for key in old_table_metadata.keys():
             old_table_metadata[key] = self._table_data[key]
         old_partition_metadata = {last_partition_name: self._partition_data[last_partition_name]}
-        new_partition_metadata = _metadata.make_partition_metadata(partitioned_df)
+        new_partition_metadata = make_partition_metadata(partitioned_df)
 
-        table_metadata = _metadata.update_table_metadata(old_table_metadata,
-                                                         new_partition_metadata,
-                                                         old_partition_metadata)
+        table_metadata = update_table_metadata(old_table_metadata,
+                                               new_partition_metadata,
+                                               old_partition_metadata)
 
         self._table_data.write(table_metadata)
         self._partition_data.write(new_partition_metadata)
@@ -308,20 +310,24 @@ class Table:
             The updated data. The index of `df` is the rows to be updated, while
             the columns of `df` are the new values.
         """
-        can_update_table(df, self._table_path, self.exists)
+        can_update_table(df, self._table_path, self.exists, self)
 
         index_type = self._table_data["index_dtype"]
         rows = format_rows(df.index, index_type)
 
         partition_names = get_partition_names(rows, self._table_path)
-        partitions = read_partitions(partition_names,
-                                     self._table_path,
-                                     columns=None)
+        stored_df = read_partitions(partition_names,
+                                    self._table_path,
+                                    columns=None)
 
-        stored_df = combine_partitions(partitions)
-        df = update_data(stored_df, to=df)
+        stored_df = combine_partitions(stored_df)
+        try:
+            df = update_data(stored_df, to=df)
+        except Exception:
+            raise
+        finally:
+            del stored_df
         df = format_table(df, index=None, warnings=False)
-        del partitions, stored_df
 
         rows_per_partition = self._table_data["rows_per_partition"]
         partitioned_df = make_partitions(df, rows_per_partition)
@@ -346,14 +352,14 @@ class Table:
         rows = format_rows(df.index, index_type)
 
         partition_names = get_partition_names(rows, self._table_path)
-        partitions = read_partitions(partition_names,
-                                     self._table_path,
-                                     columns=None)
-        stored_df = combine_partitions(partitions)
+        stored_df = read_partitions(partition_names,
+                                    self._table_path,
+                                    columns=None)
+        stored_df = combine_partitions(stored_df)
 
         df = insert_data(stored_df, to=df)
+        del stored_df
         df = format_table(df, index=None, warnings=False)
-        # del partitions, stored_df
 
         rows_per_partition = self._table_data["rows_per_partition"]
         partition_metadata = self._partition_data.read()
@@ -364,8 +370,8 @@ class Table:
             name: df for name, df in zip(partition_names, partitioned_df)
         }
 
-        partition_metadata = _metadata.make_partition_metadata(partitioned_df)
-        table_metadata = _metadata.update_table_metadata(
+        partition_metadata = make_partition_metadata(partitioned_df)
+        table_metadata = update_table_metadata(
             partitioned_df,
             partition_metadata,
             self._table_path
@@ -400,7 +406,8 @@ class Table:
     def index(self):
         """Returns the table index"""
         index = self.read_arrow(cols=[])
-        return index.to_pandas().index
+        index = index.to_pandas().index
+        return index
 
     def _set_index(self, new_index, drop_old=False):
         raise NotImplementedError

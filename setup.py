@@ -31,7 +31,6 @@ setup(
         'pandas>=1.1.0',
         'polars>=0.9.1',
         'pyarrow>=4.0.0',
-        'lsm>=0.4.0'
     ],
     project_urls={
         'Documentation': r'https://featherstore.readthedocs.io/en/latest/'

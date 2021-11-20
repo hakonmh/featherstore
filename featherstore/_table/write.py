@@ -1,4 +1,5 @@
 import os
+import json
 from numbers import Integral
 
 import pyarrow as pa
@@ -7,10 +8,12 @@ import pandas as pd
 import polars as pl
 
 from featherstore import _utils
+from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore._table.common import (
     _get_cols,
     _check_column_constraints,
     _convert_to_partition_id,
+    _get_index_dtype
 )
 
 
@@ -59,6 +62,92 @@ def make_partition_ids(num_partitions):
         partition_id = _convert_to_partition_id(partition_num)
         partition_ids.append(partition_id)
     return partition_ids
+
+
+def make_table_metadata(df, collected_data):
+    df = tuple(df.values())
+    partition_byte_size, partition_size_in_rows = collected_data
+    index_name = _get_index_name(df)
+
+    metadata = {
+        "num_rows": _get_num_rows(df),
+        "columns": _get_column_names(df),
+        "num_columns": _get_num_cols(df),
+        "num_partitions": len(df),
+        "rows_per_partition": partition_size_in_rows,
+        "partition_byte_size": int(partition_byte_size),
+        "index_name": index_name,
+        "index_column_position": _get_index_position(df, index_name),
+        "index_dtype": _get_index_dtype(df),
+        "has_default_index": _has_default_index(df, index_name),
+    }
+    return metadata
+
+
+def _get_index_name(df):
+    if isinstance(df, dict):
+        partition = tuple(df.values())[0]
+    else:
+        partition = df[0]
+    schema = partition.schema
+    index_name, = schema.pandas_metadata["index_columns"]
+    no_index_name = not isinstance(index_name, str)
+    if no_index_name:
+        index_name = "index"
+    return index_name
+
+
+def _get_column_names(df):
+    schema = df[0].schema
+    cols = schema.names
+    return cols
+
+
+def _get_num_rows(df):
+    num_rows = 0
+    for partition in df:
+        num_rows += partition.num_rows
+    return num_rows
+
+
+def _get_num_cols(df):
+    num_cols = df[0].num_columns
+    return num_cols
+
+
+def _get_index_position(df, index_name):
+    schema = df[0].schema
+    index_position = schema.get_field_index(index_name)
+    return index_position
+
+
+def _has_default_index(df, index_name):
+    has_index_name = index_name != DEFAULT_ARROW_INDEX_NAME
+
+    if has_index_name or _index_was_sorted(df):
+        has_default_index = False
+    else:
+        index = pa.Table.from_batches(df)[index_name]
+        rangeindex = pa.compute.sort_indices(index)
+        IS_NOT_THE_SAME_TYPE = pa.lib.ArrowNotImplementedError
+        try:
+            is_rangeindex = all(pa.compute.equal(index, rangeindex))
+        except IS_NOT_THE_SAME_TYPE:
+            is_rangeindex = False
+
+        if is_rangeindex:
+            has_default_index = True
+        else:
+            has_default_index = False
+
+    return has_default_index
+
+
+def _index_was_sorted(df):
+    featherstore_metadata = df[0].schema.metadata[b"featherstore"]
+    metadata_dict = json.loads(featherstore_metadata)
+    was_sorted = metadata_dict["sorted"]
+    return was_sorted
 
 
 def write_partitions(partitions, table_path):

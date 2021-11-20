@@ -75,6 +75,13 @@ def format_table(df, index, warnings):
     return formatted_df
 
 
+def assign_ids_to_partitions(df, ids):
+    id_mapping = {}
+    for identifier, partition in zip(ids, df):
+        id_mapping[identifier] = partition
+    return id_mapping
+
+
 def _convert_to_pandas(df):
     if isinstance(df, pd.DataFrame):
         pd_df = df
@@ -123,6 +130,59 @@ def _add_schema_metadata(df, new_metadata):
     return df
 
 
+def make_partition_metadata(df):
+    metadata = {}
+    index_col_name = _get_index_name(df)
+    for name, partition in df.items():
+        data = {
+            'min': _get_index_min(partition, index_col_name),
+            'max': _get_index_max(partition, index_col_name),
+            'num_rows': partition.num_rows
+        }
+        metadata[name] = data
+    return metadata
+
+
+def _get_index_name(df):
+    if isinstance(df, dict):
+        partition = tuple(df.values())[0]
+    else:
+        partition = df[0]
+    schema = partition.schema
+    index_name, = schema.pandas_metadata["index_columns"]
+    no_index_name = not isinstance(index_name, str)
+    if no_index_name:
+        index_name = "index"
+    return index_name
+
+
+def _get_index_min(df, index_name):
+    first_index_value = df[index_name][0].as_py()
+    return first_index_value
+
+
+def _get_index_max(df, index_name):
+    last_index_value = df[index_name][-1].as_py()
+    return last_index_value
+
+
+def update_table_metadata(table_metadata,
+                          new_partition_metadata,
+                          old_partition_metadata):
+    old_num_rows = [
+        item['num_rows'] for item in old_partition_metadata.values()
+    ]
+    new_num_rows = [
+        item['num_rows'] for item in new_partition_metadata.values()
+    ]
+
+    table_metadata = {
+        "num_partitions": table_metadata['num_partitions'] - len(old_partition_metadata) + len(new_partition_metadata),
+        "num_rows": table_metadata['num_rows'] - sum(old_num_rows) + sum(new_num_rows)
+    }
+    return table_metadata
+
+
 def delete_partition(table_path, partition_name):
     partition_path = os.path.join(table_path, f'{partition_name}.feather')
     try:
@@ -138,11 +198,7 @@ def delete_partition_metadata(table_path, partition_name):
     del partition_data[partition_name]
 
 
-def assign_ids_to_partitions(df, ids):
-    id_mapping = {}
-    for identifier, partition in zip(ids, df):
-        id_mapping[identifier] = partition
-    return id_mapping
+# ---------------------------------------------------------
 
 
 def _get_cols(df, has_default_index):
@@ -204,3 +260,13 @@ def _convert_to_partition_id(partition_id):
 
 def _convert_partition_id_to_int(partition_id):
     return int(partition_id) // INSERTION_BUFFER_LENGTH
+
+
+def _get_index_dtype(df):
+    schema = df[0].schema
+    # A better solution for when format_table is refactored:
+    # str(df[0].field(index_position).type)
+    index_dtype = schema.pandas_metadata["columns"][-1]["pandas_type"]
+    if index_dtype == "datetime":
+        index_dtype = "datetime64"
+    return index_dtype

@@ -1,13 +1,14 @@
 import pandas as pd
 import pyarrow as pa
 
-from featherstore._metadata import Metadata, _get_index_dtype
+from featherstore._metadata import Metadata
 from featherstore._table.common import (
     _check_index_constraints,
     _check_column_constraints,
     _coerce_column_dtypes,
     _convert_to_partition_id,
-    _convert_partition_id_to_int
+    _convert_partition_id_to_int,
+    _get_index_dtype
 )
 
 

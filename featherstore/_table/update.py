@@ -1,13 +1,14 @@
 import pandas as pd
 import pyarrow as pa
 
-from featherstore._metadata import Metadata, _get_index_dtype
+from featherstore._metadata import Metadata
 from featherstore._table.common import (_check_index_constraints,
                                         _check_column_constraints,
-                                        _coerce_column_dtypes)
+                                        _coerce_column_dtypes,
+                                        _get_index_dtype)
 
 
-def can_update_table(df, table_path, table_exists):
+def can_update_table(df, table_path, table_exists, obj):
     if not table_exists:
         raise FileNotFoundError("Table doesn't exist")
 
