@@ -42,7 +42,8 @@ class Metadata:
             f.write(pickle.dumps(value))
 
     def __delitem__(self, key: str):
-        del self.db[key]
+        path = os.path.join(self.db_path, key)
+        os.remove(path)
 
     def __repr__(self):
         return self.db_path
@@ -69,8 +70,7 @@ def update_table_metadata(table_metadata, new_partition_metadata,
 
     table_metadata = {
         "num_partitions":
-        table_metadata['num_partitions'] - len(old_partition_metadata) +
-        len(new_partition_metadata),
+        table_metadata['num_partitions'] - len(old_partition_metadata) + len(new_partition_metadata),
         "num_rows":
         table_metadata['num_rows'] - sum(old_num_rows) + sum(new_num_rows)
     }

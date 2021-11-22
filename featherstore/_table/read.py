@@ -7,7 +7,7 @@ import pandas as pd
 import polars as pl
 
 from featherstore._metadata import Metadata, get_partition_attr
-from featherstore._utils import like_pattern_matching
+from featherstore._table.common import _rows_dtype_matches_index
 
 
 def can_read_table(cols, rows, table_exists, table_metadata):
@@ -25,45 +25,6 @@ def can_read_table(cols, rows, table_exists, table_metadata):
     index_dtype = table_metadata["index_dtype"]
     if rows and not _rows_dtype_matches_index(rows, index_dtype):
         raise TypeError("'rows' type doesn't match table index")
-
-
-def _rows_dtype_matches_index(rows, index_dtype):
-    try:
-        _convert_row(rows[-1], to=index_dtype)
-        row_type_matches = True
-    except Exception:
-        row_type_matches = False
-    return row_type_matches
-
-
-def format_cols(cols, table_data):
-    if cols:
-        keyword = str(cols[0]).lower()
-        if keyword == "like":
-            like = cols[1]
-            table_columns = table_data["columns"]
-            cols = like_pattern_matching(like, table_columns)
-    return cols
-
-
-def format_rows(rows, index_type):
-    if rows is not None:
-        keyword = str(rows[0]).lower()
-        if keyword in {"between", "before", "after"}:
-            rows[1:] = [_convert_row(item, to=index_type) for item in rows[1:]]
-        else:
-            rows = [_convert_row(item, to=index_type) for item in rows]
-    return rows
-
-
-def _convert_row(row, *, to):
-    if to == "datetime64":
-        row = pd.to_datetime(row)
-    elif to == "string" or to == "unicode":
-        row = str(row)
-    elif to == "int64":
-        row = int(row)
-    return row
 
 
 def get_partition_names(rows, table_path):

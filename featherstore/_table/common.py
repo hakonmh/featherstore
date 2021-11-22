@@ -7,7 +7,7 @@ import polars as pl
 
 from featherstore.connection import current_db
 from featherstore._metadata import Metadata, METADATA_FOLDER_NAME
-from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
+from featherstore._utils import DEFAULT_ARROW_INDEX_NAME, like_pattern_matching
 
 PARTITION_NAME_LENGTH = 14
 INSERTION_BUFFER_LENGTH = 10**6
@@ -55,6 +55,36 @@ def combine_partitions(partitions):
     return full_table
 
 
+def format_cols(cols, table_data):
+    if cols:
+        keyword = str(cols[0]).lower()
+        if keyword == "like":
+            like = cols[1]
+            table_columns = table_data["columns"]
+            cols = like_pattern_matching(like, table_columns)
+    return cols
+
+
+def format_rows(rows, index_type):
+    if rows is not None:
+        keyword = str(rows[0]).lower()
+        if keyword in {"between", "before", "after"}:
+            rows[1:] = [_convert_row(item, to=index_type) for item in rows[1:]]
+        else:
+            rows = [_convert_row(item, to=index_type) for item in rows]
+    return rows
+
+
+def _convert_row(row, *, to):
+    if to == "datetime64":
+        row = pd.to_datetime(row)
+    elif to == "string" or to == "unicode":
+        row = str(row)
+    elif to == "int64":
+        row = int(row)
+    return row
+
+
 def format_table(df, index, warnings):
     df = _convert_to_pandas(df)
     df = _set_index(df, index)
@@ -76,7 +106,7 @@ def format_table(df, index, warnings):
 
 def assign_ids_to_partitions(df, ids):
     if len(df) != len(ids):
-        raise IndexError()
+        raise IndexError("Num partitions doesn't match num partiton names")
     id_mapping = {}
     for identifier, partition in zip(ids, df):
         id_mapping[identifier] = partition
@@ -241,6 +271,15 @@ def _check_column_constraints(cols):
         raise IndexError("Column names must be unique")
     if "like" in cols.str.lower():
         raise IndexError("df contains invalid column name 'like'")
+
+
+def _rows_dtype_matches_index(rows, index_dtype):
+    try:
+        _convert_row(rows[-1], to=index_dtype)
+        row_type_matches = True
+    except Exception:
+        row_type_matches = False
+    return row_type_matches
 
 
 def _coerce_column_dtypes(df, *, to):

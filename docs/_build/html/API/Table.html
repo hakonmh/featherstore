@@ -185,10 +185,10 @@ full data:</p>
 <li><p>Fetching Columns</p></li>
 <li><p>Fetching Index</p></li>
 <li><p>Updates</p></li>
+<li><p>Inserts</p></li>
 </ul>
 <p>It will also support the following operations down the line:</p>
 <ul class="simple">
-<li><p>Inserts</p></li>
 <li><p>Drop columns/Drop rows</p></li>
 <li><p>Changing types</p></li>
 <li><p>Changing index</p></li>
@@ -294,7 +294,7 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 <dt class="sig sig-object py" id="featherstore.table.Table.update">
 <span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Updates data in the current table.</p>
-<p>Note: You can’t use this method to update index values. Updating index
+<p><em>Note</em>: You can’t use this method to update index values. Updating index
 values can be accomplished by deleting the old records and inserting new
 ones with the updated index values.</p>
 <dl class="field-list simple">

@@ -6,9 +6,7 @@ from featherstore import _utils
 
 from featherstore._table.read import (
     can_read_table,
-    format_rows,
     get_partition_names,
-    format_cols,
     read_partitions,
     filter_table_rows,
     drop_default_index,
@@ -40,11 +38,17 @@ from featherstore._table.insert import (
     insert_data,
     insert_new_partition_ids,
 )
+from featherstore._table.drop import (
+    can_drop_rows_from_table,
+    drop_rows_from_data,
+)
 from featherstore._table.common import (
     can_init_table,
     can_rename_table,
     combine_partitions,
     format_table,
+    format_cols,
+    format_rows,
     make_partition_metadata,
     update_table_metadata,
     assign_ids_to_partitions,
@@ -101,7 +105,7 @@ class Table:
             list of column names or, filter-predicates in the form of
             `[like, pattern]`, by default `None`
         rows : list, optional
-            list of index values or, filter-predicates in the form of
+            list of index values or filter-predicates in the form of
             `[keyword, value]`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
         """
@@ -129,7 +133,7 @@ class Table:
         Parameters
         ----------
         cols : list, optional
-            list of column names or, filter-predicates in the form of
+            list of column names or filter-predicates in the form of
             `[like, pattern]`, by default `None`
         rows : list, optional
             list of index values or, filter-predicates in the form of
@@ -152,7 +156,7 @@ class Table:
         Parameters
         ----------
         cols : list, optional
-            list of column names or, filter-predicates in the form of
+            list of column names or filter-predicates in the form of
             `[like, pattern]`, by default `None`
         rows : list, optional
             list of index values or, filter-predicates in the form of
@@ -303,7 +307,7 @@ class Table:
     def update(self, df):
         """Updates data in the current table.
 
-        Note: You can't use this method to update index values. Updating index
+        *Note*: You can't use this method to update index values. Updating index
         values can be accomplished by deleting the old records and inserting new
         ones with the updated index values.
 
@@ -389,8 +393,68 @@ class Table:
         self._partition_data.write(new_partition_metadata)
         write_partitions(partitioned_df, self._table_path)
 
-    def _drop(self, cols=None, rows=None):
-        raise NotImplementedError
+    def drop(self, cols=None, rows=None):
+        both_rows_and_cols_is_provided = cols is not None and rows is not None
+        if both_rows_and_cols_is_provided:
+            raise AttributeError('Can not drop both rows and columns at the same time')
+        elif cols is not None:
+            self._drop_columns(cols)
+        elif rows is not None:
+            self._drop_rows(rows)
+        else:
+            raise AttributeError("Neither 'rows' or 'cols' is provided")
+
+    def _drop_rows(self, rows):
+        can_drop_rows_from_table(rows, self._table_path, self.exists)
+
+        index_col_name = self._table_data["index_name"]
+        index_type = self._table_data["index_dtype"]
+        rows_per_partition = self._table_data["rows_per_partition"]
+
+        rows = format_rows(rows, index_type)
+
+        partition_names = get_partition_names(rows, self._table_path)
+        stored_df = read_partitions(partition_names,
+                                    self._table_path,
+                                    columns=None)
+        stored_df = combine_partitions(stored_df)
+
+        try:
+            df = drop_rows_from_data(stored_df, rows, index_col_name)
+        except Exception:
+            raise
+        finally:
+            del stored_df
+        df = format_table(df, index=None, warnings=False)
+        partitioned_df = make_partitions(df, rows_per_partition)
+        kept_partition_names = partition_names[:len(partitioned_df)]
+        dropped_partition_names = partition_names[len(partitioned_df):]
+        partitioned_df = assign_ids_to_partitions(partitioned_df,
+                                                  kept_partition_names)
+
+        old_table_metadata = {
+            'num_rows': self._table_data['num_rows'],
+            'num_partitions': self._table_data['num_partitions']
+        }
+        old_partition_metadata = {
+            name: self._partition_data[name]
+            for name in partition_names
+        }
+        new_partition_metadata = make_partition_metadata(partitioned_df)
+        table_metadata = update_table_metadata(old_table_metadata,
+                                               new_partition_metadata,
+                                               old_partition_metadata)
+
+        for name in dropped_partition_names:
+            delete_partition(self._table_path, name)
+            delete_partition_metadata(self._table_path, name)
+
+        self._table_data.write(table_metadata)
+        self._partition_data.write(new_partition_metadata)
+        write_partitions(partitioned_df, self._table_path)
+
+    def _drop_columns(self, cols):
+        pass
 
     def _add_columns(self, cols):
         raise NotImplementedError
