@@ -14,8 +14,8 @@ in the full data:
 * Predicate filtering when reading
 * Append data
 * Read metadata (column names, index, table size, etc)
-* (planned) Insert data
-* (planned) Update data
+* Insert data
+* Update data
 * (planned) Remove columns and rows
 * (planned) Changing types
 

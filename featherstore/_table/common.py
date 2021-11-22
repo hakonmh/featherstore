@@ -76,6 +76,8 @@ def format_table(df, index, warnings):
 
 
 def assign_ids_to_partitions(df, ids):
+    if len(df) != len(ids):
+        raise IndexError()
     id_mapping = {}
     for identifier, partition in zip(ids, df):
         id_mapping[identifier] = partition

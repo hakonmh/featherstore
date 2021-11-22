@@ -20,12 +20,13 @@ def can_insert_table(df, table_path, table_exists):
         raise TypeError(
             f"'df' must be a pd.DataFrame or pd.Series (is type {type(df)})")
 
-    _check_index_constraints(df.index)
-
     if isinstance(df, pd.Series):
         cols = [df.name]
     else:
         cols = df.columns
+
+    _check_index_constraints(df.index)
+    _check_column_constraints(cols)
 
     index_name = Metadata(table_path, "table")['index_name']
     stored_data_cols = Metadata(table_path, "table")["columns"]
@@ -66,19 +67,19 @@ def _check_if_rows_not_in_old_data(old_df, df):
         raise ValueError(f"Some rows already in stored table")
 
 
-def insert_new_partition_ids(num_partitions, preceding_id, ensuing_id):
-    partition_ids = [preceding_id]
+def insert_new_partition_ids(partitioned_df, partition_names):
+    INSERTION_ID_RANGE = 1
+    num_partitions = len(partitioned_df)
+    num_partition_names = len(partition_names)
 
-    preceding_id = _convert_partition_id_to_int(preceding_id)
-    ensuing_id = _convert_partition_id_to_int(ensuing_id)
-    insertion_range = ensuing_id - preceding_id
-    num_partitions += 1
-    increment = insertion_range / num_partitions
+    number_of_new_names_to_make = num_partitions - num_partition_names + 1
+    increment = INSERTION_ID_RANGE / number_of_new_names_to_make
+    last_partition_id = _convert_partition_id_to_int(partition_names[-1])
 
-    for partition_num in range(1, num_partitions):
-        partition_id = preceding_id + increment * partition_num
-        partition_id = _convert_to_partition_id(partition_num)
-        partition_ids.append(partition_id)
+    new_partition_names = partition_names.copy()
+    for partition_num in range(1, number_of_new_names_to_make):
+        partition_id = last_partition_id + increment * partition_num
+        partition_id = _convert_to_partition_id(partition_id)
+        new_partition_names.append(partition_id)
 
-    partition_ids.append(ensuing_id)
-    return partition_ids
+    return sorted(new_partition_names)

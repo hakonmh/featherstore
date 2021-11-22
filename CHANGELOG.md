@@ -2,15 +2,14 @@
 -----
 **Warning**: This update causes some API-breaking changes:
 * `store.table` renamed to `store.select_table`
-* `list_tables` and `list_store` argument `like` now uses `?` as single character
+* `list_tables` and `list_store` argument `like` now uses `?` as single-character
   wildcard instead of `_`.
 * Removed `read_table_metadata` and `read_partition_metadata`
 
 Other changes:
-* Added `Table.shape`
 * Added `Table.update()`
-* Now uses `lsm` as metadata-backend
-
+* Added `Table.insert()`
+* Added `Table.shape`
 
 0.0.3
 -----
@@ -22,7 +21,7 @@ Other changes:
 
 **Warning**: This update causes some API-breaking changes:
 * `Table.read()` and `Store.read_table()` has now been renamed to `read_arrow()`
-* The parameter `new_name` in `rename_*()` functions and methods have been changed to `to`
+* The parameter `new_name` in `rename_%()` functions and methods have been changed to `to`
 
 Other changes:
 * Improved `read_polars()` performance

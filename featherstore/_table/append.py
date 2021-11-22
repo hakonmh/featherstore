@@ -106,10 +106,11 @@ def sort_columns(df, columns):
     return df
 
 
-def append_new_partition_ids(num_partitions, last_partition_id):
+def append_new_partition_ids(partitioned_df, last_partition_id):
+    num_partitions = len(partitioned_df)
     partition_ids = [last_partition_id]
     range_start = _convert_partition_id_to_int(last_partition_id) + 1
-    range_end = range_start + num_partitions
+    range_end = range_start + num_partitions - 1
     for partition_num in range(range_start, range_end):
         partition_id = _convert_to_partition_id(partition_num)
         partition_ids.append(partition_id)

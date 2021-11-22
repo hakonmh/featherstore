@@ -67,10 +67,10 @@ class Table:
         - Fetching Columns
         - Fetching Index
         - Updates
+        - Inserts
 
         It will also support the following operations down the line:
 
-        - Inserts
         - Drop columns/Drop rows
         - Changing types
         - Changing index
@@ -227,7 +227,7 @@ class Table:
         rows_per_partition = calculate_rows_per_partition(
             formatted_df, partition_size)
         partitioned_df = make_partitions(formatted_df, rows_per_partition)
-        partition_names = make_partition_ids(len(partitioned_df))
+        partition_names = make_partition_ids(partitioned_df)
         partitioned_df = assign_ids_to_partitions(partitioned_df, partition_names)
 
         collected_metadata = (partition_size, rows_per_partition)
@@ -237,7 +237,7 @@ class Table:
 
         self._create_table()
         self._table_data.write(table_metadata)
-        # breakpoint()
+
         self._partition_data.write(partition_metadata)
         write_partitions(partitioned_df, self._table_path)
         self.exists = True
@@ -279,7 +279,7 @@ class Table:
         del last_partition, df  # Closes memory-map
 
         new_partition_names = append_new_partition_ids(
-            len(partitioned_df), last_partition_name
+            partitioned_df, last_partition_name
         )
         partitioned_df = assign_ids_to_partitions(partitioned_df, new_partition_names)
 
@@ -331,9 +331,7 @@ class Table:
 
         rows_per_partition = self._table_data["rows_per_partition"]
         partitioned_df = make_partitions(df, rows_per_partition)
-        partitioned_df = {
-            name: df for name, df in zip(partition_names, partitioned_df)
-        }
+        partitioned_df = assign_ids_to_partitions(partitioned_df, partition_names)
 
         write_partitions(partitioned_df, self._table_path)
 
@@ -359,26 +357,26 @@ class Table:
 
         df = insert_data(stored_df, to=df)
         del stored_df
-        df = format_table(df, index=None, warnings=False)
+        df = format_table(df, index=None, warnings='ignore')
 
         rows_per_partition = self._table_data["rows_per_partition"]
-        partition_metadata = self._partition_data.read()
-        # partitioned_df = _repartition_data(df, partition_metadata)
         partitioned_df = make_partitions(df, rows_per_partition)
-        breakpoint()
-        partitioned_df = {
-            name: df for name, df in zip(partition_names, partitioned_df)
-        }
 
-        partition_metadata = make_partition_metadata(partitioned_df)
-        table_metadata = update_table_metadata(
-            partitioned_df,
-            partition_metadata,
-            self._table_path
+        new_partition_names = insert_new_partition_ids(
+            partitioned_df, partition_names
         )
+        partitioned_df = assign_ids_to_partitions(partitioned_df, new_partition_names)
+
+        old_table_metadata = {'num_rows': self._table_data['num_rows'], 'num_partitions': self._table_data['num_partitions']}
+        old_partition_metadata = {name: self._partition_data[name] for name in partition_names}
+        new_partition_metadata = make_partition_metadata(partitioned_df)
+
+        table_metadata = update_table_metadata(old_table_metadata,
+                                               new_partition_metadata,
+                                               old_partition_metadata)
 
         self._table_data.write(table_metadata)
-        self._partition_data.write(partition_metadata)
+        self._partition_data.write(new_partition_metadata)
         write_partitions(partitioned_df, self._table_path)
 
     def _drop(self, cols=None, rows=None):
