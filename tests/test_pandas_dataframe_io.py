@@ -12,12 +12,14 @@ from .fixtures import *
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_sorted_pandas_io(original_df, basic_data, database, connection, store):
+def test_sorted_pandas_io(original_df, basic_data, database, connection,
+                          store):
     # Arrange
-    partition_size = get_partition_size(original_df, basic_data["num_partitions"])
-    store.write_table(
-        basic_data["table_name"], original_df, partition_size=partition_size
-    )
+    partition_size = get_partition_size(original_df,
+                                        basic_data["num_partitions"])
+    store.write_table(basic_data["table_name"],
+                      original_df,
+                      partition_size=partition_size)
     # Act
     df = store.read_pandas(basic_data["table_name"])
     # Assert
@@ -33,9 +35,11 @@ def test_sorted_pandas_io(original_df, basic_data, database, connection, store):
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_unsorted_pandas_io(original_df, basic_data, database, connection, store):
+def test_unsorted_pandas_io(original_df, basic_data, database, connection,
+                            store):
     # Arrange
-    partition_size = get_partition_size(original_df, basic_data["num_partitions"])
+    partition_size = get_partition_size(original_df,
+                                        basic_data["num_partitions"])
     store.write_table(
         basic_data["table_name"],
         original_df,
@@ -57,9 +61,8 @@ def convert_rangeindex_to_int64_index(df):
     return df
 
 
-def test_that_pandas_rangeindex_is_converted_back(
-    basic_data, database, connection, store
-):
+def test_that_pandas_rangeindex_is_converted_back(basic_data, database,
+                                                  connection, store):
     # Arrange
     original_df = make_table(astype="pandas")
     original_df = convert_rangeindex_to_int64_index(original_df)
@@ -89,10 +92,11 @@ def test_append_table(original_df, basic_data, database, connection, store):
     shuffled_cols = sample(tuple(cols), len(cols))
     appended_df = appended_df[shuffled_cols]
 
-    partition_size = get_partition_size(original_df, basic_data["num_partitions"])
-    store.write_table(
-        basic_data["table_name"], prewritten_df, partition_size=partition_size
-    )
+    partition_size = get_partition_size(original_df,
+                                        basic_data["num_partitions"])
+    store.write_table(basic_data["table_name"],
+                      prewritten_df,
+                      partition_size=partition_size)
     store.append_table(basic_data["table_name"], appended_df)
     # Act
     df = store.read_pandas(basic_data["table_name"])
@@ -120,14 +124,15 @@ def test_filter_columns(basic_data, database, connection, store):
             make_table(sorted_datetime_index, astype="pandas"),
             ["2021-01-07", "2021-01-20"],
         ),
-        (make_table(hardcoded_string_index, astype="pandas"), ["row10", "row3"]),
+        (make_table(hardcoded_string_index,
+                    astype="pandas"), ["row10", "row3"]),
     ],
 )
-def test_filtering_rows_with_list(
-    original_df, rows, basic_data, database, connection, store
-):
+def test_filtering_rows_with_list(original_df, rows, basic_data, database,
+                                  connection, store):
     # Arrange
-    partition_size = get_partition_size(original_df, basic_data["num_partitions"])
+    partition_size = get_partition_size(original_df,
+                                        basic_data["num_partitions"])
     store.write_table(
         basic_data["table_name"],
         original_df,
@@ -151,18 +156,18 @@ def test_filtering_rows_with_list(
         (3, 19),
     ],
 )
-def test_filtering_columns_and_rows_between(
-    low, high, basic_data, database, connection, store
-):
+def test_filtering_columns_and_rows_between(low, high, basic_data, database,
+                                            connection, store):
     # Arrange
     COLUMNS = ["c0", "c1"]
     ROWS = ["between", low, high]
     original_df = make_table(astype="pandas")
     original_df.index.name = "index"
-    partition_size = get_partition_size(original_df, basic_data["num_partitions"])
-    store.write_table(
-        basic_data["table_name"], original_df, partition_size=partition_size
-    )
+    partition_size = get_partition_size(original_df,
+                                        basic_data["num_partitions"])
+    store.write_table(basic_data["table_name"],
+                      original_df,
+                      partition_size=partition_size)
     expected = original_df.loc[low:high, COLUMNS]
     # Act
     df = store.read_pandas(basic_data["table_name"], cols=COLUMNS, rows=ROWS)
@@ -178,16 +183,17 @@ def test_filtering_columns_and_rows_between(
         "T9est",
     ],
 )
-def test_filtering_rows_before_low_with_string_index(
-    high, basic_data, database, connection, store
-):
+def test_filtering_rows_before_low_with_string_index(high, basic_data,
+                                                     database, connection,
+                                                     store):
     # Arrange
     ROWS = ["before", high]
     original_df = make_table(sorted_string_index, astype="pandas")
-    partition_size = get_partition_size(original_df, basic_data["num_partitions"])
-    store.write_table(
-        basic_data["table_name"], original_df, partition_size=partition_size
-    )
+    partition_size = get_partition_size(original_df,
+                                        basic_data["num_partitions"])
+    store.write_table(basic_data["table_name"],
+                      original_df,
+                      partition_size=partition_size)
     expected = original_df.loc[:high, :]
     # Act
     df = store.read_pandas(basic_data["table_name"], rows=ROWS)
@@ -204,16 +210,17 @@ def test_filtering_rows_before_low_with_string_index(
         "2021-01-12",
     ],
 )
-def test_filtering_rows_after_low_with_datetime_index(
-    low, basic_data, database, connection, store
-):
+def test_filtering_rows_after_low_with_datetime_index(low, basic_data,
+                                                      database, connection,
+                                                      store):
     # Arrange
     ROWS = ["after", low]
     original_df = make_table(sorted_datetime_index, astype="pandas")
-    partition_size = get_partition_size(original_df, basic_data["num_partitions"])
-    store.write_table(
-        basic_data["table_name"], original_df, partition_size=partition_size
-    )
+    partition_size = get_partition_size(original_df,
+                                        basic_data["num_partitions"])
+    store.write_table(basic_data["table_name"],
+                      original_df,
+                      partition_size=partition_size)
     expected = original_df.loc[low:, :]
     # Act
     df = store.read_pandas(basic_data["table_name"], rows=ROWS)

@@ -228,7 +228,8 @@ class Table:
             formatted_df, partition_size)
         partitioned_df = make_partitions(formatted_df, rows_per_partition)
         partition_names = make_partition_ids(partitioned_df)
-        partitioned_df = assign_ids_to_partitions(partitioned_df, partition_names)
+        partitioned_df = assign_ids_to_partitions(partitioned_df,
+                                                  partition_names)
 
         collected_metadata = (partition_size, rows_per_partition)
         table_metadata = make_table_metadata(partitioned_df,
@@ -278,15 +279,17 @@ class Table:
         partitioned_df = make_partitions(df, rows_per_partition)
         del last_partition, df  # Closes memory-map
 
-        new_partition_names = append_new_partition_ids(
-            partitioned_df, last_partition_name
-        )
-        partitioned_df = assign_ids_to_partitions(partitioned_df, new_partition_names)
+        new_partition_names = append_new_partition_ids(partitioned_df,
+                                                       last_partition_name)
+        partitioned_df = assign_ids_to_partitions(partitioned_df,
+                                                  new_partition_names)
 
         old_table_metadata = {'num_rows': None, 'num_partitions': None}
         for key in old_table_metadata.keys():
             old_table_metadata[key] = self._table_data[key]
-        old_partition_metadata = {last_partition_name: self._partition_data[last_partition_name]}
+        old_partition_metadata = {
+            last_partition_name: self._partition_data[last_partition_name]
+        }
         new_partition_metadata = make_partition_metadata(partitioned_df)
 
         table_metadata = update_table_metadata(old_table_metadata,
@@ -331,7 +334,8 @@ class Table:
 
         rows_per_partition = self._table_data["rows_per_partition"]
         partitioned_df = make_partitions(df, rows_per_partition)
-        partitioned_df = assign_ids_to_partitions(partitioned_df, partition_names)
+        partitioned_df = assign_ids_to_partitions(partitioned_df,
+                                                  partition_names)
 
         write_partitions(partitioned_df, self._table_path)
 
@@ -362,13 +366,19 @@ class Table:
         rows_per_partition = self._table_data["rows_per_partition"]
         partitioned_df = make_partitions(df, rows_per_partition)
 
-        new_partition_names = insert_new_partition_ids(
-            partitioned_df, partition_names
-        )
-        partitioned_df = assign_ids_to_partitions(partitioned_df, new_partition_names)
+        new_partition_names = insert_new_partition_ids(partitioned_df,
+                                                       partition_names)
+        partitioned_df = assign_ids_to_partitions(partitioned_df,
+                                                  new_partition_names)
 
-        old_table_metadata = {'num_rows': self._table_data['num_rows'], 'num_partitions': self._table_data['num_partitions']}
-        old_partition_metadata = {name: self._partition_data[name] for name in partition_names}
+        old_table_metadata = {
+            'num_rows': self._table_data['num_rows'],
+            'num_partitions': self._table_data['num_partitions']
+        }
+        old_partition_metadata = {
+            name: self._partition_data[name]
+            for name in partition_names
+        }
         new_partition_metadata = make_partition_metadata(partitioned_df)
 
         table_metadata = update_table_metadata(old_table_metadata,

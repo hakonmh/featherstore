@@ -14,9 +14,7 @@ def make_table(index=None, rows=ROWS, cols=5, *, astype="arrow"):
         df.index = index(rows)
 
     if astype in ("arrow", "polars"):
-        df = pa.Table.from_pandas(
-            df,
-        )
+        df = pa.Table.from_pandas(df, )
         if not _is_default_index(df):
             df = _make_index_first_column(df)
     if astype == "polars":

@@ -1,5 +1,3 @@
-import os
-
 import pyarrow as pa
 import pandas as pd
 import polars as pl
@@ -8,11 +6,9 @@ from featherstore import _metadata
 from featherstore._metadata import Metadata
 from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
-from featherstore._table.common import (
-    _get_cols,
-    _convert_to_partition_id,
-    _convert_partition_id_to_int
-)
+from featherstore._table.common import (_get_cols,
+                                        _convert_to_partition_id,
+                                        _convert_partition_id_to_int)
 
 
 def can_append_table(
@@ -35,7 +31,8 @@ def can_append_table(
     if sorted(append_data_cols) != sorted(stored_data_cols):
         raise ValueError("New and old columns doesn't match")
 
-    append_data_start = _get_first_append_value(df, table_path, has_default_index)
+    append_data_start = _get_first_append_value(df, table_path,
+                                                has_default_index)
     stored_data_end = _metadata.get_partition_attr(table_path, 'min')[-1]
     if append_data_start <= stored_data_end:
         raise ValueError(

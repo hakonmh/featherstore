@@ -7,24 +7,24 @@ import numpy as np
 DROPPED_ROWS_INDICES = [2, 5, 7, 10]
 
 
-@pytest.mark.parametrize("original_df",
-                         [make_table(unsorted_int_index, rows=30, astype="pandas"),
-                          make_table(unsorted_datetime_index, rows=37, astype="pandas"),
-                          make_table(unsorted_string_index, rows=125, astype="pandas")]
-                         )
-def test_insert_table(
-    original_df, basic_data, database, connection, store
-):
+@pytest.mark.parametrize("original_df", [
+    make_table(unsorted_int_index, rows=30, astype="pandas"),
+    make_table(unsorted_datetime_index, rows=37, astype="pandas"),
+    make_table(unsorted_string_index, rows=125, astype="pandas")
+])
+def test_insert_table(original_df, basic_data, database, connection, store):
     # Arrange
     row_indices = np.random.choice(original_df.index, size=5, replace=False)
     insert_df = original_df.loc[row_indices, :]
     expected = original_df.copy().sort_index()
     original_df = original_df.drop(index=row_indices)
 
-    partition_size = get_partition_size(original_df, num_partitions=basic_data['num_partitions'])
-    store.write_table(
-        basic_data["table_name"], original_df, partition_size=partition_size, warnings='ignore'
-    )
+    partition_size = get_partition_size(
+        original_df, num_partitions=basic_data['num_partitions'])
+    store.write_table(basic_data["table_name"],
+                      original_df,
+                      partition_size=partition_size,
+                      warnings='ignore')
     table = store.select_table(basic_data["table_name"])
     # Act
     table.insert(insert_df)
@@ -33,7 +33,8 @@ def test_insert_table(
     assert df.equals(expected)
 
 
-def test_insert_table_with_pandas_series(basic_data, database, connection, store):
+def test_insert_table_with_pandas_series(basic_data, database, connection,
+                                         store):
     # Arrange
     original_df = make_table(cols=1, astype='pandas').squeeze()
     row_indices = np.random.choice(original_df.index, size=5, replace=False)
@@ -41,10 +42,12 @@ def test_insert_table_with_pandas_series(basic_data, database, connection, store
     expected = original_df.copy().sort_index()
     original_df = original_df.drop(index=row_indices)
 
-    partition_size = get_partition_size(original_df, num_partitions=basic_data['num_partitions'])
-    store.write_table(
-        basic_data["table_name"], original_df, partition_size=partition_size, warnings='ignore'
-    )
+    partition_size = get_partition_size(
+        original_df, num_partitions=basic_data['num_partitions'])
+    store.write_table(basic_data["table_name"],
+                      original_df,
+                      partition_size=partition_size,
+                      warnings='ignore')
     table = store.select_table(basic_data["table_name"])
     # Act
     table.insert(insert_df)
@@ -111,9 +114,8 @@ def _duplicate_column_names():
         "_duplicate_column_names",
     ],
 )
-def test_can_insert_table(
-    insert_df, exception, basic_data, database, connection, store
-):
+def test_can_insert_table(insert_df, exception, basic_data, database,
+                          connection, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     original_df = original_df.drop(index=DROPPED_ROWS_INDICES)

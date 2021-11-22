@@ -58,8 +58,7 @@ def get_partition_attr(table_path, item=None):
     return metadata
 
 
-def update_table_metadata(table_metadata,
-                          new_partition_metadata,
+def update_table_metadata(table_metadata, new_partition_metadata,
                           old_partition_metadata):
     old_num_rows = [
         item['num_rows'] for item in old_partition_metadata.values()
@@ -69,8 +68,11 @@ def update_table_metadata(table_metadata,
     ]
 
     table_metadata = {
-        "num_partitions": table_metadata['num_partitions'] - len(old_partition_metadata) + len(new_partition_metadata),
-        "num_rows": table_metadata['num_rows'] - sum(old_num_rows) + sum(new_num_rows)
+        "num_partitions":
+        table_metadata['num_partitions'] - len(old_partition_metadata) +
+        len(new_partition_metadata),
+        "num_rows":
+        table_metadata['num_rows'] - sum(old_num_rows) + sum(new_num_rows)
     }
     return table_metadata
 

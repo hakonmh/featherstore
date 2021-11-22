@@ -2,11 +2,10 @@ import pytest
 from .fixtures import *
 
 
-@pytest.mark.parametrize(["num_partitions", "rows"],
-                         [(7, 30), (3, 125), (27, 36)])
-def test_update_table(
-    num_partitions, rows, basic_data, database, connection, store
-):
+@pytest.mark.parametrize(["num_partitions", "rows"], [(7, 30), (3, 125),
+                                                      (27, 36)])
+def test_update_table(num_partitions, rows, basic_data, database, connection,
+                      store):
     # Arrange
     INDEX_NAME = 'index'
     original_df = make_table(rows=rows, cols=5, astype="pandas")
@@ -19,10 +18,11 @@ def test_update_table(
     expected = original_df.copy()
     expected.iloc[ROW_INDICES, COL_INDICES] = update_df
 
-    partition_size = get_partition_size(original_df, num_partitions=num_partitions)
-    store.write_table(
-        basic_data["table_name"], original_df, partition_size=partition_size
-    )
+    partition_size = get_partition_size(original_df,
+                                        num_partitions=num_partitions)
+    store.write_table(basic_data["table_name"],
+                      original_df,
+                      partition_size=partition_size)
     table = store.select_table(basic_data["table_name"])
     partition_names = table._partition_data.keys()
     partition_data = table._partition_data.read()
@@ -48,7 +48,8 @@ def test_update_table(
     assert not df.equals(original_df)
 
 
-def test_update_table_with_pandas_series(basic_data, database, connection, store):
+def test_update_table_with_pandas_series(basic_data, database, connection,
+                                         store):
     # Arrange
     ROW_INDICES = [10, 13, 14, 21]
     original_df = make_table(cols=5, astype='pandas')
@@ -130,9 +131,8 @@ def _duplicate_column_names():
         "_duplicate_column_names",
     ],
 )
-def test_can_update_table(
-    update_df, exception, basic_data, database, connection, store
-):
+def test_can_update_table(update_df, exception, basic_data, database,
+                          connection, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     store.write_table(basic_data["table_name"], original_df)

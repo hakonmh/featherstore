@@ -1,7 +1,6 @@
 import os
 import json
 from numbers import Integral
-from polars.lazy.functions import last
 
 import pyarrow as pa
 from pyarrow import feather
@@ -10,12 +9,10 @@ import polars as pl
 
 from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
-from featherstore._table.common import (
-    _get_cols,
-    _check_column_constraints,
-    _convert_to_partition_id,
-    _get_index_dtype
-)
+from featherstore._table.common import (_get_cols,
+                                        _check_column_constraints,
+                                        _convert_to_partition_id,
+                                        _get_index_dtype)
 
 
 def can_write_table(df, index, errors, warnings, partition_size, table_exists,
@@ -65,7 +62,8 @@ def _combine_small_partitions(partitions, partition_size):
 
     if has_multiple_partitions and size_of_last_partition < min_partition_size:
         new_last_partition = _combine_last_two_partitions(partitions)
-        partitions = _replace_last_two_partitions(new_last_partition, partitions)
+        partitions = _replace_last_two_partitions(new_last_partition,
+                                                  partitions)
     return partitions
 
 

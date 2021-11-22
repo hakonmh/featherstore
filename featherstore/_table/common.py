@@ -9,7 +9,6 @@ from featherstore.connection import current_db
 from featherstore._metadata import Metadata, METADATA_FOLDER_NAME
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 
-
 PARTITION_NAME_LENGTH = 14
 INSERTION_BUFFER_LENGTH = 10**6
 
@@ -168,8 +167,7 @@ def _get_index_max(df, index_name):
     return last_index_value
 
 
-def update_table_metadata(table_metadata,
-                          new_partition_metadata,
+def update_table_metadata(table_metadata, new_partition_metadata,
                           old_partition_metadata):
     old_num_rows = [
         item['num_rows'] for item in old_partition_metadata.values()
@@ -179,8 +177,10 @@ def update_table_metadata(table_metadata,
     ]
 
     table_metadata = {
-        "num_partitions": table_metadata['num_partitions'] - len(old_partition_metadata) + len(new_partition_metadata),
-        "num_rows": table_metadata['num_rows'] - sum(old_num_rows) + sum(new_num_rows)
+        "num_partitions":
+        table_metadata['num_partitions'] - len(old_partition_metadata) + len(new_partition_metadata),
+        "num_rows":
+        table_metadata['num_rows'] - sum(old_num_rows) + sum(new_num_rows)
     }
     return table_metadata
 
