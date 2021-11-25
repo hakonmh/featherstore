@@ -94,45 +94,50 @@ def read_partitions(partition_names, table_path, columns):
 def filter_table_rows(df, rows, index_col_name):
     should_be_filtered = rows is not None
     if should_be_filtered:
-        index = df[index_col_name]
-        if isinstance(df, pa.Table):
-            mask = _make_arrow_filter_mask(index, rows)
-            df = df.filter(mask)
-        elif isinstance(df, pl.DataFrame):
-            index = _convert_polars_index_to_arrow(index, rows)
-            mask = _make_arrow_filter_mask(index, rows)
-            mask = _convert_arrow_mask_to_polars(mask)
-            df = df[mask]
+        df = _filter_arrow_table(df, index_col_name, rows)
     return df
 
 
-def _convert_polars_index_to_arrow(index, rows):
-    index = index.to_arrow()
-    if isinstance(rows[-1], datetime.datetime):
-        index = index.cast(pa.date64())
-    return index
-
-
-def _make_arrow_filter_mask(index, rows):
+def _filter_arrow_table(df, index_col_name, rows):
     keyword = str(rows[0]).lower()
-    if keyword == "before":
-        mask = pa.compute.greater_equal(rows[1], index)
-    elif keyword == "after":
-        mask = pa.compute.less_equal(rows[1], index)
-    elif keyword == "between":
-        lower_bound = pa.compute.less_equal(rows[1], index)
-        higher_bound = pa.compute.greater_equal(rows[2], index)
-        mask = pa.compute.and_(lower_bound, higher_bound)
+    index = df[index_col_name]
+    if keyword == 'before':
+        upper_bound = _compute_row_index(rows[1], index)
+        df = df[:upper_bound + 1]
+    elif keyword == 'after':
+        lower_bound = _compute_row_index(rows[1], index)
+        df = df[lower_bound:]
+    elif keyword == 'between':
+        lower_bound = _compute_row_index(rows[1], index)
+        upper_bound = _compute_row_index(rows[2], index)
+        df = df[lower_bound:upper_bound + 1]
     else:  # When a list of rows is provided
-        row_array = pa.compute.SetLookupOptions(value_set=pa.array(rows))
-        mask = pa.compute.is_in(index, options=row_array)
-    return mask
+        rows_indices = pa.compute.index_in(rows, value_set=index)
+        df = df.take(rows_indices)
+    return df
 
 
-def _convert_arrow_mask_to_polars(mask):
-    mask = pl.from_arrow(mask)
-    mask = pl.arg_where(mask)
-    return mask
+def _compute_row_index(row, index):
+    row_idx = pa.compute.index_in(row, value_set=index)
+    row_idx = row_idx.as_py()
+    no_row_is_matching = row_idx is None
+    if no_row_is_matching:
+        row_idx = _fetch_closest_row(row, index)
+    return row_idx
+
+
+def _fetch_closest_row(row, index):
+    TRUE = 1
+    mask = pa.compute.less_equal(row, index)
+    row_idx = pa.compute.index_in(TRUE, value_set=mask)
+    row_idx = row_idx.as_py()
+
+    row_not_in_index = row_idx is None
+    if row_not_in_index:
+        # Set row_idx to the end of index
+        row_idx = len(index)
+
+    return row_idx - 1
 
 
 def drop_default_index(df, index_col_name):
@@ -166,7 +171,11 @@ def convert_to_rangeindex(df):
     return df
 
 
-def convert_partitions_to_polars(partitions):
+def convert_table_to_polars(df):
+    partitions = df.to_batches()
     for idx, partition in enumerate(partitions):
+        partition = pa.Table.from_batches([partition])
         partitions[idx] = pl.from_arrow(partition, rechunk=False)
-    return partitions
+    # Rechunking introduces a significant performance penalty
+    full_table = pl.concat(partitions, rechunk=False)
+    return full_table

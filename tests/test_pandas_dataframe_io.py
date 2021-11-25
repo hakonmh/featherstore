@@ -125,7 +125,7 @@ def test_filter_columns(basic_data, database, connection, store):
             ["2021-01-07", "2021-01-20"],
         ),
         (make_table(hardcoded_string_index,
-                    astype="pandas"), ["row10", "row3"]),
+                    astype="pandas"), ["row00010", "row00003"]),
     ],
 )
 def test_filtering_rows_with_list(original_df, rows, basic_data, database,

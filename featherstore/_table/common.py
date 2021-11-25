@@ -1,5 +1,6 @@
 import os
 import json
+from numbers import Integral
 
 import pyarrow as pa
 import pandas as pd
@@ -47,11 +48,7 @@ def can_rename_table(new_table_name, old_table_path, new_table_path):
 
 
 def combine_partitions(partitions):
-    if isinstance(partitions[0], pa.Table):
-        full_table = pa.concat_tables(partitions)
-    elif isinstance(partitions[0], pl.DataFrame):
-        # Rechunking introduces a significant performance penalty
-        full_table = pl.concat(partitions, rechunk=False)
+    full_table = pa.concat_tables(partitions)
     return full_table
 
 
@@ -77,10 +74,17 @@ def format_rows(rows, index_type):
 
 def _convert_row(row, *, to):
     if to == "datetime64":
-        row = pd.to_datetime(row)
+        try:
+            row = pd.to_datetime(row)
+        except Exception:
+            raise TypeError("'row' dtype doesn't match index dtype")
     elif to == "string" or to == "unicode":
+        if not isinstance(row, str):
+            raise TypeError("'row' dtype doesn't match index dtype")
         row = str(row)
     elif to == "int64":
+        if not isinstance(row, Integral):
+            raise TypeError("'row' dtype doesn't match index dtype")
         row = int(row)
     return row
 
@@ -277,7 +281,7 @@ def _rows_dtype_matches_index(rows, index_dtype):
     try:
         _convert_row(rows[-1], to=index_dtype)
         row_type_matches = True
-    except Exception:
+    except TypeError:
         row_type_matches = False
     return row_type_matches
 

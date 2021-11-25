@@ -13,7 +13,7 @@ from featherstore._table.read import (
     can_be_converted_to_series,
     can_be_converted_to_rangeindex,
     convert_to_rangeindex,
-    convert_partitions_to_polars,
+    convert_table_to_polars,
 )
 from featherstore._table.write import (
     can_write_table,
@@ -40,6 +40,7 @@ from featherstore._table.insert import (
 )
 from featherstore._table.drop import (
     can_drop_rows_from_table,
+    get_adjacent_partition_name,
     drop_rows_from_data,
 )
 from featherstore._table.common import (
@@ -174,24 +175,17 @@ class Table:
 
         partition_names = get_partition_names(rows, self._table_path)
         partitions = read_partitions(partition_names, self._table_path, cols)
-        partitions = convert_partitions_to_polars(partitions)
         df = combine_partitions(partitions)
         df = filter_table_rows(df, rows, index_col_name)
         if has_default_index and rows is None:
             df = drop_default_index(df, index_col_name)
+        df = convert_table_to_polars(df)
 
         return df
 
-    def write(
-        self,
-        df,
-        /,
-        index=None,
-        *,
-        partition_size=DEFAULT_PARTITION_SIZE,
-        errors="raise",
-        warnings="warn",
-    ):
+    def write(self, df, /, index=None, *,
+              partition_size=DEFAULT_PARTITION_SIZE,
+              errors="raise", warnings="warn"):
         """Writes a DataFrame to the current table.
 
         The DataFrame index column, if provided, must be either of type int, str,
@@ -363,8 +357,12 @@ class Table:
                                     columns=None)
         stored_df = combine_partitions(stored_df)
 
-        df = insert_data(stored_df, to=df)
-        del stored_df
+        try:
+            df = insert_data(stored_df, to=df)
+        except Exception:
+            raise
+        finally:
+            del stored_df
         df = format_table(df, index=None, warnings='ignore')
 
         rows_per_partition = self._table_data["rows_per_partition"]
@@ -393,18 +391,37 @@ class Table:
         self._partition_data.write(new_partition_metadata)
         write_partitions(partitioned_df, self._table_path)
 
-    def drop(self, cols=None, rows=None):
+    def drop(self, *, cols=None, rows=None):
+        """Drop specified labels from rows or columns.
+
+        cols : list, optional
+            list of column names or filter-predicates in the form of
+            `[like, pattern]`, by default `None`
+        rows : list, optional
+            list of index values or, filter-predicates in the form of
+            `[keyword, value]`, where keyword can be either `before`, `after`,
+            or `between`, by default `None`
+
+        Raises
+        ------
+        AttributeError
+            Raised if both or neither of `rows` and `cols` are provided.
+        """
         both_rows_and_cols_is_provided = cols is not None and rows is not None
         if both_rows_and_cols_is_provided:
-            raise AttributeError('Can not drop both rows and columns at the same time')
-        elif cols is not None:
-            self._drop_columns(cols)
+            raise AttributeError("Can't drop both rows and columns at the same time")
         elif rows is not None:
-            self._drop_rows(rows)
+            self.drop_rows(rows)
+        elif cols is not None:
+            self.drop_columns(cols)
         else:
             raise AttributeError("Neither 'rows' or 'cols' is provided")
 
-    def _drop_rows(self, rows):
+    def drop_rows(self, rows):
+        """Drops specified rows from table
+
+        Same as `Table.drop(rows=val)`
+        """
         can_drop_rows_from_table(rows, self._table_path, self.exists)
 
         index_col_name = self._table_data["index_name"]
@@ -412,8 +429,9 @@ class Table:
         rows_per_partition = self._table_data["rows_per_partition"]
 
         rows = format_rows(rows, index_type)
-
         partition_names = get_partition_names(rows, self._table_path)
+        partition_names = get_adjacent_partition_name(partition_names, self._table_path)
+
         stored_df = read_partitions(partition_names,
                                     self._table_path,
                                     columns=None)
@@ -426,6 +444,9 @@ class Table:
         finally:
             del stored_df
         df = format_table(df, index=None, warnings=False)
+        if not df:
+            raise IndexError("Can't drop all rows from stored table")
+
         partitioned_df = make_partitions(df, rows_per_partition)
         kept_partition_names = partition_names[:len(partitioned_df)]
         dropped_partition_names = partition_names[len(partitioned_df):]
@@ -444,6 +465,7 @@ class Table:
         table_metadata = update_table_metadata(old_table_metadata,
                                                new_partition_metadata,
                                                old_partition_metadata)
+        table_metadata['has_default_index'] = False
 
         for name in dropped_partition_names:
             delete_partition(self._table_path, name)
@@ -453,8 +475,12 @@ class Table:
         self._partition_data.write(new_partition_metadata)
         write_partitions(partitioned_df, self._table_path)
 
-    def _drop_columns(self, cols):
-        pass
+    def drop_columns(self, cols):
+        """Drops specified rows from table
+
+        Same as `Table.drop(cols=val)`
+        """
+        raise NotImplementedError
 
     def _add_columns(self, cols):
         raise NotImplementedError

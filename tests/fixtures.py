@@ -56,6 +56,15 @@ def sorted_datetime_index(rows):
     return index
 
 
+def hardcoded_string_index(rows):
+    index = []
+    for x in range(rows):
+        x = format(x, '05d')
+        index.append(f"row{x}")
+    index = pd.Series(index)
+    return index
+
+
 def unsorted_int_index(rows):
     index = pd.RangeIndex(rows)
     index = pd.Series(index)
@@ -90,11 +99,3 @@ def get_partition_size(df, num_partitions):
         byte_size = df.nbytes
     partition_size = byte_size // num_partitions
     return partition_size
-
-
-def hardcoded_string_index(rows):
-    index = []
-    for x in range(rows):
-        index.append(f"row{x}")
-    index = pd.Series(index)
-    return index
