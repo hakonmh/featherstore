@@ -94,7 +94,6 @@ class Table:
         self.table_name = table_name
         self.store = store_name
         self._table_path = os.path.join(current_db(), store_name, table_name)
-        self.exists = os.path.exists(self._table_path)
 
         self._table_data = Metadata(self._table_path, "table")
         self._partition_data = Metadata(self._table_path, "partition")
@@ -207,7 +206,6 @@ class Table:
         )
 
         self.drop_table()
-        self.exists = False
 
         formatted_df = format_table(df, index, warnings)
         rows_per_partition = calculate_rows_per_partition(
@@ -227,7 +225,6 @@ class Table:
 
         self._partition_data.write(partition_metadata)
         write_partitions(partitioned_df, self._table_path)
-        self.exists = True
 
     def append(self, df, *, warnings="warn"):
         """Appends data to the current table
@@ -591,6 +588,10 @@ class Table:
         cols = self._table_data["num_cols"]
         rows = self._table_data["num_rows"]
         return (rows, cols)
+
+    @property
+    def exists(self):
+        return os.path.exists(self._table_path)
 
     def _create_table(self):
         os.makedirs(self._table_path)

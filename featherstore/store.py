@@ -139,6 +139,9 @@ class Store:
             tables = like_pattern_matching(like, tables)
         return tables
 
+    def table_exists(self, table_name):
+        return Table(table_name, self.store_name).exists
+
     def read_arrow(self, table_name, *, cols=None, rows=None):
         """Reads PyArrow Table from store
 
@@ -154,8 +157,7 @@ class Store:
             `[keyword, value]`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
         """
-        return Table(table_name, self.store_name).read_arrow(cols=cols,
-                                                             rows=rows)
+        return Table(table_name, self.store_name).read_arrow(cols=cols, rows=rows)
 
     def read_pandas(self, table_name, *, cols=None, rows=None):
         """Reads Pandas DataFrame from store
