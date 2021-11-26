@@ -6,9 +6,11 @@ from featherstore import _metadata
 from featherstore._metadata import Metadata
 from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
-from featherstore._table.common import (_get_cols,
-                                        _convert_to_partition_id,
-                                        _convert_partition_id_to_int)
+from featherstore._table.common import (
+    _get_cols,
+    _convert_to_partition_id,
+    _convert_partition_id_to_int
+)
 
 
 def can_append_table(

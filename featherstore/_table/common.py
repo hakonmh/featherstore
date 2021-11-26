@@ -52,12 +52,11 @@ def combine_partitions(partitions):
     return full_table
 
 
-def format_cols(cols, table_data):
+def format_cols(cols, table_columns):
     if cols:
         keyword = str(cols[0]).lower()
         if keyword == "like":
             like = cols[1]
-            table_columns = table_data["columns"]
             cols = like_pattern_matching(like, table_columns)
     return cols
 

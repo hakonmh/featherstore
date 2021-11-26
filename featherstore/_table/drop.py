@@ -3,13 +3,8 @@ import pyarrow as pa
 
 from featherstore._metadata import Metadata
 from featherstore._table.common import (
-    _check_index_constraints,
-    _check_column_constraints,
-    _coerce_column_dtypes,
-    _convert_to_partition_id,
-    _convert_partition_id_to_int,
-    _get_index_dtype,
-    _rows_dtype_matches_index
+    _rows_dtype_matches_index,
+    format_cols
 )
 
 
@@ -17,9 +12,9 @@ def can_drop_rows_from_table(rows, table_path, table_exists):
     if not table_exists:
         raise FileNotFoundError("Table doesn't exist")
 
-    is_valid_row_format = isinstance(rows, (list, pd.Index, type(None)))
+    is_valid_row_format = isinstance(rows, (list, pd.Index))
     if not is_valid_row_format:
-        raise TypeError("'rows' must be either List, pd.Index, or None")
+        raise TypeError("'rows' must be either List or pd.Index")
 
     index_dtype = Metadata(table_path, "table")["index_dtype"]
     if rows and not _rows_dtype_matches_index(rows, index_dtype):
@@ -72,3 +67,40 @@ def _make_arrow_filter_mask(index, rows):
     else:  # When a list of rows is provided
         mask = pa.compute.is_in(index, value_set=pa.array(rows))
     return mask
+
+
+# ------ drop_columns ------
+
+def can_drop_cols_from_table(cols, table_path, table_exists):
+    table_data = Metadata(table_path, 'table')
+
+    if not table_exists:
+        raise FileNotFoundError("Table doesn't exist")
+
+    is_valid_col_format = isinstance(cols, list)
+    if not is_valid_col_format:
+        raise TypeError("'cols' must be of type List")
+
+    col_elements_are_str = all(isinstance(item, str) for item in cols)
+    if not col_elements_are_str:
+        raise TypeError("Elements in 'cols' must be of type str")
+
+    index_name = table_data["index_name"]
+    if index_name in cols:
+        raise ValueError("Can't drop index column")
+
+    stored_columns = table_data["columns"]
+    stored_columns.remove(index_name)
+    dropped_cols = format_cols(cols, stored_columns)
+
+    some_cols_not_in_stored_cols = set(dropped_cols) - set(stored_columns)
+    if some_cols_not_in_stored_cols:
+        raise IndexError("Trying to drop a column not found in table")
+
+    trying_to_drop_all_cols = not bool(set(stored_columns) - set(dropped_cols))
+    if trying_to_drop_all_cols:
+        raise IndexError("Can't drop all columns. To drop full table, use 'drop_table()'")
+
+
+def drop_cols_from_data(df, cols):
+    return df.drop(cols)

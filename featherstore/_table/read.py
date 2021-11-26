@@ -1,4 +1,3 @@
-import datetime
 import os
 
 import pyarrow as pa
@@ -7,7 +6,7 @@ import pandas as pd
 import polars as pl
 
 from featherstore._metadata import Metadata, get_partition_attr
-from featherstore._table.common import _rows_dtype_matches_index
+from featherstore._table.common import _rows_dtype_matches_index, format_cols
 
 
 def can_read_table(cols, rows, table_exists, table_metadata):
@@ -17,6 +16,18 @@ def can_read_table(cols, rows, table_exists, table_metadata):
     is_valid_col_format = isinstance(cols, (list, type(None)))
     if not is_valid_col_format:
         raise TypeError("'cols' must be either list or None")
+
+    stored_columns = table_metadata["columns"]
+    cols_are_provided = isinstance(cols, list)
+    if cols_are_provided:
+        col_elements_are_str = all(isinstance(item, str) for item in cols)
+        if not col_elements_are_str:
+            raise TypeError("Elements in 'cols' must be of type str")
+
+        cols = format_cols(cols, stored_columns)
+        some_cols_not_in_stored_cols = set(cols) - set(stored_columns)
+        if some_cols_not_in_stored_cols:
+            raise IndexError("Trying to read a column not found in table")
 
     is_valid_row_format = isinstance(rows, (list, pd.Index, type(None)))
     if not is_valid_row_format:
