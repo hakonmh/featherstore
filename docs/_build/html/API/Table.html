@@ -1,0 +1,462 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Table &#8212; FeatherStore 0.0.3 documentation</title>
+    
+  <link href="../_static/css/theme.css" rel="stylesheet">
+  <link href="../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/blank.css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Store" href="Store.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+
+<a class="navbar-brand" href="../index.html">
+  <img src="../_static/logo.png" class="logo" alt="logo">
+</a>
+
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../Introduction.html">
+  Introduction
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../Quickstart.html">
+  Quickstart
+ </a>
+</li>
+
+<li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="../API%20Reference.html">
+  API Reference
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="Connection.html">
+   Database and Connection
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="Store.html">
+   Store
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Table
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+
+<nav id="bd-toc-nav">
+    
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <div class="section" id="module-featherstore.table">
+<span id="table"></span><h1>Table<a class="headerlink" href="#module-featherstore.table" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="featherstore.table.Table">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">featherstore.table.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for saving and loading DataFrames as partitioned Feather files.</p>
+<p>Tables supports several operations that can be done without loading in the
+full data:</p>
+<ul class="simple">
+<li><p>Predicate Filtering when reading</p></li>
+<li><p>Appends</p></li>
+<li><p>Fetching Column names</p></li>
+<li><p>Fetching Index</p></li>
+<li><p>Updates</p></li>
+<li><p>Inserts</p></li>
+<li><p>Drop columns/Drop rows</p></li>
+</ul>
+<p>It will also support the following operations down the line:</p>
+<ul class="simple">
+<li><p>Changing types</p></li>
+<li><p>Changing index</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table_name</strong> (<em>str</em>) – The name of the table</p></li>
+<li><p><strong>store_name</strong> (<em>str</em>) – The name of the store</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.read_arrow">
+<span class="sig-name descname"><span class="pre">read_arrow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.read_arrow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the data as a PyArrow Table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cols</strong> (<em>list</em><em>, </em><em>optional</em>) – list of column names or, filter-predicates in the form of
+<cite>[like, pattern]</cite>, by default <cite>None</cite></p></li>
+<li><p><strong>rows</strong> (<em>list</em><em>, </em><em>optional</em>) – list of index values or filter-predicates in the form of
+<cite>[keyword, value]</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
+or <cite>between</cite>, by default <cite>None</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.read_pandas">
+<span class="sig-name descname"><span class="pre">read_pandas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.read_pandas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the data as a Pandas DataFrame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cols</strong> (<em>list</em><em>, </em><em>optional</em>) – list of column names or filter-predicates in the form of
+<cite>[like, pattern]</cite>, by default <cite>None</cite></p></li>
+<li><p><strong>rows</strong> (<em>list</em><em>, </em><em>optional</em>) – list of index values or, filter-predicates in the form of
+<cite>[keyword, value]</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
+or <cite>between</cite>, by default <cite>None</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.read_polars">
+<span class="sig-name descname"><span class="pre">read_polars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.read_polars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the data as a Polars DataFrame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cols</strong> (<em>list</em><em>, </em><em>optional</em>) – list of column names or filter-predicates in the form of
+<cite>[like, pattern]</cite>, by default <cite>None</cite></p></li>
+<li><p><strong>rows</strong> (<em>list</em><em>, </em><em>optional</em>) – list of index values or, filter-predicates in the form of
+<cite>[keyword, value]</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
+or <cite>between</cite>, by default <cite>None</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">134217728</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a DataFrame to the current table.</p>
+<p>The DataFrame index column, if provided, must be either of type int, str,
+or datetime. FeatherStore sorts the DataFrame by the index before storage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Series</em><em>, </em><em>Pyarrow Table</em><em>, or </em><em>Polars DataFrame</em>) – The DataFrame to be stored</p></li>
+<li><p><strong>index</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the column to be used as index. Uses current index for
+Pandas or a standard integer index for Arrow and Polars if <cite>index</cite> not
+provided, by default <cite>None</cite></p></li>
+<li><p><strong>partition_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The size of each partition in bytes, by default 128 MB</p></li>
+<li><p><strong>errors</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to raise an error if the table already exist. Can be either
+<cite>raise</cite> or <cite>ignore</cite>, <cite>ignore</cite> overwrites existing table, by default <cite>raise</cite></p></li>
+<li><p><strong>warnings</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to warn if a unsorted index is about to get sorted.
+Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends data to the current table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Series</em><em>, </em><em>Pyarrow Table</em><em>, or </em><em>Polars DataFrame</em>) – The data to be appended</p></li>
+<li><p><strong>warnings</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to warn if a unsorted index is about to get sorted.
+Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates data in the current table.</p>
+<p><em>Note</em>: You can’t use this method to update index values. Updating index
+values can be accomplished by deleting the old records and inserting new
+ones with the updated index values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Pandas Series</em>) – The updated data. The index of <cite>df</cite> is the rows to be updated, while
+the columns of <cite>df</cite> are the new values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.insert">
+<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert one or more rows into the current table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Pandas Series</em>) – The data to be inserted. <cite>df</cite> must have the same index and column
+types as the stored data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.drop">
+<span class="sig-name descname"><span class="pre">drop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.drop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drop specified labels from rows or columns.</p>
+<dl class="simple">
+<dt>cols<span class="classifier">list, optional</span></dt><dd><p>list of column names or filter-predicates in the form of
+<cite>[like, pattern]</cite>, by default <cite>None</cite></p>
+</dd>
+<dt>rows<span class="classifier">list, optional</span></dt><dd><p>list of index values or, filter-predicates in the form of
+<cite>[keyword, value]</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
+or <cite>between</cite>, by default <cite>None</cite></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>AttributeError</strong> – Raised if both or neither of <cite>rows</cite> and <cite>cols</cite> are provided.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.drop_rows">
+<span class="sig-name descname"><span class="pre">drop_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rows</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.drop_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drops specified rows from table</p>
+<p>Same as <cite>Table.drop(rows=val)</cite></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.drop_columns">
+<span class="sig-name descname"><span class="pre">drop_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.drop_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drops specified rows from table</p>
+<p>Same as <cite>Table.drop(cols=val)</cite></p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="featherstore.table.Table.columns">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">columns</span></span><a class="headerlink" href="#featherstore.table.Table.columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetches the table columns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>columns</strong></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="featherstore.table.Table.index">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">index</span></span><a class="headerlink" href="#featherstore.table.Table.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetches the table index</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>index</strong></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Pandas Index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.rename_table">
+<span class="sig-name descname"><span class="pre">rename_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.rename_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renames the current table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>to</strong> (<em>str</em>) – The new name of the table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.drop_table">
+<span class="sig-name descname"><span class="pre">drop_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.drop_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes the current table</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="featherstore.table.Table.shape">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#featherstore.table.Table.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetches the shape of the stored table as <cite>(rows, cols)</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>shape</strong></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple(int, int)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="featherstore.table.Table.exists">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">exists</span></span><a class="headerlink" href="#featherstore.table.Table.exists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="Store.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Store</p>
+        </div>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, Håkon Magne Holmen.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>
