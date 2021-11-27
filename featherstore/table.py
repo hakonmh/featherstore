@@ -237,12 +237,11 @@ class Table:
             Whether or not to warn if a unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
         """
-        can_append_table(
-            df,
-            warnings,
-            self._table_path,
-            self.exists,
-        )
+        can_append_table(df, warnings, self._table_path)
+
+        index_name = self._table_data["index_name"]
+        has_default_index = self._table_data["has_default_index"]
+        rows_per_partition = self._table_data["rows_per_partition"]
 
         partition_names = self._partition_data.keys()
         last_partition_name = partition_names[-1]
@@ -250,15 +249,12 @@ class Table:
         last_partition, = read_partitions([last_partition_name],
                                           self._table_path, None)
 
-        index = self._table_data["index_name"]
-        df = format_table(df, index, warnings)
-        has_default_index = self._table_data["has_default_index"]
+        df = format_table(df, index_name, warnings)
         if has_default_index:
             df = format_default_index(df, self._table_path)
         df = sort_columns(df, last_partition.column_names)
 
         df = combine_partitions([last_partition, df])
-        rows_per_partition = self._table_data["rows_per_partition"]
         partitioned_df = make_partitions(df, rows_per_partition)
         del last_partition, df  # Closes memory-map
 

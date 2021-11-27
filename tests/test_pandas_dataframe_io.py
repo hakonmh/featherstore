@@ -1,5 +1,4 @@
 import pytest
-from random import sample
 from .fixtures import *
 
 
@@ -72,36 +71,6 @@ def test_that_pandas_rangeindex_is_converted_back(basic_data, database,
     # Assert
     assert isinstance(df.index, pd.RangeIndex)
     assert df.index.name == original_df.index.name
-
-
-@pytest.mark.parametrize(
-    "original_df",
-    [
-        make_table(astype="pandas"),
-        make_table(sorted_datetime_index, astype="pandas"),
-        make_table(sorted_string_index, astype="pandas"),
-    ],
-    ids=["int index", "datetime index", "string index"],
-)
-def test_append_table(original_df, basic_data, database, connection, store):
-    # Arrange
-    slice_ = original_df.shape[0] // 2
-    prewritten_df = original_df.iloc[:slice_]
-    appended_df = original_df.iloc[slice_:]
-    cols = appended_df.columns
-    shuffled_cols = sample(tuple(cols), len(cols))
-    appended_df = appended_df[shuffled_cols]
-
-    partition_size = get_partition_size(original_df,
-                                        basic_data["num_partitions"])
-    store.write_table(basic_data["table_name"],
-                      prewritten_df,
-                      partition_size=partition_size)
-    store.append_table(basic_data["table_name"], appended_df)
-    # Act
-    df = store.read_pandas(basic_data["table_name"])
-    # Assert
-    assert df.equals(original_df)
 
 
 def test_filter_columns(basic_data, database, connection, store):
