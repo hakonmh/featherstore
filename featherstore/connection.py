@@ -71,48 +71,57 @@ class Connection:
 
     @classmethod
     def disconnect(cls):
-        _can_disconnect(cls)
+        cls.is_connected()
         delattr(cls, "instance")
 
     @classmethod
     def location(cls):
-        _can_fetch_current_db(cls)
+        cls.is_connected()
         return cls.instance._location
+
+    @classmethod
+    def is_connected(cls):
+        if not hasattr(cls, "instance"):
+            raise ConnectionError("Not connected to a database")
 
 
 def _can_create_database(db_path, errors):
     _utils.check_if_arg_errors_is_valid(errors)
+    _raise_if_db_path_is_not_string(db_path)
+    if errors == "raise":
+        _raise_if_directory_is_empty(db_path)
 
+
+def _raise_if_db_path_is_not_string(db_path):
     if not isinstance(db_path, str):
-        raise TypeError(f"Database path must be str, is {type(db_path)}")
+        raise TypeError(f"'db_path' must be str, is {type(db_path)}")
 
+
+def _raise_if_directory_is_empty(db_path):
     db_path = expand_home_dir_modifier(db_path)
     directory_exists = os.path.exists(db_path)
     if directory_exists:
         directory_is_not_empty = len(os.listdir(db_path)) > 0
-        if directory_is_not_empty and errors == "raise":
+        if directory_is_not_empty:
             raise OSError("Can not create database in a populated directory")
 
 
 def _can_connect(connection_string):
+    _raise_if_connection_str_is_not_string(connection_string)
+    _raise_if_directory_is_not_database(connection_string)
+
+
+def _raise_if_connection_str_is_not_string(connection_string):
     if not isinstance(connection_string, str):
         raise TypeError(
-            f"connection_string must be of type str, is {type(connection_string)}"
+            f"'connection_string' must be of type str, is {type(connection_string)}"
         )
 
+
+def _raise_if_directory_is_not_database(connection_string):
     path = expand_home_dir_modifier(connection_string)
     path = os.path.abspath(path)
     db_marker_path = os.path.join(path, DB_MARKER_NAME)
     is_database = os.path.exists(db_marker_path)
     if not is_database:
         raise ConnectionRefusedError(f"{connection_string} is not a database")
-
-
-def _can_disconnect(connection_cls):
-    if not hasattr(connection_cls, "instance"):
-        raise ConnectionError("No connection to disconnect from")
-
-
-def _can_fetch_current_db(connection_cls):
-    if not hasattr(connection_cls, "instance"):
-        raise ConnectionError("Not connected to a database")

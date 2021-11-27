@@ -19,7 +19,9 @@ def delete_folder_tree(path):
     except FileNotFoundError:
         pass
     except PermissionError as e:
+        # Force delete stubborn open file on Windows
         os.system(f'cmd /k "del /f /q /a {e.filename}"')
+        # Try to delete folder with stubborn file deleted
         delete_folder_tree(path)
 
 
@@ -27,12 +29,9 @@ def expand_home_dir_modifier(path):
     return os.path.expanduser(path)
 
 
-def like_pattern_matching(like, str_list):
-    like = _sql_str_pattern_to_regexp(like)
-    regexp = re.compile(like)
-    str_lower_list = [item.lower() for item in str_list]
-    filtered_list = set(filter(regexp.search, str_lower_list))
-    results = [item for item in str_list if item.lower() in filtered_list]
+def filter_items_like_pattern(items, *, like):
+    pattern = _sql_str_pattern_to_regexp(like)
+    results = _filter(items, like=pattern)
     return results
 
 
@@ -43,7 +42,16 @@ def _sql_str_pattern_to_regexp(pattern):
         pattern = pattern + "$"
     pattern = pattern.replace("?", ".")
     pattern = pattern.replace("%", ".*")
-    return pattern.lower()
+
+    pattern = pattern.lower()
+    return re.compile(pattern)
+
+
+def _filter(items, *, like):
+    str_lower_list = [item.lower() for item in items]
+    filtered_list = set(filter(like.search, str_lower_list))
+    results = [item for item in items if item.lower() in filtered_list]
+    return results
 
 
 def check_if_arg_errors_is_valid(errors):

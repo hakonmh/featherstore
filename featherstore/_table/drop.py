@@ -1,24 +1,16 @@
-import pandas as pd
 import pyarrow as pa
 
+from featherstore.connection import Connection
 from featherstore._metadata import Metadata
-from featherstore._table.common import (
-    _rows_dtype_matches_index,
-    format_cols
-)
+from featherstore._table import _raise_if
+from featherstore._table.common import filter_table_cols
 
 
-def can_drop_rows_from_table(rows, table_path, table_exists):
-    if not table_exists:
-        raise FileNotFoundError("Table doesn't exist")
-
-    is_valid_row_format = isinstance(rows, (list, pd.Index))
-    if not is_valid_row_format:
-        raise TypeError("'rows' must be either List or pd.Index")
-
-    index_dtype = Metadata(table_path, "table")["index_dtype"]
-    if rows is not None and not _rows_dtype_matches_index(rows, index_dtype):
-        raise TypeError("'rows' dtype doesn't match table index")
+def can_drop_rows_from_table(rows, table_path):
+    Connection.is_connected()
+    _raise_if.table_not_exists(table_path)
+    _raise_if.rows_argument_is_not_supported_dtype(rows)
+    _raise_if.rows_argument_items_dtype_not_same_as_index(rows, table_path)
 
 
 def get_adjacent_partition_name(partition_names, table_path):
@@ -69,37 +61,48 @@ def _make_arrow_filter_mask(index, rows):
     return mask
 
 
-# ------ drop_columns ------
+# ----------------- drop_columns ------------------
 
-def can_drop_cols_from_table(cols, table_path, table_exists):
-    table_data = Metadata(table_path, 'table')
 
-    if not table_exists:
-        raise FileNotFoundError("Table doesn't exist")
+def can_drop_cols_from_table(cols, table_path):
+    Connection.is_connected()
+    _raise_if.table_not_exists(table_path)
+    _raise_if.cols_argument_is_not_supported_dtype(cols)
+    _raise_if.cols_argument_items_is_not_str(cols)
 
-    is_valid_col_format = isinstance(cols, list)
-    if not is_valid_col_format:
-        raise TypeError("'cols' must be of type List")
+    check_if = CheckDropCols(cols, table_path)
+    check_if.trying_to_drop_index()
+    check_if.cols_are_in_stored_data()
+    check_if.trying_to_drop_all_cols()
 
-    col_elements_are_str = all(isinstance(item, str) for item in cols)
-    if not col_elements_are_str:
-        raise TypeError("Elements in 'cols' must be of type str")
 
-    index_name = table_data["index_name"]
-    if index_name in cols:
-        raise ValueError("Can't drop index column")
+class CheckDropCols:
 
-    stored_columns = table_data["columns"]
-    stored_columns.remove(index_name)
-    dropped_cols = format_cols(cols, stored_columns)
+    def __init__(self, cols, table_path):
+        self.cols = cols
 
-    some_cols_not_in_stored_cols = set(dropped_cols) - set(stored_columns)
-    if some_cols_not_in_stored_cols:
-        raise IndexError("Trying to drop a column not found in table")
+        table_data = Metadata(table_path, 'table')
+        self._index_name = table_data["index_name"]
+        stored_cols = table_data["columns"]
 
-    trying_to_drop_all_cols = not bool(set(stored_columns) - set(dropped_cols))
-    if trying_to_drop_all_cols:
-        raise IndexError("Can't drop all columns. To drop full table, use 'drop_table()'")
+        stored_cols.remove(self._index_name)
+        self._stored_columns = set(stored_cols)
+        dropped_cols = filter_table_cols(cols, stored_cols)
+        self._dropped_columns = set(dropped_cols)
+
+    def trying_to_drop_index(self):
+        if self._index_name in self.cols:
+            raise ValueError("Can't drop index column")
+
+    def cols_are_in_stored_data(self):
+        some_cols_not_in_stored_cols = bool(self._dropped_columns - self._stored_columns)
+        if some_cols_not_in_stored_cols:
+            raise IndexError("Trying to drop a column not found in table")
+
+    def trying_to_drop_all_cols(self):
+        trying_to_drop_all_cols = not bool(self._stored_columns - self._dropped_columns)
+        if trying_to_drop_all_cols:
+            raise IndexError("Can't drop all columns. To drop full table, use 'drop_table()'")
 
 
 def drop_cols_from_data(df, cols):

@@ -1,48 +1,31 @@
 import pandas as pd
-import pyarrow as pa
 
-from featherstore._metadata import Metadata
+from featherstore.connection import Connection
+from featherstore._table import _raise_if
 from featherstore._table.common import (
     _check_index_constraints,
     _check_column_constraints,
     _coerce_column_dtypes,
     _convert_to_partition_id,
-    _convert_partition_id_to_int,
-    _get_index_dtype
+    _convert_partition_id_to_int
 )
 
 
-def can_insert_table(df, table_path, table_exists):
-    if not table_exists:
-        raise FileNotFoundError("Table doesn't exist")
+def can_insert_table(df, table_path):
+    Connection.is_connected()
 
-    if not isinstance(df, (pd.DataFrame, pd.Series)):
-        raise TypeError(
-            f"'df' must be a pd.DataFrame or pd.Series (is type {type(df)})")
+    _raise_if.table_not_exists(table_path)
+    _raise_if.df_is_not_pandas_table(df)
 
     if isinstance(df, pd.Series):
         cols = [df.name]
     else:
-        cols = df.columns
+        cols = df.columns.tolist()
 
     _check_index_constraints(df.index)
     _check_column_constraints(cols)
-
-    index_name = Metadata(table_path, "table")['index_name']
-    stored_data_cols = Metadata(table_path, "table")["columns"]
-    stored_data_cols.remove(index_name)
-    if sorted(cols) != sorted(stored_data_cols):
-        raise ValueError("New and old columns doesn't match")
-
-    # Take one row and converts it to pa.Table to check its arrow datatype
-    first_row = df.head(1)
-    if isinstance(first_row, pd.Series):
-        first_row = first_row.to_frame()
-    arrow_df = pa.Table.from_pandas(first_row, preserve_index=True)
-    index_type = _get_index_dtype([arrow_df])
-    stored_index_type = Metadata(table_path, "table")["index_dtype"]
-    if index_type != stored_index_type:
-        raise TypeError("Index types do not match")
+    _raise_if.index_dtype_not_same_as_index(df, table_path)
+    _raise_if.columns_does_not_match(df, table_path)
 
 
 def insert_data(old_df, *, to):

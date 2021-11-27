@@ -1,9 +1,10 @@
 from pyarrow.compute import add
 
+from featherstore.connection import Connection
 from featherstore import _metadata
 from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
-from featherstore._table import _cando
+from featherstore._table import _raise_if
 from featherstore._table import common
 
 
@@ -12,10 +13,11 @@ def can_append_table(
     warnings,
     table_path,
 ):
+    Connection.is_connected()
     _utils.check_if_arg_warnings_is_valid(warnings)
-    _cando.check_if_table_exists(table_path)
-    _cando.check_if_table_is_correct_dtype(df)
-    _cando.check_if_columns_match(df, table_path)
+    _raise_if.table_not_exists(table_path)
+    _raise_if.df_is_not_supported_table_dtype(df)
+    _raise_if.columns_does_not_match(df, table_path)
     _check_append_data_index_constraints(df, table_path)
 
 

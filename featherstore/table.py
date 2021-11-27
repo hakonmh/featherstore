@@ -50,7 +50,7 @@ from featherstore._table.common import (
     can_rename_table,
     combine_partitions,
     format_table,
-    format_cols,
+    filter_table_cols,
     format_rows,
     make_partition_metadata,
     update_table_metadata,
@@ -111,7 +111,7 @@ class Table:
             `[keyword, value]`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
         """
-        can_read_table(cols, rows, self.exists, self._table_data)
+        can_read_table(cols, rows, self._table_path)
 
         index_col_name = self._table_data["index_name"]
         has_default_index = self._table_data["has_default_index"]
@@ -119,7 +119,7 @@ class Table:
         stored_cols = self._table_data["columns"]
 
         rows = format_rows(rows, index_type)
-        cols = format_cols(cols, stored_cols)
+        cols = filter_table_cols(cols, stored_cols)
 
         partition_names = get_partition_names(rows, self._table_path)
         partitions = read_partitions(partition_names, self._table_path, cols)
@@ -197,12 +197,11 @@ class Table:
         """
         can_write_table(
             df,
+            self._table_path,
             index,
+            partition_size,
             errors,
             warnings,
-            partition_size,
-            self.exists,
-            self.table_name,
         )
 
         self.drop_table()
@@ -292,7 +291,7 @@ class Table:
             The updated data. The index of `df` is the rows to be updated, while
             the columns of `df` are the new values.
         """
-        can_update_table(df, self._table_path, self.exists, self)
+        can_update_table(df, self._table_path)
 
         index_type = self._table_data["index_dtype"]
         rows = format_rows(df.index, index_type)
@@ -327,7 +326,7 @@ class Table:
             The data to be inserted. `df` must have the same index and column
             types as the stored data.
         """
-        can_insert_table(df, self._table_path, self.exists)
+        can_insert_table(df, self._table_path)
 
         index_type = self._table_data["index_dtype"]
         rows = format_rows(df.index, index_type)
@@ -403,7 +402,7 @@ class Table:
 
         Same as `Table.drop(rows=val)`
         """
-        can_drop_rows_from_table(rows, self._table_path, self.exists)
+        can_drop_rows_from_table(rows, self._table_path)
 
         index_col_name = self._table_data["index_name"]
         index_type = self._table_data["index_dtype"]
@@ -461,7 +460,7 @@ class Table:
 
         Same as `Table.drop(cols=val)`
         """
-        can_drop_cols_from_table(cols, self._table_path, self.exists)
+        can_drop_cols_from_table(cols, self._table_path)
 
         rows_per_partition = self._table_data["rows_per_partition"]
         partition_size = self._table_data["partition_byte_size"]
@@ -473,7 +472,7 @@ class Table:
                                     columns=None)
         stored_df = combine_partitions(stored_df)
 
-        cols = format_cols(cols, stored_cols)
+        cols = filter_table_cols(cols, stored_cols)
         try:
             df = drop_cols_from_data(stored_df, cols)
         except Exception:

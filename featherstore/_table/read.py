@@ -5,37 +5,23 @@ from pyarrow import feather
 import pandas as pd
 import polars as pl
 
+from featherstore.connection import Connection
 from featherstore._metadata import Metadata, get_partition_attr
-from featherstore._table.common import _rows_dtype_matches_index, format_cols
+from featherstore._table import _raise_if
 
 
-def can_read_table(cols, rows, table_exists, table_metadata):
-    if not table_exists:
-        raise FileNotFoundError("Table doesn't exist")
+def can_read_table(cols, rows, table_path):
+    Connection.is_connected()
+    _raise_if.table_not_exists(table_path)
 
-    is_valid_col_format = isinstance(cols, (list, type(None)))
-    if not is_valid_col_format:
-        raise TypeError("'cols' must be either list or None")
+    _raise_if.rows_argument_is_not_supported_dtype(rows)
+    _raise_if.rows_argument_items_dtype_not_same_as_index(rows, table_path)
 
-    stored_columns = table_metadata["columns"]
+    _raise_if.cols_argument_is_not_supported_dtype(cols)
     cols_are_provided = isinstance(cols, list)
     if cols_are_provided:
-        col_elements_are_str = all(isinstance(item, str) for item in cols)
-        if not col_elements_are_str:
-            raise TypeError("Elements in 'cols' must be of type str")
-
-        cols = format_cols(cols, stored_columns)
-        some_cols_not_in_stored_cols = set(cols) - set(stored_columns)
-        if some_cols_not_in_stored_cols:
-            raise IndexError("Trying to read a column not found in table")
-
-    is_valid_row_format = isinstance(rows, (list, pd.Index, type(None)))
-    if not is_valid_row_format:
-        raise TypeError("'rows' must be either List, or None")
-
-    index_dtype = table_metadata["index_dtype"]
-    if rows is not None and not _rows_dtype_matches_index(rows, index_dtype):
-        raise TypeError("'rows' type doesn't match table index")
+        _raise_if.cols_argument_items_is_not_str(cols)
+        _raise_if.cols_not_in_table(cols, table_path)
 
 
 def get_partition_names(rows, table_path):

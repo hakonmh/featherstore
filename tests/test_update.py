@@ -119,7 +119,7 @@ def _duplicate_column_names():
         (_wrong_index_values(), ValueError),
         (_duplicate_index_values(), IndexError),
         (_wrong_column_dtype(), TypeError),
-        (_wrong_column_names(), ValueError),
+        (_wrong_column_names(), IndexError),
         (_duplicate_column_names(), IndexError),
     ],
     ids=[

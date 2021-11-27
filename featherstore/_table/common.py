@@ -6,27 +6,31 @@ import pyarrow as pa
 import pandas as pd
 import polars as pl
 
+from featherstore.connection import Connection
 from featherstore._metadata import Metadata
-from featherstore._utils import DEFAULT_ARROW_INDEX_NAME, like_pattern_matching
-from featherstore._table import _cando
+from featherstore._utils import DEFAULT_ARROW_INDEX_NAME, filter_items_like_pattern
+from featherstore._table import _raise_if
+from featherstore import store
 
 PARTITION_NAME_LENGTH = 14
 INSERTION_BUFFER_LENGTH = 10**6
 
 
 def can_init_table(table_name, store_name):
-    _cando.check_if_connected()
-    _cando.check_if_store_name_is_str(store_name)
-    _cando.check_if_table_name_is_str(table_name)
-    _cando.check_if_table_name_is_forbidden(table_name)
-    _cando.check_if_store_exists(store_name)
+    Connection.is_connected()
+    store._raise_if_store_name_is_str(store_name)
+    store._raise_if_store_not_exists(store_name)
+
+    _raise_if.table_name_is_not_str(table_name)
+    _raise_if.table_name_is_forbidden(table_name)
 
 
 def can_rename_table(new_table_name, table_path, new_table_path):
-    _cando.check_if_table_name_is_str(new_table_name)
-    _cando.check_if_table_name_is_forbidden(new_table_path)
-    _cando.check_if_table_exists(table_path)
-    _cando.check_if_table_already_exists(new_table_path)
+    Connection.is_connected()
+
+    _raise_if.table_name_is_not_str(new_table_name)
+    _raise_if.table_name_is_forbidden(new_table_path)
+    _raise_if.table_already_exists(new_table_path)
 
 
 def combine_partitions(partitions):
@@ -34,12 +38,12 @@ def combine_partitions(partitions):
     return full_table
 
 
-def format_cols(cols, table_columns):
+def filter_table_cols(cols, table_columns):
     if cols:
         keyword = str(cols[0]).lower()
         if keyword == "like":
-            like = cols[1]
-            cols = like_pattern_matching(like, table_columns)
+            pattern = cols[1]
+            cols = filter_items_like_pattern(table_columns, like=pattern)
     return cols
 
 
@@ -253,6 +257,7 @@ def _get_cols(df, has_default_index):
 
 
 def _check_index_constraints(index):
+    # TODO split and/or rename
     if index.has_duplicates:
         raise IndexError("Values in Table.index must be unique")
     index_type = index.inferred_type
@@ -261,6 +266,7 @@ def _check_index_constraints(index):
 
 
 def _check_column_constraints(cols):
+    # TODO split and/or rename
     cols = pd.Index(cols)
     if cols.has_duplicates:
         raise IndexError("Column names must be unique")
@@ -300,7 +306,7 @@ def _convert_partition_id_to_int(partition_id):
 
 def _get_index_dtype(df):
     schema = df[0].schema
-    # A better solution for when format_table is refactored:
+    # TODO: A better solution for when format_table is refactored:
     # str(df[0].field(index_position).type)
     index_dtype = schema.pandas_metadata["columns"][-1]["pandas_type"]
     if index_dtype == "datetime":

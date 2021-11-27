@@ -4,10 +4,10 @@ from numbers import Integral
 
 import pyarrow as pa
 from pyarrow import feather
-import pandas as pd
-import polars as pl
 
+from featherstore.connection import Connection
 from featherstore import _utils
+from featherstore._table import _raise_if
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore._table.common import (_get_cols,
                                         _check_column_constraints,
@@ -15,30 +15,37 @@ from featherstore._table.common import (_get_cols,
                                         _get_index_dtype)
 
 
-def can_write_table(df, index, errors, warnings, partition_size, table_exists,
-                    table_name):
+def can_write_table(df, table_path, index, partition_size, errors, warnings):
+    Connection.is_connected()
     _utils.check_if_arg_errors_is_valid(errors)
     _utils.check_if_arg_warnings_is_valid(warnings)
+    if errors == 'raise':
+        _raise_if.table_already_exists(table_path)
 
-    if not isinstance(df, (pd.DataFrame, pd.Series, pl.DataFrame, pa.Table)):
-        raise TypeError(f"'df' must be a DataFrame (is type {type(df)})")
+    _raise_if.df_is_not_supported_table_dtype(df)
+    _check_partition_size_argument_dtype(partition_size)
 
+    cols = _get_cols(df, has_default_index=False)
+    _check_index_argument_dtype(index)
+    _check_if_provided_index_in_cols(index, cols)
+    _check_column_constraints(cols)
+
+
+def _check_index_argument_dtype(index):
     if not isinstance(index, (str, type(None))):
         raise TypeError(
             f"'index' must be a str or None (is type {type(index)})")
 
-    cols = _get_cols(df, has_default_index=False)
+
+def _check_if_provided_index_in_cols(index, cols):
     if isinstance(index, str) and index not in cols:
         raise IndexError("'index' not in table columns")
 
-    _check_column_constraints(cols)
 
+def _check_partition_size_argument_dtype(partition_size):
     if not isinstance(partition_size, (Integral, type(None))):
-        raise ValueError(
-            f"'partition_size' must be int (is type {type(partition_size)})")
-
-    if table_exists and errors == "raise":
-        raise FileExistsError(f"{table_name} already exists")
+        dtype = type(partition_size)
+        raise TypeError(f"'partition_size' must be a int (is type {dtype})")
 
 
 def calculate_rows_per_partition(df, target_size):

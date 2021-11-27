@@ -2,9 +2,8 @@ import os
 
 from featherstore import _utils
 from featherstore.table import Table, DEFAULT_PARTITION_SIZE
-from featherstore.connection import current_db, DB_MARKER_NAME
-from featherstore._metadata import METADATA_FOLDER_NAME
-from featherstore._utils import like_pattern_matching
+from featherstore.connection import current_db, DB_MARKER_NAME, Connection
+from featherstore._utils import filter_items_like_pattern
 
 
 def create_store(store_name, *, errors="raise"):
@@ -73,11 +72,12 @@ def list_stores(*, like=None):
         - Question mark (`?`) matches any single character
         - The percent sign (`%`) matches any number of any characters
     """
-    _can_list_stores(like)
+    _can_list(like)
 
     database_content = os.listdir(current_db())
     if like:
-        database_content = like_pattern_matching(like, database_content)
+        pattern = like
+        database_content = filter_items_like_pattern(database_content, like=pattern)
     stores = []
     for item in database_content:
         path = os.path.join(current_db(), item)
@@ -132,11 +132,12 @@ class Store:
             - Question mark (`?`) matches any single character
             - The percent sign (`%`) matches any number of any characters
         """
-        _can_list_tables(like)
+        _can_list(like)
 
         tables = os.listdir(self.store_path)
         if like:
-            tables = like_pattern_matching(like, tables)
+            pattern = like
+            tables = filter_items_like_pattern(tables, like=pattern)
         return tables
 
     def table_exists(self, table_name):
@@ -292,63 +293,73 @@ class Store:
         return Table(table_name, self.store_name)
 
 
-def _can_list_stores(like):
-    current_db()
-    if not isinstance(like, (str, type(None))):
-        raise TypeError("'like' must be a str or None")
-
-
 def _can_create_store(store_name, errors):
-    current_db()
+    Connection.is_connected()
     _utils.check_if_arg_errors_is_valid(errors)
-
-    store_path = os.path.join(current_db(), store_name)
-    store_exists = os.path.exists(store_path)
-    if store_exists and errors == "raise":
-        raise FileExistsError("Store already exists")
-
-    if store_name == DB_MARKER_NAME:
-        raise ValueError("")
+    _raise_if_store_already_exists(store_name)
+    _raise_if_store_name_is_forbidden(store_name)
 
 
 def _can_drop_store(store_name, errors):
-    current_db()
+    Connection.is_connected()
     _utils.check_if_arg_errors_is_valid(errors)
+    if errors == "raise":
+        _raise_if_store_not_exists(store_name)
+    _raise_if_store_contains_tables(store_name)
 
+
+def _raise_if_store_contains_tables(store_name):
     store_path = os.path.join(current_db(), store_name)
     store_exists = os.path.exists(store_path)
-    if not store_exists and errors == "raise":
-        raise FileExistsError("Store doesn't exists")
-
     if store_exists:
         store_content = os.listdir(store_path)
         store_is_empty = len(store_content) == 0
         if not store_is_empty:
-            raise OSError("Can't delete a store that contains tables")
+            raise PermissionError("Can't delete a store that contains tables")
 
 
 def _can_init_store(store_name):
-    current_db()
-
-    if not isinstance(store_name, str):
-        TypeError(f"Store must be type int, is {type(store_name)}")
-
-    store_path = os.path.join(current_db(), store_name)
-    store_exists = os.path.exists(store_path)
-    if not store_exists:
-        raise FileNotFoundError(f"Store doesn't exists: '{store_name}'")
+    Connection.is_connected()
+    _raise_if_store_name_is_str(store_name)
+    _raise_if_store_not_exists(store_name)
+    _raise_if_store_name_is_forbidden(store_name)
 
 
 def _can_rename_store(new_store_name):
-    if not isinstance(new_store_name, str):
-        raise TypeError(
-            f"New store name must be of type str, is {type(new_store_name)}")
-
-    if new_store_name == DB_MARKER_NAME:
-        raise ValueError(f"Table name {DB_MARKER_NAME} is forbidden")
+    Connection.is_connected()
+    _raise_if_store_name_is_str(new_store_name)
+    _raise_if_store_already_exists(new_store_name)
+    _raise_if_store_name_is_forbidden(new_store_name)
 
 
-def _can_list_tables(like):
+def _raise_if_store_name_is_str(store_name):
+    if not isinstance(store_name, str):
+        raise TypeError(f"'store_name' must be a str, is type {type(store_name)}")
+
+
+def _raise_if_store_name_is_forbidden(store_name):
+    if store_name == DB_MARKER_NAME:
+        raise ValueError(f"Store name {DB_MARKER_NAME} is forbidden")
+
+
+def _raise_if_store_not_exists(store_name):
+    store_path = os.path.join(current_db(), store_name)
+    if not os.path.exists(store_path):
+        raise FileNotFoundError(f"Store doesn't exists: '{store_name}'")
+
+
+def _raise_if_store_already_exists(store_name):
+    store_path = os.path.join(current_db(), store_name)
+    if os.path.exists(store_path):
+        raise OSError(f"A table with name {store_name} already exists")
+
+
+def _can_list(like):
+    Connection.is_connected()
+    _raise_if_like_is_not_str(like)
+
+
+def _raise_if_like_is_not_str(like):
     if not isinstance(like, (str, type(None))):
         raise TypeError(
             f"'like' must be either of type str or None, is {type(like)}")
