@@ -1,6 +1,7 @@
 Quickstart
 ==========
-This is a short introduction to FeatherStore, geared mainly for new users.
+This is a short introduction to FeatherStore basic functionality. For a complete guide to
+FeatherStores classes, functions, and methods please visit the `API reference <API Reference.html>`_.
 
 .. warning::
     FeatherStore's API is considered unstable and is subject to

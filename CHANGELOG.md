@@ -9,6 +9,7 @@
 Other changes:
 * Added `Table.update()`
 * Added `Table.insert()`
+* Added `Table.drop()`, `Table.drop_rows()` and `Table.drop_columns()`
 * Added `Table.shape`
 
 0.0.3

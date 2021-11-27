@@ -16,7 +16,7 @@ in the full data:
 * Read metadata (column names, index, table size, etc)
 * Insert data
 * Update data
-* (planned) Remove columns and rows
+* Drop columns and rows
 * (planned) Changing types
 
 To learn more, read the [User Guide](https://featherstore.readthedocs.io/en/latest/Quickstart.html).

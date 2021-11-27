@@ -11,7 +11,7 @@ in the full data:
 * Read metadata (column names, index, table size, etc)
 * Insert data
 * Update data
-* (planned) Remove columns and rows
+* Remove columns and rows
 * (planned) Changing types
 
 To learn more, go to the `Quickstart <Quickstart.html>`_ page.
