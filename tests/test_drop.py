@@ -43,7 +43,7 @@ def test_can_drop_rows_from_table(rows, exception, basic_data, database,
 @pytest.mark.parametrize(
     ["rows", 'slice_'],
     [
-        # (pd.Index([10, 24, 0, 13]), [10, 24, 0, 13]),
+        (pd.Index([10, 24, 0, 13]), [10, 24, 0, 13]),
         ([10, 24, 0, 13], [10, 24, 0, 13]),
         (['after', 10], slice(10, 30)),
         (['before', 10], slice(0, 11)),
@@ -142,7 +142,6 @@ def _col_not_in_stored_data():
 
 
 def _drop_all_cols():
-    # return ['c0', 'c1', 'c2', 'c3', 'c4']
     return ['like', 'c%']
 
 

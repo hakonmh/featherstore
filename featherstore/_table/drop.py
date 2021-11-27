@@ -17,7 +17,7 @@ def can_drop_rows_from_table(rows, table_path, table_exists):
         raise TypeError("'rows' must be either List or pd.Index")
 
     index_dtype = Metadata(table_path, "table")["index_dtype"]
-    if rows and not _rows_dtype_matches_index(rows, index_dtype):
+    if rows is not None and not _rows_dtype_matches_index(rows, index_dtype):
         raise TypeError("'rows' dtype doesn't match table index")
 
 

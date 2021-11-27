@@ -34,7 +34,7 @@ def can_read_table(cols, rows, table_exists, table_metadata):
         raise TypeError("'rows' must be either List, or None")
 
     index_dtype = table_metadata["index_dtype"]
-    if rows and not _rows_dtype_matches_index(rows, index_dtype):
+    if rows is not None and not _rows_dtype_matches_index(rows, index_dtype):
         raise TypeError("'rows' type doesn't match table index")
 
 

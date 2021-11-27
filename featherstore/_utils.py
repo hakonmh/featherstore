@@ -18,6 +18,9 @@ def delete_folder_tree(path):
         shutil.rmtree(path)
     except FileNotFoundError:
         pass
+    except PermissionError as e:
+        os.system(f'cmd /k "del /f /q /a {e.filename}"')
+        delete_folder_tree(path)
 
 
 def expand_home_dir_modifier(path):

@@ -120,6 +120,7 @@ def test_filter_columns(basic_data, database, connection, store):
     ("original_df", "rows"),
     [
         (make_table(astype="pandas"), [2, 6, 9]),
+        (make_table(astype="pandas"), pd.Index([2, 6, 9])),
         (
             make_table(sorted_datetime_index, astype="pandas"),
             ["2021-01-07", "2021-01-20"],

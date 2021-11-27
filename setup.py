@@ -29,7 +29,7 @@ setup(
     install_requires=[
         'numpy>=1.15.4',
         'pandas>=1.1.0',
-        'polars>=0.9.1',
+        'polars>=0.10.16',
         'pyarrow>=4.0.0',
     ],
     project_urls={
