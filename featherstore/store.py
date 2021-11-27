@@ -274,7 +274,7 @@ class Store:
         table_name : str
             The name of the table to be deleted
         """
-        Table(table_name, self.store_name).drop_table(table_name)
+        Table(table_name, self.store_name).drop_table()
 
     def select_table(self, table_name):
         """Selects a single table.
