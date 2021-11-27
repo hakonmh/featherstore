@@ -568,7 +568,7 @@ class Table:
         self.table_name = new_table_name
         self._table_path = new_path
 
-    def drop_table(self, skip_bin=False):
+    def drop_table(self):
         """Deletes the current table"""
         _utils.delete_folder_tree(self._table_path)
 
