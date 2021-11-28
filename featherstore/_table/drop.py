@@ -28,14 +28,14 @@ def get_adjacent_partition_name(partition_names, table_path):
 
 def drop_rows_from_data(df, rows, index_col_name):
     index = df[index_col_name]
-    _check_if_rows_isin_index(index, rows)
+    _raise_if_rows_are_not_in_index(index, rows)
     mask = _make_arrow_filter_mask(index, rows)
     mask = pa.compute.invert(mask)
     df = df.filter(mask)
     return df
 
 
-def _check_if_rows_isin_index(index, rows):
+def _raise_if_rows_are_not_in_index(index, rows):
     keyword = str(rows[0]).lower()
     if keyword not in ("before", "after", "between"):
         row_array = pa.array(rows)
@@ -70,10 +70,10 @@ def can_drop_cols_from_table(cols, table_path):
     _raise_if.cols_argument_is_not_supported_dtype(cols)
     _raise_if.cols_argument_items_is_not_str(cols)
 
-    check_if = CheckDropCols(cols, table_path)
-    check_if.trying_to_drop_index()
-    check_if.cols_are_in_stored_data()
-    check_if.trying_to_drop_all_cols()
+    raise_if = CheckDropCols(cols, table_path)
+    raise_if.trying_to_drop_index()
+    raise_if.cols_are_not_in_stored_data()
+    raise_if.trying_to_drop_all_cols()
 
 
 class CheckDropCols:
@@ -94,7 +94,7 @@ class CheckDropCols:
         if self._index_name in self.cols:
             raise ValueError("Can't drop index column")
 
-    def cols_are_in_stored_data(self):
+    def cols_are_not_in_stored_data(self):
         some_cols_not_in_stored_cols = bool(self._dropped_columns - self._stored_columns)
         if some_cols_not_in_stored_cols:
             raise IndexError("Trying to drop a column not found in table")

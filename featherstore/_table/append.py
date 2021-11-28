@@ -14,14 +14,14 @@ def can_append_table(
     table_path,
 ):
     Connection.is_connected()
-    _utils.check_if_arg_warnings_is_valid(warnings)
+    _utils.raise_if_warnings_argument_is_not_valid(warnings)
     _raise_if.table_not_exists(table_path)
     _raise_if.df_is_not_supported_table_dtype(df)
     _raise_if.columns_does_not_match(df, table_path)
-    _check_append_data_index_constraints(df, table_path)
+    _raise_if_append_data_index_not_gt_stored_data_index(df, table_path)
 
 
-def _check_append_data_index_constraints(df, table_path):
+def _raise_if_append_data_index_not_gt_stored_data_index(df, table_path):
     has_default_index = _metadata.Metadata(table_path, "table")["has_default_index"]
     append_data_start = _get_first_append_value(df, table_path,
                                                 has_default_index)

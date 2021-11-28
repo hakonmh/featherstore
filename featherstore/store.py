@@ -295,14 +295,14 @@ class Store:
 
 def _can_create_store(store_name, errors):
     Connection.is_connected()
-    _utils.check_if_arg_errors_is_valid(errors)
+    _utils.raise_if_errors_argument_is_not_valid(errors)
     _raise_if_store_already_exists(store_name)
     _raise_if_store_name_is_forbidden(store_name)
 
 
 def _can_drop_store(store_name, errors):
     Connection.is_connected()
-    _utils.check_if_arg_errors_is_valid(errors)
+    _utils.raise_if_errors_argument_is_not_valid(errors)
     if errors == "raise":
         _raise_if_store_not_exists(store_name)
     _raise_if_store_contains_tables(store_name)

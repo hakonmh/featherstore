@@ -77,7 +77,8 @@ def _convert_row(row, *, to):
 def format_table(df, index, warnings):
     df = _convert_to_pandas(df)
     df = _set_index(df, index)
-    _check_index_constraints(df.index)
+    _raise_if.index_values_contains_duplicates(df.index)
+    _raise_if.index_is_not_supported_dtype(df.index)
 
     index_is_sorted = df.index.is_monotonic_increasing
     if not index_is_sorted:
@@ -91,15 +92,6 @@ def format_table(df, index, warnings):
     formatted_df = _add_schema_metadata(formatted_df, new_metadata)
 
     return formatted_df
-
-
-def assign_ids_to_partitions(df, ids):
-    if len(df) != len(ids):
-        raise IndexError("Num partitions doesn't match num partiton names")
-    id_mapping = {}
-    for identifier, partition in zip(ids, df):
-        id_mapping[identifier] = partition
-    return id_mapping
 
 
 def _convert_to_pandas(df):
@@ -158,6 +150,15 @@ def _add_schema_metadata(df, new_metadata):
     combined_metadata = {**old_metadata, b"featherstore": new_metadata}
     df = df.replace_schema_metadata(combined_metadata)
     return df
+
+
+def assign_ids_to_partitions(df, ids):
+    if len(df) != len(ids):
+        raise IndexError("Num partitions doesn't match num partiton names")
+    id_mapping = {}
+    for identifier, partition in zip(ids, df):
+        id_mapping[identifier] = partition
+    return id_mapping
 
 
 def make_partition_metadata(df):
@@ -254,24 +255,6 @@ def _get_cols(df, has_default_index):
         if has_default_index and DEFAULT_ARROW_INDEX_NAME not in cols:
             cols.append(DEFAULT_ARROW_INDEX_NAME)
     return cols
-
-
-def _check_index_constraints(index):
-    # TODO split and/or rename
-    if index.has_duplicates:
-        raise IndexError("Values in Table.index must be unique")
-    index_type = index.inferred_type
-    if index_type not in {"integer", "datetime64", "string"}:
-        raise TypeError("Table.index type must be either int, str or datetime")
-
-
-def _check_column_constraints(cols):
-    # TODO split and/or rename
-    cols = pd.Index(cols)
-    if cols.has_duplicates:
-        raise IndexError("Column names must be unique")
-    if "like" in cols.str.lower():
-        raise IndexError("df contains invalid column name 'like'")
 
 
 def _rows_dtype_matches_index(rows, index_dtype):

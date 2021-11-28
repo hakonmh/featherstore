@@ -86,7 +86,7 @@ class Connection:
 
 
 def _can_create_database(db_path, errors):
-    _utils.check_if_arg_errors_is_valid(errors)
+    _utils.raise_if_errors_argument_is_not_valid(errors)
     _raise_if_db_path_is_not_string(db_path)
     if errors == "raise":
         _raise_if_directory_is_empty(db_path)

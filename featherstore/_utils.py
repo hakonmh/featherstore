@@ -54,11 +54,11 @@ def _filter(items, *, like):
     return results
 
 
-def check_if_arg_errors_is_valid(errors):
+def raise_if_errors_argument_is_not_valid(errors):
     if errors not in {"raise", "ignore"}:
         raise ValueError("'errors' must be either 'raise' or 'ignore'")
 
 
-def check_if_arg_warnings_is_valid(warnings):
+def raise_if_warnings_argument_is_not_valid(warnings):
     if warnings not in {"warn", "ignore"}:
         raise ValueError("'warnings' must be either 'warn' or 'ignore'")

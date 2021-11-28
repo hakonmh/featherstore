@@ -10,42 +10,41 @@ from featherstore import _utils
 from featherstore._table import _raise_if
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore._table.common import (_get_cols,
-                                        _check_column_constraints,
                                         _convert_to_partition_id,
                                         _get_index_dtype)
 
 
 def can_write_table(df, table_path, index, partition_size, errors, warnings):
     Connection.is_connected()
-    _utils.check_if_arg_errors_is_valid(errors)
-    _utils.check_if_arg_warnings_is_valid(warnings)
+    _utils.raise_if_errors_argument_is_not_valid(errors)
+    _utils.raise_if_warnings_argument_is_not_valid(warnings)
     if errors == 'raise':
         _raise_if.table_already_exists(table_path)
 
     _raise_if.df_is_not_supported_table_dtype(df)
-    _check_partition_size_argument_dtype(partition_size)
+    _raise_if_partition_size_is_not_int(partition_size)
 
     cols = _get_cols(df, has_default_index=False)
-    _check_index_argument_dtype(index)
-    _check_if_provided_index_in_cols(index, cols)
-    _check_column_constraints(cols)
+    _raise_if_index_argument_is_not_supported_dtype(index)
+    _raise_if_provided_index_not_in_cols(index, cols)
+    _raise_if.column_names_are_forbidden(cols)
 
 
-def _check_index_argument_dtype(index):
+def _raise_if_partition_size_is_not_int(partition_size):
+    if not isinstance(partition_size, (Integral, type(None))):
+        dtype = type(partition_size)
+        raise TypeError(f"'partition_size' must be a int (is type {dtype})")
+
+
+def _raise_if_index_argument_is_not_supported_dtype(index):
     if not isinstance(index, (str, type(None))):
         raise TypeError(
             f"'index' must be a str or None (is type {type(index)})")
 
 
-def _check_if_provided_index_in_cols(index, cols):
+def _raise_if_provided_index_not_in_cols(index, cols):
     if isinstance(index, str) and index not in cols:
         raise IndexError("'index' not in table columns")
-
-
-def _check_partition_size_argument_dtype(partition_size):
-    if not isinstance(partition_size, (Integral, type(None))):
-        dtype = type(partition_size)
-        raise TypeError(f"'partition_size' must be a int (is type {dtype})")
 
 
 def calculate_rows_per_partition(df, target_size):

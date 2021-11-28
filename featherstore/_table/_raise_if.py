@@ -103,3 +103,23 @@ def index_dtype_not_same_as_index(df, table_path):
     stored_index_type = Metadata(table_path, "table")["index_dtype"]
     if index_type != stored_index_type:
         raise TypeError("New and old index types do not match")
+
+
+def column_names_are_forbidden(cols):
+    # TODO split and/or rename
+    cols = pd.Index(cols)
+    if cols.has_duplicates:
+        raise IndexError("Column names must be unique")
+    if "like" in cols.str.lower():
+        raise IndexError("df contains invalid column name 'like'")
+
+
+def index_values_contains_duplicates(index):
+    if index.has_duplicates:
+        raise IndexError("Values in Table.index must be unique")
+
+
+def index_is_not_supported_dtype(index):
+    index_type = index.inferred_type
+    if index_type not in {"integer", "datetime64", "string"}:
+        raise TypeError("Table.index type must be either int, str or datetime")
