@@ -6,6 +6,7 @@ import pyarrow as pa
 
 from featherstore._metadata import METADATA_FOLDER_NAME, Metadata
 from featherstore._table import common
+from featherstore._table import _table_utils
 
 
 def table_not_exists(table_path):
@@ -57,7 +58,7 @@ def cols_argument_items_is_not_str(cols):
 def columns_does_not_match(df, table_path):
     stored_data_cols = Metadata(table_path, "table")["columns"]
     has_default_index = Metadata(table_path, "table")["has_default_index"]
-    new_data_cols = common._get_cols(df, has_default_index)
+    new_data_cols = _table_utils._get_cols(df, has_default_index)
 
     if sorted(new_data_cols) != sorted(stored_data_cols):
         raise ValueError("New and old columns doesn't match")
@@ -87,7 +88,7 @@ def rows_argument_items_dtype_not_same_as_index(rows, table_path):
 
 def _rows_dtype_matches_index(rows, index_dtype):
     try:
-        common._convert_row(rows[-1], to=index_dtype)
+        _table_utils._convert_row(rows[-1], to=index_dtype)
         row_type_matches = True
     except TypeError:
         row_type_matches = False

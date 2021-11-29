@@ -5,7 +5,7 @@ from featherstore import _metadata
 from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore._table import _raise_if
-from featherstore._table import common
+from featherstore._table import _table_utils
 
 
 def can_append_table(
@@ -49,7 +49,7 @@ def _get_default_index_start(table_path):
 def _get_non_default_index_start(df, table_path):
     index_col = _metadata.Metadata(table_path, "table")["index_name"]
     first_row = df[:1]
-    first_row = common._convert_to_pyarrow_table(first_row)
+    first_row = _table_utils._convert_to_pyarrow_table(first_row)
     append_data_start = first_row[index_col][0].as_py()
     return append_data_start
 
@@ -79,10 +79,10 @@ def append_new_partition_ids(partitioned_df, last_partition_id):
     partition_ids = [last_partition_id]
 
     num_partitions = len(partitioned_df)
-    range_start = common._convert_partition_id_to_int(last_partition_id) + 1
+    range_start = _table_utils._convert_partition_id_to_int(last_partition_id) + 1
     range_end = range_start + num_partitions - 1
 
     for partition_num in range(range_start, range_end):
-        partition_id = common._convert_to_partition_id(partition_num)
+        partition_id = _table_utils._convert_to_partition_id(partition_num)
         partition_ids.append(partition_id)
     return partition_ids

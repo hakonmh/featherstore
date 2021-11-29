@@ -7,11 +7,9 @@ from pyarrow import feather
 
 from featherstore.connection import Connection
 from featherstore import _utils
-from featherstore._table import _raise_if
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
-from featherstore._table.common import (_get_cols,
-                                        _convert_to_partition_id,
-                                        _get_index_dtype)
+from featherstore._table import _raise_if
+from featherstore._table import _table_utils
 
 
 def can_write_table(df, table_path, index, partition_size, errors, warnings):
@@ -24,7 +22,7 @@ def can_write_table(df, table_path, index, partition_size, errors, warnings):
     _raise_if.df_is_not_supported_table_dtype(df)
     _raise_if_partition_size_is_not_int(partition_size)
 
-    cols = _get_cols(df, has_default_index=False)
+    cols = _table_utils._get_cols(df, has_default_index=False)
     _raise_if_index_argument_is_not_supported_dtype(index)
     _raise_if_provided_index_not_in_cols(index, cols)
     _raise_if.column_names_are_forbidden(cols)
@@ -89,7 +87,7 @@ def make_partition_ids(partitioned_df):
     num_partitions = len(partitioned_df)
     partition_ids = list()
     for partition_num in range(1, num_partitions + 1):
-        partition_id = _convert_to_partition_id(partition_num)
+        partition_id = _table_utils._convert_to_partition_id(partition_num)
         partition_ids.append(partition_id)
     return partition_ids
 
@@ -108,7 +106,7 @@ def make_table_metadata(df, collected_data):
         "partition_byte_size": int(partition_byte_size),
         "index_name": index_name,
         "index_column_position": _get_index_position(df, index_name),
-        "index_dtype": _get_index_dtype(df),
+        "index_dtype": _table_utils._get_index_dtype(df),
         "has_default_index": _has_default_index(df, index_name),
     }
     return metadata

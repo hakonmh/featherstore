@@ -2,7 +2,7 @@ import pandas as pd
 
 from featherstore.connection import Connection
 from featherstore._table import _raise_if
-from featherstore._table.common import _coerce_column_dtypes
+from featherstore._table._table_utils import _coerce_column_dtypes
 
 
 def can_update_table(df, table_path):

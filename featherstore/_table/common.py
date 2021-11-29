@@ -1,6 +1,5 @@
 import os
 import json
-from numbers import Integral
 
 import pyarrow as pa
 import pandas as pd
@@ -9,6 +8,7 @@ import polars as pl
 from featherstore.connection import Connection
 from featherstore._metadata import Metadata
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME, filter_items_like_pattern
+from featherstore._table import _table_utils
 from featherstore._table import _raise_if
 from featherstore import store
 
@@ -51,27 +51,10 @@ def format_rows(rows, index_type):
     if rows is not None:
         keyword = str(rows[0]).lower()
         if keyword in {"between", "before", "after"}:
-            rows[1:] = [_convert_row(item, to=index_type) for item in rows[1:]]
+            rows[1:] = [_table_utils._convert_row(item, to=index_type) for item in rows[1:]]
         else:
-            rows = [_convert_row(item, to=index_type) for item in rows]
+            rows = [_table_utils._convert_row(item, to=index_type) for item in rows]
     return rows
-
-
-def _convert_row(row, *, to):
-    if to == "datetime64":
-        try:
-            row = pd.to_datetime(row)
-        except Exception:
-            raise TypeError("'row' dtype doesn't match index dtype")
-    elif to == "string" or to == "unicode":
-        if not isinstance(row, str):
-            raise TypeError("'row' dtype doesn't match index dtype")
-        row = str(row)
-    elif to == "int64":
-        if not isinstance(row, Integral):
-            raise TypeError("'row' dtype doesn't match index dtype")
-        row = int(row)
-    return row
 
 
 def format_table(df, index, warnings):
@@ -107,16 +90,6 @@ def _convert_to_pandas(df):
             pd_df = pd_df.set_index(DEFAULT_ARROW_INDEX_NAME)
             pd_df.index.name = None
     return pd_df
-
-
-def _convert_to_pyarrow_table(df):
-    if isinstance(df, pd.Series):
-        df = df.to_frame()
-    if isinstance(df, pd.DataFrame):
-        df = pa.Table.from_pandas(df, preserve_index=True)
-    elif isinstance(df, pl.DataFrame):
-        df = df.to_arrow()
-    return df
 
 
 def _set_index(df, index_name):
@@ -228,70 +201,3 @@ def delete_partition_metadata(table_path, partition_name):
     partition_names = partition_data.keys()
     partition_names = partition_names.remove(partition_name)
     del partition_data[partition_name]
-
-
-# ---------------------------------------------------------
-
-
-def _get_cols(df, has_default_index):
-    if isinstance(df, pd.DataFrame):
-        cols = df.columns.tolist()
-        if df.index.name is not None:
-            cols.append(df.index.name)
-        else:
-            cols.append(DEFAULT_ARROW_INDEX_NAME)
-    elif isinstance(df, pd.Series):
-        cols = [df.name]
-        if df.index.name is not None:
-            cols.append(df.index.name)
-        else:
-            cols.append(DEFAULT_ARROW_INDEX_NAME)
-    elif isinstance(df, pa.Table):
-        cols = df.column_names
-        if has_default_index and DEFAULT_ARROW_INDEX_NAME not in cols:
-            cols.append(DEFAULT_ARROW_INDEX_NAME)
-    elif isinstance(df, pl.DataFrame):
-        cols = df.columns
-        if has_default_index and DEFAULT_ARROW_INDEX_NAME not in cols:
-            cols.append(DEFAULT_ARROW_INDEX_NAME)
-    return cols
-
-
-def _rows_dtype_matches_index(rows, index_dtype):
-    try:
-        _convert_row(rows[-1], to=index_dtype)
-        row_type_matches = True
-    except TypeError:
-        row_type_matches = False
-    return row_type_matches
-
-
-def _coerce_column_dtypes(df, *, to):
-    cols = df.columns
-    dtypes = to[cols].dtypes
-    try:
-        df = df.astype(dtypes)
-    except ValueError:
-        raise TypeError("New and old column dtypes do not match")
-    return df
-
-
-def _convert_to_partition_id(partition_id):
-    partition_id = int(partition_id * INSERTION_BUFFER_LENGTH)
-    format_string = f'0{PARTITION_NAME_LENGTH}d'
-    partition_id = format(partition_id, format_string)
-    return partition_id
-
-
-def _convert_partition_id_to_int(partition_id):
-    return int(partition_id) // INSERTION_BUFFER_LENGTH
-
-
-def _get_index_dtype(df):
-    schema = df[0].schema
-    # TODO: A better solution for when format_table is refactored:
-    # str(df[0].field(index_position).type)
-    index_dtype = schema.pandas_metadata["columns"][-1]["pandas_type"]
-    if index_dtype == "datetime":
-        index_dtype = "datetime64"
-    return index_dtype
