@@ -59,24 +59,6 @@ def get_partition_attr(table_path, item=None):
     return metadata
 
 
-def update_table_metadata(table_metadata, new_partition_metadata,
-                          old_partition_metadata):
-    old_num_rows = [
-        item['num_rows'] for item in old_partition_metadata.values()
-    ]
-    new_num_rows = [
-        item['num_rows'] for item in new_partition_metadata.values()
-    ]
-
-    table_metadata = {
-        "num_partitions":
-        table_metadata['num_partitions'] - len(old_partition_metadata) + len(new_partition_metadata),
-        "num_rows":
-        table_metadata['num_rows'] - sum(old_num_rows) + sum(new_num_rows)
-    }
-    return table_metadata
-
-
 def _can_init_metadata(base_path, db_name):
     if not isinstance(base_path, str):
         raise TypeError("Metadata 'base_path' must be of type 'str'")

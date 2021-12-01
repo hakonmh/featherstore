@@ -15,9 +15,11 @@ def test_sorted_arrow_io(original_df, basic_data, database, connection, store):
     # Arrange
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
+    index_name = get_index_name(original_df)
     store.write_table(basic_data["table_name"],
                       original_df,
-                      partition_size=partition_size)
+                      partition_size=partition_size,
+                      index=index_name)
     # Act
     df = store.read_arrow(basic_data["table_name"])
     # Assert
@@ -42,11 +44,13 @@ def test_unsorted_arrow_io(original_df, basic_data, database, connection,
 
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
+    index_name = get_index_name(original_df)
     store.write_table(
         basic_data["table_name"],
         original_df,
         partition_size=partition_size,
         warnings="ignore",
+        index=index_name
     )
     # Act
     df = store.read_arrow(basic_data["table_name"])

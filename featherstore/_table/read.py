@@ -6,7 +6,8 @@ import pandas as pd
 import polars as pl
 
 from featherstore.connection import Connection
-from featherstore._metadata import Metadata, get_partition_attr
+from featherstore import _metadata
+from featherstore._metadata import Metadata
 from featherstore._table import _raise_if
 
 
@@ -33,6 +34,7 @@ def get_partition_names(rows, table_path):
 
 
 def _predicate_filtering(rows, table_path):
+    # TODO: Rework, make more effective
     partition_stats = _get_partition_stats(table_path)
     keyword = str(rows[0]).lower()
     if keyword == "before":
@@ -58,12 +60,13 @@ def _predicate_filtering(rows, table_path):
 
 
 def _get_partition_stats(table_path):
+    # TODO: Rework or replace
     index_type = Metadata(table_path, "table")["index_dtype"]
 
     partition_stats = dict()
     partition_stats["name"] = Metadata(table_path, 'partition').keys()
-    partition_stats["min"] = get_partition_attr(table_path, 'min')
-    partition_stats["max"] = get_partition_attr(table_path, 'max')
+    partition_stats["min"] = _metadata.get_partition_attr(table_path, 'min')
+    partition_stats["max"] = _metadata.get_partition_attr(table_path, 'max')
 
     partition_stats = pd.DataFrame(partition_stats)
     partition_stats.set_index("name", inplace=True)
@@ -72,20 +75,25 @@ def _get_partition_stats(table_path):
     return partition_stats
 
 
-def read_partitions(partition_names, table_path, columns):
-    if columns is not None:
-        index_col = Metadata(table_path, "table")["index_name"]
-        columns = columns.copy()
-        columns.append(index_col)
+def read_partitions(partition_names, table_path, cols):
+    if cols is not None:
+        cols = _add_index_to_cols(cols, table_path)
 
     partitions = []
     for partition_name in partition_names:
         partition_path = os.path.join(table_path, f"{partition_name}.feather")
         partition = feather.read_table(partition_path,
-                                       columns=columns,
+                                       columns=cols,
                                        memory_map=True)
         partitions.append(partition)
     return partitions
+
+
+def _add_index_to_cols(cols, table_path):
+    index_col = Metadata(table_path, "table")["index_name"]
+    cols = cols.copy()
+    cols.append(index_col)
+    return cols
 
 
 def filter_table_rows(df, rows, index_col_name):
@@ -98,32 +106,52 @@ def filter_table_rows(df, rows, index_col_name):
 def _filter_arrow_table(df, index_col_name, rows):
     keyword = str(rows[0]).lower()
     index = df[index_col_name]
-    if keyword == 'before':
-        upper_bound = _compute_row_index(rows[1], index)
-        df = df[:upper_bound + 1]
+    if keyword not in ('before', 'after', 'between'):
+        df = _fetch_rows_in_list(df, index, rows)
+    elif keyword == 'before':
+        df = _fetch_rows_before(df, index, rows[1])
     elif keyword == 'after':
-        lower_bound = _compute_row_index(rows[1], index)
-        df = df[lower_bound:]
+        df = _fetch_rows_after(df, index, rows[1])
     elif keyword == 'between':
-        lower_bound = _compute_row_index(rows[1], index)
-        upper_bound = _compute_row_index(rows[2], index)
-        df = df[lower_bound:upper_bound + 1]
-    else:  # When a list of rows is provided
-        rows_indices = pa.compute.index_in(rows, value_set=index)
-        df = df.take(rows_indices)
+        df = _fetch_rows_between(df, index, low=rows[1], high=rows[2])
+    return df
+
+
+def _fetch_rows_in_list(df, index, rows):
+    rows_indices = pa.compute.index_in(rows, value_set=index)
+    df = df.take(rows_indices)
+    return df
+
+
+def _fetch_rows_before(df, index, row):
+    upper_bound = _compute_row_index(row, index)
+    df = df[:upper_bound + 1]
+    return df
+
+
+def _fetch_rows_after(df, index, row):
+    lower_bound = _compute_row_index(row, index)
+    df = df[lower_bound:]
+    return df
+
+
+def _fetch_rows_between(df, index, low, high):
+    lower_bound = _compute_row_index(low, index)
+    upper_bound = _compute_row_index(high, index)
+    df = df[lower_bound:upper_bound + 1]
     return df
 
 
 def _compute_row_index(row, index):
     row_idx = pa.compute.index_in(row, value_set=index)
     row_idx = row_idx.as_py()
-    no_row_is_matching = row_idx is None
-    if no_row_is_matching:
-        row_idx = _fetch_closest_row(row, index)
+    no_direct_match_is_found = row_idx is None
+    if no_direct_match_is_found:
+        row_idx = _fetch_closest_matching_row(row, index)
     return row_idx
 
 
-def _fetch_closest_row(row, index):
+def _fetch_closest_matching_row(row, index):
     TRUE = 1
     mask = pa.compute.less_equal(row, index)
     row_idx = pa.compute.index_in(TRUE, value_set=mask)
@@ -152,7 +180,7 @@ def can_be_converted_to_rangeindex(df):
     if is_already_rangeindex:
         can_be_converted = False
     else:
-        corresponding_rangeindex = pd.RangeIndex(start=0, stop=len(df.index))
+        corresponding_rangeindex = pd.RangeIndex(start=0, stop=len(df))
         is_equal_to_rangeindex = df.index.equals(corresponding_rangeindex)
         if is_equal_to_rangeindex:
             can_be_converted = True
@@ -161,11 +189,10 @@ def can_be_converted_to_rangeindex(df):
     return can_be_converted
 
 
-def convert_to_rangeindex(df):
-    index_name = df.index.name
-    df = df.reset_index(drop=True)
-    df.index.name = index_name
-    return df
+def make_rangeindex(df):
+    index = pd.RangeIndex(len(df))
+    index.name = df.index.name
+    return index
 
 
 def convert_table_to_polars(df):

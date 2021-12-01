@@ -3,7 +3,6 @@ import os
 from featherstore import _utils
 from featherstore.table import Table, DEFAULT_PARTITION_SIZE
 from featherstore.connection import current_db, DB_MARKER_NAME, Connection
-from featherstore._utils import filter_items_like_pattern
 
 
 def create_store(store_name, *, errors="raise"):
@@ -77,7 +76,7 @@ def list_stores(*, like=None):
     database_content = os.listdir(current_db())
     if like:
         pattern = like
-        database_content = filter_items_like_pattern(database_content, like=pattern)
+        database_content = _utils.filter_items_like_pattern(database_content, like=pattern)
     stores = []
     for item in database_content:
         path = os.path.join(current_db(), item)
@@ -137,7 +136,7 @@ class Store:
         tables = os.listdir(self.store_path)
         if like:
             pattern = like
-            tables = filter_items_like_pattern(tables, like=pattern)
+            tables = _utils.filter_items_like_pattern(tables, like=pattern)
         return tables
 
     def table_exists(self, table_name):
@@ -296,7 +295,8 @@ class Store:
 def _can_create_store(store_name, errors):
     Connection.is_connected()
     _utils.raise_if_errors_argument_is_not_valid(errors)
-    _raise_if_store_already_exists(store_name)
+    if errors == 'raise':
+        _raise_if_store_already_exists(store_name)
     _raise_if_store_name_is_forbidden(store_name)
 
 

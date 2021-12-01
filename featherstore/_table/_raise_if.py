@@ -1,4 +1,5 @@
 import os
+from numbers import Integral
 
 import pandas as pd
 import polars as pl
@@ -55,10 +56,10 @@ def cols_argument_items_is_not_str(cols):
         raise TypeError("Elements in 'cols' must be of type str")
 
 
-def columns_does_not_match(df, table_path):
+def cols_does_not_match(df, table_path):
     stored_data_cols = Metadata(table_path, "table")["columns"]
     has_default_index = Metadata(table_path, "table")["has_default_index"]
-    new_data_cols = _table_utils._get_cols(df, has_default_index)
+    new_data_cols = _table_utils._get_col_names(df, has_default_index)
 
     if sorted(new_data_cols) != sorted(stored_data_cols):
         raise ValueError("New and old columns doesn't match")
@@ -66,10 +67,10 @@ def columns_does_not_match(df, table_path):
 
 def cols_not_in_table(cols, table_path):
     table_metadata = Metadata(table_path, 'table')
-    stored_columns = table_metadata["columns"]
+    stored_cols = table_metadata["columns"]
 
-    cols = common.filter_table_cols(cols, stored_columns)
-    some_cols_not_in_stored_cols = set(cols) - set(stored_columns)
+    cols = common.filter_cols_if_like_provided(cols, stored_cols)
+    some_cols_not_in_stored_cols = set(cols) - set(stored_cols)
     if some_cols_not_in_stored_cols:
         raise IndexError("Trying to access a column not found in table")
 
@@ -83,16 +84,41 @@ def rows_argument_is_not_supported_dtype(rows):
 def rows_argument_items_dtype_not_same_as_index(rows, table_path):
     index_dtype = Metadata(table_path, "table")["index_dtype"]
     if rows is not None and not _rows_dtype_matches_index(rows, index_dtype):
-        raise TypeError("'rows' dtype doesn't match table index")
+        raise TypeError("'rows' dtype doesn't match table index dtype")
 
 
 def _rows_dtype_matches_index(rows, index_dtype):
+    row = rows[-1]
+    # if _is_temporal(index_dtype):
+    if index_dtype == "datetime64":
+        if _isinstance_temporal(row):
+            matches_index = True
+        else:
+            matches_index = False
+    elif index_dtype == "string" or index_dtype == "unicode":
+        if isinstance(row, str):
+            matches_index = True
+        else:
+            matches_index = False
+    elif index_dtype == "int64":
+        if isinstance(row, Integral):
+            matches_index = True
+        else:
+            matches_index = False
+    return matches_index
+
+
+# def _is_temporal(index_dtype):
+#     return "time" in index_dtype or "date" in index_dtype
+
+
+def _isinstance_temporal(obj):
     try:
-        _table_utils._convert_row(rows[-1], to=index_dtype)
-        row_type_matches = True
-    except TypeError:
-        row_type_matches = False
-    return row_type_matches
+        _ = pd.to_datetime(obj)
+        is_temporal = True
+    except Exception:
+        is_temporal = False
+    return is_temporal
 
 
 def index_dtype_not_same_as_index(df, table_path):

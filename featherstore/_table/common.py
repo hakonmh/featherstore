@@ -7,7 +7,8 @@ import polars as pl
 
 from featherstore.connection import Connection
 from featherstore._metadata import Metadata
-from featherstore._utils import DEFAULT_ARROW_INDEX_NAME, filter_items_like_pattern
+from featherstore import _utils
+from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore._table import _table_utils
 from featherstore._table import _raise_if
 from featherstore import store
@@ -38,89 +39,143 @@ def combine_partitions(partitions):
     return full_table
 
 
-def filter_table_cols(cols, table_columns):
-    if cols:
+def filter_cols_if_like_provided(cols, table_cols):
+    cols_are_provided = bool(cols)
+    if cols_are_provided:
         keyword = str(cols[0]).lower()
-        if keyword == "like":
+        like_is_provided = keyword == "like"
+        if like_is_provided:
             pattern = cols[1]
-            cols = filter_items_like_pattern(table_columns, like=pattern)
+            cols = _utils.filter_items_like_pattern(table_cols, like=pattern)
     return cols
 
 
-def format_rows(rows, index_type):
-    if rows is not None:
-        keyword = str(rows[0]).lower()
-        if keyword in {"between", "before", "after"}:
-            rows[1:] = [_table_utils._convert_row(item, to=index_type) for item in rows[1:]]
-        else:
-            rows = [_table_utils._convert_row(item, to=index_type) for item in rows]
+def format_rows_arg_if_provided(rows, index_type):
+    rows_is_provided = rows is not None
+    if rows_is_provided:
+        rows = _format_rows(rows, index_type)
     return rows
 
 
-def format_table(df, index, warnings):
-    df = _convert_to_pandas(df)
-    df = _set_index(df, index)
-    _raise_if.index_values_contains_duplicates(df.index)
-    _raise_if.index_is_not_supported_dtype(df.index)
-
-    index_is_sorted = df.index.is_monotonic_increasing
-    if not index_is_sorted:
-        df = _sort_index(df, warnings)
-        new_metadata = json.dumps({"sorted": True})
+def _format_rows(rows, index_type):
+    rows = list(rows)
+    keyword = str(rows[0]).lower()
+    if keyword in {"between", "before", "after"}:
+        rows[1:] = _coerce_row_dtypes(rows[1:], to=index_type)
     else:
-        new_metadata = json.dumps({"sorted": False})
-
-    formatted_df = pa.Table.from_pandas(df, preserve_index=True)
-    formatted_df = _make_index_first_column(formatted_df)
-    formatted_df = _add_schema_metadata(formatted_df, new_metadata)
-
-    return formatted_df
+        rows = _coerce_row_dtypes(rows, to=index_type)
+    return rows
 
 
-def _convert_to_pandas(df):
-    if isinstance(df, pd.DataFrame):
-        pd_df = df
-    elif isinstance(df, pd.Series):
-        pd_df = df.to_frame()
-    elif isinstance(df, pa.Table):
-        pd_df = df.to_pandas()
-    elif isinstance(df, pl.DataFrame):
-        pd_df = df.to_pandas()
-        if DEFAULT_ARROW_INDEX_NAME in pd_df.columns:
-            pd_df = pd_df.set_index(DEFAULT_ARROW_INDEX_NAME)
-            pd_df.index.name = None
-    return pd_df
+def _coerce_row_dtypes(rows, *, to):
+    rows = [_convert_row(item, to) for item in rows]
+    return rows
+
+
+def _convert_row(row, to):
+    if to == "datetime64":
+        row = pd.to_datetime(row)
+    elif to == "string" or to == "unicode":
+        row = str(row)
+    elif to == "int64":
+        row = int(row)
+    return row
+
+
+def format_table(df, index_name, warnings):
+    df = _table_utils._convert_to_arrow(df)
+
+    if index_name is None:
+        index_name = _table_utils._get_index_name(df)
+    if index_name not in df.column_names:
+        df = _make_default_index(df, index_name)
+
+    df = _sort_table_if_unsorted(df, index_name, warnings)
+    df = _format_pd_metadata(df, index_name)
+    return df
+
+
+def _make_default_index(df, index_name):
+    index = pa.array(pd.RangeIndex(len(df)))
+    df = df.append_column(index_name, index)
+    return df
+
+
+def _sort_table_if_unsorted(df, index_name, warnings):
+    pd_index = pd.Index(df[index_name])
+    index_is_unordered = not pd_index.is_monotonic_increasing
+
+    if index_is_unordered:
+        df = _sort_arrow_table(df, index_name, warnings)
+    new_metadata = json.dumps({"sorted": index_is_unordered})
+    df = _add_featherstore_metadata(df, new_metadata)
+    return df
+
+
+def _sort_arrow_table(df, index_name, warnings="ignore"):
+    if warnings == "warn":
+        import warnings
+        warnings.warn("Index is unsorted and will be sorted before storage")
+    schema = df.schema
+
+    df = pl.from_arrow(df, rechunk=False)
+    df = df.sort(index_name)
+    df = df.to_arrow()
+
+    df = df.cast(schema)
+    return df
+
+
+def _format_pd_metadata(df, index_name):
+    metadata = _make_pd_schema(df, index_name)
+    df = _add_pd_metadata(df, metadata)
+    df = _make_index_first_column(df)
+    return df
+
+
+def _make_pd_schema(df, index_name):
+    first_row = _table_utils._get_first_row(df)
+    first_row = _table_utils._convert_to_pandas(first_row)
+    first_row = _set_index(first_row, index_name)
+
+    table_schema = pa.Schema.from_pandas(first_row, preserve_index=True)
+    metadata = table_schema.metadata
+    return metadata
+
+
+def _add_pd_metadata(df, metadata):
+    old_metadata = df.schema.metadata
+    old_metadata[b'pandas'] = metadata[b'pandas']
+    df = df.replace_schema_metadata(old_metadata)
+    return df
+
+
+def _make_index_first_column(df):
+    index_name = df.schema.pandas_metadata["index_columns"][0]
+    cols = df.column_names
+    cols.remove(index_name)
+    cols.insert(0, index_name)
+    df = df.select(cols)
+    return df
 
 
 def _set_index(df, index_name):
-    user_has_provided_index = bool(index_name)
-    index_name_not_index = index_name != df.index.name
-    if user_has_provided_index and index_name_not_index and index_name in df.columns:
+    has_provided_index = bool(index_name)
+    index_name_is_not_index = index_name != df.index.name
+    cols = df.columns
+    if has_provided_index and index_name_is_not_index and index_name in cols:
         df = df.set_index(index_name)
     if df.index.name == DEFAULT_ARROW_INDEX_NAME:
         df.index.name = None
     return df
 
 
-def _sort_index(df, warnings):
-    if warnings == "warn":
-        import warnings
-        warnings.warn("Index is unsorted and will be sorted before storage")
-    df = df.sort_index()
-    return df
-
-
-def _make_index_first_column(df):
-    index_name = df.schema.pandas_metadata["index_columns"]
-    column_names = df.column_names[:-1]
-    columns = index_name + column_names
-    df = df.select(columns)
-    return df
-
-
-def _add_schema_metadata(df, new_metadata):
+def _add_featherstore_metadata(df, new_metadata):
     old_metadata = df.schema.metadata
-    combined_metadata = {**old_metadata, b"featherstore": new_metadata}
+    if old_metadata:
+        combined_metadata = {**old_metadata, b"featherstore": new_metadata}
+    else:
+        combined_metadata = {b"featherstore": new_metadata}
     df = df.replace_schema_metadata(combined_metadata)
     return df
 
@@ -136,7 +191,9 @@ def assign_ids_to_partitions(df, ids):
 
 def make_partition_metadata(df):
     metadata = {}
-    index_col_name = _get_index_name(df)
+
+    first_partition = tuple(df.values())[0]
+    index_col_name = _table_utils._get_index_name(first_partition)
     for name, partition in df.items():
         data = {
             'min': _get_index_min(partition, index_col_name),
@@ -145,19 +202,6 @@ def make_partition_metadata(df):
         }
         metadata[name] = data
     return metadata
-
-
-def _get_index_name(df):
-    if isinstance(df, dict):
-        partition = tuple(df.values())[0]
-    else:
-        partition = df[0]
-    schema = partition.schema
-    index_name, = schema.pandas_metadata["index_columns"]
-    no_index_name = not isinstance(index_name, str)
-    if no_index_name:
-        index_name = "index"
-    return index_name
 
 
 def _get_index_min(df, index_name):
@@ -172,6 +216,7 @@ def _get_index_max(df, index_name):
 
 def update_table_metadata(table_metadata, new_partition_metadata,
                           old_partition_metadata):
+    # TODO: Clean up, new name, generalize(?)
     old_num_rows = [
         item['num_rows'] for item in old_partition_metadata.values()
     ]
@@ -192,8 +237,11 @@ def delete_partition(table_path, partition_name):
     partition_path = os.path.join(table_path, f'{partition_name}.feather')
     try:
         os.remove(partition_path)
-    except PermissionError:
-        raise PermissionError('File still opened by memory-map')
+    except PermissionError as e:
+        try:
+            os.system(f'cmd /k "del /f /q /a {e.filename}"')
+        except Exception:
+            raise PermissionError('File still opened by memory-map')
 
 
 def delete_partition_metadata(table_path, partition_name):

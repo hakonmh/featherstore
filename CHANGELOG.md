@@ -11,6 +11,7 @@ Other changes:
 * Added `Table.insert()`
 * Added `Table.drop()`, `Table.drop_rows()` and `Table.drop_columns()`
 * Added `Table.shape`
+* Performance improvements
 
 0.0.3
 -----

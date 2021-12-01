@@ -3,7 +3,7 @@ import pyarrow as pa
 from featherstore.connection import Connection
 from featherstore._metadata import Metadata
 from featherstore._table import _raise_if
-from featherstore._table.common import filter_table_cols
+from featherstore._table import common
 
 
 def can_drop_rows_from_table(rows, table_path):
@@ -14,6 +14,7 @@ def can_drop_rows_from_table(rows, table_path):
 
 
 def get_adjacent_partition_name(partition_names, table_path):
+    # TODO: Clarify and clean
     all_partition_names = Metadata(table_path, 'partition').keys()
     index_first_partition = all_partition_names.index(partition_names[0])
     index_last_partition = all_partition_names.index(partition_names[-1])
@@ -27,9 +28,10 @@ def get_adjacent_partition_name(partition_names, table_path):
 
 
 def drop_rows_from_data(df, rows, index_col_name):
+    # TODO: Rework
     index = df[index_col_name]
     _raise_if_rows_are_not_in_index(index, rows)
-    mask = _make_arrow_filter_mask(index, rows)
+    mask = _make_arrow_filter_mask(index, rows)  # This should be changed
     mask = pa.compute.invert(mask)
     df = df.filter(mask)
     return df
@@ -47,6 +49,7 @@ def _raise_if_rows_are_not_in_index(index, rows):
 
 
 def _make_arrow_filter_mask(index, rows):
+    # TODO: Drop?
     keyword = str(rows[0]).lower()
     if keyword == "before":
         mask = pa.compute.greater_equal(rows[1], index)
@@ -79,28 +82,30 @@ def can_drop_cols_from_table(cols, table_path):
 class CheckDropCols:
 
     def __init__(self, cols, table_path):
-        self.cols = cols
-
         table_data = Metadata(table_path, 'table')
         self._index_name = table_data["index_name"]
         stored_cols = table_data["columns"]
 
         stored_cols.remove(self._index_name)
-        self._stored_columns = set(stored_cols)
-        dropped_cols = filter_table_cols(cols, stored_cols)
-        self._dropped_columns = set(dropped_cols)
+        self.cols = cols
+        self._stored_cols = set(stored_cols)
+        self._dropped_cols = set(self._get_dropped_cols())
+
+    def _get_dropped_cols(self):
+        dropped_cols = common.filter_cols_if_like_provided(self.cols, self._stored_cols)
+        return dropped_cols
 
     def trying_to_drop_index(self):
         if self._index_name in self.cols:
             raise ValueError("Can't drop index column")
 
     def cols_are_not_in_stored_data(self):
-        some_cols_not_in_stored_cols = bool(self._dropped_columns - self._stored_columns)
+        some_cols_not_in_stored_cols = bool(self._dropped_cols - self._stored_cols)
         if some_cols_not_in_stored_cols:
             raise IndexError("Trying to drop a column not found in table")
 
     def trying_to_drop_all_cols(self):
-        trying_to_drop_all_cols = not bool(self._stored_columns - self._dropped_columns)
+        trying_to_drop_all_cols = not bool(self._stored_cols - self._dropped_cols)
         if trying_to_drop_all_cols:
             raise IndexError("Can't drop all columns. To drop full table, use 'drop_table()'")
 

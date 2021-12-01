@@ -1,4 +1,4 @@
-from .fixtures import make_table, sorted_datetime_index
+from .fixtures import make_table, sorted_datetime_index, get_index_name
 
 
 def test_rename_table(database, connection, store):
@@ -10,10 +10,8 @@ def test_rename_table(database, connection, store):
     table = store.select_table(NEW_TABLE_NAME)
     # Act
     table_names = store.list_tables()
-    table_name = table.table_name
     # Assert
     assert table_names == [NEW_TABLE_NAME]
-    assert table_name == NEW_TABLE_NAME
 
 
 def test_drop_table(database, connection, store):
@@ -30,6 +28,7 @@ def test_drop_table(database, connection, store):
 def test_list_tables_like(database, connection, store):
     # Arrange
     df = make_table(sorted_datetime_index)
+    index_name = get_index_name(df)
     TABLE_NAMES = (
         "a_table",
         "AAPL",
@@ -41,7 +40,7 @@ def test_list_tables_like(database, connection, store):
         "saab",
     )
     for table_name in TABLE_NAMES:
-        store.write_table(table_name, df)
+        store.write_table(table_name, df, index=index_name)
     # Act
     tables_like_unbounded_wildcard = store.list_tables(like="A%")
     tables_like_bounded_wildcards = store.list_tables(like="?A??")
@@ -53,8 +52,9 @@ def test_list_tables_like(database, connection, store):
 def test_get_columns(database, connection, store):
     # Arrange
     df = make_table(sorted_datetime_index)
+    index_name = get_index_name(df)
     expected = df.column_names
-    store.write_table("table_name", df)
+    store.write_table("table_name", df, index=index_name)
     table = store.select_table("table_name")
     # Act
     columns = table.columns
@@ -65,8 +65,9 @@ def test_get_columns(database, connection, store):
 def test_get_index(database, connection, store):
     # Arrange
     df = make_table(sorted_datetime_index, astype="pandas")
+    index_name = get_index_name(df)
     expected = df.index
-    store.write_table("table_name", df)
+    store.write_table("table_name", df, index=index_name)
     table = store.select_table("table_name")
     # Act
     index = table.index

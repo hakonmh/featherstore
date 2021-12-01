@@ -2,7 +2,7 @@ import pandas as pd
 
 from featherstore.connection import Connection
 from featherstore._table import _raise_if
-from featherstore._table._table_utils import _coerce_column_dtypes
+from featherstore._table import _table_utils
 
 
 def can_update_table(df, table_path):
@@ -16,8 +16,8 @@ def can_update_table(df, table_path):
     else:
         cols = df.columns.tolist()
 
-    _raise_if.index_values_contains_duplicates(df.index)
     _raise_if.index_is_not_supported_dtype(df.index)
+    _raise_if.index_values_contains_duplicates(df.index)
     _raise_if.column_names_are_forbidden(cols)
     _raise_if.index_dtype_not_same_as_index(df, table_path)
     _raise_if.cols_not_in_table(cols, table_path)
@@ -31,7 +31,7 @@ def update_data(old_df, *, to):
     old_df = old_df.to_pandas()
     _raise_if_rows_is_not_in_old_data(old_df, new_data)
 
-    new_data = _coerce_column_dtypes(new_data, to=old_df)
+    new_data = _table_utils._coerce_col_dtypes(new_data, to=old_df)
     old_df.loc[new_data.index, new_data.columns] = new_data
     df = old_df
     return df

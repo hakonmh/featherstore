@@ -20,18 +20,19 @@ def can_insert_table(df, table_path):
     _raise_if.index_is_not_supported_dtype(df.index)
     _raise_if.column_names_are_forbidden(cols)
     _raise_if.index_dtype_not_same_as_index(df, table_path)
-    _raise_if.columns_does_not_match(df, table_path)
+    _raise_if.cols_does_not_match(df, table_path)
 
 
 def insert_data(old_df, *, to):
+    # TODO: Use arrow instead
     if isinstance(to, pd.Series):
         new_data = to.to_frame()
     else:
         new_data = to
     old_df = old_df.to_pandas()
     _raise_if_rows_in_old_data(old_df, new_data)
-    new_data = new_data[old_df.columns]
-    new_data = _table_utils._coerce_column_dtypes(new_data, to=old_df)
+    new_data = new_data[old_df.columns]  # TODO: Check if can remove?
+    new_data = _table_utils._coerce_col_dtypes(new_data, to=old_df)
     df = old_df.append(new_data)
     df = df.sort_index()
     return df
@@ -46,6 +47,7 @@ def _raise_if_rows_in_old_data(old_df, df):
 
 
 def insert_new_partition_ids(partitioned_df, partition_names):
+    # TODO: Clean up
     INSERTION_ID_RANGE = 1
     num_partitions = len(partitioned_df)
     num_partition_names = len(partition_names)
@@ -57,7 +59,7 @@ def insert_new_partition_ids(partitioned_df, partition_names):
     new_partition_names = partition_names.copy()
     for partition_num in range(1, number_of_new_names_to_make):
         partition_id = last_partition_id + increment * partition_num
-        partition_id = _table_utils._convert_to_partition_id(partition_id)
+        partition_id = _table_utils._convert_int_to_partition_id(partition_id)
         new_partition_names.append(partition_id)
 
     return sorted(new_partition_names)

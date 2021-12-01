@@ -16,9 +16,11 @@ def test_sorted_polars_io(original_df, basic_data, database, connection,
     # Arrange
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
+    index_name = get_index_name(original_df)
     store.write_table(basic_data["table_name"],
                       original_df,
-                      partition_size=partition_size)
+                      partition_size=partition_size,
+                      index=index_name)
     # Act
     df = store.read_polars(basic_data["table_name"])
     # Assert
@@ -31,11 +33,13 @@ def test_unsorted_polars_io(basic_data, database, connection, store):
     sorted_original_df = original_df.sort(by="__index_level_0__")
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
+    index_name = get_index_name(original_df)
     store.write_table(
         basic_data["table_name"],
         original_df,
         partition_size=partition_size,
         warnings="ignore",
+        index=index_name
     )
     # Act
     df = store.read_polars(basic_data["table_name"])
@@ -61,11 +65,13 @@ def test_filtering_rows_with_list(original_df, rows, basic_data, database,
     original_df.index.name = "index"
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
+    index_name = get_index_name(original_df)
     store.write_table(
         basic_data["table_name"],
         original_df,
         warnings="ignore",
         partition_size=partition_size,
+        index=index_name
     )
     expected = original_df.loc[rows, :]
     expected = expected.reset_index()
@@ -94,9 +100,11 @@ def test_filtering_columns_and_rows_between(low, high, basic_data, database,
     original_df = make_table(astype="polars")
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
+    index_name = get_index_name(original_df)
     store.write_table(basic_data["table_name"],
                       original_df,
-                      partition_size=partition_size)
+                      partition_size=partition_size,
+                      index=index_name)
     expected = original_df[low:(high + 1), COLUMNS]
     # Act
     df = store.read_polars(basic_data["table_name"], cols=COLUMNS, rows=ROWS)

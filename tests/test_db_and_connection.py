@@ -2,9 +2,6 @@ import featherstore as fs
 import os
 import shutil
 
-from tests.conftest import DB_PATH
-from .fixtures import make_table, sorted_datetime_index
-
 
 def test_create_database():
     # Arrange

@@ -3,6 +3,7 @@ import json
 from numbers import Integral
 
 import pyarrow as pa
+import pandas as pd
 from pyarrow import feather
 
 from featherstore.connection import Connection
@@ -10,9 +11,10 @@ from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
+from featherstore._table._table_utils import _convert_int_to_partition_id
 
 
-def can_write_table(df, table_path, index, partition_size, errors, warnings):
+def can_write_table(df, table_path, index_name, partition_size, errors, warnings):
     Connection.is_connected()
     _utils.raise_if_errors_argument_is_not_valid(errors)
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
@@ -22,10 +24,16 @@ def can_write_table(df, table_path, index, partition_size, errors, warnings):
     _raise_if.df_is_not_supported_table_dtype(df)
     _raise_if_partition_size_is_not_int(partition_size)
 
-    cols = _table_utils._get_cols(df, has_default_index=False)
-    _raise_if_index_argument_is_not_supported_dtype(index)
-    _raise_if_provided_index_not_in_cols(index, cols)
+    cols = _table_utils._get_col_names(df, has_default_index=False)
+    _raise_if_index_argument_is_not_supported_dtype(index_name)
+    _raise_if_provided_index_not_in_cols(index_name, cols)
     _raise_if.column_names_are_forbidden(cols)
+
+    pd_index = _table_utils._get_index_col_as_pd_index(df, index_name)
+    index_is_provided = pd_index is not None
+    if index_is_provided:
+        _raise_if.index_is_not_supported_dtype(pd_index)
+        _raise_if.index_values_contains_duplicates(pd_index)
 
 
 def _raise_if_partition_size_is_not_int(partition_size):
@@ -87,7 +95,7 @@ def make_partition_ids(partitioned_df):
     num_partitions = len(partitioned_df)
     partition_ids = list()
     for partition_num in range(1, num_partitions + 1):
-        partition_id = _table_utils._convert_to_partition_id(partition_num)
+        partition_id = _convert_int_to_partition_id(partition_num)
         partition_ids.append(partition_id)
     return partition_ids
 
@@ -95,37 +103,25 @@ def make_partition_ids(partitioned_df):
 def make_table_metadata(df, collected_data):
     df = tuple(df.values())
     partition_byte_size, partition_size_in_rows = collected_data
-    index_name = _get_index_name(df)
+
+    index_name = _table_utils._get_index_name(df[0])
 
     metadata = {
         "num_rows": _get_num_rows(df),
-        "columns": _get_column_names(df),
+        "columns": _get_col_names(df),
         "num_columns": _get_num_cols(df),
         "num_partitions": len(df),
         "rows_per_partition": partition_size_in_rows,
         "partition_byte_size": int(partition_byte_size),
         "index_name": index_name,
         "index_column_position": _get_index_position(df, index_name),
-        "index_dtype": _table_utils._get_index_dtype(df),
+        "index_dtype": _table_utils._get_index_dtype(df[0]),
         "has_default_index": _has_default_index(df, index_name),
     }
     return metadata
 
 
-def _get_index_name(df):
-    if isinstance(df, dict):
-        partition = tuple(df.values())[0]
-    else:
-        partition = df[0]
-    schema = partition.schema
-    index_name, = schema.pandas_metadata["index_columns"]
-    no_index_name = not isinstance(index_name, str)
-    if no_index_name:
-        index_name = "index"
-    return index_name
-
-
-def _get_column_names(df):
+def _get_col_names(df):
     schema = df[0].schema
     cols = schema.names
     return cols
@@ -151,19 +147,11 @@ def _get_index_position(df, index_name):
 
 def _has_default_index(df, index_name):
     has_index_name = index_name != DEFAULT_ARROW_INDEX_NAME
-
     if has_index_name or _index_was_sorted(df):
         has_default_index = False
     else:
         index = pa.Table.from_batches(df)[index_name]
-        rangeindex = pa.compute.sort_indices(index)
-        IS_NOT_THE_SAME_TYPE = pa.lib.ArrowNotImplementedError
-        try:
-            is_rangeindex = all(pa.compute.equal(index, rangeindex))
-        except IS_NOT_THE_SAME_TYPE:
-            is_rangeindex = False
-
-        if is_rangeindex:
+        if _is_rangeindex(index):
             has_default_index = True
         else:
             has_default_index = False
@@ -176,6 +164,24 @@ def _index_was_sorted(df):
     metadata_dict = json.loads(featherstore_metadata)
     was_sorted = metadata_dict["sorted"]
     return was_sorted
+
+
+def _is_rangeindex(index):
+    """Compares the index against a equivalent range index"""
+    rangeindex = _make_rangeindex(index)
+    TYPES_NOT_MATCHING = pa.lib.ArrowNotImplementedError
+    try:
+        is_rangeindex = pa.compute.equal(index, rangeindex)
+        is_rangeindex = pa.compute.all(is_rangeindex).as_py()
+    except TYPES_NOT_MATCHING:
+        is_rangeindex = False
+
+    return is_rangeindex
+
+
+def _make_rangeindex(index):
+    """Makes a rangeindex with equal length to 'index'"""
+    return pa.array(pd.RangeIndex(len(index)))
 
 
 def write_partitions(partitions, table_path):

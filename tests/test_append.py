@@ -20,12 +20,14 @@ def test_append_arrow_table(original_df, basic_data, database, connection, store
     cols = appended_df.column_names
     shuffled_cols = random.sample(cols, len(cols))
     appended_df = appended_df.select(shuffled_cols)
+    index_name = get_index_name(prewritten_df)
 
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
     store.write_table(basic_data["table_name"],
                       prewritten_df,
-                      partition_size=partition_size)
+                      partition_size=partition_size,
+                      index=index_name)
     store.append_table(basic_data["table_name"], appended_df)
     # Act
     df = store.read_arrow(basic_data["table_name"])
@@ -50,12 +52,14 @@ def test_append_polars_table(original_df, basic_data, database, connection, stor
     cols = appended_df.columns
     shuffled_cols = random.sample(cols, len(cols))
     appended_df = appended_df[shuffled_cols]
+    index_name = get_index_name(prewritten_df)
 
     partition_size = get_partition_size(prewritten_df,
                                         basic_data["num_partitions"])
     store.write_table(basic_data["table_name"],
                       prewritten_df,
-                      partition_size=partition_size)
+                      partition_size=partition_size,
+                      index=index_name)
     store.append_table(basic_data["table_name"], appended_df)
     # Act
     df = store.read_polars(basic_data["table_name"])
