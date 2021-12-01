@@ -73,11 +73,11 @@ def _coerce_row_dtypes(rows, *, to):
 
 
 def _convert_row(row, to):
-    if to == "datetime64":
+    if _table_utils._str_is_temporal_dtype(to):
         row = pd.to_datetime(row)
-    elif to == "string" or to == "unicode":
+    elif _table_utils._str_is_string_dtype(to):
         row = str(row)
-    elif to == "int64":
+    elif _table_utils._str_is_int_dtype(to):
         row = int(row)
     return row
 

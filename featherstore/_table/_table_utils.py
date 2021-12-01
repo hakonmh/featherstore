@@ -90,25 +90,42 @@ def _get_index_name(df):
 
 
 def _get_index_dtype(df):
-    schema = df.schema
-    # TODO: A better solution for when format_table is refactored:
-    # index_dtype = str(df.field(0).type)
-    index_dtype = schema.pandas_metadata["columns"][-1]["pandas_type"]
-    if index_dtype == "datetime":
-        index_dtype = "datetime64"
+    # Uses the fact that index should be first col
+    index_dtype = str(df.field(0).type)
     return index_dtype
 
 
-def _get_index_col_as_pd_index(df, index_name):
-    # TODO: Clean up
+def _str_is_temporal_dtype(index_dtype):
+    return "time" in index_dtype or "date" in index_dtype
+
+
+def _str_is_string_dtype(index_dtype):
+    return "string" in index_dtype
+
+
+def _str_is_int_dtype(index_dtype):
+    return "int" in index_dtype
+
+
+def _get_pd_index_if_exists(df, index_name):
     if isinstance(df, (pd.DataFrame, pd.Series)):
-        pd_index = df.index
+        index = df.index
     else:
-        try:
-            index = df[index_name]
-            if isinstance(index, pl.Series):
-                index = index.to_arrow()
-            pd_index = pd.Index(index)
-        except (KeyError, RuntimeError, TypeError):
-            pd_index = None
+        index = __get_index_if_index_in_table(df, index_name)
+    return index
+
+
+def __get_index_if_index_in_table(df, index_name):
+    INDEX_NOT_IN_DF = (KeyError, RuntimeError, TypeError)
+    try:
+        pd_index = __get_index_as_pd_index(df, index_name)
+    except INDEX_NOT_IN_DF:
+        pd_index = None
     return pd_index
+
+
+def __get_index_as_pd_index(df, index_name):
+    index = df[index_name]
+    if isinstance(index, pl.Series):
+        index = index.to_arrow()
+    return pd.Index(index)

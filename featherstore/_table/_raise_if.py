@@ -88,28 +88,24 @@ def rows_argument_items_dtype_not_same_as_index(rows, table_path):
 
 
 def _rows_dtype_matches_index(rows, index_dtype):
+    # TODO: Clean up
     row = rows[-1]
-    # if _is_temporal(index_dtype):
-    if index_dtype == "datetime64":
+    if _table_utils._str_is_temporal_dtype(index_dtype):
         if _isinstance_temporal(row):
             matches_index = True
         else:
             matches_index = False
-    elif index_dtype == "string" or index_dtype == "unicode":
+    elif _table_utils._str_is_string_dtype(index_dtype):
         if isinstance(row, str):
             matches_index = True
         else:
             matches_index = False
-    elif index_dtype == "int64":
+    elif _table_utils._str_is_int_dtype(index_dtype):
         if isinstance(row, Integral):
             matches_index = True
         else:
             matches_index = False
     return matches_index
-
-
-# def _is_temporal(index_dtype):
-#     return "time" in index_dtype or "date" in index_dtype
 
 
 def _isinstance_temporal(obj):
@@ -122,11 +118,7 @@ def _isinstance_temporal(obj):
 
 
 def index_dtype_not_same_as_index(df, table_path):
-    index_type = str(df.index.dtype)
-    if index_type == 'object':
-        index_type = 'unicode'
-    if 'datetime' in index_type:
-        index_type = 'datetime64'
+    index_type = str(pa.Array.from_pandas(df.index).type)
     stored_index_type = Metadata(table_path, "table")["index_dtype"]
     if index_type != stored_index_type:
         raise TypeError("New and old index types do not match")

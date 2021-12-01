@@ -61,8 +61,6 @@ def _predicate_filtering(rows, table_path):
 
 def _get_partition_stats(table_path):
     # TODO: Rework or replace
-    index_type = Metadata(table_path, "table")["index_dtype"]
-
     partition_stats = dict()
     partition_stats["name"] = Metadata(table_path, 'partition').keys()
     partition_stats["min"] = _metadata.get_partition_attr(table_path, 'min')
@@ -70,8 +68,6 @@ def _get_partition_stats(table_path):
 
     partition_stats = pd.DataFrame(partition_stats)
     partition_stats.set_index("name", inplace=True)
-    for col in partition_stats:
-        partition_stats[col] = partition_stats[col].astype(index_type)
     return partition_stats
 
 
@@ -152,6 +148,7 @@ def _compute_row_index(row, index):
 
 
 def _fetch_closest_matching_row(row, index):
+    # TODO: Clarify with better name, better code or comments
     TRUE = 1
     mask = pa.compute.less_equal(row, index)
     row_idx = pa.compute.index_in(TRUE, value_set=mask)

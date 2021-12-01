@@ -28,7 +28,7 @@ def can_append_table(
     if not has_default_index:
         _raise_if_append_data_not_ordered_after_stored_data(df, table_path)
 
-    pd_index = _table_utils._get_index_col_as_pd_index(df, index_name)
+    pd_index = _table_utils._get_pd_index_if_exists(df, index_name)
     index_is_provided = pd_index is not None
     if index_is_provided:
         _raise_if.index_is_not_supported_dtype(pd_index)
