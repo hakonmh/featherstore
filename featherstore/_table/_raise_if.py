@@ -88,24 +88,31 @@ def rows_argument_items_dtype_not_same_as_index(rows, table_path):
 
 
 def _rows_dtype_matches_index(rows, index_dtype):
-    # TODO: Clean up
     row = rows[-1]
+    matches_dtime_idx = _check_if_row_and_index_is_temporal(row, index_dtype)
+    matches_str_idx = _check_if_row_and_index_is_str(row, index_dtype)
+    matches_int_idx = _check_if_row_and_index_is_int(row, index_dtype)
+
+    row_type_matches_idx = matches_dtime_idx or matches_str_idx or matches_int_idx
+    return row_type_matches_idx
+
+
+def _check_if_row_and_index_is_temporal(row, index_dtype):
     if _table_utils._str_is_temporal_dtype(index_dtype):
-        if _isinstance_temporal(row):
-            matches_index = True
-        else:
-            matches_index = False
-    elif _table_utils._str_is_string_dtype(index_dtype):
-        if isinstance(row, str):
-            matches_index = True
-        else:
-            matches_index = False
-    elif _table_utils._str_is_int_dtype(index_dtype):
-        if isinstance(row, Integral):
-            matches_index = True
-        else:
-            matches_index = False
-    return matches_index
+        return _isinstance_temporal(row)
+    return False
+
+
+def _check_if_row_and_index_is_str(row, index_dtype):
+    if _table_utils._str_is_string_dtype(index_dtype):
+        return _isinstance_str(row)
+    return False
+
+
+def _check_if_row_and_index_is_int(row, index_dtype):
+    if _table_utils._str_is_int_dtype(index_dtype):
+        return _isinstance_int(row)
+    return False
 
 
 def _isinstance_temporal(obj):
@@ -117,6 +124,22 @@ def _isinstance_temporal(obj):
     return is_temporal
 
 
+def _isinstance_str(obj):
+    try:
+        is_str = pa.types.is_string(obj) or pa.types.is_large_string(obj)
+    except AttributeError:
+        is_str = isinstance(obj, str)
+    return is_str
+
+
+def _isinstance_int(obj):
+    try:
+        is_int = pa.types.is_integer(obj)
+    except AttributeError:
+        is_int = isinstance(obj, Integral)
+    return is_int
+
+
 def index_dtype_not_same_as_index(df, table_path):
     index_type = str(pa.Array.from_pandas(df.index).type)
     stored_index_type = Metadata(table_path, "table")["index_dtype"]
@@ -124,11 +147,14 @@ def index_dtype_not_same_as_index(df, table_path):
         raise TypeError("New and old index types do not match")
 
 
-def column_names_are_forbidden(cols):
-    # TODO split and/or rename
+def col_names_contains_duplicates(cols):
     cols = pd.Index(cols)
     if cols.has_duplicates:
         raise IndexError("Column names must be unique")
+
+
+def col_names_are_forbidden(cols):
+    cols = pd.Index(cols)
     if "like" in cols.str.lower():
         raise IndexError("df contains invalid column name 'like'")
 
