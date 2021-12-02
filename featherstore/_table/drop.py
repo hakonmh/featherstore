@@ -1,3 +1,5 @@
+import bisect
+
 import pyarrow as pa
 
 from featherstore.connection import Connection
@@ -14,17 +16,45 @@ def can_drop_rows_from_table(rows, table_path):
 
 
 def get_adjacent_partition_name(partition_names, table_path):
-    # TODO: Clarify and clean
+    """Fetches an extra partition name so we can use that partition
+    when combining small partitions.
+    """
     all_partition_names = Metadata(table_path, 'partition').keys()
-    index_first_partition = all_partition_names.index(partition_names[0])
-    index_last_partition = all_partition_names.index(partition_names[-1])
-    if index_first_partition > 0:
-        idx = index_first_partition - 1
-        partition_names.append(all_partition_names[idx])
-    elif index_last_partition < (len(all_partition_names) - 1):
-        idx = index_last_partition + 1
-        partition_names.append(all_partition_names[idx])
-    return sorted(partition_names)
+    first_partition = partition_names[0]
+    last_partition = partition_names[-1]
+
+    partition_before = _get_partition_before_if_exists(first_partition, all_partition_names)
+    partition_after = _get_partition_after_if_exists(last_partition, all_partition_names)
+
+    if partition_before:
+        partition_names = _insert_adjacent_partition(partition_before, to=partition_names)
+    elif partition_after:
+        partition_names = _insert_adjacent_partition(partition_after, to=partition_names)
+
+    return partition_names
+
+
+def _get_partition_before_if_exists(partition, all_partitions):
+    partition_index = all_partitions.index(partition)
+    is_not_first_partition = partition_index > 0
+    if is_not_first_partition:
+        new_partition_idx = partition_index - 1
+        return all_partitions[new_partition_idx]
+
+
+def _get_partition_after_if_exists(partition, all_partitions):
+    partition_index = all_partitions.index(partition)
+    last_partition_index = len(all_partitions) - 1
+    is_not_last_partition = partition_index < last_partition_index
+    if is_not_last_partition:
+        new_partition_idx = partition_index + 1
+        return all_partitions[new_partition_idx]
+
+
+def _insert_adjacent_partition(adj_partition, *, to):
+    partition_names = to.copy()
+    bisect.insort(partition_names, adj_partition)
+    return partition_names
 
 
 def drop_rows_from_data(df, rows, index_col_name):
@@ -80,14 +110,15 @@ def can_drop_cols_from_table(cols, table_path):
 
 
 class CheckDropCols:
+    # TODO: Improve
 
     def __init__(self, cols, table_path):
         table_data = Metadata(table_path, 'table')
         self._index_name = table_data["index_name"]
         stored_cols = table_data["columns"]
 
-        stored_cols.remove(self._index_name)
         self.cols = cols
+        stored_cols.remove(self._index_name)
         self._stored_cols = set(stored_cols)
         self._dropped_cols = set(self._get_dropped_cols())
 
