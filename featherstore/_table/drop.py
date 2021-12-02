@@ -6,6 +6,7 @@ from featherstore.connection import Connection
 from featherstore._metadata import Metadata
 from featherstore._table import _raise_if
 from featherstore._table import common
+from featherstore._table import read
 
 
 def can_drop_rows_from_table(rows, table_path):
@@ -57,41 +58,26 @@ def _insert_adjacent_partition(adj_partition, *, to):
     return partition_names
 
 
-def drop_rows_from_data(df, rows, index_col_name):
-    # TODO: Rework
-    index = df[index_col_name]
-    _raise_if_rows_are_not_in_index(index, rows)
-    mask = _make_arrow_filter_mask(index, rows)  # This should be changed
+def drop_rows_from_data(df, rows, index_name):
+    index_col = df.select([index_name])
+    rows_to_drop = read._filter_arrow_table(index_col, rows, index_name)
+    rows_array = rows_to_drop[index_name]
+    _raise_if_rows_not_in_index(rows_array)
+    df = _drop_rows(df, rows_array, index_name)
+    return df
+
+
+def _drop_rows(df, rows, index_name):
+    index = df[index_name]
+    mask = pa.compute.is_in(index, value_set=rows)
     mask = pa.compute.invert(mask)
     df = df.filter(mask)
     return df
 
 
-def _raise_if_rows_are_not_in_index(index, rows):
-    keyword = str(rows[0]).lower()
-    if keyword not in ("before", "after", "between"):
-        row_array = pa.array(rows)
-        mask = pa.compute.is_in(row_array, value_set=index)
-
-        rows_not_in_old_df = not pa.compute.min(mask).as_py()
-        if rows_not_in_old_df:
-            raise ValueError(f"Some rows not in stored table")
-
-
-def _make_arrow_filter_mask(index, rows):
-    # TODO: Drop?
-    keyword = str(rows[0]).lower()
-    if keyword == "before":
-        mask = pa.compute.greater_equal(rows[1], index)
-    elif keyword == "after":
-        mask = pa.compute.less_equal(rows[1], index)
-    elif keyword == "between":
-        lower_bound = pa.compute.less_equal(rows[1], index)
-        higher_bound = pa.compute.greater_equal(rows[2], index)
-        mask = pa.compute.and_(lower_bound, higher_bound)
-    else:  # When a list of rows is provided
-        mask = pa.compute.is_in(index, value_set=pa.array(rows))
-    return mask
+def _raise_if_rows_not_in_index(rows):
+    if rows.null_count > 0:
+        raise ValueError(f"Some rows not in stored table")
 
 
 # ----------------- drop_columns ------------------
@@ -104,29 +90,31 @@ def can_drop_cols_from_table(cols, table_path):
     _raise_if.cols_argument_items_is_not_str(cols)
 
     raise_if = CheckDropCols(cols, table_path)
-    raise_if.trying_to_drop_index()
     raise_if.cols_are_not_in_stored_data()
     raise_if.trying_to_drop_all_cols()
+    raise_if.trying_to_drop_index_col()
 
 
 class CheckDropCols:
-    # TODO: Improve
 
     def __init__(self, cols, table_path):
-        table_data = Metadata(table_path, 'table')
-        self._index_name = table_data["index_name"]
-        stored_cols = table_data["columns"]
-
+        self._table_data = Metadata(table_path, 'table')
+        self._index_name = self._table_data["index_name"]
         self.cols = cols
+
+        self._stored_cols = self._get_stored_cols()
+        self._dropped_cols = self._get_dropped_cols()
+
+    def _get_stored_cols(self):
+        stored_cols = self._table_data["columns"]
         stored_cols.remove(self._index_name)
-        self._stored_cols = set(stored_cols)
-        self._dropped_cols = set(self._get_dropped_cols())
+        return set(stored_cols)
 
     def _get_dropped_cols(self):
         dropped_cols = common.filter_cols_if_like_provided(self.cols, self._stored_cols)
-        return dropped_cols
+        return set(dropped_cols)
 
-    def trying_to_drop_index(self):
+    def trying_to_drop_index_col(self):
         if self._index_name in self.cols:
             raise ValueError("Can't drop index column")
 

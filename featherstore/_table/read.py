@@ -95,11 +95,11 @@ def _add_index_to_cols(cols, table_path):
 def filter_table_rows(df, rows, index_col_name):
     should_be_filtered = rows is not None
     if should_be_filtered:
-        df = _filter_arrow_table(df, index_col_name, rows)
+        df = _filter_arrow_table(df, rows, index_col_name)
     return df
 
 
-def _filter_arrow_table(df, index_col_name, rows):
+def _filter_arrow_table(df, rows, index_col_name):
     keyword = str(rows[0]).lower()
     index = df[index_col_name]
     if keyword not in ('before', 'after', 'between'):
@@ -120,6 +120,7 @@ def _fetch_rows_in_list(df, index, rows):
 
 
 def _fetch_rows_before(df, index, row):
+    # TODO: Test performance of df.slice(0, upper_bound + 1)
     upper_bound = _compute_row_index(row, index)
     df = df[:upper_bound + 1]
     return df
