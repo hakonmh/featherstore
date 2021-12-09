@@ -21,21 +21,18 @@ def can_append_table(
     _raise_if.df_is_not_supported_table_dtype(df)
     _raise_if.cols_does_not_match(df, table_path)
 
-    # TODO: Clean up
-    index_name = _metadata.Metadata(table_path, 'table')['index_name']
     has_default_index = _metadata.Metadata(table_path, 'table')['has_default_index']
-
     if not has_default_index:
         _raise_if_append_data_not_ordered_after_stored_data(df, table_path)
 
+    index_name = _metadata.Metadata(table_path, 'table')['index_name']
     pd_index = _table_utils._get_pd_index_if_exists(df, index_name)
+    raise_if_index_not_exist(pd_index, has_default_index)
+
     index_is_provided = pd_index is not None
     if index_is_provided:
         _raise_if.index_is_not_supported_dtype(pd_index)
         _raise_if.index_values_contains_duplicates(pd_index)
-    else:
-        if not has_default_index:
-            raise ValueError("Must provide index")
 
 
 def _raise_if_append_data_not_ordered_after_stored_data(df, table_path):
@@ -45,6 +42,12 @@ def _raise_if_append_data_not_ordered_after_stored_data(df, table_path):
         raise ValueError(
             f"New_data.index can't be <= old_data.index[-1] ({append_data_start}"
             f" <= {stored_data_end})")
+
+
+def raise_if_index_not_exist(index, has_default_index):
+    index_not_provided = index is None
+    if index_not_provided and not has_default_index:
+        raise ValueError("Must provide index")
 
 
 def _get_first_append_value(df, table_path):

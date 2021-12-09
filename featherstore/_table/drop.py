@@ -90,9 +90,9 @@ def can_drop_cols_from_table(cols, table_path):
     _raise_if.cols_argument_items_is_not_str(cols)
 
     raise_if = CheckDropCols(cols, table_path)
+    raise_if.trying_to_drop_index_col()
     raise_if.cols_are_not_in_stored_data()
     raise_if.trying_to_drop_all_cols()
-    raise_if.trying_to_drop_index_col()
 
 
 class CheckDropCols:

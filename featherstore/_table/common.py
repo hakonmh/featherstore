@@ -1,5 +1,6 @@
 import os
 import json
+import warnings
 
 import pyarrow as pa
 import pandas as pd
@@ -114,7 +115,6 @@ def _sort_table_if_unsorted(df, index_name, warnings):
 
 def _sort_arrow_table(df, index_name, warnings="ignore"):
     if warnings == "warn":
-        import warnings
         warnings.warn("Index is unsorted and will be sorted before storage")
     schema = df.schema
 

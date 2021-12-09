@@ -34,7 +34,7 @@ def get_partition_names(rows, table_path):
 
 
 def _predicate_filtering(rows, table_path):
-    # TODO: Rework, make more effective
+    # TODO: Rework, make more effective (Binary search)
     partition_stats = _get_partition_stats(table_path)
     keyword = str(rows[0]).lower()
     if keyword == "before":
@@ -120,47 +120,65 @@ def _fetch_rows_in_list(df, index, rows):
 
 
 def _fetch_rows_before(df, index, row):
-    # TODO: Test performance of df.slice(0, upper_bound + 1)
-    upper_bound = _compute_row_index(row, index)
-    df = df[:upper_bound + 1]
+    upper_bound = _compute_upper_bound(row, index)
+    df = df[:upper_bound]
     return df
 
 
 def _fetch_rows_after(df, index, row):
-    lower_bound = _compute_row_index(row, index)
+    lower_bound = _compute_lower_bound(row, index)
     df = df[lower_bound:]
     return df
 
 
 def _fetch_rows_between(df, index, low, high):
-    lower_bound = _compute_row_index(low, index)
-    upper_bound = _compute_row_index(high, index)
-    df = df[lower_bound:upper_bound + 1]
+    lower_bound = _compute_lower_bound(low, index)
+    upper_bound = _compute_upper_bound(high, index)
+    df = df[lower_bound:upper_bound]
     return df
 
 
-def _compute_row_index(row, index):
-    row_idx = pa.compute.index_in(row, value_set=index)
-    row_idx = row_idx.as_py()
-    no_direct_match_is_found = row_idx is None
-    if no_direct_match_is_found:
-        row_idx = _fetch_closest_matching_row(row, index)
+def _compute_lower_bound(row, index):
+    lower_bound = _fetch_row_idx(row, index) - 1
+    return lower_bound
+
+
+def _compute_upper_bound(row, index):
+    upper_bound = _fetch_row_idx(row, index)
+    return upper_bound
+
+
+def _fetch_row_idx(row, index):
+    row_idx = _fetch_exact_row_idx(row, index)
+
+    no_row_idx_found = row_idx is None
+    if no_row_idx_found:
+        row_idx = _fetch_closest_row_idx(row, index)
+
+    no_close_row_idx_found = row_idx is None
+    if no_close_row_idx_found:
+        row_idx = _fetch_last_row_idx(index)
     return row_idx
 
 
-def _fetch_closest_matching_row(row, index):
-    # TODO: Clarify with better name, better code or comments
+def _fetch_exact_row_idx(row, index):
+    row_idx = pa.compute.index_in(row, value_set=index)
+    row_idx = row_idx.as_py()
+    if row_idx is not None:
+        row_idx += 1
+    return row_idx
+
+
+def _fetch_closest_row_idx(row, index):
     TRUE = 1
     mask = pa.compute.less_equal(row, index)
     row_idx = pa.compute.index_in(TRUE, value_set=mask)
     row_idx = row_idx.as_py()
+    return row_idx
 
-    row_not_in_index = row_idx is None
-    if row_not_in_index:
-        # Set row_idx to the end of index
-        row_idx = len(index)
 
-    return row_idx - 1
+def _fetch_last_row_idx(index):
+    return len(index)
 
 
 def drop_default_index(df, index_col_name):
