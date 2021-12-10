@@ -207,17 +207,11 @@ class Table:
         partitioned_df = common.assign_ids_to_partitions(partitioned_df,
                                                          new_partition_names)
 
-        old_table_metadata = {'num_rows': None, 'num_partitions': None}
-        for key in old_table_metadata.keys():
-            old_table_metadata[key] = self._table_data[key]
-        old_partition_metadata = {
-            last_partition_name: self._partition_data[last_partition_name]
-        }
         new_partition_metadata = common.make_partition_metadata(partitioned_df)
 
-        table_metadata = common.update_table_metadata(old_table_metadata,
+        table_metadata = common.update_table_metadata(self._table_path,
                                                       new_partition_metadata,
-                                                      old_partition_metadata)
+                                                      [last_partition_name])
 
         self._table_data.write(table_metadata)
         self._partition_data.write(new_partition_metadata)
@@ -302,19 +296,10 @@ class Table:
         partitioned_df = common.assign_ids_to_partitions(partitioned_df,
                                                          new_partition_names)
 
-        old_table_metadata = {
-            'num_rows': self._table_data['num_rows'],
-            'num_partitions': self._table_data['num_partitions']
-        }
-        old_partition_metadata = {
-            name: self._partition_data[name]
-            for name in partition_names
-        }
         new_partition_metadata = common.make_partition_metadata(partitioned_df)
-
-        table_metadata = common.update_table_metadata(old_table_metadata,
+        table_metadata = common.update_table_metadata(self._table_path,
                                                       new_partition_metadata,
-                                                      old_partition_metadata)
+                                                      partition_names)
 
         self._table_data.write(table_metadata)
         self._partition_data.write(new_partition_metadata)
@@ -382,18 +367,10 @@ class Table:
         partitioned_df = common.assign_ids_to_partitions(partitioned_df,
                                                          kept_partition_names)
 
-        old_table_metadata = {
-            'num_rows': self._table_data['num_rows'],
-            'num_partitions': self._table_data['num_partitions']
-        }
-        old_partition_metadata = {
-            name: self._partition_data[name]
-            for name in partition_names
-        }
         new_partition_metadata = common.make_partition_metadata(partitioned_df)
-        table_metadata = common.update_table_metadata(old_table_metadata,
+        table_metadata = common.update_table_metadata(self._table_path,
                                                       new_partition_metadata,
-                                                      old_partition_metadata)
+                                                      partition_names)
         table_metadata['has_default_index'] = False
 
         for name in dropped_partition_names:
@@ -440,18 +417,10 @@ class Table:
         partitioned_df = common.assign_ids_to_partitions(partitioned_df,
                                                          kept_partition_names)
 
-        old_table_metadata = {
-            'num_rows': self._table_data['num_rows'],
-            'num_partitions': self._table_data['num_partitions'],
-        }
-        old_partition_metadata = {
-            name: self._partition_data[name]
-            for name in partition_names
-        }
         new_partition_metadata = common.make_partition_metadata(partitioned_df)
-        table_metadata = common.update_table_metadata(old_table_metadata,
+        table_metadata = common.update_table_metadata(self._table_path,
                                                       new_partition_metadata,
-                                                      old_partition_metadata)
+                                                      partition_names)
         table_metadata['rows_per_partition'] = rows_per_partition
         for name in dropped_partition_names:
             common.delete_partition(self._table_path, name)
@@ -513,7 +482,7 @@ class Table:
         new_table_name = to
         store_path = os.path.split(self._table_path)[0]
         new_path = os.path.join(store_path, new_table_name)
-        common.can_rename_table(new_table_name, self._table_path, new_path)
+        common.can_rename_table(new_table_name, new_path)
 
         os.rename(self._table_path, new_path)
         self._table_path = new_path

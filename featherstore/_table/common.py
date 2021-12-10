@@ -27,7 +27,7 @@ def can_init_table(table_name, store_name):
     _raise_if.table_name_is_forbidden(table_name)
 
 
-def can_rename_table(new_table_name, table_path, new_table_path):
+def can_rename_table(new_table_name, new_table_path):
     Connection.is_connected()
 
     _raise_if.table_name_is_not_str(new_table_name)
@@ -214,23 +214,46 @@ def _get_index_max(df, index_name):
     return last_index_value
 
 
-def update_table_metadata(table_metadata, new_partition_metadata,
-                          old_partition_metadata):
+def update_table_metadata(table_path, new_partitions_data,
+                          dropped_partitions):
     # TODO: Clean up, new name, generalize(?)
-    old_num_rows = [
-        item['num_rows'] for item in old_partition_metadata.values()
-    ]
-    new_num_rows = [
-        item['num_rows'] for item in new_partition_metadata.values()
-    ]
+    dropped_partitions_data = _get_dropped_partitions_data(dropped_partitions,
+                                                           table_path)
+    num_rows = _update_num_rows(table_path,
+                                dropped_partitions_data,
+                                new_partitions_data)
+    num_partitions = _update_num_partitions(table_path,
+                                            dropped_partitions_data,
+                                            new_partitions_data
+                                            )
 
     table_metadata = {
-        "num_partitions":
-        table_metadata['num_partitions'] - len(old_partition_metadata) + len(new_partition_metadata),
-        "num_rows":
-        table_metadata['num_rows'] - sum(old_num_rows) + sum(new_num_rows)
+        "num_partitions": num_partitions,
+        "num_rows": num_rows
     }
     return table_metadata
+
+
+def _get_dropped_partitions_data(partition_names, table_path):
+    partition_data = Metadata(table_path, 'partition')
+    metadata = {name: partition_data[name] for name in partition_names}
+    return metadata
+
+
+def _update_num_rows(table_path, dropped_partitions_data, new_partitions_data):
+    current = Metadata(table_path, 'table')['num_rows']
+    dropped = [item['num_rows'] for item in dropped_partitions_data.values()]
+    added = [item['num_rows'] for item in new_partitions_data.values()]
+    updated_num_rows = current + sum(added) - sum(dropped)
+    return updated_num_rows
+
+
+def _update_num_partitions(table_path, dropped_partitions_data, new_partitions_data):
+    current = Metadata(table_path, 'table')['num_partitions']
+    dropped = len(dropped_partitions_data)
+    added = len(new_partitions_data)
+    updated_num_partitions = current + added - dropped
+    return updated_num_partitions
 
 
 def delete_partition(table_path, partition_name):
