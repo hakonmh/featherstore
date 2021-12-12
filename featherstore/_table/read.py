@@ -34,41 +34,66 @@ def get_partition_names(rows, table_path):
 
 
 def _predicate_filtering(rows, table_path):
-    # TODO: Rework, make more effective (Binary search)
-    partition_stats = _get_partition_stats(table_path)
     keyword = str(rows[0]).lower()
-    if keyword == "before":
-        mask = rows[1] >= partition_stats
-        mask = mask.max(axis=1)
-    elif keyword == "after":
-        mask = rows[1] <= partition_stats
-        mask = mask.max(axis=1)
-    elif keyword == "between":
-        lower_bound = rows[1] <= partition_stats["max"]
-        higher_bound = rows[2] >= partition_stats["min"]
-        mask = higher_bound & lower_bound
-    else:  # When a list of rows is provided
-        max_ = max(rows)
-        min_ = min(rows)
-        lower_bound = min_ <= partition_stats["max"]
-        higher_bound = max_ >= partition_stats["min"]
-        mask = higher_bound & lower_bound
 
-    filtered_partition_stats = partition_stats[mask]
-    partition_names = filtered_partition_stats.index.tolist()
+    partition_names = Metadata(table_path, 'partition').keys()
+    if keyword == "before":
+        start = 0
+        end = binary_search(rows[1], partition_names, table_path)
+    elif keyword == "after":
+        start = binary_search(rows[1], partition_names, table_path)
+        end = len(partition_names)
+    elif keyword == "between":
+        start = binary_search(rows[1], partition_names, table_path)
+        end = binary_search(rows[2], partition_names, table_path)
+    else:  # When a list of rows is provided
+        start = binary_search(min(rows), partition_names, table_path)
+        end = binary_search(max(rows), partition_names, table_path)
+
+    partition_names = partition_names[start:end + 1]
     return partition_names
 
 
-def _get_partition_stats(table_path):
-    # TODO: Rework or replace
-    partition_stats = dict()
-    partition_stats["name"] = Metadata(table_path, 'partition').keys()
-    partition_stats["min"] = _metadata.get_partition_attr(table_path, 'min')
-    partition_stats["max"] = _metadata.get_partition_attr(table_path, 'max')
+def binary_search(row, partition_names, table_path):
+    possible_partitions = partition_names
 
-    partition_stats = pd.DataFrame(partition_stats)
-    partition_stats.set_index("name", inplace=True)
-    return partition_stats
+    while len(possible_partitions) > 1:
+        idx = len(possible_partitions) // 2
+        candidate_name = possible_partitions[idx]
+        candidate = Metadata(table_path, 'partition')[candidate_name]
+        if _row_inside_candidate(row, candidate):
+            break
+        elif _row_before_candidate(row, candidate):
+            possible_partitions = possible_partitions[idx:]
+        elif _row_after_candidate(row, candidate):
+            possible_partitions = possible_partitions[:idx]
+    else:
+        candidate_name = possible_partitions[0]
+
+    idx = partition_names.index(candidate_name)
+    return idx
+
+
+def _row_inside_candidate(row, candidate):
+    candidate_min = candidate['min']
+    candidate_max = candidate['max']
+    return row <= candidate_max and row >= candidate_min
+
+
+def _row_before_candidate(row, candidate):
+    candidate_max = candidate['max']
+    if row >= candidate_max:
+        return True
+    else:
+        return False
+
+
+def _row_after_candidate(row, candidate):
+    candidate_min = candidate['min']
+    if row <= candidate_min:
+        return True
+    else:
+        return False
 
 
 def read_partitions(partition_names, table_path, cols):
