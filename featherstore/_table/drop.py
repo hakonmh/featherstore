@@ -24,13 +24,17 @@ def get_adjacent_partition_name(partition_names, table_path):
     first_partition = partition_names[0]
     last_partition = partition_names[-1]
 
-    partition_before = _get_partition_before_if_exists(first_partition, all_partition_names)
-    partition_after = _get_partition_after_if_exists(last_partition, all_partition_names)
+    partition_before = _get_partition_before_if_exists(first_partition,
+                                                       all_partition_names)
+    partition_after = _get_partition_after_if_exists(last_partition,
+                                                     all_partition_names)
 
     if partition_before:
-        partition_names = _insert_adjacent_partition(partition_before, to=partition_names)
+        partition_names = _insert_adjacent_partition(partition_before,
+                                                     to=partition_names)
     elif partition_after:
-        partition_names = _insert_adjacent_partition(partition_after, to=partition_names)
+        partition_names = _insert_adjacent_partition(partition_after,
+                                                     to=partition_names)
 
     return partition_names
 

@@ -1,6 +1,4 @@
 from pyarrow.compute import add
-import pandas as pd
-import polars as pl
 
 from featherstore.connection import Connection
 from featherstore import _metadata
@@ -37,7 +35,7 @@ def can_append_table(
 
 def _raise_if_append_data_not_ordered_after_stored_data(df, table_path):
     append_data_start = _get_first_append_value(df, table_path)
-    stored_data_end = _metadata.get_partition_attr(table_path, 'max')[-1]
+    stored_data_end = _get_last_stored_value(table_path)
     if append_data_start <= stored_data_end:
         raise ValueError(
             f"New_data.index can't be <= old_data.index[-1] ({append_data_start}"
@@ -56,7 +54,7 @@ def _get_first_append_value(df, table_path):
 
 
 def _get_default_index_start(table_path):
-    stored_data_end = _metadata.get_partition_attr(table_path, 'max')[-1]
+    stored_data_end = _get_last_stored_value(table_path)
     append_data_start = int(stored_data_end) + 1
     return append_data_start
 
@@ -67,6 +65,13 @@ def _get_non_default_index_start(df, table_path):
     first_row = _table_utils.convert_to_arrow(first_row)
     append_data_start = first_row[index_col][0].as_py()
     return append_data_start
+
+
+def _get_last_stored_value(table_path):
+    df = _metadata.Metadata(table_path, 'partition')
+    last_partition_name = df.keys()[-1]
+    stored_data_end = df[last_partition_name]['max']
+    return stored_data_end
 
 
 def format_default_index(df, table_path):

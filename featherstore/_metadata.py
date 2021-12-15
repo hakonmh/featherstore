@@ -49,16 +49,6 @@ class Metadata:
         return self.db_path
 
 
-def get_partition_attr(table_path, item=None):
-    partition_reader = Metadata(table_path, 'partition')
-    partitions_names = partition_reader.keys()
-    metadata = []
-    for name in partitions_names:
-        data = partition_reader[name][item]
-        metadata.append(data)
-    return metadata
-
-
 def _can_init_metadata(base_path, db_name):
     if not isinstance(base_path, str):
         raise TypeError("Metadata 'base_path' must be of type 'str'")

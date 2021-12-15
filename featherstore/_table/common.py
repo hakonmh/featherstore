@@ -1,6 +1,5 @@
 import os
 import json
-import warnings
 
 import pyarrow as pa
 import pandas as pd
