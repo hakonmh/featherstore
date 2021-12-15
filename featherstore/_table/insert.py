@@ -48,19 +48,22 @@ def _raise_if_rows_in_old_data(old_df, df):
 
 
 def insert_new_partition_ids(partitioned_df, partition_names):
-    # TODO: Clean up
-    INSERTION_ID_RANGE = 1
     num_partitions = len(partitioned_df)
     num_partition_names = len(partition_names)
-
     number_of_new_names_to_make = num_partitions - num_partition_names + 1
-    increment = INSERTION_ID_RANGE / number_of_new_names_to_make
+
+    new_partition_names = _make_partition_names(number_of_new_names_to_make, partition_names)
+    return new_partition_names
+
+
+def _make_partition_names(num_names, partition_names):
     last_partition_id = _table_utils.convert_partition_id_to_int(partition_names[-1])
+    increment = 1 / num_names
 
     new_partition_names = partition_names.copy()
-    for partition_num in range(1, number_of_new_names_to_make):
-        partition_id = last_partition_id + increment * partition_num
-        partition_id = _table_utils.convert_int_to_partition_id(partition_id)
-        new_partition_names.append(partition_id)
+    for partition_num in range(1, num_names):
+        new_partition_id = last_partition_id + increment * partition_num
+        new_partition_id = _table_utils.convert_int_to_partition_id(new_partition_id)
+        new_partition_names.append(new_partition_id)
 
     return sorted(new_partition_names)
