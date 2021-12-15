@@ -59,7 +59,7 @@ def cols_argument_items_is_not_str(cols):
 def cols_does_not_match(df, table_path):
     stored_data_cols = Metadata(table_path, "table")["columns"]
     has_default_index = Metadata(table_path, "table")["has_default_index"]
-    new_data_cols = _table_utils._get_col_names(df, has_default_index)
+    new_data_cols = _table_utils.get_col_names(df, has_default_index)
 
     if sorted(new_data_cols) != sorted(stored_data_cols):
         raise ValueError("New and old columns doesn't match")
@@ -98,19 +98,19 @@ def _rows_dtype_matches_index(rows, index_dtype):
 
 
 def _check_if_row_and_index_is_temporal(row, index_dtype):
-    if _table_utils._str_is_temporal_dtype(index_dtype):
+    if _table_utils.str_is_temporal_dtype(index_dtype):
         return _isinstance_temporal(row)
     return False
 
 
 def _check_if_row_and_index_is_str(row, index_dtype):
-    if _table_utils._str_is_string_dtype(index_dtype):
+    if _table_utils.str_is_string_dtype(index_dtype):
         return _isinstance_str(row)
     return False
 
 
 def _check_if_row_and_index_is_int(row, index_dtype):
-    if _table_utils._str_is_int_dtype(index_dtype):
+    if _table_utils.str_is_int_dtype(index_dtype):
         return _isinstance_int(row)
     return False
 

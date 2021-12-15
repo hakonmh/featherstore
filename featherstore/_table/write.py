@@ -11,7 +11,6 @@ from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
-from featherstore._table._table_utils import _convert_int_to_partition_id
 
 
 def can_write_table(df, table_path, index_name, partition_size, errors, warnings):
@@ -24,13 +23,13 @@ def can_write_table(df, table_path, index_name, partition_size, errors, warnings
     _raise_if.df_is_not_supported_table_dtype(df)
     _raise_if_partition_size_is_not_int(partition_size)
 
-    cols = _table_utils._get_col_names(df, has_default_index=False)
+    cols = _table_utils.get_col_names(df, has_default_index=False)
     _raise_if_index_argument_is_not_supported_dtype(index_name)
     _raise_if_provided_index_not_in_cols(index_name, cols)
     _raise_if.col_names_contains_duplicates(cols)
     _raise_if.col_names_are_forbidden(cols)
 
-    pd_index = _table_utils._get_pd_index_if_exists(df, index_name)
+    pd_index = _table_utils.get_pd_index_if_exists(df, index_name)
     index_is_provided = pd_index is not None
     if index_is_provided:
         _raise_if.index_is_not_supported_dtype(pd_index)
@@ -96,7 +95,7 @@ def make_partition_ids(partitioned_df):
     num_partitions = len(partitioned_df)
     partition_ids = list()
     for partition_num in range(1, num_partitions + 1):
-        partition_id = _convert_int_to_partition_id(partition_num)
+        partition_id = _table_utils.convert_int_to_partition_id(partition_num)
         partition_ids.append(partition_id)
     return partition_ids
 
@@ -105,24 +104,24 @@ def make_table_metadata(df, collected_data):
     df = tuple(df.values())
     partition_byte_size, partition_size_in_rows = collected_data
 
-    index_name = _table_utils._get_index_name(df[0])
+    index_name = _table_utils.get_index_name(df[0])
 
     metadata = {
         "num_rows": _get_num_rows(df),
-        "columns": _get_col_names(df),
+        "columns": _get_partitioned_df_col_names(df),
         "num_columns": _get_num_cols(df),
         "num_partitions": len(df),
         "rows_per_partition": partition_size_in_rows,
         "partition_byte_size": int(partition_byte_size),
         "index_name": index_name,
         "index_column_position": _get_index_position(df, index_name),
-        "index_dtype": _table_utils._get_index_dtype(df[0]),
+        "index_dtype": _table_utils.get_index_dtype(df[0]),
         "has_default_index": _has_default_index(df, index_name),
     }
     return metadata
 
 
-def _get_col_names(df):
+def _get_partitioned_df_col_names(df):
     schema = df[0].schema
     cols = schema.names
     return cols

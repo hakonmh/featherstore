@@ -33,7 +33,7 @@ def insert_data(old_df, *, to):
     old_df = old_df.to_pandas()
     _raise_if_rows_in_old_data(old_df, new_data)
     new_data = new_data[old_df.columns]  # TODO: Check if can remove?
-    new_data = _table_utils._coerce_col_dtypes(new_data, to=old_df)
+    new_data = _table_utils.coerce_col_dtypes(new_data, to=old_df)
     df = old_df.append(new_data)
     df = df.sort_index()
     return df
@@ -55,12 +55,12 @@ def insert_new_partition_ids(partitioned_df, partition_names):
 
     number_of_new_names_to_make = num_partitions - num_partition_names + 1
     increment = INSERTION_ID_RANGE / number_of_new_names_to_make
-    last_partition_id = _table_utils._convert_partition_id_to_int(partition_names[-1])
+    last_partition_id = _table_utils.convert_partition_id_to_int(partition_names[-1])
 
     new_partition_names = partition_names.copy()
     for partition_num in range(1, number_of_new_names_to_make):
         partition_id = last_partition_id + increment * partition_num
-        partition_id = _table_utils._convert_int_to_partition_id(partition_id)
+        partition_id = _table_utils.convert_int_to_partition_id(partition_id)
         new_partition_names.append(partition_id)
 
     return sorted(new_partition_names)

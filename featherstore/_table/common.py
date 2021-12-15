@@ -74,20 +74,20 @@ def _coerce_row_dtypes(rows, *, to):
 
 
 def _convert_row(row, to):
-    if _table_utils._str_is_temporal_dtype(to):
+    if _table_utils.str_is_temporal_dtype(to):
         row = pd.to_datetime(row)
-    elif _table_utils._str_is_string_dtype(to):
+    elif _table_utils.str_is_string_dtype(to):
         row = str(row)
-    elif _table_utils._str_is_int_dtype(to):
+    elif _table_utils.str_is_int_dtype(to):
         row = int(row)
     return row
 
 
 def format_table(df, index_name, warnings):
-    df = _table_utils._convert_to_arrow(df)
+    df = _table_utils.convert_to_arrow(df)
 
     if index_name is None:
-        index_name = _table_utils._get_index_name(df)
+        index_name = _table_utils.get_index_name(df)
     if index_name not in df.column_names:
         df = _make_default_index(df, index_name)
 
@@ -134,8 +134,8 @@ def _format_pd_metadata(df, index_name):
 
 
 def _make_pd_schema(df, index_name):
-    first_row = _table_utils._get_first_row(df)
-    first_row = _table_utils._convert_to_pandas(first_row)
+    first_row = _table_utils.get_first_row(df)
+    first_row = _table_utils.convert_to_pandas(first_row)
     first_row = _set_index(first_row, index_name)
 
     table_schema = pa.Schema.from_pandas(first_row, preserve_index=True)
@@ -193,7 +193,7 @@ def make_partition_metadata(df):
     metadata = {}
 
     first_partition = tuple(df.values())[0]
-    index_col_name = _table_utils._get_index_name(first_partition)
+    index_col_name = _table_utils.get_index_name(first_partition)
     for name, partition in df.items():
         data = {
             'min': _get_index_min(partition, index_col_name),

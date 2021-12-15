@@ -32,7 +32,7 @@ def update_data(old_df, *, to):
     old_df = old_df.to_pandas()
     _raise_if_rows_is_not_in_old_data(old_df, new_data)
 
-    new_data = _table_utils._coerce_col_dtypes(new_data, to=old_df)
+    new_data = _table_utils.coerce_col_dtypes(new_data, to=old_df)
     old_df.loc[new_data.index, new_data.columns] = new_data
     df = old_df
     return df

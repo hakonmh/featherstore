@@ -3,7 +3,7 @@ import polars as pl
 import pandas as pd
 import numpy as np
 from pandas._testing import rands_array
-from featherstore._table._table_utils import _get_col_names
+from featherstore._table._table_utils import get_col_names
 
 ROWS = 30
 
@@ -12,7 +12,7 @@ def get_index_name(df):
     if isinstance(df, (pd.Series, pd.DataFrame)):
         index_name = None
     else:
-        cols = _get_col_names(df, has_default_index=False)
+        cols = get_col_names(df, has_default_index=False)
         if 'Date' in cols:
             index_name = 'Date'
         elif 'index' in cols:

@@ -6,9 +6,9 @@ import pandas as pd
 import polars as pl
 
 from featherstore.connection import Connection
-from featherstore import _metadata
 from featherstore._metadata import Metadata
 from featherstore._table import _raise_if
+from featherstore._table import _table_utils
 
 
 def can_read_table(cols, rows, table_path):
@@ -120,90 +120,8 @@ def _add_index_to_cols(cols, table_path):
 def filter_table_rows(df, rows, index_col_name):
     should_be_filtered = rows is not None
     if should_be_filtered:
-        df = _filter_arrow_table(df, rows, index_col_name)
+        df = _table_utils.filter_arrow_table(df, rows, index_col_name)
     return df
-
-
-def _filter_arrow_table(df, rows, index_col_name):
-    keyword = str(rows[0]).lower()
-    index = df[index_col_name]
-    if keyword not in ('before', 'after', 'between'):
-        df = _fetch_rows_in_list(df, index, rows)
-    elif keyword == 'before':
-        df = _fetch_rows_before(df, index, rows[1])
-    elif keyword == 'after':
-        df = _fetch_rows_after(df, index, rows[1])
-    elif keyword == 'between':
-        df = _fetch_rows_between(df, index, low=rows[1], high=rows[2])
-    return df
-
-
-def _fetch_rows_in_list(df, index, rows):
-    rows_indices = pa.compute.index_in(rows, value_set=index)
-    df = df.take(rows_indices)
-    return df
-
-
-def _fetch_rows_before(df, index, row):
-    upper_bound = _compute_upper_bound(row, index)
-    df = df[:upper_bound]
-    return df
-
-
-def _fetch_rows_after(df, index, row):
-    lower_bound = _compute_lower_bound(row, index)
-    df = df[lower_bound:]
-    return df
-
-
-def _fetch_rows_between(df, index, low, high):
-    lower_bound = _compute_lower_bound(low, index)
-    upper_bound = _compute_upper_bound(high, index)
-    df = df[lower_bound:upper_bound]
-    return df
-
-
-def _compute_lower_bound(row, index):
-    lower_bound = _fetch_row_idx(row, index) - 1
-    return lower_bound
-
-
-def _compute_upper_bound(row, index):
-    upper_bound = _fetch_row_idx(row, index)
-    return upper_bound
-
-
-def _fetch_row_idx(row, index):
-    row_idx = _fetch_exact_row_idx(row, index)
-
-    no_row_idx_found = row_idx is None
-    if no_row_idx_found:
-        row_idx = _fetch_closest_row_idx(row, index)
-
-    no_close_row_idx_found = row_idx is None
-    if no_close_row_idx_found:
-        row_idx = _fetch_last_row_idx(index)
-    return row_idx
-
-
-def _fetch_exact_row_idx(row, index):
-    row_idx = pa.compute.index_in(row, value_set=index)
-    row_idx = row_idx.as_py()
-    if row_idx is not None:
-        row_idx += 1
-    return row_idx
-
-
-def _fetch_closest_row_idx(row, index):
-    TRUE = 1
-    mask = pa.compute.less_equal(row, index)
-    row_idx = pa.compute.index_in(TRUE, value_set=mask)
-    row_idx = row_idx.as_py()
-    return row_idx
-
-
-def _fetch_last_row_idx(index):
-    return len(index)
 
 
 def drop_default_index(df, index_col_name):

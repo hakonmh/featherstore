@@ -6,7 +6,7 @@ from featherstore.connection import Connection
 from featherstore._metadata import Metadata
 from featherstore._table import _raise_if
 from featherstore._table import common
-from featherstore._table import read
+from featherstore._table import _table_utils
 
 
 def can_drop_rows_from_table(rows, table_path):
@@ -60,7 +60,7 @@ def _insert_adjacent_partition(adj_partition, *, to):
 
 def drop_rows_from_data(df, rows, index_name):
     index_col = df.select([index_name])
-    rows_to_drop = read._filter_arrow_table(index_col, rows, index_name)
+    rows_to_drop = _table_utils.filter_arrow_table(index_col, rows, index_name)
     rows_array = rows_to_drop[index_name]
     _raise_if_rows_not_in_index(rows_array)
     df = _drop_rows(df, rows_array, index_name)

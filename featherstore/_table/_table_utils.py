@@ -8,20 +8,20 @@ PARTITION_NAME_LENGTH = 14
 INSERTION_BUFFER_LENGTH = 10**6
 
 
-def _get_first_row(df):
+def get_first_row(df):
     return df[:1]
 
 
-def _get_col_names(df, has_default_index):
-    first_row = _get_first_row(df)
-    first_row = _convert_to_arrow(first_row)
+def get_col_names(df, has_default_index):
+    first_row = get_first_row(df)
+    first_row = convert_to_arrow(first_row)
     cols = first_row.column_names
     if has_default_index and DEFAULT_ARROW_INDEX_NAME not in cols:
         cols.append(DEFAULT_ARROW_INDEX_NAME)
     return cols
 
 
-def _coerce_col_dtypes(df, *, to):
+def coerce_col_dtypes(df, *, to):
     cols = df.columns
     dtypes = to[cols].dtypes
     try:
@@ -31,7 +31,7 @@ def _coerce_col_dtypes(df, *, to):
     return df
 
 
-def _convert_to_arrow(df):
+def convert_to_arrow(df):
     if isinstance(df, pd.Series):
         df = df.to_frame()
     if isinstance(df, pd.DataFrame):
@@ -41,15 +41,15 @@ def _convert_to_arrow(df):
     return df
 
 
-def _convert_to_polars(df):
+def convert_to_polars(df):
     if isinstance(df, (pd.Series, pd.DataFrame)):
-        df = _convert_to_arrow(df)
+        df = convert_to_arrow(df)
     if isinstance(df, pa.Table):
         df = pl.from_arrow(df)
     return df
 
 
-def _convert_to_pandas(df):
+def convert_to_pandas(df):
     if isinstance(df, pd.DataFrame):
         pd_df = df
     elif isinstance(df, pd.Series):
@@ -64,18 +64,18 @@ def _convert_to_pandas(df):
     return pd_df
 
 
-def _convert_int_to_partition_id(partition_id):
+def convert_int_to_partition_id(partition_id):
     partition_id = int(partition_id * INSERTION_BUFFER_LENGTH)
     format_string = f'0{PARTITION_NAME_LENGTH}d'
     partition_id = format(partition_id, format_string)
     return partition_id
 
 
-def _convert_partition_id_to_int(partition_id):
+def convert_partition_id_to_int(partition_id):
     return int(partition_id) // INSERTION_BUFFER_LENGTH
 
 
-def _get_index_name(df):
+def get_index_name(df):
     pd_metadata = df.schema.pandas_metadata
     if pd_metadata is None:
         no_index_name = True
@@ -89,43 +89,125 @@ def _get_index_name(df):
     return index_name
 
 
-def _get_index_dtype(df):
+def get_index_dtype(df):
     # Uses the fact that index should be first col
     index_dtype = str(df.field(0).type)
     return index_dtype
 
 
-def _str_is_temporal_dtype(index_dtype):
+def str_is_temporal_dtype(index_dtype):
     return "time" in index_dtype or "date" in index_dtype
 
 
-def _str_is_string_dtype(index_dtype):
+def str_is_string_dtype(index_dtype):
     return "string" in index_dtype
 
 
-def _str_is_int_dtype(index_dtype):
+def str_is_int_dtype(index_dtype):
     return "int" in index_dtype
 
 
-def _get_pd_index_if_exists(df, index_name):
+def get_pd_index_if_exists(df, index_name):
     if isinstance(df, (pd.DataFrame, pd.Series)):
         index = df.index
     else:
-        index = __get_index_if_index_in_table(df, index_name)
+        index = _get_index_if_index_in_table(df, index_name)
     return index
 
 
-def __get_index_if_index_in_table(df, index_name):
+def _get_index_if_index_in_table(df, index_name):
     INDEX_NOT_IN_DF = (KeyError, RuntimeError, TypeError)
     try:
-        pd_index = __get_index_as_pd_index(df, index_name)
+        pd_index = _get_index_as_pd_index(df, index_name)
     except INDEX_NOT_IN_DF:
         pd_index = None
     return pd_index
 
 
-def __get_index_as_pd_index(df, index_name):
+def _get_index_as_pd_index(df, index_name):
     index = df[index_name]
     if isinstance(index, pl.Series):
         index = index.to_arrow()
     return pd.Index(index)
+
+
+def filter_arrow_table(df, rows, index_col_name):
+    keyword = str(rows[0]).lower()
+    index = df[index_col_name]
+    if keyword not in ('before', 'after', 'between'):
+        df = _fetch_rows_in_list(df, index, rows)
+    elif keyword == 'before':
+        df = _fetch_rows_before(df, index, rows[1])
+    elif keyword == 'after':
+        df = _fetch_rows_after(df, index, rows[1])
+    elif keyword == 'between':
+        df = _fetch_rows_between(df, index, low=rows[1], high=rows[2])
+    return df
+
+
+def _fetch_rows_in_list(df, index, rows):
+    rows_indices = pa.compute.index_in(rows, value_set=index)
+    df = df.take(rows_indices)
+    return df
+
+
+def _fetch_rows_before(df, index, row):
+    upper_bound = _compute_upper_bound(row, index)
+    df = df[:upper_bound]
+    return df
+
+
+def _fetch_rows_after(df, index, row):
+    lower_bound = _compute_lower_bound(row, index)
+    df = df[lower_bound:]
+    return df
+
+
+def _fetch_rows_between(df, index, low, high):
+    lower_bound = _compute_lower_bound(low, index)
+    upper_bound = _compute_upper_bound(high, index)
+    df = df[lower_bound:upper_bound]
+    return df
+
+
+def _compute_lower_bound(row, index):
+    lower_bound = __fetch_row_idx(row, index) - 1
+    return lower_bound
+
+
+def _compute_upper_bound(row, index):
+    upper_bound = __fetch_row_idx(row, index)
+    return upper_bound
+
+
+def __fetch_row_idx(row, index):
+    row_idx = __fetch_exact_row_idx(row, index)
+
+    no_row_idx_found = row_idx is None
+    if no_row_idx_found:
+        row_idx = __fetch_closest_row_idx(row, index)
+
+    no_close_row_idx_found = row_idx is None
+    if no_close_row_idx_found:
+        row_idx = __fetch_last_row_idx(index)
+    return row_idx
+
+
+def __fetch_exact_row_idx(row, index):
+    row_idx = pa.compute.index_in(row, value_set=index)
+    row_idx = row_idx.as_py()
+    if row_idx is not None:
+        row_idx += 1
+    return row_idx
+
+
+def __fetch_closest_row_idx(row, index):
+    TRUE = 1
+    mask = pa.compute.less_equal(row, index)
+    row_idx = pa.compute.index_in(TRUE, value_set=mask)
+    row_idx = row_idx.as_py()
+    return row_idx
+
+
+def __fetch_last_row_idx(index):
+    return len(index)

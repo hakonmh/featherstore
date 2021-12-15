@@ -26,7 +26,7 @@ def can_append_table(
         _raise_if_append_data_not_ordered_after_stored_data(df, table_path)
 
     index_name = _metadata.Metadata(table_path, 'table')['index_name']
-    pd_index = _table_utils._get_pd_index_if_exists(df, index_name)
+    pd_index = _table_utils.get_pd_index_if_exists(df, index_name)
     raise_if_index_not_exist(pd_index, has_default_index)
 
     index_is_provided = pd_index is not None
@@ -63,8 +63,8 @@ def _get_default_index_start(table_path):
 
 def _get_non_default_index_start(df, table_path):
     index_col = _metadata.Metadata(table_path, "table")["index_name"]
-    first_row = _table_utils._get_first_row(df)
-    first_row = _table_utils._convert_to_arrow(first_row)
+    first_row = _table_utils.get_first_row(df)
+    first_row = _table_utils.convert_to_arrow(first_row)
     append_data_start = first_row[index_col][0].as_py()
     return append_data_start
 
@@ -94,10 +94,10 @@ def append_new_partition_ids(partitioned_df, last_partition_id):
     partition_ids = [last_partition_id]
 
     num_partitions = len(partitioned_df)
-    range_start = _table_utils._convert_partition_id_to_int(last_partition_id) + 1
+    range_start = _table_utils.convert_partition_id_to_int(last_partition_id) + 1
     range_end = range_start + num_partitions - 1
 
     for partition_num in range(range_start, range_end):
-        partition_id = _table_utils._convert_int_to_partition_id(partition_num)
+        partition_id = _table_utils.convert_int_to_partition_id(partition_num)
         partition_ids.append(partition_id)
     return partition_ids
