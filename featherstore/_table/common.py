@@ -34,11 +34,6 @@ def can_rename_table(new_table_name, new_table_path):
     _raise_if.table_already_exists(new_table_path)
 
 
-def combine_partitions(partitions):
-    full_table = pa.concat_tables(partitions)
-    return full_table
-
-
 def filter_cols_if_like_provided(cols, table_cols):
     cols_are_provided = bool(cols)
     if cols_are_provided:

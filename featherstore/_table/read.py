@@ -1,4 +1,5 @@
 import os
+import platform
 
 import pyarrow as pa
 from pyarrow import feather
@@ -39,22 +40,22 @@ def _predicate_filtering(rows, table_path):
     partition_names = Metadata(table_path, 'partition').keys()
     if keyword == "before":
         start = 0
-        end = binary_search(rows[1], partition_names, table_path)
+        end = __binary_search(rows[1], partition_names, table_path)
     elif keyword == "after":
-        start = binary_search(rows[1], partition_names, table_path)
+        start = __binary_search(rows[1], partition_names, table_path)
         end = len(partition_names)
     elif keyword == "between":
-        start = binary_search(rows[1], partition_names, table_path)
-        end = binary_search(rows[2], partition_names, table_path)
+        start = __binary_search(rows[1], partition_names, table_path)
+        end = __binary_search(rows[2], partition_names, table_path)
     else:  # When a list of rows is provided
-        start = binary_search(min(rows), partition_names, table_path)
-        end = binary_search(max(rows), partition_names, table_path)
+        start = __binary_search(min(rows), partition_names, table_path)
+        end = __binary_search(max(rows), partition_names, table_path)
 
     partition_names = partition_names[start:end + 1]
     return partition_names
 
 
-def binary_search(row, partition_names, table_path):
+def __binary_search(row, partition_names, table_path):
     possible_partitions = partition_names
 
     while len(possible_partitions) > 1:
@@ -96,28 +97,49 @@ def _row_after_candidate(row, candidate):
         return False
 
 
-def read_partitions(partition_names, table_path, cols):
+def read_table(partition_names, table_path, cols=None, rows=None, edit_mode=False):
+    index_name = Metadata(table_path, "table")["index_name"]
+    dfs = _read_partitions(partition_names, table_path, cols, edit_mode)
+    df = _combine_partitions(dfs)
+    df = _filter_table_rows(df, rows, index_name)
+    return df
+
+
+def _read_partitions(partition_names, table_path, cols, edit_mode):
     if cols is not None:
-        cols = _add_index_to_cols(cols, table_path)
+        cols = __add_index_to_cols(cols, table_path)
 
     partitions = []
     for partition_name in partition_names:
         partition_path = os.path.join(table_path, f"{partition_name}.feather")
-        partition = feather.read_table(partition_path,
-                                       columns=cols,
-                                       memory_map=True)
+        partition = __read_feather(partition_path, cols, edit_mode)
         partitions.append(partition)
     return partitions
 
 
-def _add_index_to_cols(cols, table_path):
+def __add_index_to_cols(cols, table_path):
     index_col = Metadata(table_path, "table")["index_name"]
     cols = cols.copy()
     cols.append(index_col)
     return cols
 
 
-def filter_table_rows(df, rows, index_col_name):
+def __read_feather(path, cols, edit_mode):
+    is_windows = platform.system() == "Windows"
+    if is_windows and edit_mode:
+        with open(path, 'rb') as f:
+            df = feather.read_table(f, columns=cols, memory_map=True)
+    else:
+        df = feather.read_table(path, columns=cols, memory_map=True)
+    return df
+
+
+def _combine_partitions(partitions):
+    full_table = pa.concat_tables(partitions)
+    return full_table
+
+
+def _filter_table_rows(df, rows, index_col_name):
     should_be_filtered = rows is not None
     if should_be_filtered:
         df = _table_utils.filter_arrow_table(df, rows, index_col_name)

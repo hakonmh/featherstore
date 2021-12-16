@@ -72,9 +72,7 @@ class Table:
         cols = common.filter_cols_if_like_provided(cols, stored_cols)
 
         partition_names = read.get_partition_names(rows, self._table_path)
-        partitions = read.read_partitions(partition_names, self._table_path, cols)
-        df = common.combine_partitions(partitions)
-        df = read.filter_table_rows(df, rows, index_name)
+        df = read.read_table(partition_names, self._table_path, cols, rows)
         if has_default_index and rows is None:
             df = read.drop_default_index(df, index_name)
 
@@ -190,17 +188,14 @@ class Table:
         partition_names = self._partition_data.keys()
         last_partition_name = partition_names[-1]
 
-        last_partition, = read.read_partitions([last_partition_name],
-                                               self._table_path, None)
+        last_partition = read.read_table([last_partition_name], self._table_path, edit_mode=True)
 
         df = common.format_table(df, index_name, warnings)
         if has_default_index:
             df = append.format_default_index(df, self._table_path)
-        df = append.sort_cols(df, cols=last_partition.column_names)
 
-        df = common.combine_partitions([last_partition, df])
+        df = append.append_data(df, to=last_partition)
         partitioned_df = write.make_partitions(df, rows_per_partition)
-        del last_partition, df  # Closes memory-map
 
         new_partition_names = append.append_new_partition_ids(partitioned_df,
                                                               last_partition_name)
@@ -238,17 +233,9 @@ class Table:
         rows = common.format_rows_arg_if_provided(rows, index_type)
 
         partition_names = read.get_partition_names(rows, self._table_path)
-        stored_df = read.read_partitions(partition_names,
-                                         self._table_path,
-                                         cols=None)
+        stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)
 
-        stored_df = common.combine_partitions(stored_df)
-        try:
-            df = update.update_data(stored_df, to=df)
-        except Exception:
-            raise
-        finally:
-            del stored_df
+        df = update.update_data(stored_df, to=df)
         df = common.format_table(df, index_name=index_name, warnings=False)
 
         rows_per_partition = self._table_data["rows_per_partition"]
@@ -275,17 +262,9 @@ class Table:
         rows = common.format_rows_arg_if_provided(rows, index_type)
 
         partition_names = read.get_partition_names(rows, self._table_path)
-        stored_df = read.read_partitions(partition_names,
-                                         self._table_path,
-                                         cols=None)
-        stored_df = common.combine_partitions(stored_df)
+        stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)
 
-        try:
-            df = insert.insert_data(stored_df, to=df)
-        except Exception:
-            raise
-        finally:
-            del stored_df
+        df = insert.insert_data(stored_df, to=df)
         df = common.format_table(df, index_name=index_name, warnings='ignore')
 
         rows_per_partition = self._table_data["rows_per_partition"]
@@ -346,17 +325,9 @@ class Table:
         partition_names = read.get_partition_names(rows, self._table_path)
         partition_names = drop.get_adjacent_partition_name(partition_names, self._table_path)
 
-        stored_df = read.read_partitions(partition_names,
-                                         self._table_path,
-                                         cols=None)
-        stored_df = common.combine_partitions(stored_df)
+        stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)
 
-        try:
-            df = drop.drop_rows_from_data(stored_df, rows, index_name)
-        except Exception:
-            raise
-        finally:
-            del stored_df
+        df = drop.drop_rows_from_data(stored_df, rows, index_name)
         df = common.format_table(df, index_name=index_name, warnings=False)
         if not df:
             raise IndexError("Can't drop all rows from stored table")
@@ -394,18 +365,10 @@ class Table:
         stored_cols = self._table_data["columns"]
 
         partition_names = read.get_partition_names(None, self._table_path)
-        stored_df = read.read_partitions(partition_names,
-                                         self._table_path,
-                                         cols=None)
-        stored_df = common.combine_partitions(stored_df)
+        stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)
 
         cols = common.filter_cols_if_like_provided(cols, stored_cols)
-        try:
-            df = drop.drop_cols_from_data(stored_df, cols)
-        except Exception:
-            raise
-        finally:
-            del stored_df
+        df = drop.drop_cols_from_data(stored_df, cols)
         df = common.format_table(df, index_name=index_name, warnings=False)
         rows_per_partition = common.calculate_rows_per_partition(
             df, partition_size

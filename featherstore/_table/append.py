@@ -1,3 +1,4 @@
+import pyarrow as pa
 from pyarrow.compute import add
 
 from featherstore.connection import Connection
@@ -88,7 +89,14 @@ def format_default_index(df, table_path):
     return df
 
 
-def sort_cols(df, cols):
+def append_data(df, *, to):
+    cols = to.column_names
+    df = _sort_cols(df, cols=cols)
+    full_table = pa.concat_tables([to, df])
+    return full_table
+
+
+def _sort_cols(df, cols):
     cols_not_sorted = df.column_names != cols
     if cols_not_sorted:
         df = df.select(cols)

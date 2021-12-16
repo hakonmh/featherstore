@@ -32,7 +32,7 @@ def insert_data(old_df, *, to):
         new_data = to
     old_df = old_df.to_pandas()
     _raise_if_rows_in_old_data(old_df, new_data)
-    new_data = new_data[old_df.columns]  # TODO: Check if can remove?
+    new_data = new_data[old_df.columns]
     new_data = _table_utils.coerce_col_dtypes(new_data, to=old_df)
     df = old_df.append(new_data)
     df = df.sort_index()
