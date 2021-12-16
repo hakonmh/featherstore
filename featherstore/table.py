@@ -151,7 +151,7 @@ class Table:
         self.drop_table()
 
         formatted_df = common.format_table(df, index, warnings)
-        rows_per_partition = write.calculate_rows_per_partition(
+        rows_per_partition = common.calculate_rows_per_partition(
             formatted_df, partition_size
         )
         partitioned_df = write.make_partitions(formatted_df, rows_per_partition)
@@ -159,9 +159,9 @@ class Table:
         partitioned_df = common.assign_ids_to_partitions(partitioned_df,
                                                          partition_names)
 
-        collected_metadata = (partition_size, rows_per_partition)
         table_metadata = write.make_table_metadata(partitioned_df,
-                                                   collected_metadata)
+                                                   partition_size,
+                                                   rows_per_partition)
         partition_metadata = common.make_partition_metadata(partitioned_df)
 
         self._create_table()
@@ -390,7 +390,7 @@ class Table:
 
         index_name = self._table_data["index_name"]
         rows_per_partition = self._table_data["rows_per_partition"]
-        partition_size = self._table_data["partition_byte_size"]
+        partition_size = self._table_data["partition_size"]
         stored_cols = self._table_data["columns"]
 
         partition_names = read.get_partition_names(None, self._table_path)
@@ -407,7 +407,7 @@ class Table:
         finally:
             del stored_df
         df = common.format_table(df, index_name=index_name, warnings=False)
-        rows_per_partition = write.calculate_rows_per_partition(
+        rows_per_partition = common.calculate_rows_per_partition(
             df, partition_size
         )
 

@@ -53,11 +53,11 @@ def filter_cols_if_like_provided(cols, table_cols):
 def format_rows_arg_if_provided(rows, index_type):
     rows_is_provided = rows is not None
     if rows_is_provided:
-        rows = _format_rows(rows, index_type)
+        rows = _format_rows_arg(rows, index_type)
     return rows
 
 
-def _format_rows(rows, index_type):
+def _format_rows_arg(rows, index_type):
     rows = list(rows)
     keyword = str(rows[0]).lower()
     if keyword in {"between", "before", "after"}:
@@ -135,11 +135,22 @@ def _format_pd_metadata(df, index_name):
 def _make_pd_schema(df, index_name):
     first_row = _table_utils.get_first_row(df)
     first_row = _table_utils.convert_to_pandas(first_row)
-    first_row = _set_index(first_row, index_name)
+    first_row = __set_index(first_row, index_name)
 
     table_schema = pa.Schema.from_pandas(first_row, preserve_index=True)
     metadata = table_schema.metadata
     return metadata
+
+
+def __set_index(df, index_name):
+    has_provided_index = bool(index_name)
+    index_name_is_not_index = index_name != df.index.name
+    cols = df.columns
+    if has_provided_index and index_name_is_not_index and index_name in cols:
+        df = df.set_index(index_name)
+    if df.index.name == DEFAULT_ARROW_INDEX_NAME:
+        df.index.name = None
+    return df
 
 
 def _add_pd_metadata(df, metadata):
@@ -158,17 +169,6 @@ def _make_index_first_column(df):
     return df
 
 
-def _set_index(df, index_name):
-    has_provided_index = bool(index_name)
-    index_name_is_not_index = index_name != df.index.name
-    cols = df.columns
-    if has_provided_index and index_name_is_not_index and index_name in cols:
-        df = df.set_index(index_name)
-    if df.index.name == DEFAULT_ARROW_INDEX_NAME:
-        df.index.name = None
-    return df
-
-
 def _add_featherstore_metadata(df, new_metadata):
     old_metadata = df.schema.metadata
     if old_metadata:
@@ -177,6 +177,14 @@ def _add_featherstore_metadata(df, new_metadata):
         combined_metadata = {b"featherstore": new_metadata}
     df = df.replace_schema_metadata(combined_metadata)
     return df
+
+
+def calculate_rows_per_partition(df, target_size):
+    num_rows = df.shape[0]
+    table_size_in_bytes = df.nbytes
+    rows_per_partition = num_rows * target_size / table_size_in_bytes
+    rows_per_partition = int(round(rows_per_partition, 0))
+    return rows_per_partition
 
 
 def assign_ids_to_partitions(df, ids):
@@ -223,8 +231,7 @@ def update_table_metadata(table_path, new_partitions_data,
                                 new_partitions_data)
     num_partitions = _update_num_partitions(table_path,
                                             dropped_partitions_data,
-                                            new_partitions_data
-                                            )
+                                            new_partitions_data)
 
     table_metadata = {
         "num_partitions": num_partitions,

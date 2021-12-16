@@ -9,6 +9,7 @@ from pyarrow import feather
 from featherstore.connection import Connection
 from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
+from featherstore._table import common
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
 
@@ -53,13 +54,6 @@ def _raise_if_provided_index_not_in_cols(index, cols):
         raise IndexError("'index' not in table columns")
 
 
-def calculate_rows_per_partition(df, target_size):
-    number_of_rows = df.shape[0]
-    table_size_in_bytes = df.nbytes
-    row_group_size = int(number_of_rows * target_size / table_size_in_bytes)
-    return row_group_size
-
-
 def make_partitions(df, partition_size):
     df = df.combine_chunks()
     partitions = df.to_batches(partition_size)
@@ -100,10 +94,8 @@ def make_partition_ids(partitioned_df):
     return partition_ids
 
 
-def make_table_metadata(df, collected_data):
+def make_table_metadata(df, partition_size, rows_per_partition):
     df = tuple(df.values())
-    partition_byte_size, partition_size_in_rows = collected_data
-
     index_name = _table_utils.get_index_name(df[0])
 
     metadata = {
@@ -111,8 +103,8 @@ def make_table_metadata(df, collected_data):
         "columns": _get_partitioned_df_col_names(df),
         "num_columns": _get_num_cols(df),
         "num_partitions": len(df),
-        "rows_per_partition": partition_size_in_rows,
-        "partition_byte_size": int(partition_byte_size),
+        "rows_per_partition": rows_per_partition,
+        "partition_size": int(partition_size),
         "index_name": index_name,
         "index_column_position": _get_index_position(df, index_name),
         "index_dtype": _table_utils.get_index_dtype(df[0]),
