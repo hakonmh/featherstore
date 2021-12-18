@@ -329,12 +329,9 @@ class Table:
 
         df = drop.drop_rows_from_data(stored_df, rows, index_name)
         df = common.format_table(df, index_name=index_name, warnings=False)
-        if not df:
-            raise IndexError("Can't drop all rows from stored table")
 
         partitioned_df = write.make_partitions(df, rows_per_partition)
         kept_partition_names = partition_names[:len(partitioned_df)]
-        dropped_partition_names = partition_names[len(partitioned_df):]
         partitioned_df = common.assign_ids_to_partitions(partitioned_df,
                                                          kept_partition_names)
 
@@ -342,11 +339,10 @@ class Table:
         table_metadata = common.update_table_metadata(self._table_path,
                                                       new_partition_metadata,
                                                       partition_names)
-        table_metadata['has_default_index'] = False
+        table_metadata['has_default_index'] = False  # Remove?
 
-        for name in dropped_partition_names:
-            common.delete_partition(self._table_path, name)
-            common.delete_partition_metadata(self._table_path, name)
+        dropped_partition_names = partition_names[len(partitioned_df):]
+        drop.drop_partitions(self._table_path, dropped_partition_names)
 
         self._table_data.write(table_metadata)
         self._partition_data.write(new_partition_metadata)
@@ -360,7 +356,6 @@ class Table:
         drop.can_drop_cols_from_table(cols, self._table_path)
 
         index_name = self._table_data["index_name"]
-        rows_per_partition = self._table_data["rows_per_partition"]
         partition_size = self._table_data["partition_size"]
         stored_cols = self._table_data["columns"]
 
@@ -376,7 +371,6 @@ class Table:
 
         partitioned_df = write.make_partitions(df, rows_per_partition)
         kept_partition_names = partition_names[:len(partitioned_df)]
-        dropped_partition_names = partition_names[len(partitioned_df):]
         partitioned_df = common.assign_ids_to_partitions(partitioned_df,
                                                          kept_partition_names)
 
@@ -385,9 +379,9 @@ class Table:
                                                       new_partition_metadata,
                                                       partition_names)
         table_metadata['rows_per_partition'] = rows_per_partition
-        for name in dropped_partition_names:
-            common.delete_partition(self._table_path, name)
-            common.delete_partition_metadata(self._table_path, name)
+
+        dropped_partition_names = partition_names[len(partitioned_df):]
+        drop.drop_partitions(self._table_path, dropped_partition_names)
 
         self._table_data.write(table_metadata)
         self._partition_data.write(new_partition_metadata)

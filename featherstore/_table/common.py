@@ -255,21 +255,3 @@ def _update_num_partitions(table_path, dropped_partitions_data, new_partitions_d
     added = len(new_partitions_data)
     updated_num_partitions = current + added - dropped
     return updated_num_partitions
-
-
-def delete_partition(table_path, partition_name):
-    partition_path = os.path.join(table_path, f'{partition_name}.feather')
-    try:
-        os.remove(partition_path)
-    except PermissionError as e:
-        try:
-            os.system(f'cmd /k "del /f /q /a {e.filename}"')
-        except Exception:
-            raise PermissionError('File still opened by memory-map')
-
-
-def delete_partition_metadata(table_path, partition_name):
-    partition_data = Metadata(table_path, 'partition')
-    partition_names = partition_data.keys()
-    partition_names = partition_names.remove(partition_name)
-    del partition_data[partition_name]

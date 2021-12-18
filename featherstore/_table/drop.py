@@ -1,3 +1,4 @@
+import os
 import bisect
 
 import pyarrow as pa
@@ -68,6 +69,7 @@ def drop_rows_from_data(df, rows, index_name):
     rows_array = rows_to_drop[index_name]
     _raise_if_rows_not_in_index(rows_array)
     df = _drop_rows(df, rows_array, index_name)
+    _raise_if_all_rows_is_dropped(df)
     return df
 
 
@@ -82,6 +84,11 @@ def _drop_rows(df, rows, index_name):
 def _raise_if_rows_not_in_index(rows):
     if rows.null_count > 0:
         raise ValueError(f"Some rows not in stored table")
+
+
+def _raise_if_all_rows_is_dropped(df):
+    if not df:
+        raise IndexError("Can't drop all rows from stored table")
 
 
 # ----------------- drop_columns ------------------
@@ -135,3 +142,27 @@ class CheckDropCols:
 
 def drop_cols_from_data(df, cols):
     return df.drop(cols)
+
+
+def drop_partitions(table_path, partitions):
+    for partition in partitions:
+        _delete_partition(table_path, partition)
+        _delete_partition_metadata(table_path, partition)
+
+
+def _delete_partition(table_path, partition_name):
+    partition_path = os.path.join(table_path, f'{partition_name}.feather')
+    try:
+        os.remove(partition_path)
+    except PermissionError as e:
+        try:
+            os.system(f'cmd /k "del /f /q /a {e.filename}"')
+        except Exception:
+            raise PermissionError('File still opened by memory-map')
+
+
+def _delete_partition_metadata(table_path, partition_name):
+    partition_data = Metadata(table_path, 'partition')
+    partition_names = partition_data.keys()
+    partition_names = partition_names.remove(partition_name)
+    del partition_data[partition_name]
