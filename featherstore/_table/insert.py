@@ -57,12 +57,13 @@ def insert_new_partition_ids(partitioned_df, partition_names):
 
 
 def _make_partition_names(num_names, partition_names):
-    last_partition_id = _table_utils.convert_partition_id_to_int(partition_names[-1])
-    increment = 1 / num_names
+    second_last_id = _table_utils.convert_partition_id_to_int(partition_names[-2])
+    last_id = _table_utils.convert_partition_id_to_int(partition_names[-1])
+    increment = (last_id - second_last_id) / num_names
 
     new_partition_names = partition_names.copy()
     for partition_num in range(1, num_names):
-        new_partition_id = last_partition_id + increment * partition_num
+        new_partition_id = second_last_id + increment * partition_num
         new_partition_id = _table_utils.convert_int_to_partition_id(new_partition_id)
         new_partition_names.append(new_partition_id)
 
