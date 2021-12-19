@@ -191,7 +191,14 @@ def assign_ids_to_partitions(df, ids):
     return id_mapping
 
 
-def make_partition_metadata(df):
+def update_metadata(df, table_path, old_partition_names):
+    new_partition_metadata = _make_partition_metadata(df)
+    table_metadata = update_table_metadata(table_path, new_partition_metadata,
+                                           old_partition_names)
+    return table_metadata, new_partition_metadata
+
+
+def _make_partition_metadata(df):
     metadata = {}
 
     first_partition = tuple(df.values())[0]

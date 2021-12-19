@@ -9,6 +9,7 @@ from pyarrow import feather
 from featherstore.connection import Connection
 from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
+from featherstore._metadata import Metadata
 from featherstore._table import common
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
@@ -94,21 +95,26 @@ def make_partition_ids(partitioned_df):
     return partition_ids
 
 
-def make_table_metadata(df, partition_size, rows_per_partition):
+def generate_metadata(df, partition_size, rows_per_partition):
+    table_metadata = _make_table_metadata(df, partition_size, rows_per_partition)
+    partition_metadata = common._make_partition_metadata(df)
+    return table_metadata, partition_metadata
+
+
+def _make_table_metadata(df, partition_size, rows_per_partition):
     df = tuple(df.values())
     index_name = _table_utils.get_index_name(df[0])
 
     metadata = {
         "num_rows": _get_num_rows(df),
-        "columns": _get_partitioned_df_col_names(df),
         "num_columns": _get_num_cols(df),
         "num_partitions": len(df),
-        "rows_per_partition": rows_per_partition,
-        "partition_size": int(partition_size),
+        "columns": _get_partitioned_df_col_names(df),
         "index_name": index_name,
-        "index_column_position": _get_index_position(df, index_name),
         "index_dtype": _table_utils.get_index_dtype(df[0]),
         "has_default_index": _has_default_index(df, index_name),
+        "partition_size": int(partition_size),
+        "rows_per_partition": rows_per_partition,
     }
     return metadata
 
@@ -131,19 +137,13 @@ def _get_num_cols(df):
     return num_cols
 
 
-def _get_index_position(df, index_name):
-    schema = df[0].schema
-    index_position = schema.get_field_index(index_name)
-    return index_position
-
-
 def _has_default_index(df, index_name):
     has_index_name = index_name != DEFAULT_ARROW_INDEX_NAME
-    if has_index_name or _index_was_sorted(df):
+    if has_index_name or __index_was_sorted(df):
         has_default_index = False
     else:
         index = pa.Table.from_batches(df)[index_name]
-        if _is_rangeindex(index):
+        if __is_rangeindex(index):
             has_default_index = True
         else:
             has_default_index = False
@@ -151,16 +151,16 @@ def _has_default_index(df, index_name):
     return has_default_index
 
 
-def _index_was_sorted(df):
+def __index_was_sorted(df):
     featherstore_metadata = df[0].schema.metadata[b"featherstore"]
     metadata_dict = json.loads(featherstore_metadata)
     was_sorted = metadata_dict["sorted"]
     return was_sorted
 
 
-def _is_rangeindex(index):
+def __is_rangeindex(index):
     """Compares the index against a equivalent range index"""
-    rangeindex = _make_rangeindex(index)
+    rangeindex = __make_rangeindex(index)
     TYPES_NOT_MATCHING = pa.lib.ArrowNotImplementedError
     try:
         is_rangeindex = pa.compute.equal(index, rangeindex)
@@ -171,9 +171,15 @@ def _is_rangeindex(index):
     return is_rangeindex
 
 
-def _make_rangeindex(index):
+def __make_rangeindex(index):
     """Makes a rangeindex with equal length to 'index'"""
     return pa.array(pd.RangeIndex(len(index)))
+
+
+def write_metadata(metadata, table_path):
+    table_metadata, partition_metadata = metadata
+    Metadata(table_path, 'table').write(table_metadata)
+    Metadata(table_path, 'partition').write(partition_metadata)
 
 
 def write_partitions(partitions, table_path):

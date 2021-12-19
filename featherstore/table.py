@@ -64,8 +64,8 @@ class Table:
         read.can_read_table(cols, rows, self._table_path)
 
         index_name = self._table_data["index_name"]
-        has_default_index = self._table_data["has_default_index"]
         index_type = self._table_data["index_dtype"]
+        has_default_index = self._table_data["has_default_index"]
         stored_cols = self._table_data["columns"]
 
         rows = common.format_rows_arg_if_provided(rows, index_type)
@@ -148,25 +148,18 @@ class Table:
 
         self.drop_table()
 
-        formatted_df = common.format_table(df, index, warnings)
-        rows_per_partition = common.calculate_rows_per_partition(
-            formatted_df, partition_size
-        )
-        partitioned_df = write.make_partitions(formatted_df, rows_per_partition)
-        partition_names = write.make_partition_ids(partitioned_df)
-        partitioned_df = common.assign_ids_to_partitions(partitioned_df,
-                                                         partition_names)
+        df = common.format_table(df, index, warnings)
+        rows_per_partition = common.calculate_rows_per_partition(df, partition_size)
+        partitions = write.make_partitions(df, rows_per_partition)
+        partition_names = write.make_partition_ids(partitions)
+        partitions = common.assign_ids_to_partitions(partitions, partition_names)
 
-        table_metadata = write.make_table_metadata(partitioned_df,
-                                                   partition_size,
-                                                   rows_per_partition)
-        partition_metadata = common.make_partition_metadata(partitioned_df)
+        metadata = write.generate_metadata(partitions, partition_size,
+                                           rows_per_partition)
 
         self._create_table()
-        self._table_data.write(table_metadata)
-
-        self._partition_data.write(partition_metadata)
-        write.write_partitions(partitioned_df, self._table_path)
+        write.write_metadata(metadata, self._table_path)
+        write.write_partitions(partitions, self._table_path)
 
     def append(self, df, *, warnings="warn"):
         """Appends data to the current table
@@ -202,14 +195,9 @@ class Table:
         partitioned_df = common.assign_ids_to_partitions(partitioned_df,
                                                          new_partition_names)
 
-        new_partition_metadata = common.make_partition_metadata(partitioned_df)
+        metadata = common.update_metadata(partitioned_df, self._table_path, [last_partition_name])
 
-        table_metadata = common.update_table_metadata(self._table_path,
-                                                      new_partition_metadata,
-                                                      [last_partition_name])
-
-        self._table_data.write(table_metadata)
-        self._partition_data.write(new_partition_metadata)
+        write.write_metadata(metadata, self._table_path)
         write.write_partitions(partitioned_df, self._table_path)
 
     def update(self, df):
@@ -227,8 +215,8 @@ class Table:
         """
         update.can_update_table(df, self._table_path)
 
-        index_type = self._table_data["index_dtype"]
         index_name = self._table_data["index_name"]
+        index_type = self._table_data["index_dtype"]
         rows = df.index
         rows = common.format_rows_arg_if_provided(rows, index_type)
 
@@ -256,8 +244,8 @@ class Table:
         """
         insert.can_insert_table(df, self._table_path)
 
-        index_type = self._table_data["index_dtype"]
         index_name = self._table_data["index_name"]
+        index_type = self._table_data["index_dtype"]
         rows = df.index
         rows = common.format_rows_arg_if_provided(rows, index_type)
 
@@ -275,13 +263,9 @@ class Table:
         partitioned_df = common.assign_ids_to_partitions(partitioned_df,
                                                          new_partition_names)
 
-        new_partition_metadata = common.make_partition_metadata(partitioned_df)
-        table_metadata = common.update_table_metadata(self._table_path,
-                                                      new_partition_metadata,
-                                                      partition_names)
+        metadata = common.update_metadata(partitioned_df, self._table_path, partition_names)
 
-        self._table_data.write(table_metadata)
-        self._partition_data.write(new_partition_metadata)
+        write.write_metadata(metadata, self._table_path)
         write.write_partitions(partitioned_df, self._table_path)
 
     def drop(self, *, cols=None, rows=None):
@@ -332,20 +316,15 @@ class Table:
 
         partitioned_df = write.make_partitions(df, rows_per_partition)
         kept_partition_names = partition_names[:len(partitioned_df)]
+        dropped_partition_names = partition_names[len(partitioned_df):]
         partitioned_df = common.assign_ids_to_partitions(partitioned_df,
                                                          kept_partition_names)
 
-        new_partition_metadata = common.make_partition_metadata(partitioned_df)
-        table_metadata = common.update_table_metadata(self._table_path,
-                                                      new_partition_metadata,
-                                                      partition_names)
-        table_metadata['has_default_index'] = False  # Remove?
+        metadata = common.update_metadata(partitioned_df, self._table_path, partition_names)
 
-        dropped_partition_names = partition_names[len(partitioned_df):]
         drop.drop_partitions(self._table_path, dropped_partition_names)
-
-        self._table_data.write(table_metadata)
-        self._partition_data.write(new_partition_metadata)
+        write.write_metadata(metadata, self._table_path)
+        self._table_data['has_default_index'] = False
         write.write_partitions(partitioned_df, self._table_path)
 
     def drop_columns(self, cols):
@@ -371,20 +350,15 @@ class Table:
 
         partitioned_df = write.make_partitions(df, rows_per_partition)
         kept_partition_names = partition_names[:len(partitioned_df)]
+        dropped_partition_names = partition_names[len(partitioned_df):]
         partitioned_df = common.assign_ids_to_partitions(partitioned_df,
                                                          kept_partition_names)
 
-        new_partition_metadata = common.make_partition_metadata(partitioned_df)
-        table_metadata = common.update_table_metadata(self._table_path,
-                                                      new_partition_metadata,
-                                                      partition_names)
-        table_metadata['rows_per_partition'] = rows_per_partition
+        metadata = common.update_metadata(partitioned_df, self._table_path, partition_names)
 
-        dropped_partition_names = partition_names[len(partitioned_df):]
         drop.drop_partitions(self._table_path, dropped_partition_names)
-
-        self._table_data.write(table_metadata)
-        self._partition_data.write(new_partition_metadata)
+        write.write_metadata(metadata, self._table_path)
+        self._table_data['rows_per_partition'] = rows_per_partition
         write.write_partitions(partitioned_df, self._table_path)
 
     def _add_columns(self, cols):
