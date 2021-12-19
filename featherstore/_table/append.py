@@ -103,7 +103,14 @@ def _sort_cols(df, cols):
     return df
 
 
-def append_new_partition_ids(partitioned_df, last_partition_id):
+def create_partitions(df, rows_per_partition, last_partition_name):
+    partitions = _table_utils.make_partitions(df, rows_per_partition)
+    new_partition_names = _append_new_partition_ids(partitions, last_partition_name)
+    partitions = _table_utils.assign_ids_to_partitions(partitions, new_partition_names)
+    return partitions
+
+
+def _append_new_partition_ids(partitioned_df, last_partition_id):
     partition_ids = [last_partition_id]
 
     num_partitions = len(partitioned_df)

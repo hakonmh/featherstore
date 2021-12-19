@@ -144,6 +144,18 @@ def drop_cols_from_data(df, cols):
     return df.drop(cols)
 
 
+def create_partitions(df, rows_per_partition, partition_names):
+    partitions = _table_utils.make_partitions(df, rows_per_partition)
+    partition_names = partition_names[:len(partitions)]
+    partitions = _table_utils.assign_ids_to_partitions(partitions, partition_names)
+    return partitions
+
+
+def get_partitions_to_drop(df, partition_names):
+    names = [x for x in partition_names if x not in df.keys()]
+    return names
+
+
 def drop_partitions(table_path, partitions):
     for partition in partitions:
         _delete_partition(table_path, partition)

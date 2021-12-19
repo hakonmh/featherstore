@@ -47,6 +47,13 @@ def _raise_if_rows_in_old_data(old_df, df):
         raise ValueError(f"Some rows already in stored table")
 
 
+def create_partitions(df, rows_per_partition, partition_names):
+    partitions = _table_utils.make_partitions(df, rows_per_partition)
+    new_partition_names = insert_new_partition_ids(partitions, partition_names)
+    partitions = _table_utils.assign_ids_to_partitions(partitions, new_partition_names)
+    return partitions
+
+
 def insert_new_partition_ids(partitioned_df, partition_names):
     num_partitions = len(partitioned_df)
     num_partition_names = len(partition_names)

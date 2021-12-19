@@ -174,7 +174,7 @@ def _add_featherstore_metadata(df, new_metadata):
     return df
 
 
-def calculate_rows_per_partition(df, target_size):
+def get_rows_per_partition(df, target_size):
     num_rows = df.shape[0]
     table_size_in_bytes = df.nbytes
     rows_per_partition = num_rows * target_size / table_size_in_bytes
@@ -182,19 +182,12 @@ def calculate_rows_per_partition(df, target_size):
     return rows_per_partition
 
 
-def assign_ids_to_partitions(df, ids):
-    if len(df) != len(ids):
-        raise IndexError("Num partitions doesn't match num partiton names")
-    id_mapping = {}
-    for identifier, partition in zip(ids, df):
-        id_mapping[identifier] = partition
-    return id_mapping
-
-
-def update_metadata(df, table_path, old_partition_names):
+def update_metadata(df, table_path, old_partition_names, **kwargs):
     new_partition_metadata = _make_partition_metadata(df)
-    table_metadata = update_table_metadata(table_path, new_partition_metadata,
-                                           old_partition_names)
+    table_metadata = _update_table_metadata(table_path, new_partition_metadata,
+                                            old_partition_names)
+    for key, value in kwargs.items():
+        table_metadata[key] = value
     return table_metadata, new_partition_metadata
 
 
@@ -223,8 +216,8 @@ def _get_index_max(df, index_name):
     return last_index_value
 
 
-def update_table_metadata(table_path, new_partitions_data,
-                          dropped_partitions):
+def _update_table_metadata(table_path, new_partitions_data,
+                           dropped_partitions):
     # TODO: Clean up, new name, generalize(?)
     dropped_partitions_data = _get_dropped_partitions_data(dropped_partitions,
                                                            table_path)
