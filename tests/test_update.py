@@ -48,19 +48,26 @@ def test_update_table(num_partitions, rows, basic_data, database, connection,
     assert not df.equals(original_df)
 
 
-def test_update_table_with_pandas_series(basic_data, database, connection,
-                                         store):
+@pytest.mark.parametrize(["index", "rows"],
+                         [(None, [10, 13, 14, 21]),
+                          (hardcoded_string_index, ["row00010", "row00013",
+                                                    "row00014", "row00021"]),
+                          (sorted_datetime_index, ["2021-01-01", "2021-01-16",
+                                                   "2021-01-07"])
+                          ]
+                         )
+def test_update_table_with_pandas_series(index, rows, basic_data, database,
+                                         connection, store):
     # Arrange
-    ROW_INDICES = [10, 13, 14, 21]
-    original_df = make_table(cols=5, astype='pandas')
+    original_df = make_table(index=index, cols=5, astype='pandas')
     store.write_table(basic_data["table_name"], original_df)
 
-    update_df = make_table(cols=1, astype='pandas')
+    update_df = make_table(index=index, cols=1, astype='pandas')
     update_series = update_df.squeeze()
-    update_series = update_series[ROW_INDICES]
+    update_series = update_series[rows]
 
     expected = original_df.copy()
-    expected.iloc[ROW_INDICES, 0] = update_series
+    expected.loc[rows, 'c0'] = update_series
 
     table = store.select_table(basic_data["table_name"])
     # Act
