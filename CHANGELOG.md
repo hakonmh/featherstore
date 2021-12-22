@@ -10,7 +10,8 @@ Other changes:
 * Added `Table.update()`
 * Added `Table.insert()`
 * Added `Table.drop()`, `Table.drop_rows()` and `Table.drop_columns()`
-* Added `Table.shape`
+* Added `Table.shape` and `Table.exists`
+* Removed msgpack dependency
 * Performance improvements
 
 0.0.3

@@ -57,19 +57,23 @@ def create_partitions(df, rows_per_partition, partition_names):
 def insert_new_partition_ids(partitioned_df, partition_names):
     num_partitions = len(partitioned_df)
     num_partition_names = len(partition_names)
-    number_of_new_names_to_make = num_partitions - num_partition_names + 1
-
-    new_partition_names = _make_partition_names(number_of_new_names_to_make, partition_names)
+    num_new_names_to_make = num_partitions - num_partition_names
+    new_partition_names = _make_partition_names(num_new_names_to_make,
+                                                partition_names)
     return new_partition_names
 
 
 def _make_partition_names(num_names, partition_names):
-    second_last_id = _table_utils.convert_partition_id_to_int(partition_names[-2])
-    last_id = _table_utils.convert_partition_id_to_int(partition_names[-1])
-    increment = (last_id - second_last_id) / num_names
+    if len(partition_names) > 1:
+        second_last_id = _table_utils.convert_partition_id_to_int(partition_names[-2])
+        last_id = _table_utils.convert_partition_id_to_int(partition_names[-1])
+        increment = (last_id - second_last_id) / (num_names + 1)
+    else:
+        second_last_id = _table_utils.convert_partition_id_to_int(partition_names[-1])
+        increment = 1
 
     new_partition_names = partition_names.copy()
-    for partition_num in range(1, num_names):
+    for partition_num in range(1, num_names + 1):
         new_partition_id = second_last_id + increment * partition_num
         new_partition_id = _table_utils.convert_int_to_partition_id(new_partition_id)
         new_partition_names.append(new_partition_id)

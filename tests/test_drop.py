@@ -181,14 +181,14 @@ def test_can_drop_cols_from_table(cols, exception, basic_data, database,
     [
         ['c1', 'c3'],
         ['c0'],
-        ['c0', 'c2', 'c3']
+        ['c0', 'c2', 'c3', 'c4']
     ],
 )
 def test_drop_cols_from_table(cols, basic_data, database,
                               connection, store):
     # Arrange
     original_df = make_table(rows=30, astype="pandas")
-    expected = original_df.copy().drop(columns=cols)
+    expected = original_df.copy().drop(columns=cols).squeeze()
 
     partition_size = get_partition_size(
         original_df, num_partitions=basic_data['num_partitions'])
