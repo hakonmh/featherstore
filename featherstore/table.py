@@ -149,7 +149,7 @@ class Table:
         self.drop_table()
 
         df = common.format_table(df, index, warnings)
-        rows_per_partition = common.get_rows_per_partition(df, partition_size)
+        rows_per_partition = common.compute_rows_per_partition(df, partition_size)
         partitions = write.create_partitions(df, rows_per_partition)
 
         metadata = write.generate_metadata(partitions, partition_size,
@@ -239,8 +239,7 @@ class Table:
         index_type = self._table_data["index_dtype"]
         rows_per_partition = self._table_data["rows_per_partition"]
 
-        rows = df.index
-        rows = common.format_rows_arg_if_provided(rows, index_type)
+        rows = common.format_rows_arg_if_provided(df.index, index_type)
 
         partition_names = read.get_partition_names(rows, self._table_path)
         stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)
@@ -321,14 +320,16 @@ class Table:
         partition_size = self._table_data["partition_size"]
         stored_cols = self._table_data["columns"]
 
+        cols = common.filter_cols_if_like_provided(cols, stored_cols)
         partition_names = read.get_partition_names(None, self._table_path)
+        partition_names = drop.get_adjacent_partition_name(partition_names, self._table_path)
+
         stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)
 
-        cols = common.filter_cols_if_like_provided(cols, stored_cols)
         df = drop.drop_cols_from_data(stored_df, cols)
         df = common.format_table(df, index_name=index_name, warnings=False)
 
-        rows_per_partition = common.get_rows_per_partition(df, partition_size)
+        rows_per_partition = common.compute_rows_per_partition(df, partition_size)
         partitions = drop.create_partitions(df, rows_per_partition, partition_names)
 
         metadata = common.update_metadata(partitions, self._table_path, partition_names,
