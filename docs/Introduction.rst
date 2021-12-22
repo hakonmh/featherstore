@@ -9,8 +9,8 @@ in the full data:
 * Predicate filtering when reading
 * Appending data
 * Read metadata (column names, index, table size, etc)
-* Insert data
-* Update data
+* Inserting data
+* Updating data
 * Remove columns and rows
 * (planned) Changing types
 

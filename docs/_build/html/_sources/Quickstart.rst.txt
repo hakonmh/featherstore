@@ -50,7 +50,7 @@ and where you can store your tables.
     # Connect to store
     store = fs.Store('example_store')
 
-Reading and Writing tables
+Reading and Writing Tables
 --------------------------
 FeatherStore supports reading and writing of Pandas DataFrames and Series, Polars DataFrames
 and PyArrow tables.
@@ -64,6 +64,7 @@ First lets create a DataFrame to store.
 
     dates = pd.date_range("2021-01-01", periods=5)
     df = pd.DataFrame(randn(5, 4), index=dates, columns=list("ABCD"))
+    df
 
     >>                 A         B         C         D
     2021-01-01  0.402138 -0.016436 -0.565256  0.520086
@@ -127,3 +128,67 @@ By using sorted indices, FeatherStore allows for range-queries on rows by using
     >>                 D         A
     2021-01-05  0.275433 -0.871126
     2021-01-06  0.606950  0.408125
+
+Inserting, Updating and Deleting Data
+-------------------------------------
+First, let's create a new table to work with:
+
+.. code-block:: python
+
+    index = [1, 3, 5, 6]
+    df = pd.DataFrame(randn(4, 2), index=index, columns=list("AB"))
+    df
+
+    >>        A         B
+    1 -0.041727  0.957139
+    3 -0.272294 -1.758717
+    5 -0.353684  1.550073
+    6  1.275938  1.054702
+
+We can use ``Store.select_table()`` to select a ``Table`` object. A ``Table`` object contains
+more features for working with tables.
+
+.. code-block:: python
+
+    table = store.select_table('example_table2')
+    table.exists  # False
+    table.write(df)
+    table.exists
+
+    >> True
+
+One of those features is ``Table.insert()``, which allows for adding extra rows into the table.
+
+.. note::
+    FeatherStore does not support adding columns in the current version.
+
+
+.. code-block:: python
+
+    df2 = pd.DataFrame(randn(2, 2), index=[4, 2], columns=list("AB"))
+    table.insert(df2)  # Must have the same index and col dtypes as the stored df
+    table.read_pandas()
+
+    # The data will inserted into its sorted index position
+    >>        A         B
+    1 -0.041727  0.957139
+    2  2.163615 -0.708871
+    3 -0.272294 -1.758717
+    4 -1.263981 -0.961670
+    5 -0.353684  1.550073
+    6  1.275938  1.054702
+
+We also have ``Table.update()`` and ``Table.drop()`` for updating and deleting data.
+
+.. code-block:: python
+
+    df3 = pd.DataFrame([[0, 0], [1, 1]], index=[1, 2], columns=list("AB"))
+    table.update(df3)
+    table.drop(rows=['after', 5])
+    # You can also drop columns using table.drop(cols=['col1', 'col2'])
+
+    >>        A         B
+    1  0.000000  1.000000
+    2  2.000000  3.000000
+    3 -0.272294 -1.758717
+    4 -1.263981 -0.961670
