@@ -408,7 +408,7 @@ class Table:
         df = common.format_table(df, index_name=index_name, warnings=False)
         partitions = write.create_partitions(df, rows_per_partition, partition_names)
 
-        rename_cols.write_metadata(df, self._table_path)
+        rename_cols.write_metadata(partitions, self._table_path)
         write.write_partitions(partitions, self._table_path)
 
     def _astype(self, cols, dtypes):

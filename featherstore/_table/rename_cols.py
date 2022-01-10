@@ -1,7 +1,6 @@
 from featherstore.connection import Connection
 from featherstore._table import _raise_if
 from featherstore._metadata import Metadata
-from featherstore._table import _table_utils
 
 
 def can_rename_columns(cols, new_col_names, table_path):

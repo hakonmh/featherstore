@@ -80,7 +80,12 @@ def test_rename_cols(columns, to, result, basic_data, database, connection, stor
     expected = original_df.copy()
     expected.columns = result
 
-    store.write_table(basic_data["table_name"], original_df, warnings='ignore')
+    partition_size = get_partition_size(
+        original_df, num_partitions=basic_data['num_partitions'])
+    store.write_table(basic_data["table_name"],
+                      original_df,
+                      partition_size=partition_size,
+                      warnings='ignore')
     table = store.select_table(basic_data["table_name"])
     # Act
     table.rename_columns(columns, to=to)
