@@ -346,7 +346,7 @@ class Table:
         df : Pandas DataFrame or Pandas Series
             The data to be inserted. `df` must have the same index as the stored data.
         idx : int
-            The position to insert the new column(s). Default is to append columns to
+            The position to insert the new column(s). Default is to add columns to
             the end.
         """
         add_cols.can_add_columns(df, self._table_path)
@@ -371,7 +371,7 @@ class Table:
 
     @property
     def columns(self):
-        """Fetches the table columns
+        """Fetches the names of the table columns
 
         Returns
         -------

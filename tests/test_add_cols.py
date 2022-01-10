@@ -92,7 +92,7 @@ def test_add_cols(basic_data, database, connection, store):
 
 def test_append_col(basic_data, database, connection, store):
     # Arrange
-    original_df = make_table(sorted_datetime_index, rows=30, cols=3, astype="pandas")
+    original_df = make_table(sorted_datetime_index, rows=30, cols=2, astype="pandas")
     new_df = make_table(sorted_datetime_index, rows=30, cols=1, astype='pandas')
     new_df.columns = ['n0']
     expected = original_df.join(new_df)
