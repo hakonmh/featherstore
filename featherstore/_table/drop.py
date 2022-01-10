@@ -8,6 +8,7 @@ from featherstore._metadata import Metadata
 from featherstore._table import _raise_if
 from featherstore._table import common
 from featherstore._table import _table_utils
+from featherstore._table.read import get_partition_names as _get_partition_names
 
 
 def can_drop_rows_from_table(rows, table_path):
@@ -17,7 +18,13 @@ def can_drop_rows_from_table(rows, table_path):
     _raise_if.rows_argument_items_dtype_not_same_as_index(rows, table_path)
 
 
-def get_adjacent_partition_name(partition_names, table_path):
+def get_partition_names(rows, table_path):
+    names = _get_partition_names(rows, table_path)
+    names = _get_adjacent_partition_name(names, table_path)
+    return names
+
+
+def _get_adjacent_partition_name(partition_names, table_path):
     """Fetches an extra partition name so we can use that partition
     when combining small partitions.
     """

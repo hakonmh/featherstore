@@ -108,7 +108,7 @@ def convert_partition_id_to_int(partition_id):
 
 def assign_ids_to_partitions(df, ids):
     if len(df) != len(ids):
-        raise IndexError("Num partitions doesn't match num partiton names")
+        raise IndexError("Num partitions doesn't match num partition names")
     id_mapping = {}
     for identifier, partition in zip(ids, df):
         id_mapping[identifier] = partition
