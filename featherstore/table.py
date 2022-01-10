@@ -10,6 +10,7 @@ from featherstore._table import append
 from featherstore._table import update
 from featherstore._table import insert
 from featherstore._table import drop
+from featherstore._table import add_cols
 from featherstore._table import common
 
 DEFAULT_PARTITION_SIZE = 128 * 1024**2
@@ -341,8 +342,17 @@ class Table:
         write.write_metadata(metadata, self._table_path)
         write.write_partitions(partitions, self._table_path)
 
-    def _add_columns(self, cols):
-        raise NotImplementedError
+    def add_columns(self, df, idx=-1):
+        """Add one or more columns to the table.
+
+        Parameters
+        ----------
+        df : Pandas DataFrame or Pandas Series
+            The data to be inserted. `df` must have the same index as the stored data.
+        idx : int
+            The position to insert the new column(s). Default is to append it to the end
+        """
+        add_cols.can_add_columns(df, self._table_path)
 
     @property
     def columns(self):
@@ -353,10 +363,6 @@ class Table:
         columns : list
         """
         return self._table_data["columns"]
-
-    @columns.setter
-    def columns(self, new_cols):
-        raise NotImplementedError
 
     def _rename_columns(self, cols, *, to=None):
         raise NotImplementedError
