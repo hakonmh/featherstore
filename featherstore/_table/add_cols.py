@@ -19,6 +19,7 @@ def can_add_columns(df, table_path):
     else:
         cols = df.columns.tolist()
     _raise_if.col_names_are_forbidden(cols)
+    _raise_if.col_names_contains_duplicates(cols)
     _raise_if_col_already_in_table(cols, table_path)
 
     _raise_if_num_rows_does_not_match(df, table_path)
