@@ -156,7 +156,7 @@ def col_names_contains_duplicates(cols):
 def col_names_are_forbidden(cols):
     cols = pd.Index(cols)
     if "like" in cols.str.lower():
-        raise IndexError("df contains invalid column name 'like'")
+        raise ValueError("df contains invalid column name 'like'")
 
 
 def index_values_contains_duplicates(index):

@@ -40,7 +40,7 @@ def _wrong_index_values():
     [
         (_wrong_df_type(), TypeError),
         (_col_name_already_in_table(), IndexError),
-        (_forbidden_col_name(), IndexError),
+        (_forbidden_col_name(), ValueError),
         (_wrong_index_dtype(), TypeError),
         (_num_rows_doesnt_match(), IndexError),
         (_wrong_index_values(), ValueError),

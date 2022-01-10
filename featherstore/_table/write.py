@@ -80,16 +80,15 @@ def generate_metadata(df, partition_size, rows_per_partition):
 
 def _make_table_metadata(df, partition_size, rows_per_partition):
     df = tuple(df.values())
-    index_name = _table_utils.get_index_name(df[0])
 
     metadata = {
         "num_rows": _get_num_rows(df),
         "num_columns": _get_num_cols(df),
         "num_partitions": len(df),
         "columns": _get_partitioned_df_col_names(df),
-        "index_name": index_name,
+        "index_name": _table_utils.get_index_name(df[0]),
         "index_dtype": _table_utils.get_index_dtype(df[0]),
-        "has_default_index": _has_default_index(df, index_name),
+        "has_default_index": _has_default_index(df),
         "partition_size": int(partition_size),
         "rows_per_partition": rows_per_partition,
     }
@@ -97,8 +96,7 @@ def _make_table_metadata(df, partition_size, rows_per_partition):
 
 
 def _get_partitioned_df_col_names(df):
-    schema = df[0].schema
-    cols = schema.names
+    cols = df[0].schema.names
     return cols
 
 
@@ -114,7 +112,8 @@ def _get_num_cols(df):
     return num_cols
 
 
-def _has_default_index(df, index_name):
+def _has_default_index(df):
+    index_name = _table_utils.get_index_name(df[0])
     has_index_name = index_name != DEFAULT_ARROW_INDEX_NAME
     if has_index_name or __index_was_sorted(df):
         has_default_index = False

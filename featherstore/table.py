@@ -11,6 +11,7 @@ from featherstore._table import update
 from featherstore._table import insert
 from featherstore._table import drop
 from featherstore._table import add_cols
+from featherstore._table import rename_cols
 from featherstore._table import common
 
 DEFAULT_PARTITION_SIZE = 128 * 1024**2
@@ -379,8 +380,36 @@ class Table:
         """
         return self._table_data["columns"]
 
-    def _rename_columns(self, cols, *, to=None):
-        raise NotImplementedError
+    def rename_columns(self, cols, *, to=None):
+        """Rename one or more columns.
+
+        rename_columns supports two different call-syntaxes:
+
+        - rename_columns({'c1': 'new_c1', 'c2': 'new_c2'})
+        - rename_columns(['c1', 'c2'], to=['new_c1', 'new_c2'])
+
+        Parameters
+        ----------
+        cols : list or dict
+            Either a list of columns to be renamed, or a dict mapping columns
+            to be renamed to new column names
+        to : list, optional
+            New column names, by default None
+        """
+        rename_cols.can_rename_columns(cols, to, self._table_path)
+
+        index_name = self._table_data["index_name"]
+        rows_per_partition = self._table_data["rows_per_partition"]
+
+        partition_names = read.get_partition_names(None, self._table_path)
+        df = read.read_table(partition_names, self._table_path, edit_mode=True)
+
+        df = rename_cols.rename_columns(df, cols, to)
+        df = common.format_table(df, index_name=index_name, warnings=False)
+        partitions = write.create_partitions(df, rows_per_partition, partition_names)
+
+        rename_cols.write_metadata(df, self._table_path)
+        write.write_partitions(partitions, self._table_path)
 
     def _astype(self, cols, dtypes):
         raise NotImplementedError
