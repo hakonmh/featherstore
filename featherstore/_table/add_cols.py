@@ -20,14 +20,14 @@ def can_add_columns(df, table_path):
         cols = df.columns.tolist()
     _raise_if.col_names_are_forbidden(cols)
     _raise_if.col_names_contains_duplicates(cols)
-    _raise_if_col_already_in_table(cols, table_path)
+    _raise_if_col_name_already_in_table(cols, table_path)
 
     _raise_if_num_rows_does_not_match(df, table_path)
     _raise_if.index_values_contains_duplicates(df.index)
     _raise_if.index_dtype_not_same_as_index(df, table_path)
 
 
-def _raise_if_col_already_in_table(cols, table_path):
+def _raise_if_col_name_already_in_table(cols, table_path):
     table_metadata = Metadata(table_path, 'table')
     stored_cols = table_metadata["columns"]
 
@@ -52,7 +52,6 @@ def add_columns(old_df, df, index):
     old_df, df = _format_tables(old_df, df)
     _raise_if_rows_not_in_old_data(old_df, df)
     df = _add_cols(old_df, df, index)
-
     return df
 
 
@@ -81,6 +80,7 @@ def _add_cols(old_df, df, index):
     new_cols = df.columns.tolist()
     cols = old_df.columns.tolist()
     df = old_df.join(df)
+
     if index == -1:
         cols.extend(new_cols)
     else:
@@ -104,7 +104,7 @@ def _add_new_partition_ids(partitions, partition_ids):
     num_new_partition_ids = len(partitions) - len(partition_ids) + 1
 
     new_ids = _append_new_partition_ids(num_new_partition_ids, last_partition_id)
-    new_ids = new_ids[1:]
+    new_ids = new_ids[1:]  # First id is the same as last_partition_id
 
     partition_ids.extend(new_ids)
     return sorted(partition_ids)
