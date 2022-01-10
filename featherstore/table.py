@@ -383,10 +383,10 @@ class Table:
     def rename_columns(self, cols, *, to=None):
         """Rename one or more columns.
 
-        rename_columns supports two different call-syntaxes:
+        `rename_columns` supports two different call-syntaxes:
 
-        - rename_columns({'c1': 'new_c1', 'c2': 'new_c2'})
-        - rename_columns(['c1', 'c2'], to=['new_c1', 'new_c2'])
+        - `rename_columns({'c1': 'new_c1', 'c2': 'new_c2'})`
+        - `rename_columns(['c1', 'c2'], to=['new_c1', 'new_c2'])`
 
         Parameters
         ----------
@@ -394,7 +394,7 @@ class Table:
             Either a list of columns to be renamed, or a dict mapping columns
             to be renamed to new column names
         to : list, optional
-            New column names, by default None
+            New column names, by default `None`
         """
         rename_cols.can_rename_columns(cols, to, self._table_path)
 
