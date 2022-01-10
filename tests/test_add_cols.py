@@ -22,7 +22,7 @@ def _wrong_index_dtype():
     return df
 
 
-def _num_rows_dont_match():
+def _num_rows_doesnt_match():
     df = make_table(rows=42, cols=1, astype='pandas')
     df.columns = ['new_c1']
     return df
@@ -42,7 +42,7 @@ def _wrong_index_values():
         (_col_name_already_in_table(), IndexError),
         (_forbidden_col_name(), IndexError),
         (_wrong_index_dtype(), TypeError),
-        (_num_rows_dont_match(), IndexError),
+        (_num_rows_doesnt_match(), IndexError),
         (_wrong_index_values(), ValueError),
     ],
     ids=[
@@ -50,7 +50,7 @@ def _wrong_index_values():
         "_col_name_already_in_table",
         "_forbidden_col_name",
         "_wrong_index_dtype",
-        "_num_rows_dont_match",
+        "_num_rows_doesnt_match",
         "_wrong_index_values"
     ]
 )
@@ -85,6 +85,27 @@ def test_add_cols(basic_data, database, connection, store):
     table = store.select_table(basic_data["table_name"])
     # Act
     table.add_columns(new_df, idx=1)
+    # Assert
+    df = store.read_pandas(basic_data["table_name"])
+    assert df.equals(expected)
+
+
+def test_append_col(basic_data, database, connection, store):
+    # Arrange
+    original_df = make_table(sorted_datetime_index, rows=30, cols=3, astype="pandas")
+    new_df = make_table(sorted_datetime_index, rows=30, cols=1, astype='pandas')
+    new_df.columns = ['n0']
+    expected = original_df.join(new_df)
+
+    partition_size = get_partition_size(
+        original_df, num_partitions=basic_data['num_partitions'])
+    store.write_table(basic_data["table_name"],
+                      original_df,
+                      partition_size=partition_size,
+                      warnings='ignore')
+    table = store.select_table(basic_data["table_name"])
+    # Act
+    table.add_columns(new_df, idx=-1)
     # Assert
     df = store.read_pandas(basic_data["table_name"])
     assert df.equals(expected)
