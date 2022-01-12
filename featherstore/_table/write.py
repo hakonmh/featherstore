@@ -118,7 +118,8 @@ def _has_default_index(df):
     if has_index_name or __index_was_sorted(df):
         has_default_index = False
     else:
-        index = pa.Table.from_batches(df)[index_name]
+        index = [batch[index_name] for batch in df]
+        index = pa.concat_arrays(index)
         if __is_rangeindex(index):
             has_default_index = True
         else:

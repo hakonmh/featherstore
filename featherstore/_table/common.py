@@ -1,16 +1,14 @@
 import json
 
-import pyarrow as pa
 import pandas as pd
 import polars as pl
+import pyarrow as pa
+from pyarrow import pandas_compat as pc
 
-from featherstore.connection import Connection
 from featherstore._metadata import Metadata
 from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore._table import _table_utils
-from featherstore._table import _raise_if
-from featherstore import store
 
 PARTITION_NAME_LENGTH = 14
 INSERTION_BUFFER_LENGTH = 10**6
@@ -103,31 +101,60 @@ def _sort_arrow_table(df, index_name, warnings="ignore"):
 
 
 def _format_pd_metadata(df, index_name):
-    metadata = _make_pd_schema(df, index_name)
+    metadata = _make_pd_metadata(df, index_name)
     df = _add_pd_metadata(df, metadata)
     df = _make_index_first_column(df)
     return df
 
 
-def _make_pd_schema(df, index_name):
-    first_row = _table_utils.get_first_row(df)
-    first_row = _table_utils.convert_to_pandas(first_row)
-    first_row = __set_index(first_row, index_name)
+def _make_pd_metadata(df, index_name):
+    metadata = dict()
 
-    table_schema = pa.Schema.from_pandas(first_row, preserve_index=True)
-    metadata = table_schema.metadata
+    metadata['index_columns'] = [index_name]
+    metadata['column_indexes'] = [{'name': None, 'field_name': None,
+                                   'pandas_type': 'unicode',
+                                   'numpy_type': 'object',
+                                   'metadata': {'encoding': 'UTF-8'}}
+                                  ]
+    metadata['columns'] = [__make_column_metadata(df, col) for col in df.column_names]
+    metadata = json.dumps(metadata)
+    metadata = {b'pandas': metadata}
     return metadata
 
 
-def __set_index(df, index_name):
-    has_provided_index = bool(index_name)
-    index_name_is_not_index = index_name != df.index.name
-    cols = df.columns
-    if has_provided_index and index_name_is_not_index and index_name in cols:
-        df = df.set_index(index_name)
-    if df.index.name == DEFAULT_ARROW_INDEX_NAME:
-        df.index.name = None
-    return df
+def __make_column_metadata(df, col):
+    dtype = df[col].type
+    pd_dtype = pc.get_logical_type(dtype)
+    np_dtype, extra_data = get_numpy_dtype_info(dtype)
+
+    metadata = {"name": col,
+                "field_name": col,
+                "pandas_type": pd_dtype,
+                "numpy_type": np_dtype,
+                "metadata": extra_data,
+                }
+    return metadata
+
+
+def get_numpy_dtype_info(dtype):
+    pd_dtype = dtype
+
+    if pd_dtype == 'decimal':
+        numpy_dtype = 'object'
+        extra_metadata = {
+            'precision': dtype.precision,
+            'scale': dtype.scale,
+        }
+    elif hasattr(dtype, 'tz'):
+        numpy_dtype = 'datetime64[ns]'
+        try:  # Store timezone info if exists
+            extra_metadata = {'timezone': pa.lib.tzinfo_to_string(dtype.tz)}
+        except Exception:
+            extra_metadata = {'timezone': None}
+    else:
+        numpy_dtype = str(dtype)
+        extra_metadata = None
+    return numpy_dtype, extra_metadata
 
 
 def _add_pd_metadata(df, metadata):
