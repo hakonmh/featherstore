@@ -1,4 +1,3 @@
-import os
 import json
 
 import pyarrow as pa
@@ -15,23 +14,6 @@ from featherstore import store
 
 PARTITION_NAME_LENGTH = 14
 INSERTION_BUFFER_LENGTH = 10**6
-
-
-def can_init_table(table_name, store_name):
-    Connection.is_connected()
-    store._raise_if_store_name_is_str(store_name)
-    store._raise_if_store_not_exists(store_name)
-
-    _raise_if.table_name_is_not_str(table_name)
-    _raise_if.table_name_is_forbidden(table_name)
-
-
-def can_rename_table(new_table_name, new_table_path):
-    Connection.is_connected()
-
-    _raise_if.table_name_is_not_str(new_table_name)
-    _raise_if.table_name_is_forbidden(new_table_path)
-    _raise_if.table_already_exists(new_table_path)
 
 
 def filter_cols_if_like_provided(cols, table_cols):

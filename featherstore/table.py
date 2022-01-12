@@ -12,6 +12,7 @@ from featherstore._table import insert
 from featherstore._table import drop
 from featherstore._table import add_cols
 from featherstore._table import rename_cols
+from featherstore._table import misc
 from featherstore._table import common
 
 DEFAULT_PARTITION_SIZE = 128 * 1024**2
@@ -44,7 +45,7 @@ class Table:
         store_name : str
             The name of the store
         """
-        common.can_init_table(table_name, store_name)
+        misc.can_init_table(table_name, store_name)
 
         self._table_path = os.path.join(current_db(), store_name, table_name)
         self._table_data = Metadata(self._table_path, "table")
@@ -329,10 +330,12 @@ class Table:
         df = common.format_table(df, index_name=index_name, warnings=False)
 
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
+        columns = df.column_names
         partitions = drop.create_partitions(df, rows_per_partition, partition_names)
 
         metadata = common.update_metadata(partitions, self._table_path, partition_names,
-                                          rows_per_partition=rows_per_partition)
+                                          rows_per_partition=rows_per_partition,
+                                          columns=columns)
 
         partitions_to_drop = drop.get_partitions_to_drop(partitions, partition_names)
         drop.drop_partitions(self._table_path, partitions_to_drop)
@@ -362,23 +365,15 @@ class Table:
         df = common.format_table(df, index_name=index_name, warnings=False)
 
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
+        columns = df.column_names
         partitions = add_cols.create_partitions(df, rows_per_partition, partition_names)
 
         metadata = common.update_metadata(partitions, self._table_path, partition_names,
-                                          rows_per_partition=rows_per_partition)
+                                          rows_per_partition=rows_per_partition,
+                                          columns=columns)
 
         write.write_metadata(metadata, self._table_path)
         write.write_partitions(partitions, self._table_path)
-
-    @property
-    def columns(self):
-        """Fetches the names of the table columns
-
-        Returns
-        -------
-        columns : list
-        """
-        return self._table_data["columns"]
 
     def rename_columns(self, cols, *, to=None):
         """Rename one or more columns.
@@ -411,8 +406,31 @@ class Table:
         rename_cols.write_metadata(partitions, self._table_path)
         write.write_partitions(partitions, self._table_path)
 
-    def _astype(self, cols, dtypes):
-        raise NotImplementedError
+    @property
+    def columns(self):
+        """Fetches the names of the table columns
+
+        Returns
+        -------
+        columns : list
+        """
+        return self._table_data["columns"]
+
+    @columns.setter
+    def columns(self, cols):
+        """Reorder the current columns
+
+        *Note*: You can't use this setter method to rename columns, use
+        `rename_columns` instead.
+
+        Parameters
+        ----------
+        cols : list[str]
+            The new column ordering. The column names provided must be the
+            same as the column names used in the table.
+        """
+        misc.can_reorganize_columns(cols, self._table_path)
+        self._table_data["columns"] = cols
 
     @property
     def index(self):
@@ -432,6 +450,9 @@ class Table:
     def _reset_index(self, drop_old=False):
         raise NotImplementedError
 
+    def _astype(self, cols, dtypes):
+        raise NotImplementedError
+
     def rename_table(self, *, to):
         """Renames the current table
 
@@ -443,7 +464,7 @@ class Table:
         new_table_name = to
         store_path = os.path.split(self._table_path)[0]
         new_path = os.path.join(store_path, new_table_name)
-        common.can_rename_table(new_table_name, new_path)
+        misc.can_rename_table(new_table_name, new_path)
 
         os.rename(self._table_path, new_path)
         self._table_path = new_path

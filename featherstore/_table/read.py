@@ -98,7 +98,10 @@ def _row_after_candidate(row, candidate):
 
 
 def read_table(partition_names, table_path, cols=None, rows=None, edit_mode=False):
-    index_name = Metadata(table_path, "table")["index_name"]
+    metadata = Metadata(table_path, "table")
+    index_name = metadata["index_name"]
+    if cols is None:
+        cols = metadata["columns"]
     dfs = _read_partitions(partition_names, table_path, cols, edit_mode)
     df = _combine_partitions(dfs)
     df = _filter_table_rows(df, rows, index_name)
@@ -119,8 +122,9 @@ def _read_partitions(partition_names, table_path, cols, edit_mode):
 
 def __add_index_to_cols(cols, table_path):
     index_col = Metadata(table_path, "table")["index_name"]
-    cols = cols.copy()
-    cols.append(index_col)
+    if index_col not in cols:
+        cols = cols.copy()
+        cols.append(index_col)
     return cols
 
 
