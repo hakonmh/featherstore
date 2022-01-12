@@ -27,21 +27,67 @@ def get_index_name(df):
 
 
 def make_table(index=None, rows=ROWS, cols=5, *, astype="arrow"):
-    random_data = {f"c{x}": np.random.random(size=rows) for x in range(cols)}
-    df = pd.DataFrame(random_data)
+    df = _make_df(rows, cols)
     if index is not None:
         df.index = index(rows)
+    df = _convert_df_to(df, to=astype)
+    return df
 
+
+def _make_df(rows, cols):
+    col_dtypes = [
+        __make_string_col,
+        __make_float_col,
+        __make_int_col,
+        __make_datetime_col,
+    ]
+
+    random_data = dict()
+    for col in range(cols):
+        idx = col % len(col_dtypes)
+        random_data[f"c{col}"] = col_dtypes[idx](rows)
+
+    df = pd.DataFrame(random_data)
+    return df
+
+
+def __make_float_col(rows):
+    return np.random.random(size=rows)
+
+
+def __make_int_col(rows):
+    return np.random.randint(-100000, 100000, rows)
+
+
+def __make_datetime_col(rows):
+    start = pd.to_datetime('1943-01-01')
+    start = start.value // 10**9
+
+    end = pd.to_datetime('2022-01-01')
+    end = end.value // 10**9
+
+    return pd.to_datetime(np.random.randint(start, end, rows), unit='s')
+
+
+def __make_string_col(rows):
+    str_length = 5
+    df = rands_array(str_length, rows)
+    df = pd.Series(df).astype("string")
+    return df
+
+
+def _convert_df_to(df, *, to):
+    astype = to
     if astype in ("arrow", "polars"):
-        df = pa.Table.from_pandas(df, )
-        if not _is_default_index(df):
-            df = _make_index_first_column(df)
+        df = pa.Table.from_pandas(df)
+        if not __is_default_index(df):
+            df = __make_index_first_column(df)
     if astype == "polars":
         df = pl.from_arrow(df)
     return df
 
 
-def _is_default_index(df):
+def __is_default_index(df):
     index_data = df.schema.pandas_metadata["index_columns"][0]
     try:
         if index_data["name"] is None and index_data["kind"] == "range":
@@ -53,7 +99,7 @@ def _is_default_index(df):
     return is_default_index
 
 
-def _make_index_first_column(df):
+def __make_index_first_column(df):
     index_name = df.schema.pandas_metadata["index_columns"]
     column_names = df.column_names[:-1]
     columns = index_name + column_names
@@ -62,14 +108,17 @@ def _make_index_first_column(df):
 
 
 def sorted_string_index(rows):
-    str_length = 5
-    index = rands_array(str_length, rows)
-    index = np.sort(index)
-    index = pd.Series(index)
+    index = __make_string_col(rows).sort_values()
     return index
 
 
 def sorted_datetime_index(rows):
+    index = __make_datetime_col(rows)
+    index = pd.Series(index, name="Date")
+    return index.sort_values()
+
+
+def hardcoded_datetime_index(rows):
     index = pd.date_range(start="2021-01-01", periods=rows, freq="D")
     index = pd.Series(index, name="Date")
     return index
@@ -92,19 +141,12 @@ def unsorted_int_index(rows):
 
 
 def unsorted_string_index(rows):
-    str_length = 10
-    index = set()
-    while len(index) < rows:
-        index = np.unique(rands_array(str_length, rows))
-    index = pd.Series(index)
-    return index
+    return __make_string_col(rows)
 
 
 def unsorted_datetime_index(rows):
-    index = pd.date_range(start="2021-01-01", periods=rows, freq="D")
-    index = pd.Series(index, name="Date")
-    index = index.sample(frac=1)
-    return index
+    index = __make_datetime_col(rows)
+    return pd.Series(index, name="Date")
 
 
 def get_partition_size(df, num_partitions):

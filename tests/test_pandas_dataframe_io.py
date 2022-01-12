@@ -91,7 +91,7 @@ def test_filter_columns(basic_data, database, connection, store):
         (make_table(astype="pandas"), [2, 6, 9]),
         (make_table(astype="pandas"), pd.Index([2, 6, 9])),
         (
-            make_table(sorted_datetime_index, astype="pandas"),
+            make_table(hardcoded_datetime_index, astype="pandas"),
             ["2021-01-07", "2021-01-20"],
         ),
         (make_table(hardcoded_string_index,
@@ -185,7 +185,7 @@ def test_filtering_rows_after_low_with_datetime_index(low, basic_data,
                                                       store):
     # Arrange
     ROWS = ["after", low]
-    original_df = make_table(sorted_datetime_index, astype="pandas")
+    original_df = make_table(hardcoded_datetime_index, astype="pandas")
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
     store.write_table(basic_data["table_name"],

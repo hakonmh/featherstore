@@ -1,4 +1,5 @@
 import pytest
+from pandas.testing import assert_frame_equal
 from .fixtures import *
 
 
@@ -91,4 +92,4 @@ def test_rename_cols(columns, to, result, basic_data, database, connection, stor
     table.rename_columns(columns, to=to)
     # Assert
     df = store.read_pandas(basic_data["table_name"])
-    assert df.equals(expected)
+    assert_frame_equal(df, expected, check_dtype=False)

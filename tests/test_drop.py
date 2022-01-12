@@ -107,7 +107,7 @@ def test_drop_rows_from_str_indexed_table(rows, condition, basic_data,
 def test_drop_rows_from_datetime_indexed_table(rows, condition, basic_data,
                                                database, connection, store):
     # Arrange
-    original_df = make_table(sorted_datetime_index, rows=30, astype="pandas")
+    original_df = make_table(hardcoded_datetime_index, rows=30, astype="pandas")
     mask = original_df.loc[eval(condition)].index
     expected = original_df.copy().drop(index=mask)
 

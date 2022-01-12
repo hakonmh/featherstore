@@ -52,7 +52,7 @@ def test_unsorted_polars_io(basic_data, database, connection, store):
     [
         (make_table(astype="pandas"), [2, 6, 9]),
         (
-            make_table(sorted_datetime_index, astype="pandas"),
+            make_table(hardcoded_datetime_index, astype="pandas"),
             ["2021-01-07", "2021-01-20"],
         ),
         (make_table(hardcoded_string_index,
@@ -128,9 +128,12 @@ def test_filtering_rows_before_low_with_string_index(high, basic_data,
                                                      store):
     # Arrange
     ROWS = ["before", high]
-    original_df = make_table(sorted_string_index, astype="pandas")
-    expected = original_df.loc[:high, :]
-    original_df = pl.from_pandas(original_df.reset_index())
+    pandas_df = make_table(sorted_string_index, astype="pandas")
+    original_df = pl.from_pandas(pandas_df.reset_index())
+
+    expected = pandas_df.loc[:high, :]
+    expected = pl.from_pandas(expected.reset_index())
+
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
     store.write_table(
@@ -141,10 +144,8 @@ def test_filtering_rows_before_low_with_string_index(high, basic_data,
     )
     # Act
     df = store.read_polars(basic_data["table_name"], rows=ROWS)
-    df = df.to_pandas().set_index("index")
-    df.index.name = None
     # Assert
-    assert df.equals(expected)
+    assert df.frame_equal(expected)
 
 
 @pytest.mark.parametrize(
@@ -161,9 +162,12 @@ def test_filtering_rows_after_low_with_datetime_index(low, basic_data,
                                                       store):
     # Arrange
     ROWS = ["after", low]
-    original_df = make_table(sorted_datetime_index, astype="pandas")
-    expected = original_df.loc[low:, :]
-    original_df = pl.from_pandas(original_df.reset_index())
+    pandas_df = make_table(hardcoded_datetime_index, astype="pandas")
+    original_df = pl.from_pandas(pandas_df.reset_index())
+
+    expected = pandas_df.loc[low:, :]
+    expected = pl.from_pandas(expected.reset_index())
+
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
     store.write_table(
@@ -174,6 +178,5 @@ def test_filtering_rows_after_low_with_datetime_index(low, basic_data,
     )
     # Act
     df = store.read_polars(basic_data["table_name"], rows=ROWS)
-    df = df.to_pandas().set_index("Date")
     # Assert
-    assert df.equals(expected)
+    assert df.frame_equal(expected)
