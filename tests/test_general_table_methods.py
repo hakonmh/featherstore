@@ -123,7 +123,7 @@ def test_reorganize_columns(database, connection, store):
     store.write_table("table_name", df)
     table = store.select_table("table_name")
     # Act
-    table.columns = cols
+    table.reorganize_columns(cols)
     # Assert
     df = table.read_pandas()
     assert df.equals(expected)

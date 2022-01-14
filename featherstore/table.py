@@ -432,6 +432,10 @@ class Table:
         misc.can_reorganize_columns(cols, self._table_path)
         self._table_data["columns"] = cols
 
+    def reorganize_columns(self, cols):
+        """Same as `Table.columns = values`"""
+        self.columns = cols
+
     @property
     def index(self):
         """Fetches the table index
