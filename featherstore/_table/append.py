@@ -18,17 +18,19 @@ def can_append_table(
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
     _raise_if.table_not_exists(table_path)
     _raise_if.df_is_not_supported_table_dtype(df)
+    _raise_if.index_dtype_not_same_as_stored_index(df, table_path)
     _raise_if.cols_does_not_match(df, table_path)
 
     has_default_index = _metadata.Metadata(table_path, 'table')['has_default_index']
-    if not has_default_index:
+    index_name = _metadata.Metadata(table_path, 'table')['index_name']
+
+    pd_index = _table_utils.get_pd_index_if_exists(df, index_name)
+    index_is_provided = pd_index is not None
+    if not has_default_index or index_is_provided:
         _raise_if_append_data_not_ordered_after_stored_data(df, table_path)
 
-    index_name = _metadata.Metadata(table_path, 'table')['index_name']
-    pd_index = _table_utils.get_pd_index_if_exists(df, index_name)
     raise_if_index_not_exist(pd_index, has_default_index)
 
-    index_is_provided = pd_index is not None
     if index_is_provided:
         _raise_if.index_is_not_supported_dtype(pd_index)
         _raise_if.index_values_contains_duplicates(pd_index)
@@ -92,7 +94,10 @@ def format_default_index(df, table_path):
 def append_data(df, *, to):
     cols = to.column_names
     df = _sort_cols(df, cols=cols)
-    full_table = pa.concat_tables([to, df])
+    try:
+        full_table = pa.concat_tables([to, df])
+    except pa.ArrowInvalid:
+        raise TypeError("Column dtypes doesn't match")
     return full_table
 
 

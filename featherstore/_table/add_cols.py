@@ -24,7 +24,7 @@ def can_add_columns(df, table_path):
 
     _raise_if_num_rows_does_not_match(df, table_path)
     _raise_if.index_values_contains_duplicates(df.index)
-    _raise_if.index_dtype_not_same_as_index(df, table_path)
+    _raise_if.index_dtype_not_same_as_stored_index(df, table_path)
 
 
 def _raise_if_col_name_already_in_table(cols, table_path):

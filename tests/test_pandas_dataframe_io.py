@@ -1,5 +1,107 @@
 import pytest
 from .fixtures import *
+from .conftest import TABLE_NAME
+
+
+def _invalid_index():
+    df = make_table(astype='pandas')
+    index = np.random.random(size=30)
+    df = df.set_index(index)
+
+    args = [TABLE_NAME, df]
+    kwargs = dict()
+    return args, kwargs
+
+
+def _duplicate_index():
+    df = make_table(astype='pandas', rows=15)
+    df1 = make_table(astype='pandas', rows=15)
+    df = df.append(df1)
+
+    args = [TABLE_NAME, df]
+    kwargs = dict()
+    return args, kwargs
+
+
+def _index_not_in_cols():
+    df = make_table(cols=2, astype='polars')
+    df.column_names = ['c0', 'c1']
+
+    args = [TABLE_NAME, df]
+    kwargs = dict(index='c2')
+    return args, kwargs
+
+
+def _forbidden_col_name():
+    df = make_table(cols=1, astype='pandas')
+    df.columns = ['like']
+
+    args = [TABLE_NAME, df]
+    kwargs = dict()
+    return args, kwargs
+
+
+def _duplicate_col_names():
+    df = make_table(cols=2, astype='pandas')
+    df.columns = ['c0', 'c0']
+
+    args = [TABLE_NAME, df]
+    kwargs = dict()
+    return args, kwargs
+
+
+def _invalid_warnings_arg():
+    df = make_table()
+    args = [TABLE_NAME, df]
+    kwargs = dict(warnings='abcd')
+    return args, kwargs
+
+
+def _invalid_errors_arg():
+    df = make_table()
+    args = [TABLE_NAME, df]
+    kwargs = dict(errors='abcd')
+    return args, kwargs
+
+
+def _invalid_partition_size_arg():
+    df = make_table()
+    args = [TABLE_NAME, df]
+    kwargs = dict(partition_size='abcd')
+    return args, kwargs
+
+
+@pytest.mark.parametrize(
+    ("arguments", "exception"),
+    [
+        (_invalid_index(), TypeError),
+        (_duplicate_index(), IndexError),
+        (_index_not_in_cols(), IndexError),
+        (_forbidden_col_name(), ValueError),
+        (_duplicate_col_names(), ValueError),
+        (_invalid_warnings_arg(), ValueError),
+        (_invalid_errors_arg(), ValueError),
+        (_invalid_partition_size_arg(), TypeError),
+    ],
+    ids=[
+        "_invalid_index",
+        "_duplicate_index",
+        "_index_not_in_cols",
+        "_forbidden_col_name",
+        "_duplicate_col_names",
+        "_invalid_warnings_arg",
+        "_invalid_errors_arg",
+        "_invalid_partition_size_arg",
+    ],
+)
+def test_can_write(arguments, exception, basic_data, database, connection, store):
+    # Arrange
+    arguments, kwargs = arguments
+    # Act
+    with pytest.raises(exception) as e:
+        store.write_table(*arguments, **kwargs)
+    # Assert
+    assert isinstance(e.type(), exception)
 
 
 @pytest.mark.parametrize(

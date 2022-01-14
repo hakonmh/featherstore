@@ -20,7 +20,7 @@ def can_insert_table(df, table_path):
     _raise_if.index_is_not_supported_dtype(df.index)
     _raise_if.col_names_contains_duplicates(cols)
     _raise_if.col_names_are_forbidden(cols)
-    _raise_if.index_dtype_not_same_as_index(df, table_path)
+    _raise_if.index_dtype_not_same_as_stored_index(df, table_path)
     _raise_if.cols_does_not_match(df, table_path)
 
 

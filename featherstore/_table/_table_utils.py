@@ -9,7 +9,10 @@ INSERTION_BUFFER_LENGTH = 10**6
 
 
 def get_first_row(df):
-    return df[:1]
+    if isinstance(df, pd.DataFrame):
+        return df.iloc[:1]
+    else:
+        return df[:1]
 
 
 def get_col_names(df, has_default_index):

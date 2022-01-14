@@ -140,11 +140,12 @@ def _isinstance_int(obj):
     return is_int
 
 
-def index_dtype_not_same_as_index(df, table_path):
-    index_type = str(pa.Array.from_pandas(df.index).type)
-    stored_index_type = Metadata(table_path, "table")["index_dtype"]
-    if index_type != stored_index_type:
-        raise TypeError("New and old index types do not match")
+def index_dtype_not_same_as_stored_index(df, table_path):
+    if isinstance(df, (pd.DataFrame, pd.Series)):
+        index_type = str(pa.Array.from_pandas(df.index).type)
+        stored_index_type = Metadata(table_path, "table")["index_dtype"]
+        if index_type != stored_index_type:
+            raise TypeError("New and old index types do not match")
 
 
 def col_names_contains_duplicates(cols):
