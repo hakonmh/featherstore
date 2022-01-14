@@ -2,6 +2,7 @@
 build/lib
 dist
 env
+venv
 *.pyc
 .git
 __pycache__

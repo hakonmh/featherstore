@@ -73,8 +73,8 @@ First lets create a DataFrame to store.
     2021-01-04 -0.835711 -0.575801 -0.650543 -0.411509
     2021-01-05 -0.649335 -0.830602  1.191749  0.396745
 
-FeatherStore stores the tables as partitioned Feather files. The size of each partition is defined
-by using the ``partition_size`` parameter when writing a table.
+FeatherStore stores the tables as partitioned Feather files. The size of each partition 
+is defined by using the ``partition_size`` parameter when writing a table.
 
 .. code-block:: python
 
@@ -84,8 +84,8 @@ by using the ``partition_size`` parameter when writing a table.
 
     >> ['example_table']
 
-The advantage with using partitioned Feather files that you can do different operations without loading
-in the full data.
+The advantage with using partitioned Feather files that you can do different operations
+without loading in the full data.
 
 .. code-block:: python
 
@@ -114,8 +114,8 @@ We can now read the stored data as Pandas DataFrame, Polars DataFrame or PyArrow
     2021-01-05 -0.871126  1.192000  0.425984  0.275433
     2021-01-06 -0.408125 -0.420920  0.632606  0.606950
 
-We can also query parts of the data. FeatherStore uses predicate filtering to only load The
-partitions and columns specified by the query.
+We can also query parts of the data. FeatherStore uses predicate filtering to
+only load the partitions and columns specified by the query.
 
 By using sorted indices, FeatherStore allows for range-queries on rows by using
 ``['before', end]``, ``['after', start]`` and ``['between', start, end]``
@@ -145,7 +145,7 @@ First, let's create a new table to work with:
     5 -0.353684  1.550073
     6  1.275938  1.054702
 
-We can use ``Store.select_table()`` to select a ``Table`` object. A ``Table`` object contains
+We can use ``Store.select_table()`` to select a ``Table`` object, which contains
 more features for working with tables.
 
 .. code-block:: python
@@ -157,7 +157,8 @@ more features for working with tables.
 
     >> True
 
-One of those features is ``Table.insert()``, which allows for adding extra rows into the table.
+One of those features is ``Table.insert()``, which allows for adding extra rows
+into the table.
 
 .. note::
     FeatherStore does not support adding columns in the current version.

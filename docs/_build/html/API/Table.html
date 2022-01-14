@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Table &#8212; FeatherStore 0.0.4 documentation</title>
+    <title>Table &#8212; FeatherStore 0.0.5 documentation</title>
     
   <link href="../_static/css/theme.css" rel="stylesheet">
   <link href="../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -351,10 +351,45 @@ or <cite>between</cite>, by default <cite>None</cite></p>
 <p>Same as <cite>Table.drop(cols=val)</cite></p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.add_columns">
+<span class="sig-name descname"><span class="pre">add_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.add_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add one or more columns to the table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Pandas Series</em>) – The data to be inserted. <cite>df</cite> must have the same index as the stored data.</p></li>
+<li><p><strong>idx</strong> (<em>int</em>) – The position to insert the new column(s). Default is to add columns to
+the end.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.rename_columns">
+<span class="sig-name descname"><span class="pre">rename_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.rename_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rename one or more columns.</p>
+<p><cite>rename_columns</cite> supports two different call-syntaxes:</p>
+<ul class="simple">
+<li><p><cite>rename_columns({‘c1’: ‘new_c1’, ‘c2’: ‘new_c2’})</cite></p></li>
+<li><p><cite>rename_columns([‘c1’, ‘c2’], to=[‘new_c1’, ‘new_c2’])</cite></p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cols</strong> (<em>list</em><em> or </em><em>dict</em>) – Either a list of columns to be renamed, or a dict mapping columns
+to be renamed to new column names</p></li>
+<li><p><strong>to</strong> (<em>list</em><em>, </em><em>optional</em>) – New column names, by default <cite>None</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.columns">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">columns</span></span><a class="headerlink" href="#featherstore.table.Table.columns" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fetches the table columns</p>
+<dd><p>Fetches the names of the table columns</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><strong>columns</strong></p>

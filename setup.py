@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 import os
+from featherstore import __version__
 
 current_folder = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(current_folder, 'README.md'), encoding='utf-8') as f:
@@ -7,7 +8,7 @@ with open(os.path.join(current_folder, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='FeatherStore',
-    version='0.0.4',
+    version=__version__,
     description='High performance datastore built upon Apache Arrow & Feather',
     long_description=long_description,
     long_description_content_type='text/markdown',

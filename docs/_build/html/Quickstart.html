@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quickstart &#8212; FeatherStore 0.0.4 documentation</title>
+    <title>Quickstart &#8212; FeatherStore 0.0.5 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet">
   <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -250,8 +250,8 @@ and PyArrow tables.</p>
 <span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span> <span class="o">-</span><span class="mf">0.649335</span> <span class="o">-</span><span class="mf">0.830602</span>  <span class="mf">1.191749</span>  <span class="mf">0.396745</span>
 </pre></div>
 </div>
-<p>FeatherStore stores the tables as partitioned Feather files. The size of each partition is defined
-by using the <code class="docutils literal notranslate"><span class="pre">partition_size</span></code> parameter when writing a table.</p>
+<p>FeatherStore stores the tables as partitioned Feather files. The size of each partition
+is defined by using the <code class="docutils literal notranslate"><span class="pre">partition_size</span></code> parameter when writing a table.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">PARTITION_SIZE</span> <span class="o">=</span> <span class="mi">128</span>  <span class="c1"># bytes</span>
 <span class="n">store</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span><span class="s1">&#39;example_table&#39;</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">partition_size</span><span class="o">=</span><span class="n">PARTITION_SIZE</span><span class="p">)</span>
 <span class="n">store</span><span class="o">.</span><span class="n">list_tables</span><span class="p">()</span>
@@ -259,8 +259,8 @@ by using the <code class="docutils literal notranslate"><span class="pre">partit
 <span class="o">&gt;&gt;</span> <span class="p">[</span><span class="s1">&#39;example_table&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>The advantage with using partitioned Feather files that you can do different operations without loading
-in the full data.</p>
+<p>The advantage with using partitioned Feather files that you can do different operations
+without loading in the full data.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Creating a new DataFrame</span>
 <span class="n">new_dates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2021-01-06&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">df1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">new_dates</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="s2">&quot;ABCD&quot;</span><span class="p">))</span>
@@ -284,8 +284,8 @@ a given operation.</p>
 <span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">06</span> <span class="o">-</span><span class="mf">0.408125</span> <span class="o">-</span><span class="mf">0.420920</span>  <span class="mf">0.632606</span>  <span class="mf">0.606950</span>
 </pre></div>
 </div>
-<p>We can also query parts of the data. FeatherStore uses predicate filtering to only load The
-partitions and columns specified by the query.</p>
+<p>We can also query parts of the data. FeatherStore uses predicate filtering to
+only load the partitions and columns specified by the query.</p>
 <p>By using sorted indices, FeatherStore allows for range-queries on rows by using
 <code class="docutils literal notranslate"><span class="pre">['before',</span> <span class="pre">end]</span></code>, <code class="docutils literal notranslate"><span class="pre">['after',</span> <span class="pre">start]</span></code> and <code class="docutils literal notranslate"><span class="pre">['between',</span> <span class="pre">start,</span> <span class="pre">end]</span></code></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">read_pandas</span><span class="p">(</span><span class="s1">&#39;example_table&#39;</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;after&#39;</span><span class="p">,</span> <span class="s1">&#39;2021-01-05&#39;</span><span class="p">],</span> <span class="n">cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">])</span>
@@ -311,7 +311,7 @@ partitions and columns specified by the query.</p>
 <span class="mi">6</span>  <span class="mf">1.275938</span>  <span class="mf">1.054702</span>
 </pre></div>
 </div>
-<p>We can use <code class="docutils literal notranslate"><span class="pre">Store.select_table()</span></code> to select a <code class="docutils literal notranslate"><span class="pre">Table</span></code> object. A <code class="docutils literal notranslate"><span class="pre">Table</span></code> object contains
+<p>We can use <code class="docutils literal notranslate"><span class="pre">Store.select_table()</span></code> to select a <code class="docutils literal notranslate"><span class="pre">Table</span></code> object, which contains
 more features for working with tables.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">select_table</span><span class="p">(</span><span class="s1">&#39;example_table2&#39;</span><span class="p">)</span>
 <span class="n">table</span><span class="o">.</span><span class="n">exists</span>  <span class="c1"># False</span>
@@ -321,7 +321,8 @@ more features for working with tables.</p>
 <span class="o">&gt;&gt;</span> <span class="kc">True</span>
 </pre></div>
 </div>
-<p>One of those features is <code class="docutils literal notranslate"><span class="pre">Table.insert()</span></code>, which allows for adding extra rows into the table.</p>
+<p>One of those features is <code class="docutils literal notranslate"><span class="pre">Table.insert()</span></code>, which allows for adding extra rows
+into the table.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>FeatherStore does not support adding columns in the current version.</p>

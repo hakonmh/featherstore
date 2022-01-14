@@ -1,3 +1,11 @@
+0.0.5
+-----
+* Added `Table.add_columns()`
+* Added `Table.rename_columns()`
+* You can now use `Table.columns = values` to reorganize columns
+* Improved performance of all write operations
+* Changed minimum PyArrow requirement from 4.0.0 to 5.0.0
+
 0.0.4
 -----
 **Warning**: This update causes some API-breaking changes:
@@ -21,7 +29,6 @@ Other changes:
 
 0.0.2
 -----
-
 **Warning**: This update causes some API-breaking changes:
 * `Table.read()` and `Store.read_table()` has now been renamed to `read_arrow()`
 * The parameter `new_name` in `rename_%()` functions and methods have been changed to `to`
@@ -34,5 +41,4 @@ Other changes:
 
 0.0.1
 -----
-
 Initial release.
