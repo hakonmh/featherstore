@@ -33,11 +33,7 @@ class Table:
         - Updates
         - Inserts
         - Drop columns/Drop rows
-
-        It will also support the following operations down the line:
-
         - Changing types
-        - Changing index
 
         Parameters
         ----------
@@ -389,7 +385,7 @@ class Table:
         cols : list or dict
             Either a list of columns to be renamed, or a dict mapping columns
             to be renamed to new column names
-        to : list, optional
+        to : list[str], optional
             New column names, by default `None`
         """
         rename_cols.can_rename_columns(cols, to, self._table_path)
@@ -419,10 +415,16 @@ class Table:
 
     @columns.setter
     def columns(self, cols):
-        """Reorder the current columns
+        """Same as `Table.reorganize_columns(values)`
 
         *Note*: You can't use this setter method to rename columns, use
         `rename_columns` instead.
+        """
+        misc.can_reorganize_columns(cols, self._table_path)
+        self._table_data["columns"] = cols
+
+    def reorganize_columns(self, cols):
+        """Reorder the current columns
 
         Parameters
         ----------
@@ -430,11 +432,6 @@ class Table:
             The new column ordering. The column names provided must be the
             same as the column names used in the table.
         """
-        misc.can_reorganize_columns(cols, self._table_path)
-        self._table_data["columns"] = cols
-
-    def reorganize_columns(self, cols):
-        """Same as `Table.columns = values`"""
         self.columns = cols
 
     @property
@@ -462,7 +459,7 @@ class Table:
         cols : list or dict
             Either a list of columns to have its data types changed, or a
             dict mapping columns to new column data types.
-        to : list, optional
+        to : list[Pyarrow DataType], optional
             New column data types, by default `None`
         """
         astype.can_change_type(cols, to, self._table_path)
