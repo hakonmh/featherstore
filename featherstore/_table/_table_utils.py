@@ -116,6 +116,25 @@ def convert_partition_id_to_int(partition_id):
     return int(partition_id) // INSERTION_BUFFER_LENGTH
 
 
+def add_new_partition_ids(partitions, partition_ids):
+    partition_ids = partition_ids.copy()
+    num_new_partition_ids = len(partitions) - len(partition_ids) + 1
+    partition_ids = append_new_partition_ids(num_new_partition_ids, partition_ids)
+    return sorted(partition_ids)
+
+
+def append_new_partition_ids(num_partitions, partition_ids):
+    last_partition_id = partition_ids[-1]
+
+    range_start = convert_partition_id_to_int(last_partition_id) + 1
+    range_end = range_start + num_partitions - 1
+
+    for partition_num in range(range_start, range_end):
+        partition_id = convert_int_to_partition_id(partition_num)
+        partition_ids.append(partition_id)
+    return partition_ids
+
+
 def assign_ids_to_partitions(df, ids):
     if len(df) != len(ids):
         raise IndexError("Num partitions doesn't match num partition names")

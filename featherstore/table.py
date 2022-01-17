@@ -176,21 +176,21 @@ class Table:
         index_name = self._table_data["index_name"]
         has_default_index = self._table_data["has_default_index"]
         rows_per_partition = self._table_data["rows_per_partition"]
-        name_last_partition = self._partition_data.keys()[-1]
+        last_partition_name = self._partition_data.keys()[-1]
 
         df = common.format_table(df, index_name, warnings)
         if has_default_index:
             df = append.format_default_index(df, self._table_path)
-        last_partition = read.read_table([name_last_partition],
+        last_partition = read.read_table([last_partition_name],
                                          self._table_path,
                                          edit_mode=True)
 
         df = append.append_data(df, to=last_partition)
         partitions = append.create_partitions(df, rows_per_partition,
-                                              name_last_partition)
+                                              last_partition_name)
 
         metadata = common.update_metadata(partitions, self._table_path,
-                                          [name_last_partition])
+                                          [last_partition_name])
 
         write.write_metadata(metadata, self._table_path)
         write.write_partitions(partitions, self._table_path)
@@ -416,12 +416,12 @@ class Table:
 
     @columns.setter
     def columns(self, cols):
-        """Same as `Table.reorganize_columns(values)`
+        """Same as `Table.reorder_columns(values)`
 
         *Note*: You can't use this setter method to rename columns, use
         `rename_columns` instead.
         """
-        misc.can_reorganize_columns(cols, self._table_path)
+        misc.can_reorder_columns(cols, self._table_path)
         self._table_data["columns"] = cols
 
     def reorder_columns(self, cols):

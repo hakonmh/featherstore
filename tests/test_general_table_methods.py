@@ -102,7 +102,7 @@ def _contains_duplicates():
         "_contains_duplicates"
     ],
 )
-def test_can_reorganize_columns(cols, exception, basic_data, database,
+def test_can_reorder_columns(cols, exception, basic_data, database,
                                 connection, store):
     # Arrange
     original_df = make_table(sorted_datetime_index, cols=3, astype='pandas')
@@ -115,7 +115,7 @@ def test_can_reorganize_columns(cols, exception, basic_data, database,
     assert isinstance(e.type(), exception)
 
 
-def test_reorganize_columns(database, connection, store):
+def test_reorder_columns(database, connection, store):
     # Arrange
     df = make_table(sorted_datetime_index, astype="pandas")
     cols = ["c1", "c0", "c2", "c4", "c3"]
@@ -123,7 +123,7 @@ def test_reorganize_columns(database, connection, store):
     store.write_table("table_name", df)
     table = store.select_table("table_name")
     # Act
-    table.reorganize_columns(cols)
+    table.reorder_columns(cols)
     # Assert
     df = table.read_pandas()
     assert df.equals(expected)

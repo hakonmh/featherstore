@@ -2,7 +2,6 @@ import pandas as pd
 
 from featherstore._metadata import Metadata
 from featherstore._table import common
-from featherstore._table.append import _append_new_partition_ids
 from featherstore.connection import Connection
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
@@ -93,18 +92,6 @@ def _add_cols(old_df, df, index):
 
 def create_partitions(df, rows_per_partition, partition_names):
     partitions = _table_utils.make_partitions(df, rows_per_partition)
-    new_partition_names = _add_new_partition_ids(partitions, partition_names)
+    new_partition_names = _table_utils.add_new_partition_ids(partitions, partition_names)
     partitions = _table_utils.assign_ids_to_partitions(partitions, new_partition_names)
     return partitions
-
-
-def _add_new_partition_ids(partitions, partition_ids):
-    partition_ids = partition_ids.copy()
-    last_partition_id = partition_ids[-1]
-    num_new_partition_ids = len(partitions) - len(partition_ids) + 1
-
-    new_ids = _append_new_partition_ids(num_new_partition_ids, last_partition_id)
-    new_ids = new_ids[1:]  # First id is the same as last_partition_id
-
-    partition_ids.extend(new_ids)
-    return sorted(partition_ids)

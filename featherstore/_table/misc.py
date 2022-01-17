@@ -21,7 +21,7 @@ def can_rename_table(new_table_name, new_table_path):
     _raise_if.table_already_exists(new_table_path)
 
 
-def can_reorganize_columns(cols, table_path):
+def can_reorder_columns(cols, table_path):
     Connection.is_connected()
     _raise_if.table_not_exists(table_path)
 

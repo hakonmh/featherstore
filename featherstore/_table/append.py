@@ -110,18 +110,6 @@ def _sort_cols(df, cols):
 
 def create_partitions(df, rows_per_partition, last_partition_name):
     partitions = _table_utils.make_partitions(df, rows_per_partition)
-    new_partition_names = _append_new_partition_ids(len(partitions), last_partition_name)
+    new_partition_names = _table_utils.append_new_partition_ids(len(partitions), [last_partition_name])
     partitions = _table_utils.assign_ids_to_partitions(partitions, new_partition_names)
     return partitions
-
-
-def _append_new_partition_ids(num_partitions, last_partition_id):
-    partition_ids = [last_partition_id]
-
-    range_start = _table_utils.convert_partition_id_to_int(last_partition_id) + 1
-    range_end = range_start + num_partitions - 1
-
-    for partition_num in range(range_start, range_end):
-        partition_id = _table_utils.convert_int_to_partition_id(partition_num)
-        partition_ids.append(partition_id)
-    return partition_ids

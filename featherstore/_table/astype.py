@@ -3,7 +3,6 @@ import pyarrow as pa
 from featherstore.connection import Connection
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
-from featherstore._table import add_cols
 from featherstore._metadata import Metadata
 
 
@@ -102,7 +101,7 @@ def _add_or_remove_partition_ids(partitions, partition_ids):
     if len(partitions) < len(partition_ids):
         partition_ids = partition_ids[:len(partitions)]
     else:
-        partition_ids = add_cols._add_new_partition_ids(partitions, partition_ids)
+        partition_ids = _table_utils.add_new_partition_ids(partitions, partition_ids)
     return partition_ids
 
 
