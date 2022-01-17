@@ -104,7 +104,7 @@ def _raise_if_all_rows_is_dropped(df):
 def can_drop_cols_from_table(cols, table_path):
     Connection.is_connected()
     _raise_if.table_not_exists(table_path)
-    _raise_if.cols_argument_is_not_supported_dtype(cols)
+    _raise_if.cols_argument_is_not_list_or_none(cols)
     _raise_if.cols_argument_items_is_not_str(cols)
 
     raise_if = CheckDropCols(cols, table_path)

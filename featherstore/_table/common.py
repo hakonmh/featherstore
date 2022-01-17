@@ -7,7 +7,6 @@ from pyarrow import pandas_compat as pc
 
 from featherstore._metadata import Metadata
 from featherstore import _utils
-from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore._table import _table_utils
 
 PARTITION_NAME_LENGTH = 14
@@ -137,7 +136,7 @@ def __make_column_metadata(df, col):
 
 
 def get_numpy_dtype_info(dtype):
-    pd_dtype = dtype
+    pd_dtype = pc.get_logical_type(dtype)
 
     if pd_dtype == 'decimal':
         numpy_dtype = 'object'
@@ -145,10 +144,14 @@ def get_numpy_dtype_info(dtype):
             'precision': dtype.precision,
             'scale': dtype.scale,
         }
-    elif hasattr(dtype, 'tz'):
+    elif pd_dtype == 'date':  # Numpy doesn't support date types
+        resolution = str(dtype).split('[')[-1][:-1]
+        numpy_dtype = f'datetime64[{resolution}]'
+        extra_metadata = None
+    elif hasattr(dtype, 'tz'):  # Store timezone info if exists for dtime types
         numpy_dtype = 'datetime64[ns]'
-        try:  # Store timezone info if exists
-            extra_metadata = {'timezone': pa.lib.tzinfo_to_string(dtype.tz)}
+        try:
+            extra_metadata = {'timezone': pa.lib.tzinfo_to_string(pd_dtype.tz)}
         except Exception:
             extra_metadata = {'timezone': None}
     else:

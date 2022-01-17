@@ -44,14 +44,29 @@ def df_is_not_pandas_table(df):
             f"'df' must be a pd.DataFrame or pd.Series (is type {type(df)})")
 
 
-def cols_argument_is_not_supported_dtype(cols):
+def to_argument_is_not_list(to):
+    is_valid_col_format = isinstance(to, list)
+    if not is_valid_col_format:
+        raise TypeError("'to' must be fo type list")
+
+
+def cols_argument_is_not_list_or_none(cols):
     is_valid_col_format = isinstance(cols, (list, type(None)))
     if not is_valid_col_format:
         raise TypeError("'cols' must be either list or None")
 
 
+def cols_argument_is_not_list_or_dict(cols):
+    is_valid_col_format = isinstance(cols, (list, dict))
+    if not is_valid_col_format:
+        raise TypeError("'cols' must be either list or dict")
+
+
 def cols_argument_items_is_not_str(cols):
-    col_elements_are_str = all(isinstance(item, str) for item in cols)
+    if isinstance(cols, dict):
+        col_elements_are_str = all(isinstance(item, str) for item in cols.keys())
+    else:
+        col_elements_are_str = all(isinstance(item, str) for item in cols)
     if not col_elements_are_str:
         raise TypeError("Elements in 'cols' must be of type str")
 

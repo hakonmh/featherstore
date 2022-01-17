@@ -52,8 +52,8 @@ def _duplicate_col_names():
         "_duplicate_col_names"
     ]
 )
-def test_can_add_cols(args, exception, basic_data, database,
-                      connection, store):
+def test_can_rename_cols(args, exception, basic_data, database,
+                         connection, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     table = store.select_table(basic_data["table_name"])

@@ -12,6 +12,7 @@ from featherstore._table import insert
 from featherstore._table import drop
 from featherstore._table import add_cols
 from featherstore._table import rename_cols
+from featherstore._table import astype
 from featherstore._table import misc
 from featherstore._table import common
 
@@ -448,14 +449,43 @@ class Table:
         index = index.to_pandas().index
         return index
 
-    def _set_index(self, new_index, drop_old=False):
-        raise NotImplementedError
+    def astype(self, cols, *, to=None):
+        """Change data type of one or more columns.
 
-    def _reset_index(self, drop_old=False):
-        raise NotImplementedError
+        `astype` supports two different call-syntaxes:
 
-    def _astype(self, cols, dtypes):
-        raise NotImplementedError
+        - `astype({'c1': pa.int64(), 'c2': pa.int16()})`
+        - `astype(['c1', 'c2'], to=[pa.int64(), pa.int16()])`
+
+        Parameters
+        ----------
+        cols : list or dict
+            Either a list of columns to have its data types changed, or a
+            dict mapping columns to new column data types.
+        to : list, optional
+            New column data types, by default `None`
+        """
+        astype.can_change_type(cols, to, self._table_path)
+        index_name = self._table_data["index_name"]
+        partition_size = self._table_data["partition_size"]
+
+        partition_names = read.get_partition_names(None, self._table_path)
+        df = read.read_table(partition_names, self._table_path, edit_mode=True)
+
+        df = astype.change_type(df, cols, to)
+        df = common.format_table(df, index_name=index_name, warnings=False)
+
+        rows_per_partition = common.compute_rows_per_partition(df, partition_size)
+        partitions = astype.create_partitions(df, rows_per_partition, partition_names)
+
+        metadata = common.update_metadata(partitions, self._table_path, partition_names,
+                                          rows_per_partition=rows_per_partition)
+
+        partitions_to_drop = astype.get_partitions_to_drop(partitions, partition_names)
+        drop.drop_partitions(self._table_path, partitions_to_drop)
+
+        write.write_metadata(metadata, self._table_path)
+        write.write_partitions(partitions, self._table_path)
 
     def rename_table(self, *, to):
         """Renames the current table
