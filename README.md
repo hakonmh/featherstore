@@ -1,6 +1,6 @@
 
 # FeatherStore
-[![docs](https://img.shields.io/badge/docs-passing-brightgreen)](https://featherstore.readthedocs.io/en/latest/index.html)
+[[![Documentation Status](https://readthedocs.org/projects/featherstore/badge/?version=latest)](https://featherstore.readthedocs.io/en/latest/index.html)
 [![PyPI version](https://img.shields.io/pypi/v/FeatherStore?color=blue)](https://pypi.org/project/FeatherStore/)
 [![Dev Status](https://img.shields.io/pypi/status/featherstore?color=important)](https://pypi.org/project/FeatherStore/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/hakonmh/featherstore/blob/master/LICENSE)

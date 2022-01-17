@@ -10,7 +10,6 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-from featherstore import __version__
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
@@ -22,7 +21,7 @@ copyright = '2021, Håkon Magne Holmen'
 author = 'Håkon Magne Holmen'
 
 # The full version, including alpha/beta/rc tags
-release = __version__
+release = '0.0.5'
 
 # -- General configuration ---------------------------------------------------
 
