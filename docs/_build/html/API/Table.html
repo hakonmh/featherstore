@@ -261,7 +261,8 @@ or datetime. FeatherStore sorts the DataFrame by the index before storage.</p>
 <li><p><strong>index</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the column to be used as index. Uses current index for
 Pandas or a standard integer index for Arrow and Polars if <cite>index</cite> not
 provided, by default <cite>None</cite></p></li>
-<li><p><strong>partition_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The size of each partition in bytes, by default 128 MB</p></li>
+<li><p><strong>partition_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The size of each partition in bytes. A <cite>partition_size</cite> value of <cite>-1</cite>
+disables partitioning, by default 128 MB</p></li>
 <li><p><strong>errors</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to raise an error if the table already exist. Can be either
 <cite>raise</cite> or <cite>ignore</cite>, <cite>ignore</cite> overwrites existing table, by default <cite>raise</cite></p></li>
 <li><p><strong>warnings</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to warn if a unsorted index is about to get sorted.

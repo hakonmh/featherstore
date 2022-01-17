@@ -69,9 +69,16 @@ def convert_to_pandas(df):
 
 def make_partitions(df, rows_per_partition):
     df = df.combine_chunks()
-    partitions = df.to_batches(rows_per_partition)
-    partitions = _combine_small_partitions(partitions, rows_per_partition)
+    if rows_per_partition == -1:
+        partitions = _make_single_partition(df)
+    else:
+        partitions = df.to_batches(rows_per_partition)
+        partitions = _combine_small_partitions(partitions, rows_per_partition)
     return partitions
+
+
+def _make_single_partition(df):
+    return df.to_batches()
 
 
 def _combine_small_partitions(partitions, partition_size):

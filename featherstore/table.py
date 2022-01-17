@@ -135,7 +135,8 @@ class Table:
             Pandas or a standard integer index for Arrow and Polars if `index` not
             provided, by default `None`
         partition_size : int, optional
-            The size of each partition in bytes, by default 128 MB
+            The size of each partition in bytes. A `partition_size` value of `-1`
+            disables partitioning, by default 128 MB
         errors : str, optional
             Whether or not to raise an error if the table already exist. Can be either
             `raise` or `ignore`, `ignore` overwrites existing table, by default `raise`

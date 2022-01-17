@@ -189,8 +189,11 @@ def _add_featherstore_metadata(df, new_metadata):
 def compute_rows_per_partition(df, target_size):
     num_rows = df.shape[0]
     table_size_in_bytes = df.nbytes
-    rows_per_partition = num_rows * target_size / table_size_in_bytes
-    rows_per_partition = int(round(rows_per_partition, 0))
+    if target_size == -1:
+        rows_per_partition = -1
+    else:
+        rows_per_partition = num_rows * target_size / table_size_in_bytes
+        rows_per_partition = int(round(rows_per_partition, 0))
     return rows_per_partition
 
 

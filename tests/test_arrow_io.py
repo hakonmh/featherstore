@@ -56,3 +56,17 @@ def test_unsorted_arrow_io(original_df, basic_data, database, connection,
     df = store.read_arrow(basic_data["table_name"])
     # Assert
     assert df.equals(sorted_original_df)
+
+
+def test_unpartitioned_arrow_io(basic_data, database, connection, store):
+    # Arrange
+    original_df = make_table()
+    index_name = get_index_name(original_df)
+    store.write_table(basic_data["table_name"],
+                      original_df,
+                      partition_size=-1,
+                      index=index_name)
+    # Act
+    df = store.read_arrow(basic_data["table_name"])
+    # Assert
+    assert df.equals(original_df)
