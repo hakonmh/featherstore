@@ -187,11 +187,7 @@ full data:</p>
 <li><p>Updates</p></li>
 <li><p>Inserts</p></li>
 <li><p>Drop columns/Drop rows</p></li>
-</ul>
-<p>It will also support the following operations down the line:</p>
-<ul class="simple">
 <li><p>Changing types</p></li>
-<li><p>Changing index</p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -380,7 +376,7 @@ the end.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>cols</strong> (<em>list</em><em> or </em><em>dict</em>) – Either a list of columns to be renamed, or a dict mapping columns
 to be renamed to new column names</p></li>
-<li><p><strong>to</strong> (<em>list</em><em>, </em><em>optional</em>) – New column names, by default <cite>None</cite></p></li>
+<li><p><strong>to</strong> (<em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – New column names, by default <cite>None</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -400,6 +396,18 @@ to be renamed to new column names</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.reorganize_columns">
+<span class="sig-name descname"><span class="pre">reorganize_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.reorganize_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reorder the current columns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cols</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – The new column ordering. The column names provided must be the
+same as the column names used in the table.</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.index">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">index</span></span><a class="headerlink" href="#featherstore.table.Table.index" title="Permalink to this definition">¶</a></dt>
@@ -410,6 +418,26 @@ to be renamed to new column names</p></li>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>Pandas Index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.astype">
+<span class="sig-name descname"><span class="pre">astype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.astype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change data type of one or more columns.</p>
+<p><cite>astype</cite> supports two different call-syntaxes:</p>
+<ul class="simple">
+<li><p><cite>astype({‘c1’: pa.int64(), ‘c2’: pa.int16()})</cite></p></li>
+<li><p><cite>astype([‘c1’, ‘c2’], to=[pa.int64(), pa.int16()])</cite></p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cols</strong> (<em>list</em><em> or </em><em>dict</em>) – Either a list of columns to have its data types changed, or a
+dict mapping columns to new column data types.</p></li>
+<li><p><strong>to</strong> (<em>list</em><em>[</em><em>Pyarrow DataType</em><em>]</em><em>, </em><em>optional</em>) – New column data types, by default <cite>None</cite></p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
