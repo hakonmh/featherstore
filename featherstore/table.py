@@ -424,7 +424,7 @@ class Table:
         misc.can_reorganize_columns(cols, self._table_path)
         self._table_data["columns"] = cols
 
-    def reorganize_columns(self, cols):
+    def reorder_columns(self, cols):
         """Reorder the current columns
 
         Parameters
