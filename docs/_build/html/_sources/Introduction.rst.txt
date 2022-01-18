@@ -7,12 +7,12 @@ FeatherStore supports several operations on stored tables that can be done witho
 in the full data:
 
 * Predicate filtering when reading
-* Appending data
-* Read metadata (column names, index, table size, etc)
-* Inserting data
-* Updating data
-* Remove columns and rows
-* (planned) Changing types
+* Append data
+* Read metadata (column names, index, table shape, etc)
+* Insert data
+* Update data
+* Drop data
+* Changing column types
 
 To learn more, go to the `Quickstart <Quickstart.html>`_ page.
 
