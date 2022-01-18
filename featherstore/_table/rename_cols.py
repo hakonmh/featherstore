@@ -38,8 +38,8 @@ def _raise_if_invalid_arg_signature(cols, new_cols):
 
 def _raise_if_length_of_cols_and_new_cols_doesnt_match(cols, new_cols):
     if len(cols) != len(new_cols):
-        raise ValueError("Number of column names is not the same as the "
-                         "number of new column names")
+        raise ValueError(f"Number of column names ({len(cols)}) is not the same "
+                         f"as the number of new column names ({len(new_cols)})")
 
 
 def _raise_if_renaming_causes_duplicates(cols, new_cols, table_path):

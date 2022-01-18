@@ -3,6 +3,7 @@ import os
 from featherstore.connection import current_db
 from featherstore._metadata import Metadata
 from featherstore import _utils
+from featherstore.snapshot import _create_snapshot
 
 from featherstore._table import read
 from featherstore._table import write
@@ -504,6 +505,18 @@ class Table:
     def drop_table(self):
         """Deletes the current table"""
         _utils.delete_folder_tree(self._table_path)
+
+    def create_snapshot(self, path):
+        """Creates a compressed backup of the table.
+
+        The table can later be restored by using `snapshot.restore_table()`.
+
+        Parameters
+        ----------
+        path : str
+            The path to the snapshot archive.
+        """
+        _create_snapshot(path, self._table_path, 'table')
 
     @property
     def shape(self):

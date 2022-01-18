@@ -182,10 +182,16 @@
 </li>
       <li><a href="API/Connection.html#featherstore.connection.Connection">Connection (class in featherstore.connection)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="API/Connection.html#featherstore.connection.create_database">create_database() (in module featherstore.connection)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="API/Store.html#featherstore.store.Store.create_snapshot">create_snapshot() (featherstore.store.Store method)</a>
+
+      <ul>
+        <li><a href="API/Table.html#featherstore.table.Table.create_snapshot">(featherstore.table.Table method)</a>
+</li>
+      </ul></li>
       <li><a href="API/Store.html#featherstore.store.create_store">create_store() (in module featherstore.store)</a>
 </li>
       <li><a href="API/Connection.html#featherstore.connection.current_db">current_db() (in module featherstore.connection)</a>
@@ -202,12 +208,16 @@
         <li><a href="API/Connection.html#featherstore.connection.disconnect">(in module featherstore.connection)</a>
 </li>
       </ul></li>
-      <li><a href="API/Table.html#featherstore.table.Table.drop">drop() (featherstore.table.Table method)</a>
+      <li><a href="API/Store.html#featherstore.store.Store.drop">drop() (featherstore.store.Store method)</a>
+
+      <ul>
+        <li><a href="API/Table.html#featherstore.table.Table.drop">(featherstore.table.Table method)</a>
 </li>
-      <li><a href="API/Table.html#featherstore.table.Table.drop_columns">drop_columns() (featherstore.table.Table method)</a>
-</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="API/Table.html#featherstore.table.Table.drop_columns">drop_columns() (featherstore.table.Table method)</a>
+</li>
       <li><a href="API/Table.html#featherstore.table.Table.drop_rows">drop_rows() (featherstore.table.Table method)</a>
 </li>
       <li><a href="API/Store.html#featherstore.store.drop_store">drop_store() (in module featherstore.store)</a>
@@ -240,14 +250,21 @@
 </li>
       </ul></li>
       <li>
+    featherstore.snapshot
+
+      <ul>
+        <li><a href="API/Snapshot.html#module-featherstore.snapshot">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
     featherstore.store
 
       <ul>
         <li><a href="API/Store.html#module-featherstore.store">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     featherstore.table
 
@@ -295,6 +312,8 @@
       <ul>
         <li><a href="API/Connection.html#module-featherstore.connection">featherstore.connection</a>
 </li>
+        <li><a href="API/Snapshot.html#module-featherstore.snapshot">featherstore.snapshot</a>
+</li>
         <li><a href="API/Store.html#module-featherstore.store">featherstore.store</a>
 </li>
         <li><a href="API/Table.html#module-featherstore.table">featherstore.table</a>
@@ -324,10 +343,10 @@
         <li><a href="API/Table.html#featherstore.table.Table.read_polars">(featherstore.table.Table method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="API/Store.html#featherstore.store.Store.rename">rename() (featherstore.store.Store method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="API/Table.html#featherstore.table.Table.rename_columns">rename_columns() (featherstore.table.Table method)</a>
 </li>
       <li><a href="API/Store.html#featherstore.store.rename_store">rename_store() (in module featherstore.store)</a>
@@ -338,7 +357,11 @@
         <li><a href="API/Table.html#featherstore.table.Table.rename_table">(featherstore.table.Table method)</a>
 </li>
       </ul></li>
-      <li><a href="API/Table.html#featherstore.table.Table.reorganize_columns">reorganize_columns() (featherstore.table.Table method)</a>
+      <li><a href="API/Table.html#featherstore.table.Table.reorder_columns">reorder_columns() (featherstore.table.Table method)</a>
+</li>
+      <li><a href="API/Snapshot.html#featherstore.snapshot.restore_store">restore_store() (in module featherstore.snapshot)</a>
+</li>
+      <li><a href="API/Snapshot.html#featherstore.snapshot.restore_table">restore_table() (in module featherstore.snapshot)</a>
 </li>
   </ul></td>
 </tr></table>

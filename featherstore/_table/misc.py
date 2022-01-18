@@ -35,7 +35,7 @@ def can_reorder_columns(cols, table_path):
 def _raise_if_new_cols_is_not_list(cols):
     is_valid_col_format = isinstance(cols, list)
     if not is_valid_col_format:
-        raise TypeError("'cols' must be of type list")
+        raise TypeError(f"'cols' must be of type list (is type {type(cols)})")
 
 
 def _raise_if_index_in_cols(cols, table_path):
@@ -52,5 +52,4 @@ def _raise_if_cols_doesnt_match(cols, table_path):
 
     cols_doesnt_match = set(stored_cols) != set(cols)
     if cols_doesnt_match:
-        raise ValueError("The columns provided doesn't match the columns "
-                         "stored")
+        raise ValueError("The columns provided doesn't match the columns stored")

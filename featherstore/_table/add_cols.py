@@ -33,7 +33,7 @@ def _raise_if_col_name_already_in_table(cols, table_path):
     cols = common.filter_cols_if_like_provided(cols, stored_cols)
     some_cols_in_stored_cols = set(stored_cols) - (set(stored_cols) - set(cols))
     if some_cols_in_stored_cols:
-        raise IndexError("Column already exists")
+        raise IndexError("Column name already exists in table")
 
 
 def _raise_if_num_rows_does_not_match(df, table_path):
@@ -43,7 +43,8 @@ def _raise_if_num_rows_does_not_match(df, table_path):
     new_cols_length = len(df)
 
     if new_cols_length != stored_table_length:
-        raise IndexError("Length of new cols doesnt match length of stored data")
+        raise IndexError(f"Length of new cols ({new_cols_length}) doesn't match "
+                         f"length of stored data ({stored_table_length})")
 
 
 def add_columns(old_df, df, index):

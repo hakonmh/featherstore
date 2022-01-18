@@ -56,13 +56,14 @@ def __raise_if_index_is_not_supported_dtype(dtype):
     is_temporal = pa.types.is_temporal(dtype)
     is_string = pa.types.is_string(dtype) or pa.types.is_large_string(dtype)
     if not is_integer and not is_temporal and not is_string:
-        raise TypeError("Table.index type must be either int, str or datetime")
+        raise TypeError(f"Table.index type must be either int, str or "
+                        f"datetime (is type {type(dtype)})")
 
 
 def _raise_if_length_of_cols_and_astype_doesnt_match(cols, astype):
     if len(cols) != len(astype):
-        raise ValueError("Number of column names is not the same as the "
-                         "number of data types")
+        raise ValueError(f"Number of column names ({len(cols)}) is not the "
+                         f"same as the number of data types ({len(astype)})")
 
 
 def change_type(df, cols, to):

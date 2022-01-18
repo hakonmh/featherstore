@@ -3,6 +3,7 @@ import os
 from featherstore import _utils
 from featherstore.table import Table, DEFAULT_PARTITION_SIZE
 from featherstore.connection import current_db, DB_MARKER_NAME, Connection
+from featherstore.snapshot import _create_snapshot
 
 
 def create_store(store_name, *, errors="raise"):
@@ -42,7 +43,7 @@ def rename_store(store_name, *, to):
 def drop_store(store_name, *, errors="raise"):
     """Deletes a store
 
-    Warning: You can not delete a store containing tables. All tables must
+    *Warning*: You can not delete a store containing tables. All tables must
     be deleted first.
 
     Parameters
@@ -100,7 +101,7 @@ class Store:
         _can_init_store(store_name)
 
         self.store_name = store_name
-        self.store_path = os.path.join(current_db(), store_name)
+        self._store_path = os.path.join(current_db(), store_name)
 
     def rename(self, *, to):
         """Renames the current store
@@ -114,9 +115,23 @@ class Store:
         _can_rename_store(new_store_name)
 
         new_path = os.path.join(current_db(), new_store_name)
-        os.rename(self.store_path, new_path)
+        os.rename(self._store_path, new_path)
         self.store_name = new_store_name
-        self.store_path = new_path
+        self._store_path = new_path
+
+    def drop(self, *, errors="raise"):
+        """Deletes the current store
+
+        *Warning*: You can not delete a store containing tables. All tables must
+        be deleted first.
+
+        Parameters
+        ----------
+        errors : str, optional
+            Whether or not to raise an error if the store doesn't exist. Can be either
+            `raise` or `ignore`, by default `raise`
+        """
+        drop_store(self.store_name, errors=errors)
 
     def list_tables(self, *, like=None):
         """Lists tables in store
@@ -133,7 +148,7 @@ class Store:
         """
         _can_list(like)
 
-        tables = os.listdir(self.store_path)
+        tables = os.listdir(self._store_path)
         if like:
             pattern = like
             tables = _utils.filter_items_like_pattern(tables, like=pattern)
@@ -290,6 +305,18 @@ class Store:
         Table
         """
         return Table(table_name, self.store_name)
+
+    def create_snapshot(self, path):
+        """Creates a compressed backup of the store.
+
+        The store can later be restored by using `snapshot.restore_store()`.
+
+        Parameters
+        ----------
+        path : str
+            The path to the snapshot archive.
+        """
+        _create_snapshot(path, self._store_path, 'store')
 
 
 def _can_create_store(store_name, errors):

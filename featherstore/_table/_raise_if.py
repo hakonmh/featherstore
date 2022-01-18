@@ -13,24 +13,24 @@ from featherstore._table import _table_utils
 def table_not_exists(table_path):
     table_name = table_path.rsplit('/')[-1]
     if not os.path.exists(table_path):
-        raise FileNotFoundError(f"Table {table_name} doesn't exist")
+        raise FileNotFoundError(f"Table '{table_name}' doesn't exist")
 
 
 def table_already_exists(table_path):
     table_name = table_path.rsplit('/')[-1]
     if os.path.exists(table_path):
-        raise OSError(f"A table with name {table_name} already exists")
+        raise OSError(f"A table with name '{table_name}' already exists")
 
 
 def table_name_is_not_str(table_name):
     if not isinstance(table_name, str):
         raise TypeError(
-            f"'table_name' must be a str, is type {type(table_name)}")
+            f"'table_name' must be a str (is type {type(table_name)})")
 
 
 def table_name_is_forbidden(table_name):
     if table_name == METADATA_FOLDER_NAME:
-        raise ValueError(f"Table name {METADATA_FOLDER_NAME} is forbidden")
+        raise ValueError(f"Table name '{METADATA_FOLDER_NAME}' is forbidden")
 
 
 def df_is_not_supported_table_dtype(df):
@@ -47,19 +47,19 @@ def df_is_not_pandas_table(df):
 def to_argument_is_not_list(to):
     is_valid_col_format = isinstance(to, list)
     if not is_valid_col_format:
-        raise TypeError("'to' must be fo type list")
+        raise TypeError(f"'to' must be of type list (is type {type(to)})")
 
 
 def cols_argument_is_not_list_or_none(cols):
     is_valid_col_format = isinstance(cols, (list, type(None)))
     if not is_valid_col_format:
-        raise TypeError("'cols' must be either list or None")
+        raise TypeError(f"'cols' must be either list or None (is type {type(cols)})")
 
 
 def cols_argument_is_not_list_or_dict(cols):
     is_valid_col_format = isinstance(cols, (list, dict))
     if not is_valid_col_format:
-        raise TypeError("'cols' must be either list or dict")
+        raise TypeError(f"'cols' must be either list or dict (is type {type(cols)})")
 
 
 def cols_argument_items_is_not_str(cols):
@@ -93,7 +93,7 @@ def cols_not_in_table(cols, table_path):
 def rows_argument_is_not_supported_dtype(rows):
     is_valid_row_format = isinstance(rows, (list, pd.Index, type(None)))
     if not is_valid_row_format:
-        raise TypeError("'rows' must be either List, pd.Index or None")
+        raise TypeError(f"'rows' must be either List, pd.Index or None (is type {type(rows)})")
 
 
 def rows_argument_items_dtype_not_same_as_index(rows, table_path):
@@ -183,4 +183,5 @@ def index_values_contains_duplicates(index):
 def index_is_not_supported_dtype(index):
     index_type = index.inferred_type
     if index_type not in {"integer", "datetime64", "string"}:
-        raise TypeError("Table.index type must be either int, str or datetime")
+        raise TypeError(f"Table.index type must be either int, str or datetime "
+                        f"(is type {index_type})")

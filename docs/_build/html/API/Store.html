@@ -135,6 +135,11 @@
    Table
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="Snapshot.html">
+   Snapshot
+  </a>
+ </li>
 </ul>
 
   </div>
@@ -207,7 +212,7 @@ by default <cite>raise</cite></p></li>
 <dt class="sig sig-object py" id="featherstore.store.drop_store">
 <span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">drop_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.drop_store" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deletes a store</p>
-<p>Warning: You can not delete a store containing tables. All tables must
+<p><em>Warning</em>: You can not delete a store containing tables. All tables must
 be deleted first.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -256,6 +261,20 @@ within your FeatherStore database.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>to</strong> (<em>str</em>) – The new name of the store.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.store.Store.drop">
+<span class="sig-name descname"><span class="pre">drop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store.drop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes the current store</p>
+<p><em>Warning</em>: You can not delete a store containing tables. All tables must
+be deleted first.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>errors</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to raise an error if the store doesn’t exist. Can be either
+<cite>raise</cite> or <cite>ignore</cite>, by default <cite>raise</cite></p>
 </dd>
 </dl>
 </dd></dl>
@@ -415,6 +434,18 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="Table.html#featherstore.table.Table" title="featherstore.table.Table">Table</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="featherstore.store.Store.create_snapshot">
+<span class="sig-name descname"><span class="pre">create_snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store.create_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a compressed backup of the store.</p>
+<p>The store can later be restored by using <cite>snapshot.restore_store()</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to the snapshot archive.</p>
 </dd>
 </dl>
 </dd></dl>

@@ -13,3 +13,4 @@ This page gives an overview of all public polars objects, functions and methods.
    API/Connection
    API/Store
    API/Table
+   API/Snapshot

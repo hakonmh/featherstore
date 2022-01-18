@@ -17,7 +17,7 @@ in the full data:
 * Insert data
 * Update data
 * Drop data
-* (planned) Changing column types
+* Changing column types
 
 To learn more, read the [User Guide](https://featherstore.readthedocs.io/en/latest/Quickstart.html).
 
