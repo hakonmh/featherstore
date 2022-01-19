@@ -108,8 +108,8 @@ def __make_index_first_column(df):
 
 
 def sorted_string_index(rows):
-    index = __make_string_col(rows).sort_values()
-    return index
+    index = unsorted_string_index(rows)
+    return index.sort_values()
 
 
 def sorted_datetime_index(rows):
@@ -141,7 +141,14 @@ def unsorted_int_index(rows):
 
 
 def unsorted_string_index(rows):
-    return __make_string_col(rows)
+    index = __make_string_col(rows)
+    while len(index.unique()) < rows:
+        new_rows = rows - len(index.unique())
+        new_elements = __make_string_col(new_rows)
+        index = index.append(new_elements)
+    index = index.unique()
+    index = pd.Series(index)
+    return index
 
 
 def unsorted_datetime_index(rows):
