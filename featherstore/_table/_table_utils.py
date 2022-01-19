@@ -215,8 +215,8 @@ def filter_arrow_table(df, rows, index_col_name):
 
 
 def _fetch_rows_in_list(df, index, rows):
-    rows_indices = pa.compute.index_in(rows, value_set=index)
-    df = df.take(rows_indices)
+    row_indices = pa.compute.index_in(rows, value_set=index)
+    df = df.take(row_indices)
     return df
 
 
@@ -263,18 +263,21 @@ def __fetch_row_idx(row, index):
 
 
 def __fetch_exact_row_idx(row, index):
-    row_idx = pa.compute.index_in(row, value_set=index)
+    row_idx = index.index(row)
     row_idx = row_idx.as_py()
-    if row_idx is not None:
+    if row_idx != -1:
         row_idx += 1
+    else:
+        row_idx = None
     return row_idx
 
 
 def __fetch_closest_row_idx(row, index):
-    TRUE = 1
     mask = pa.compute.less_equal(row, index)
-    row_idx = pa.compute.index_in(TRUE, value_set=mask)
+    row_idx = mask.index(True)
     row_idx = row_idx.as_py()
+    if row_idx == -1:
+        row_idx = None
     return row_idx
 
 
