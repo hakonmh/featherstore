@@ -49,9 +49,9 @@ fs.list_stores()
 
 ['example_store']
 
->>> # Connect to store
+>>> # Connects to store
 store = fs.Store('example_table')
-# Saves table to store, partition size defines the size of each partition in bytes
+# Saves table to store; partition size defines the size of each partition in bytes
 PARTITION_SIZE = 128  # bytes
 store.write_table('example_table', df, partition_size=PARTITION_SIZE)
 # Lists existing tables in current store
@@ -65,11 +65,11 @@ store.read_pandas('example_table')
 # store.read_polars('example_table') for reading to Polars DataFrames
 
                    A         B         C         D
-2021-01-01  1.122392  0.265080  0.908843 -0.546288
-2021-01-02 -2.189536  0.593536  0.428618  1.159518
-2021-01-03  1.344019  0.723140  1.266272 -0.707655
-2021-01-04 -1.755134 -0.399792 -0.229055  0.733093
-2021-01-05 -0.871126  1.192000  0.425984  0.275433
+2021-01-01  0.402138 -0.016436 -0.565256  0.520086
+2021-01-02 -1.071026 -0.326358 -0.692681  1.188319
+2021-01-03  0.777777 -0.665146  1.017527 -0.064830
+2021-01-04 -0.835711 -0.575801 -0.650543 -0.411509
+2021-01-05 -0.649335 -0.830602  1.191749  0.396745
 
 >>> # FeatherStore supports appending data without loading in the full table
 new_dates = pd.date_range("2021-01-06", periods=1)
@@ -79,7 +79,7 @@ store.append_table('example_table', df1)
 store.read_pandas('example_table', rows=['after', '2021-01-05'], cols=['D', 'A'])
 
                    D         A
-2021-01-05  0.275433 -0.871126
+2021-01-05  0.396745 -0.649335
 2021-01-06  0.606950  0.408125
 
 ```
