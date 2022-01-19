@@ -23,7 +23,7 @@ def read_benchmark(num_rows=1_000_000, num_cols=5, num_runs=1):
     pl_runtime = time_it(read_bench.read_polars, num_runs)
     read_bench.teardown()
 
-    print(f'Write table benchmark (Table size: {num_rows:0,d}, {num_cols:0,d}):\n\n'
+    print(f'Read table benchmark (Table size: {num_rows:0,d}, {num_cols:0,d}):\n\n'
           f'  Read Arrow: Averaged {pa_runtime:0,.4f} ms per run.\n'
           f'  Read Pandas: Averaged {pd_runtime:0,.4f} ms per run.\n'
           f'  Read Polars: Averaged {pl_runtime:0,.4f} ms per run.\n')
