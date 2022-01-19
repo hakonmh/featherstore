@@ -378,7 +378,7 @@ def _raise_if_store_not_exists(store_name):
 def _raise_if_store_already_exists(store_name):
     store_path = os.path.join(current_db(), store_name)
     if os.path.exists(store_path):
-        raise OSError(f"A table with name {store_name} already exists")
+        raise OSError(f"A store with name {store_name} already exists")
 
 
 def _can_list(like):

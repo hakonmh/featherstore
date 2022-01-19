@@ -255,6 +255,39 @@ class Table:
         write.write_metadata(metadata, self._table_path)
         write.write_partitions(partitions, self._table_path)
 
+    def add_columns(self, df, idx=-1):
+        """Insert one or more columns into the current table.
+
+        Parameters
+        ----------
+        df : Pandas DataFrame or Pandas Series
+            The data to be inserted. `df` must have the same index as the stored data.
+        idx : int
+            The position to insert the new column(s). Default is to add columns to
+            the end.
+        """
+        add_cols.can_add_columns(df, self._table_path)
+
+        index_name = self._table_data["index_name"]
+        partition_size = self._table_data["partition_size"]
+
+        partition_names = read.get_partition_names(None, self._table_path)
+        stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)
+
+        df = add_cols.add_columns(stored_df, df, index=idx)
+        df = common.format_table(df, index_name=index_name, warnings=False)
+
+        rows_per_partition = common.compute_rows_per_partition(df, partition_size)
+        columns = df.column_names
+        partitions = add_cols.create_partitions(df, rows_per_partition, partition_names)
+
+        metadata = common.update_metadata(partitions, self._table_path, partition_names,
+                                          rows_per_partition=rows_per_partition,
+                                          columns=columns)
+
+        write.write_metadata(metadata, self._table_path)
+        write.write_partitions(partitions, self._table_path)
+
     def drop(self, *, cols=None, rows=None):
         """Drop specified labels from rows or columns.
 
@@ -338,39 +371,6 @@ class Table:
 
         partitions_to_drop = drop.get_partitions_to_drop(partitions, partition_names)
         drop.drop_partitions(self._table_path, partitions_to_drop)
-        write.write_metadata(metadata, self._table_path)
-        write.write_partitions(partitions, self._table_path)
-
-    def add_columns(self, df, idx=-1):
-        """Add one or more columns to the table.
-
-        Parameters
-        ----------
-        df : Pandas DataFrame or Pandas Series
-            The data to be inserted. `df` must have the same index as the stored data.
-        idx : int
-            The position to insert the new column(s). Default is to add columns to
-            the end.
-        """
-        add_cols.can_add_columns(df, self._table_path)
-
-        index_name = self._table_data["index_name"]
-        partition_size = self._table_data["partition_size"]
-
-        partition_names = read.get_partition_names(None, self._table_path)
-        stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)
-
-        df = add_cols.add_columns(stored_df, df, index=idx)
-        df = common.format_table(df, index_name=index_name, warnings=False)
-
-        rows_per_partition = common.compute_rows_per_partition(df, partition_size)
-        columns = df.column_names
-        partitions = add_cols.create_partitions(df, rows_per_partition, partition_names)
-
-        metadata = common.update_metadata(partitions, self._table_path, partition_names,
-                                          rows_per_partition=rows_per_partition,
-                                          columns=columns)
-
         write.write_metadata(metadata, self._table_path)
         write.write_partitions(partitions, self._table_path)
 
