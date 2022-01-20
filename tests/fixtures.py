@@ -66,7 +66,18 @@ def __make_datetime_col(rows):
     end = pd.to_datetime('2022-01-01')
     end = end.value // 10**9
 
-    return pd.to_datetime(np.random.randint(start, end, rows), unit='s')
+    return pd.to_datetime(__random_unique_randint(start, end, rows), unit='s')
+
+
+def __random_unique_randint(start, end, rows):
+    df = pd.Series(dtype=int)
+    while len(df) < rows:
+        new_rows = rows - len(df)
+        df1 = np.random.randint(start, end, size=new_rows)
+        df1 = pd.Series(df1)
+        df = df.append(df1)
+        df = pd.Series(df.unique())
+    return df.to_numpy()
 
 
 def __make_string_col(rows):
