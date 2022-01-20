@@ -27,13 +27,13 @@ class Table:
         Tables supports several operations that can be done without loading in the
         full data:
 
-        - Predicate Filtering when reading
-        - Appends
-        - Fetching Column names
-        - Fetching Index
-        - Updates
-        - Inserts
-        - Drop columns/Drop rows
+        - Partial reading of data
+        - Append data
+        - Insert data
+        - Update data
+        - Drop data
+        - Read metadata (column names, index, table shape, etc)
+        - Changing column types
         - Changing types
 
         Parameters

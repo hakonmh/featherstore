@@ -1,3 +1,13 @@
+0.1.0
+-----
+* Added snapshots
+* Added `Table.astype()`
+* Added `Table.reorder_columns()` as a synonym to `Table.columns = values`
+* Added `Store.drop()` as a synonym to `store.drop_store()`
+* Added performance comparison to docs
+* Added a simple performance benchmark script to benchmark reads and writes
+* Performance improvements
+
 0.0.5
 -----
 * Added `Table.add_columns()`

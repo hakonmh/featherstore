@@ -11,12 +11,12 @@ FeatherStore is a fast datastore for storing Pandas DataFrames, Pandas Series, P
 DataFrames and PyArrow Tables as partitioned [Feather Files](https://arrow.apache.org/docs/python/feather.html).
 FeatherStore supports several operations on stored tables that can be done without loading
 in the full data:
-* Predicate filtering when reading
+* Partial reading of data
 * Append data
-* Read metadata (column names, index, table shape, etc)
 * Insert data
 * Update data
 * Drop data
+* Read metadata (column names, index, table shape, etc)
 * Changing column types
 
 To learn more, read the [User Guide](https://featherstore.readthedocs.io/en/latest/Quickstart.html).
@@ -84,10 +84,14 @@ store.read_pandas('example_table', rows=['after', '2021-01-05'], cols=['D', 'A']
 
 ```
 
+## Performance
+FeatherStore is very fast, and in fact is one of the best performing solutions available.
+See the performance benchmark [here](https://featherstore.readthedocs.io/en/latest/Benchmarks.html).
+
 ## Installation
 FeatherStore can be installed by using `$ pip install featherstore`
 
-## Requirements:
+## Requirements
 * Python >= 3.8
 * Arrow
 * Pandas
