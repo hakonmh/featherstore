@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quickstart &#8212; FeatherStore 0.0.5 documentation</title>
+    <title>Quickstart &#8212; FeatherStore 0.0.6 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet">
   <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -87,6 +87,12 @@
 <li class="toctree-l1 nav-item">
  <a class="reference internal nav-link" href="API%20Reference.html">
   API Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="Benchmarks.html">
+  Benchmarks
  </a>
 </li>
 
@@ -188,11 +194,6 @@
 <h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h1>
 <p>This is a short introduction to FeatherStore basic functionality. For a complete guide to
 FeatherStores classes, functions, and methods please visit the <a class="reference external" href="API%20Reference.html">API reference</a>.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>FeatherStore’s API is considered unstable and is subject to
-changes during the initial stages of development</p>
-</div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>To install FeatherStore, simply use pip</p>
@@ -276,11 +277,11 @@ a given operation.</p>
 <span class="c1"># store.read_polars(&#39;example_table&#39;) for reading to Polars DataFrames</span>
 
 <span class="o">&gt;&gt;</span>                 <span class="n">A</span>         <span class="n">B</span>         <span class="n">C</span>         <span class="n">D</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span>  <span class="mf">1.122392</span>  <span class="mf">0.265080</span>  <span class="mf">0.908843</span> <span class="o">-</span><span class="mf">0.546288</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">02</span> <span class="o">-</span><span class="mf">2.189536</span>  <span class="mf">0.593536</span>  <span class="mf">0.428618</span>  <span class="mf">1.159518</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">03</span>  <span class="mf">1.344019</span>  <span class="mf">0.723140</span>  <span class="mf">1.266272</span> <span class="o">-</span><span class="mf">0.707655</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">04</span> <span class="o">-</span><span class="mf">1.755134</span> <span class="o">-</span><span class="mf">0.399792</span> <span class="o">-</span><span class="mf">0.229055</span>  <span class="mf">0.733093</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span> <span class="o">-</span><span class="mf">0.871126</span>  <span class="mf">1.192000</span>  <span class="mf">0.425984</span>  <span class="mf">0.275433</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span>  <span class="mf">0.402138</span> <span class="o">-</span><span class="mf">0.016436</span> <span class="o">-</span><span class="mf">0.565256</span>  <span class="mf">0.520086</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">02</span> <span class="o">-</span><span class="mf">1.071026</span> <span class="o">-</span><span class="mf">0.326358</span> <span class="o">-</span><span class="mf">0.692681</span>  <span class="mf">1.188319</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">03</span>  <span class="mf">0.777777</span> <span class="o">-</span><span class="mf">0.665146</span>  <span class="mf">1.017527</span> <span class="o">-</span><span class="mf">0.064830</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">04</span> <span class="o">-</span><span class="mf">0.835711</span> <span class="o">-</span><span class="mf">0.575801</span> <span class="o">-</span><span class="mf">0.650543</span> <span class="o">-</span><span class="mf">0.411509</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span> <span class="o">-</span><span class="mf">0.649335</span> <span class="o">-</span><span class="mf">0.830602</span>  <span class="mf">1.191749</span>  <span class="mf">0.396745</span>
 <span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">06</span> <span class="o">-</span><span class="mf">0.408125</span> <span class="o">-</span><span class="mf">0.420920</span>  <span class="mf">0.632606</span>  <span class="mf">0.606950</span>
 </pre></div>
 </div>
@@ -292,7 +293,7 @@ only load the partitions and columns specified by the query.</p>
 
 <span class="c1"># All range queries are inclusive</span>
 <span class="o">&gt;&gt;</span>                 <span class="n">D</span>         <span class="n">A</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span>  <span class="mf">0.275433</span> <span class="o">-</span><span class="mf">0.871126</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span>  <span class="mf">0.396745</span> <span class="o">-</span><span class="mf">0.649335</span>
 <span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">06</span>  <span class="mf">0.606950</span>  <span class="mf">0.408125</span>
 </pre></div>
 </div>
@@ -325,7 +326,7 @@ more features for working with tables.</p>
 into the table.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>FeatherStore does not support adding columns in the current version.</p>
+<p>You can use <code class="docutils literal notranslate"><span class="pre">Table.add_columns()</span></code> to add extra columns.</p>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="s2">&quot;AB&quot;</span><span class="p">))</span>
 <span class="n">table</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">df2</span><span class="p">)</span>  <span class="c1"># Must have the same index and col dtypes as the stored df</span>
@@ -341,8 +342,11 @@ into the table.</p>
 <span class="mi">6</span>  <span class="mf">1.275938</span>  <span class="mf">1.054702</span>
 </pre></div>
 </div>
-<p>We also have <code class="docutils literal notranslate"><span class="pre">Table.update()</span></code> and <code class="docutils literal notranslate"><span class="pre">Table.drop()</span></code> for updating and deleting data.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df3</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="s2">&quot;AB&quot;</span><span class="p">))</span>
+<p>Other features include <code class="docutils literal notranslate"><span class="pre">Table.update()</span></code> and <code class="docutils literal notranslate"><span class="pre">Table.drop()</span></code> which updates and deletes data.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df3</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="s2">&quot;AB&quot;</span><span class="p">))</span>
+<span class="c1">#    A  B</span>
+<span class="c1"># 1  0  1</span>
+<span class="c1"># 2  2  3</span>
 <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">df3</span><span class="p">)</span>
 <span class="n">table</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">rows</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;after&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
 <span class="c1"># You can also drop columns using table.drop(cols=[&#39;col1&#39;, &#39;col2&#39;])</span>

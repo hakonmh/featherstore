@@ -1,11 +1,7 @@
 API Reference
 =============
 
-This page gives an overview of all public polars objects, functions and methods.
-
-.. warning::
-    FeatherStore's API is considered unstable and is subject to
-    changes during the initial stages of development
+This page gives an overview of all public FeatherStore objects, functions and methods.
 
 .. toctree::
    :maxdepth: 4

@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Table &#8212; FeatherStore 0.0.5 documentation</title>
+    <title>Table &#8212; FeatherStore 0.0.6 documentation</title>
     
   <link href="../_static/css/theme.css" rel="stylesheet">
   <link href="../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -87,6 +87,12 @@
 <li class="toctree-l1 current active nav-item">
  <a class="reference internal nav-link" href="../API%20Reference.html">
   API Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../Benchmarks.html">
+  Benchmarks
  </a>
 </li>
 
@@ -186,13 +192,13 @@
 <p>Tables supports several operations that can be done without loading in the
 full data:</p>
 <ul class="simple">
-<li><p>Predicate Filtering when reading</p></li>
-<li><p>Appends</p></li>
-<li><p>Fetching Column names</p></li>
-<li><p>Fetching Index</p></li>
-<li><p>Updates</p></li>
-<li><p>Inserts</p></li>
-<li><p>Drop columns/Drop rows</p></li>
+<li><p>Partial reading of data</p></li>
+<li><p>Append data</p></li>
+<li><p>Insert data</p></li>
+<li><p>Update data</p></li>
+<li><p>Drop data</p></li>
+<li><p>Read metadata (column names, index, table shape, etc)</p></li>
+<li><p>Changing column types</p></li>
 <li><p>Changing types</p></li>
 </ul>
 <dl class="field-list simple">
@@ -321,6 +327,21 @@ types as the stored data.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.add_columns">
+<span class="sig-name descname"><span class="pre">add_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.add_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert one or more columns into the current table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Pandas Series</em>) – The data to be inserted. <cite>df</cite> must have the same index as the stored data.</p></li>
+<li><p><strong>idx</strong> (<em>int</em>) – The position to insert the new column(s). Default is to add columns to
+the end.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.drop">
 <span class="sig-name descname"><span class="pre">drop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.drop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Drop specified labels from rows or columns.</p>
@@ -352,21 +373,6 @@ or <cite>between</cite>, by default <cite>None</cite></p>
 <span class="sig-name descname"><span class="pre">drop_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.drop_columns" title="Permalink to this definition">¶</a></dt>
 <dd><p>Drops specified rows from table</p>
 <p>Same as <cite>Table.drop(cols=val)</cite></p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="featherstore.table.Table.add_columns">
-<span class="sig-name descname"><span class="pre">add_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.table.Table.add_columns" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add one or more columns to the table.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Pandas Series</em>) – The data to be inserted. <cite>df</cite> must have the same index as the stored data.</p></li>
-<li><p><strong>idx</strong> (<em>int</em>) – The position to insert the new column(s). Default is to add columns to
-the end.</p></li>
-</ul>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">

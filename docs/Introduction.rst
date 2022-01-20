@@ -6,15 +6,16 @@ DataFrames and PyArrow Tables as partitioned `Feather Files <https://arrow.apach
 FeatherStore supports several operations on stored tables that can be done without loading
 in the full data:
 
-* Predicate filtering when reading
+* Partial reading of data
 * Append data
-* Read metadata (column names, index, table shape, etc)
 * Insert data
 * Update data
 * Drop data
+* Read metadata (column names, index, table shape, etc)
 * Changing column types
 
 To learn more, go to the `Quickstart <Quickstart.html>`_ page.
+
 
 Installation
 ++++++++++++
@@ -26,6 +27,10 @@ Installation
 .. code-block::
 
     pip install featherstore
+
+Python version support
+----------------------
+Officially Python 3.8, 3.9, and 3.10.
 
 Source Code
 +++++++++++

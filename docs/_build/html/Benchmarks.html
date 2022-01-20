@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Introduction &#8212; FeatherStore 0.0.6 documentation</title>
+    <title>Benchmarks &#8212; FeatherStore 0.0.6 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet">
   <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -34,8 +34,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Quickstart" href="Quickstart.html" />
-    <link rel="prev" title="Welcome to FeatherStore’s documentation!" href="index.html" />
+    <link rel="prev" title="Snapshot" href="API/Snapshot.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -72,8 +71,8 @@
       
       <div class="navbar-center-item">
         <ul id="navbar-main-elements" class="navbar-nav">
-    <li class="toctree-l1 current active nav-item">
- <a class="current reference internal nav-link" href="#">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="Introduction.html">
   Introduction
  </a>
 </li>
@@ -90,8 +89,8 @@
  </a>
 </li>
 
-<li class="toctree-l1 nav-item">
- <a class="reference internal nav-link" href="Benchmarks.html">
+<li class="toctree-l1 current active nav-item">
+ <a class="current reference internal nav-link" href="#">
   Benchmarks
  </a>
 </li>
@@ -145,30 +144,18 @@
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#installation">
-   Installation
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#python-version-support">
-     Python version support
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#source-code">
-   Source Code
+  <a class="reference internal nav-link" href="#first-dataset">
+   First Dataset
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#license">
-   LICENSE
+  <a class="reference internal nav-link" href="#second-dataset">
+   Second Dataset
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#contributions">
-   Contributions
+  <a class="reference internal nav-link" href="#internal-benchmarks">
+   Internal Benchmarks
   </a>
  </li>
 </ul>
@@ -192,57 +179,95 @@
               
               <div>
                 
-  <div class="section" id="introduction">
-<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>FeatherStore is a fast datastore for storing Pandas DataFrames, Pandas Series, Polars
-DataFrames and PyArrow Tables as partitioned <a class="reference external" href="https://arrow.apache.org/docs/python/feather.html">Feather Files</a>.</p>
-<p>FeatherStore supports several operations on stored tables that can be done without loading
-in the full data:</p>
+  <div class="section" id="benchmarks">
+<h1>Benchmarks<a class="headerlink" href="#benchmarks" title="Permalink to this headline">¶</a></h1>
+<p>In this benchmark we’ll compare how well FeatherStore, Feather, Parquet, CSV,
+PyStore and DuckDB perform when reading and writing Pandas DataFrames.</p>
+<p>All functions take the same Pandas DataFrame, write it to the hard drive, and
+load it back into Pandas again.</p>
+<p>The benchmark ran on the following computer:</p>
 <ul class="simple">
-<li><p>Partial reading of data</p></li>
-<li><p>Append data</p></li>
-<li><p>Insert data</p></li>
-<li><p>Update data</p></li>
-<li><p>Drop data</p></li>
-<li><p>Read metadata (column names, index, table shape, etc)</p></li>
-<li><p>Changing column types</p></li>
+<li><p>CPU: Intel© Core™ i5-11600</p></li>
+<li><p>RAM: 48 GB DDR4 (3200 MHz)</p></li>
+<li><p>SSD: 1 TB M.2 NVMe (3470/3000 Read/Write MBps)</p></li>
+<li><p>GPU: NVIDIA GeForce GTX 1060 6GB (Not used during the benchmark)</p></li>
 </ul>
-<p>To learn more, go to the <a class="reference external" href="Quickstart.html">Quickstart</a> page.</p>
-<div class="section" id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<div class="line-block">
-<div class="line">The project is hosted on PyPI at:</div>
-<div class="line"><a class="reference external" href="https://pypi.org/project/FeatherStore/">https://pypi.org/project/FeatherStore/</a></div>
+<p>The times quoted below are the fastest query times seen during a series of
+runs.</p>
+<div class="section" id="first-dataset">
+<h2>First Dataset<a class="headerlink" href="#first-dataset" title="Permalink to this headline">¶</a></h2>
+<p>This dataset is made up of 1 billion fields of random data in the shape 10
+million rows and 100 columns (Approx. 19.3 gb of data when stored as CSV).
+The data consists of strings, integers, floats and datetimes with 25 columns
+of each data type.</p>
+<p><strong>Write table benchmark (Table size: 10 000 000, 100):</strong></p>
+<ul class="simple">
+<li><p>Write FeatherStore:  3 716.43 ms</p></li>
+<li><p>Write Feather:       3 581.44 ms</p></li>
+<li><p>Write Parquet:       8 038.80 ms</p></li>
+<li><p>Write CSV:         750 304.05 ms</p></li>
+<li><p>Write PyStore:      24 074.08 ms</p></li>
+<li><p>Write DuckDB:       13 147.43 ms</p></li>
+</ul>
+<p><strong>Read table benchmark (Table size: 10 000 000, 100):</strong></p>
+<ul class="simple">
+<li><p>Read FeatherStore:  2 007.28 ms</p></li>
+<li><p>Read Feather:       6 516.06 ms</p></li>
+<li><p>Read Parquet:       6 486.78 ms</p></li>
+<li><p>Read CSV:         101 269.68 ms</p></li>
+<li><p>Read PyStore:      13 514.46 ms</p></li>
+<li><p>Read DuckDB:       18 228.74 ms</p></li>
+</ul>
 </div>
-<div class="line-block">
-<div class="line">To install FeatherStore, simply use pip</div>
+<div class="section" id="second-dataset">
+<h2>Second Dataset<a class="headerlink" href="#second-dataset" title="Permalink to this headline">¶</a></h2>
+<p>The second dataset is made up of 94.6 million fields of random data in the
+shape 15.8 million rows and 6 columns. (Approx. 2.0 gb of data when stored
+as CSV). The data consists of one datetime column and 5 float columns.</p>
+<p>The benchmark provides a rough estimate of the time it takes to save and load
+intraday OHLCV asset data (15.8 million records is equal to 30 years of
+1 minute data in a 24/7 market).</p>
+<p><strong>Write table benchmark (Table size: 15 768 000, 6):</strong></p>
+<ul class="simple">
+<li><p>Write FeatherStore:  518.08 ms</p></li>
+<li><p>Write Feather:       389.08 ms</p></li>
+<li><p>Write Parquet:       827.67 ms</p></li>
+<li><p>Write CSV:        78 259.50 ms</p></li>
+<li><p>Write PyStore:     2 347.50 ms</p></li>
+<li><p>Write DuckDB:      1 814.55 ms</p></li>
+</ul>
+<p><strong>Read table benchmark (Table size: 15 768 000, 6):</strong></p>
+<ul class="simple">
+<li><p>Read FeatherStore:  172.16 ms</p></li>
+<li><p>Read Feather:       396.35 ms</p></li>
+<li><p>Read Parquet:       697.16 ms</p></li>
+<li><p>Read CSV:        12 389.58 ms</p></li>
+<li><p>Read PyStore:       994.11 ms</p></li>
+<li><p>Read DuckDB:      1 304.28 ms</p></li>
+</ul>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">featherstore</span>
-</pre></div>
-</div>
-<div class="section" id="python-version-support">
-<h3>Python version support<a class="headerlink" href="#python-version-support" title="Permalink to this headline">¶</a></h3>
-<p>Officially Python 3.8, 3.9, and 3.10.</p>
-</div>
-</div>
-<div class="section" id="source-code">
-<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
-<div class="line-block">
-<div class="line">The source code is currently hosted on GitHub at:</div>
-<div class="line"><a class="reference external" href="https://github.com/Hakonmh/featherstore">https://github.com/Hakonmh/featherstore</a></div>
-</div>
-</div>
-<div class="section" id="license">
-<h2>LICENSE<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://github.com/hakonmh/featherstore/blob/master/LICENSE">MIT</a></p>
-</div>
-<div class="section" id="contributions">
-<h2>Contributions<a class="headerlink" href="#contributions" title="Permalink to this headline">¶</a></h2>
-<p>All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome.</p>
-<div class="line-block">
-<div class="line">Issues are posted on:</div>
-<div class="line"><a class="reference external" href="https://github.com/hakonmh/featherstore/issues">https://github.com/hakonmh/featherstore/issues</a></div>
-</div>
+<div class="section" id="internal-benchmarks">
+<h2>Internal Benchmarks<a class="headerlink" href="#internal-benchmarks" title="Permalink to this headline">¶</a></h2>
+<p>In addition to supporting reading and writing Pandas DataFrames, FeatherStore
+also supports reading and writing Polars DataFrames and PyArrow Tables.
+These two data structures use the Apache Arrow Columnar Format as a memory
+model, allowing reads and writes without serializing and deserializing to and
+from Pandas.</p>
+<p>We will benchmark using the first dataset again, comparing reading and writing
+the dataset as a Pandas DataFrame, a Polars DataFrame, and a PyArrow Table
+using FeatherStore.</p>
+<p><strong>Write table benchmark (Table size: 10 000 000, 100):</strong></p>
+<ul class="simple">
+<li><p>Write Pandas:  3 734.78 ms</p></li>
+<li><p>Write Polars:  3 359.98 ms</p></li>
+<li><p>Write Arrow:   3 374.49 ms</p></li>
+</ul>
+<p><strong>Read table benchmark (Table size: 10 000 000, 100):</strong></p>
+<ul class="simple">
+<li><p>Read Pandas:  1 377.60 ms</p></li>
+<li><p>Read Polars:    241.79 ms</p></li>
+<li><p>Read Arrow:      16.60 ms</p></li>
+</ul>
 </div>
 </div>
 
@@ -252,19 +277,12 @@ in the full data:</p>
               
               <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="index.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="API/Snapshot.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Welcome to FeatherStore’s documentation!</p>
+            <p class="prev-next-title">Snapshot</p>
         </div>
-    </a>
-    <a class='right-next' id="next-link" href="Quickstart.html" title="next page">
-    <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Quickstart</p>
-    </div>
-    <i class="fas fa-angle-right"></i>
     </a>
 </div>
               

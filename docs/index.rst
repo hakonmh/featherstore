@@ -9,6 +9,7 @@ Table of Contents
    Introduction
    Quickstart
    API Reference
+   Benchmarks
 
 
 Indices and tables
