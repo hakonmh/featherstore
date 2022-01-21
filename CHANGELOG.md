@@ -4,6 +4,7 @@
 * Added `Table.astype()`
 * Added `Table.reorder_columns()` as a synonym to `Table.columns = values`
 * Added `Store.drop()` as a synonym to `store.drop_store()`
+* Added option to set partition_size=-1 to disable partitioning
 * Added performance comparison to docs
 * Added a simple performance benchmark script to benchmark reads and writes
 * Performance improvements

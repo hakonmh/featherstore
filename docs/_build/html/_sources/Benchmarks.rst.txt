@@ -82,7 +82,7 @@ model, allowing reads and writes without serializing and deserializing to and
 from Pandas.
 
 We will benchmark using the first dataset again, comparing reading and writing
-the dataset as a Pandas DataFrame, a Polars DataFrame, and a PyArrow Table
+the dataset as Pandas DataFrame, Polars DataFrame, and PyArrow Table
 using FeatherStore.
 
 **Write table benchmark (Table size: 10 000 000, 100):**

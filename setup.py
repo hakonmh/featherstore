@@ -27,7 +27,7 @@ setup(
     ],
     python_requires='>=3.8',
     keywords='feather arrow pandas polars datastore',
-    packages=find_packages(exclude=['tests', 'docs', 'benchmarks']),
+    packages=find_packages(exclude=['tests', 'docs', 'benchmarks' 'dev']),
     install_requires=[
         'numpy>=1.21.0',
         'pandas>=1.1.0',
