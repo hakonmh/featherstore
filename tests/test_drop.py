@@ -27,8 +27,7 @@ def _drop_all_rows():
         "_drop_all_values"
     ],
 )
-def test_can_drop_rows_from_table(rows, exception, basic_data, database,
-                                  connection, store):
+def test_can_drop_rows_from_table(rows, exception, basic_data, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     table = store.select_table(basic_data["table_name"])
@@ -49,7 +48,7 @@ def test_can_drop_rows_from_table(rows, exception, basic_data, database,
         (['before', 10], slice(0, 11)),
         (['between', 13, 16], slice(13, 17))
     ])
-def test_drop_rows_from_int_indexed_table(rows, slice_, basic_data, database, connection, store):
+def test_drop_rows_from_int_indexed_table(rows, slice_, basic_data, store):
     # Arrange
     original_df = make_table(rows=30, astype="pandas")
     mask = original_df.iloc[slice_, :].index
@@ -76,8 +75,7 @@ def test_drop_rows_from_int_indexed_table(rows, slice_, basic_data, database, co
         (['after', 'row00010'], "'row00010' <= original_df.index"),
         (['before', 'row00010'], "'row00010' >= original_df.index"),
     ])
-def test_drop_rows_from_str_indexed_table(rows, condition, basic_data,
-                                          database, connection, store):
+def test_drop_rows_from_str_indexed_table(rows, condition, basic_data, store):
     # Arrange
     original_df = make_table(hardcoded_string_index, rows=30, astype="pandas")
     mask = original_df.loc[eval(condition)].index
@@ -104,8 +102,7 @@ def test_drop_rows_from_str_indexed_table(rows, condition, basic_data,
         (['after', '2021-01-17'], "'2021-01-17' <= original_df.index"),
         (['before', '2021-01-17'], "'2021-01-17' >= original_df.index"),
     ])
-def test_drop_rows_from_datetime_indexed_table(rows, condition, basic_data,
-                                               database, connection, store):
+def test_drop_rows_from_datetime_indexed_table(rows, condition, basic_data, store):
     # Arrange
     original_df = make_table(hardcoded_datetime_index, rows=30, astype="pandas")
     mask = original_df.loc[eval(condition)].index
@@ -162,8 +159,7 @@ def _drop_all_cols():
         "_drop_all_cols"
     ],
 )
-def test_can_drop_cols_from_table(cols, exception, basic_data, database,
-                                  connection, store):
+def test_can_drop_cols_from_table(cols, exception, basic_data, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     original_df.index.name = 'index'
@@ -184,8 +180,7 @@ def test_can_drop_cols_from_table(cols, exception, basic_data, database,
         ['c0', 'c2', 'c3', 'c4']
     ],
 )
-def test_drop_cols_from_table(cols, basic_data, database,
-                              connection, store):
+def test_drop_cols_from_table(cols, basic_data, store):
     # Arrange
     original_df = make_table(rows=30, astype="pandas")
     expected = original_df.copy().drop(columns=cols).squeeze()
@@ -204,8 +199,7 @@ def test_drop_cols_from_table(cols, basic_data, database,
     assert df.equals(expected)
 
 
-def test_drop_cols_like_pattern_from_table(basic_data, database,
-                                           connection, store):
+def test_drop_cols_like_pattern_from_table(basic_data, store):
     # Arrange
     original_df = make_table(rows=30, cols=20, astype="pandas")
     dropped_cols = [f"c{x}" for x in range(10)]

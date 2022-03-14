@@ -12,7 +12,7 @@ DROPPED_ROWS_INDICES = [2, 5, 7, 10]
     make_table(unsorted_datetime_index, rows=37, astype="pandas"),
     make_table(unsorted_string_index, rows=125, astype="pandas")
 ])
-def test_insert_table(original_df, basic_data, database, connection, store):
+def test_insert_table(original_df, basic_data, store):
     # Arrange
     row_indices = np.random.choice(original_df.index, size=5, replace=False)
     insert_df = original_df.loc[row_indices, :]
@@ -33,8 +33,7 @@ def test_insert_table(original_df, basic_data, database, connection, store):
     assert df.equals(expected)
 
 
-def test_insert_table_with_pandas_series(basic_data, database, connection,
-                                         store):
+def test_insert_table_with_pandas_series(basic_data, store):
     # Arrange
     original_df = make_table(cols=1, astype='pandas').squeeze()
     row_indices = np.random.choice(original_df.index, size=5, replace=False)
@@ -114,8 +113,7 @@ def _duplicate_column_names():
         "_duplicate_column_names",
     ],
 )
-def test_can_insert_table(insert_df, exception, basic_data, database,
-                          connection, store):
+def test_can_insert_table(insert_df, exception, basic_data, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     original_df = original_df.drop(index=DROPPED_ROWS_INDICES)

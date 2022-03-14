@@ -11,7 +11,7 @@ from .fixtures import *
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_sorted_arrow_io(original_df, basic_data, database, connection, store):
+def test_sorted_arrow_io(original_df, basic_data, store):
     # Arrange
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
@@ -35,8 +35,7 @@ def test_sorted_arrow_io(original_df, basic_data, database, connection, store):
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_unsorted_arrow_io(original_df, basic_data, database, connection,
-                           store):
+def test_unsorted_arrow_io(original_df, basic_data, store):
     # Arrange
     index_name = original_df.schema.pandas_metadata["index_columns"][0]
     sorted_index = pa.compute.sort_indices(original_df[index_name])
@@ -58,7 +57,7 @@ def test_unsorted_arrow_io(original_df, basic_data, database, connection,
     assert df.equals(sorted_original_df)
 
 
-def test_unpartitioned_arrow_io(basic_data, database, connection, store):
+def test_unpartitioned_arrow_io(basic_data, store):
     # Arrange
     original_df = make_table()
     index_name = get_index_name(original_df)

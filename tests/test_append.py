@@ -63,8 +63,7 @@ def _duplicate_column_names():
         "_duplicate_column_names",
     ],
 )
-def test_can_append_table(append_df, exception, basic_data, database,
-                          connection, store):
+def test_can_append_table(append_df, exception, basic_data, store):
     # Arrange
     original_df = make_table(rows=10, astype='pandas')
     table = store.select_table(basic_data["table_name"])
@@ -86,7 +85,7 @@ def test_can_append_table(append_df, exception, basic_data, database,
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_append_arrow_table(original_df, basic_data, database, connection, store):
+def test_append_arrow_table(original_df, basic_data, store):
     # Arrange
     slice_ = original_df.shape[0] // 2
     prewritten_df = original_df.slice(0, slice_)
@@ -118,7 +117,7 @@ def test_append_arrow_table(original_df, basic_data, database, connection, store
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_append_polars_table(original_df, basic_data, database, connection, store):
+def test_append_polars_table(original_df, basic_data, store):
     # Arrange
     slice_ = original_df.shape[0] // 2
     prewritten_df = original_df[:slice_]
@@ -150,7 +149,7 @@ def test_append_polars_table(original_df, basic_data, database, connection, stor
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_append_pd_dataframe(original_df, basic_data, database, connection, store):
+def test_append_pd_dataframe(original_df, basic_data, store):
     # Arrange
     slice_ = original_df.shape[0] // 2
     prewritten_df = original_df.iloc[:slice_]
@@ -180,7 +179,7 @@ def test_append_pd_dataframe(original_df, basic_data, database, connection, stor
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_append_pd_series(original_df, basic_data, database, connection, store):
+def test_append_pd_series(original_df, basic_data, store):
     # Arrange
     original_df = original_df.squeeze()
     slice_ = original_df.shape[0] // 2

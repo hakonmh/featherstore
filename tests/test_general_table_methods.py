@@ -2,7 +2,7 @@ import pytest
 from .fixtures import make_table, sorted_datetime_index, get_index_name
 
 
-def test_rename_table(database, connection, store):
+def test_rename_table(store):
     # Arrange
     NEW_TABLE_NAME = "new_table_name"
     df = make_table()
@@ -15,7 +15,7 @@ def test_rename_table(database, connection, store):
     assert table_names == [NEW_TABLE_NAME]
 
 
-def test_drop_table(database, connection, store):
+def test_drop_table(store):
     # Arrange
     df = make_table()
     store.write_table("table_name", df)
@@ -26,7 +26,7 @@ def test_drop_table(database, connection, store):
     assert table_names == []
 
 
-def test_list_tables_like(database, connection, store):
+def test_list_tables_like(store):
     # Arrange
     df = make_table(sorted_datetime_index)
     index_name = get_index_name(df)
@@ -50,7 +50,7 @@ def test_list_tables_like(database, connection, store):
     assert tables_like_bounded_wildcards == ["AAPL", "saab"]
 
 
-def test_get_index(database, connection, store):
+def test_get_index(store):
     # Arrange
     df = make_table(sorted_datetime_index, astype="pandas")
     index_name = get_index_name(df)
@@ -64,7 +64,7 @@ def test_get_index(database, connection, store):
     assert index.name == expected.name
 
 
-def test_get_columns(database, connection, store):
+def test_get_columns(store):
     # Arrange
     df = make_table(sorted_datetime_index)
     index_name = get_index_name(df)
@@ -102,8 +102,7 @@ def _contains_duplicates():
         "_contains_duplicates"
     ],
 )
-def test_can_reorder_columns(cols, exception, basic_data, database,
-                                connection, store):
+def test_can_reorder_columns(cols, exception, basic_data, store):
     # Arrange
     original_df = make_table(sorted_datetime_index, cols=3, astype='pandas')
     table = store.select_table(basic_data["table_name"])
@@ -115,7 +114,7 @@ def test_can_reorder_columns(cols, exception, basic_data, database,
     assert isinstance(e.type(), exception)
 
 
-def test_reorder_columns(database, connection, store):
+def test_reorder_columns(store):
     # Arrange
     df = make_table(sorted_datetime_index, astype="pandas")
     cols = ["c1", "c0", "c2", "c4", "c3"]

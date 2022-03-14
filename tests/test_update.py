@@ -2,10 +2,8 @@ import pytest
 from .fixtures import *
 
 
-@pytest.mark.parametrize(["num_partitions", "rows"], [(7, 30), (3, 125),
-                                                      (27, 36)])
-def test_update_table(num_partitions, rows, basic_data, database, connection,
-                      store):
+@pytest.mark.parametrize(["num_partitions", "rows"], [(7, 30), (3, 125), (27, 36)])
+def test_update_table(num_partitions, rows, basic_data, store):
     # Arrange
     INDEX_NAME = 'index'
     original_df = make_table(rows=rows, cols=5, astype="pandas")
@@ -56,8 +54,7 @@ def test_update_table(num_partitions, rows, basic_data, database, connection,
                                                       "2021-01-07"])
                           ]
                          )
-def test_update_table_with_pandas_series(index, rows, basic_data, database,
-                                         connection, store):
+def test_update_table_with_pandas_series(index, rows, basic_data, store):
     # Arrange
     original_df = make_table(index=index, cols=5, astype='pandas')
     store.write_table(basic_data["table_name"], original_df)
@@ -138,8 +135,7 @@ def _duplicate_column_names():
         "_duplicate_column_names",
     ],
 )
-def test_can_update_table(update_df, exception, basic_data, database,
-                          connection, store):
+def test_can_update_table(update_df, exception, basic_data, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     store.write_table(basic_data["table_name"], original_df)

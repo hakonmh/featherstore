@@ -55,8 +55,7 @@ def _duplicate_col_names():
         "_duplicate_col_names"
     ]
 )
-def test_can_change_dtype(args, exception, basic_data, database,
-                          connection, store):
+def test_can_change_dtype(args, exception, basic_data, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     table = store.select_table(basic_data["table_name"])
@@ -70,7 +69,7 @@ def test_can_change_dtype(args, exception, basic_data, database,
     assert isinstance(e.type(), exception)
 
 
-def test_change_dtype_to_float_and_int(basic_data, database, connection, store):
+def test_change_dtype_to_float_and_int(basic_data, store):
     COLS = {'c1': pa.float32(), 'c2': pa.int32()}
 
     original_df = make_table(rows=60, cols=4, astype="pandas")
@@ -88,7 +87,7 @@ def test_change_dtype_to_float_and_int(basic_data, database, connection, store):
     assert_frame_equal(df, expected, check_dtype=True)
 
 
-def test_change_dtype_to_decimal(basic_data, database, connection, store):
+def test_change_dtype_to_decimal(basic_data, store):
     COLS = ['c1', 'c2']
     DTYPES = [pa.decimal128(5, 5), pa.decimal128(19, 0)]
 
@@ -113,7 +112,7 @@ def _convert_to_decimal(x, precision, scale):
     return Decimal(x)
 
 
-def test_change_dtype_to_timestamp(basic_data, database, connection, store):
+def test_change_dtype_to_timestamp(basic_data, store):
     COL = ['c3']
     DTYPE = [pa.date64()]
 

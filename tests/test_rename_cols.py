@@ -52,8 +52,7 @@ def _duplicate_col_names():
         "_duplicate_col_names"
     ]
 )
-def test_can_rename_cols(args, exception, basic_data, database,
-                         connection, store):
+def test_can_rename_cols(args, exception, basic_data, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     table = store.select_table(basic_data["table_name"])
@@ -75,7 +74,7 @@ def test_can_rename_cols(args, exception, basic_data, database,
         (['c2', 'c3'], ['c3', 'c2'], ['c0', 'c1', 'c3', 'c2'])
     ],
 )
-def test_rename_cols(columns, to, result, basic_data, database, connection, store):
+def test_rename_cols(columns, to, result, basic_data, store):
     # Arrange
     original_df = make_table(rows=30, cols=4, astype="pandas")
     expected = original_df.copy()

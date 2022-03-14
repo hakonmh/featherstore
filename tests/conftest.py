@@ -11,8 +11,32 @@ TABLE_PATH = os.path.join(DB_PATH, STORE_NAME, TABLE_NAME)
 NUMBER_OF_PARTITIONS = 5
 
 
-@pytest.fixture(scope="session")
-def database():
+@pytest.fixture(scope="function", name="store")
+def setup_db():
+    with SetupDB() as store:
+        yield store
+
+
+class SetupDB:
+    def __enter__(self):
+        # Setup
+        fs.create_database(DB_PATH)
+        fs.connect(DB_PATH)
+        fs.create_store(STORE_NAME)
+        self._store = fs.Store(STORE_NAME)
+        return self._store
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        # Teardown
+        for table in self._store.list_tables():
+            self._store.drop_table(table)
+        fs.drop_store(STORE_NAME)
+        fs.disconnect()
+        shutil.rmtree(DB_PATH, ignore_errors=False)
+
+
+@pytest.fixture(scope="function")
+def create_db():
     # Setup
     fs.create_database(DB_PATH)
     # Test
@@ -21,27 +45,14 @@ def database():
     shutil.rmtree(DB_PATH, ignore_errors=False)
 
 
-@pytest.fixture(scope="session")
-def connection():
+@pytest.fixture(scope="function")
+def connect_to_db():
     # Setup
     fs.connect(DB_PATH)
     # Test
     yield
     # Teardown
     fs.disconnect()
-
-
-@pytest.fixture(scope="function")
-def store():
-    # Setup
-    fs.create_store(STORE_NAME)
-    store = fs.Store(STORE_NAME)
-    # Test
-    yield store
-    # Teardown
-    for table in store.list_tables():
-        store.drop_table(table)
-    fs.drop_store(STORE_NAME)
 
 
 @pytest.fixture(scope="session")

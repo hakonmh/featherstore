@@ -54,8 +54,7 @@ def _wrong_index_values():
         "_wrong_index_values"
     ]
 )
-def test_can_add_cols(df, exception, basic_data, database,
-                      connection, store):
+def test_can_add_cols(df, exception, basic_data, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     table = store.select_table(basic_data["table_name"])
@@ -67,7 +66,7 @@ def test_can_add_cols(df, exception, basic_data, database,
     assert isinstance(e.type(), exception)
 
 
-def test_add_cols(basic_data, database, connection, store):
+def test_add_cols(basic_data, store):
     # Arrange
     original_df = make_table(rows=30, cols=2, astype="pandas")
     new_df = make_table(unsorted_int_index, rows=30, cols=2, astype='pandas')
@@ -90,7 +89,7 @@ def test_add_cols(basic_data, database, connection, store):
     assert df.equals(expected)
 
 
-def test_append_col(basic_data, database, connection, store):
+def test_append_col(basic_data, store):
     # Arrange
     original_df = make_table(hardcoded_datetime_index, rows=30, cols=2, astype="pandas")
     new_df = make_table(hardcoded_datetime_index, rows=30, cols=1, astype='pandas')

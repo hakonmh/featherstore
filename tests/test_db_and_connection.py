@@ -17,7 +17,7 @@ def test_create_database():
     shutil.rmtree(DATABASE_PATH)
 
 
-def test_connect(basic_data, database, connection):
+def test_connect(basic_data, create_db, connect_to_db):
     # Arrange
     expected = os.path.abspath(basic_data["db_path"])
     # Act
@@ -26,7 +26,7 @@ def test_connect(basic_data, database, connection):
     assert connection == expected
 
 
-def test_create_store(database, connection):
+def test_create_store(create_db, connect_to_db):
     # Arrange
     fs.create_store("test_store")
     # Act
@@ -37,7 +37,7 @@ def test_create_store(database, connection):
     fs.drop_store("test_store")
 
 
-def test_drop_store(database, connection):
+def test_drop_store(create_db, connect_to_db):
     # Arrange
     fs.create_store("test_store")
     stores_before_deletion = fs.list_stores()
@@ -49,7 +49,7 @@ def test_drop_store(database, connection):
     assert len(stores_before_deletion) > len(stores_after_deletion)
 
 
-def test_rename_store(basic_data, database, connection, store):
+def test_rename_store(basic_data, store):
     # Arrange
     store.rename(to="new_store_name")
     # Act

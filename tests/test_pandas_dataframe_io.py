@@ -94,7 +94,7 @@ def _invalid_partition_size_arg():
         "_invalid_partition_size_arg",
     ],
 )
-def test_can_write(arguments, exception, basic_data, database, connection, store):
+def test_can_write(arguments, exception, store):
     # Arrange
     arguments, kwargs = arguments
     # Act
@@ -113,8 +113,7 @@ def test_can_write(arguments, exception, basic_data, database, connection, store
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_sorted_pandas_io(original_df, basic_data, database, connection,
-                          store):
+def test_sorted_pandas_io(original_df, basic_data, store):
     # Arrange
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
@@ -136,8 +135,7 @@ def test_sorted_pandas_io(original_df, basic_data, database, connection,
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_unsorted_pandas_io(original_df, basic_data, database, connection,
-                            store):
+def test_unsorted_pandas_io(original_df, basic_data, store):
     # Arrange
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
@@ -162,8 +160,7 @@ def convert_rangeindex_to_int64_index(df):
     return df
 
 
-def test_that_pandas_rangeindex_is_converted_back(basic_data, database,
-                                                  connection, store):
+def test_that_pandas_rangeindex_is_converted_back(basic_data, store):
     # Arrange
     original_df = make_table(astype="pandas")
     original_df = convert_rangeindex_to_int64_index(original_df)
@@ -175,7 +172,7 @@ def test_that_pandas_rangeindex_is_converted_back(basic_data, database,
     assert df.index.name == original_df.index.name
 
 
-def test_filter_columns(basic_data, database, connection, store):
+def test_filter_columns(basic_data, store):
     # Arrange
     original_df = make_table(cols=6, astype="pandas")
     cols = ["aapl", "MAST", "test", "4", "TSLA", "Åge"]
@@ -200,8 +197,7 @@ def test_filter_columns(basic_data, database, connection, store):
                     astype="pandas"), ["row00010", "row00003"]),
     ],
 )
-def test_filtering_rows_with_list(original_df, rows, basic_data, database,
-                                  connection, store):
+def test_filtering_rows_with_list(original_df, rows, basic_data, store):
     # Arrange
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
@@ -228,8 +224,7 @@ def test_filtering_rows_with_list(original_df, rows, basic_data, database,
         (3, 19),
     ],
 )
-def test_filtering_columns_and_rows_between(low, high, basic_data, database,
-                                            connection, store):
+def test_filtering_columns_and_rows_between(low, high, basic_data, store):
     # Arrange
     COLUMNS = ["c0", "c1"]
     ROWS = ["between", low, high]
@@ -255,9 +250,7 @@ def test_filtering_columns_and_rows_between(low, high, basic_data, database,
         "T9est",
     ],
 )
-def test_filtering_rows_before_low_with_string_index(high, basic_data,
-                                                     database, connection,
-                                                     store):
+def test_filtering_rows_before_low_with_string_index(high, basic_data, store):
     # Arrange
     ROWS = ["before", high]
     original_df = make_table(sorted_string_index, astype="pandas")
@@ -282,9 +275,7 @@ def test_filtering_rows_before_low_with_string_index(high, basic_data,
         "2021-01-12",
     ],
 )
-def test_filtering_rows_after_low_with_datetime_index(low, basic_data,
-                                                      database, connection,
-                                                      store):
+def test_filtering_rows_after_low_with_datetime_index(low, basic_data, store):
     # Arrange
     ROWS = ["after", low]
     original_df = make_table(hardcoded_datetime_index, astype="pandas")

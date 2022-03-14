@@ -3,7 +3,7 @@ from pandas.testing import assert_frame_equal
 from featherstore import snapshot
 
 
-def test_table_snapshot(basic_data, database, connection, store):
+def test_table_snapshot(basic_data, store):
     # Arrange
     SNAPSHOT_PATH = 'tests/db/table_snapshot'
     original_df = make_table(astype='pandas')
@@ -20,7 +20,7 @@ def test_table_snapshot(basic_data, database, connection, store):
     assert_frame_equal(df, original_df, check_dtype=True)
 
 
-def test_store_snapshot(basic_data, database, connection, store):
+def test_store_snapshot(basic_data, store):
     # Arrange
     SNAPSHOT_PATH = 'tests/db/store_snapshot'
     original_df1 = make_table(astype='pandas')

@@ -11,8 +11,7 @@ from .fixtures import *
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_sorted_polars_io(original_df, basic_data, database, connection,
-                          store):
+def test_sorted_polars_io(original_df, basic_data, store):
     # Arrange
     partition_size = get_partition_size(original_df,
                                         basic_data["num_partitions"])
@@ -27,7 +26,7 @@ def test_sorted_polars_io(original_df, basic_data, database, connection,
     assert df.frame_equal(original_df)
 
 
-def test_unsorted_polars_io(basic_data, database, connection, store):
+def test_unsorted_polars_io(basic_data, store):
     # Arrange
     original_df = make_table(unsorted_int_index, astype="polars")
     sorted_original_df = original_df.sort(by="__index_level_0__")
@@ -59,8 +58,7 @@ def test_unsorted_polars_io(basic_data, database, connection, store):
                     astype="pandas"), ["row00010", "row00003"]),
     ],
 )
-def test_filtering_rows_with_list(original_df, rows, basic_data, database,
-                                  connection, store):
+def test_filtering_rows_with_list(original_df, rows, basic_data, store):
     # Arrange
     original_df.index.name = "index"
     partition_size = get_partition_size(original_df,
@@ -92,8 +90,7 @@ def test_filtering_rows_with_list(original_df, rows, basic_data, database,
         (3, 19),
     ],
 )
-def test_filtering_columns_and_rows_between(low, high, basic_data, database,
-                                            connection, store):
+def test_filtering_columns_and_rows_between(low, high, basic_data, store):
     # Arrange
     COLUMNS = ["c0", "c1"]
     ROWS = ["between", low, high]
@@ -123,9 +120,7 @@ def test_filtering_columns_and_rows_between(low, high, basic_data, database,
         "T9est",
     ],
 )
-def test_filtering_rows_before_low_with_string_index(high, basic_data,
-                                                     database, connection,
-                                                     store):
+def test_filtering_rows_before_low_with_string_index(high, basic_data, store):
     # Arrange
     ROWS = ["before", high]
     pandas_df = make_table(sorted_string_index, astype="pandas")
@@ -157,9 +152,7 @@ def test_filtering_rows_before_low_with_string_index(high, basic_data,
         "2021-01-12",
     ],
 )
-def test_filtering_rows_after_low_with_datetime_index(low, basic_data,
-                                                      database, connection,
-                                                      store):
+def test_filtering_rows_after_low_with_datetime_index(low, basic_data, store):
     # Arrange
     ROWS = ["after", low]
     pandas_df = make_table(hardcoded_datetime_index, astype="pandas")
