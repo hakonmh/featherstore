@@ -1,5 +1,5 @@
 import pytest
-from .fixtures import make_table, sorted_datetime_index, get_index_name
+from .fixtures import *
 
 
 def test_rename_table(store):
@@ -102,10 +102,10 @@ def _contains_duplicates():
         "_contains_duplicates"
     ],
 )
-def test_can_reorder_columns(cols, exception, basic_data, store):
+def test_can_reorder_columns(cols, exception, store):
     # Arrange
     original_df = make_table(sorted_datetime_index, cols=3, astype='pandas')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     table.write(original_df)
     # Act
     with pytest.raises(exception) as e:

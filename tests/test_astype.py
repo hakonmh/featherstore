@@ -55,10 +55,10 @@ def _duplicate_col_names():
         "_duplicate_col_names"
     ]
 )
-def test_can_change_dtype(args, exception, basic_data, store):
+def test_can_change_dtype(args, exception, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     table.write(original_df)
     # Act
     with pytest.raises(exception) as e:
@@ -69,7 +69,7 @@ def test_can_change_dtype(args, exception, basic_data, store):
     assert isinstance(e.type(), exception)
 
 
-def test_change_dtype_to_float_and_int(basic_data, store):
+def test_change_dtype_to_float_and_int(store):
     COLS = {'c1': pa.float32(), 'c2': pa.int32()}
 
     original_df = make_table(rows=60, cols=4, astype="pandas")
@@ -77,8 +77,8 @@ def test_change_dtype_to_float_and_int(basic_data, store):
     expected = expected.astype({'c1': 'float32', 'c2': 'int32'})
 
     partition_size = get_partition_size(
-        original_df, num_partitions=basic_data['num_partitions'])
-    table = store.select_table(basic_data["table_name"])
+        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size)
     # Act
     table.astype(COLS)
@@ -87,7 +87,7 @@ def test_change_dtype_to_float_and_int(basic_data, store):
     assert_frame_equal(df, expected, check_dtype=True)
 
 
-def test_change_dtype_to_decimal(basic_data, store):
+def test_change_dtype_to_decimal(store):
     COLS = ['c1', 'c2']
     DTYPES = [pa.decimal128(5, 5), pa.decimal128(19, 0)]
 
@@ -97,8 +97,8 @@ def test_change_dtype_to_decimal(basic_data, store):
     expected['c2'] = expected['c2'].apply(_convert_to_decimal, args=[19, 0])
 
     partition_size = get_partition_size(
-        original_df, num_partitions=basic_data['num_partitions'])
-    table = store.select_table(basic_data["table_name"])
+        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size)
     # Act
     table.astype(COLS, to=DTYPES)
@@ -112,7 +112,7 @@ def _convert_to_decimal(x, precision, scale):
     return Decimal(x)
 
 
-def test_change_dtype_to_timestamp(basic_data, store):
+def test_change_dtype_to_timestamp(store):
     COL = ['c3']
     DTYPE = [pa.date64()]
 
@@ -121,8 +121,8 @@ def test_change_dtype_to_timestamp(basic_data, store):
     expected['c3'] = expected['c3'].apply(_convert_to_date)
 
     partition_size = get_partition_size(
-        original_df, num_partitions=basic_data['num_partitions'])
-    table = store.select_table(basic_data["table_name"])
+        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size)
     # Act
     table.astype(COL, to=DTYPE)

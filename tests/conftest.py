@@ -1,14 +1,8 @@
-import featherstore as fs
-
-import pytest
-import os
 import shutil
 
-DB_PATH = os.path.join('tests', 'db')
-STORE_NAME = "test_store"
-TABLE_NAME = "table_name"
-TABLE_PATH = os.path.join(DB_PATH, STORE_NAME, TABLE_NAME)
-NUMBER_OF_PARTITIONS = 5
+import pytest
+import featherstore as fs
+from .fixtures import DB_PATH, STORE_NAME
 
 
 @pytest.fixture(scope="function", name="store")
@@ -53,14 +47,3 @@ def connect_to_db():
     yield
     # Teardown
     fs.disconnect()
-
-
-@pytest.fixture(scope="session")
-def basic_data():
-    data = {}
-    data["db_path"] = DB_PATH
-    data["store_name"] = STORE_NAME
-    data["table_name"] = TABLE_NAME
-    data["table_path"] = TABLE_PATH
-    data["num_partitions"] = NUMBER_OF_PARTITIONS
-    return data

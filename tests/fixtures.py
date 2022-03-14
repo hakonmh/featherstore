@@ -1,9 +1,17 @@
+import os
+
 import pyarrow as pa
 import polars as pl
 import pandas as pd
 import numpy as np
 from pandas._testing import rands_array
 from featherstore._table._table_utils import get_col_names
+
+DB_PATH = os.path.join('tests', 'db')
+STORE_NAME = "test_store"
+TABLE_NAME = "table_name"
+TABLE_PATH = os.path.join(DB_PATH, STORE_NAME, TABLE_NAME)
+NUMBER_OF_PARTITIONS = 5
 
 ROWS = 30
 

@@ -3,30 +3,30 @@ from pandas.testing import assert_frame_equal
 from featherstore import snapshot
 
 
-def test_table_snapshot(basic_data, store):
+def test_table_snapshot(store):
     # Arrange
     SNAPSHOT_PATH = 'tests/db/table_snapshot'
     original_df = make_table(astype='pandas')
     partition_size = get_partition_size(
-        original_df, num_partitions=basic_data['num_partitions'])
-    table = store.select_table(basic_data["table_name"])
+        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size, warnings='ignore')
     # Act
     table.create_snapshot(SNAPSHOT_PATH)
     table.drop_table()
-    snapshot.restore_table(basic_data['store_name'], SNAPSHOT_PATH)
+    snapshot.restore_table(STORE_NAME, SNAPSHOT_PATH)
     # Assert
     df = table.read_pandas()
     assert_frame_equal(df, original_df, check_dtype=True)
 
 
-def test_store_snapshot(basic_data, store):
+def test_store_snapshot(store):
     # Arrange
     SNAPSHOT_PATH = 'tests/db/store_snapshot'
     original_df1 = make_table(astype='pandas')
     original_df2 = make_table(astype='pandas')
     partition_size = get_partition_size(
-        original_df1, num_partitions=basic_data['num_partitions'])
+        original_df1, num_partitions=NUMBER_OF_PARTITIONS)
     store.write_table('df1', original_df1,
                       partition_size=partition_size)
     store.write_table('df2', original_df2,

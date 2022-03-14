@@ -63,10 +63,10 @@ def _duplicate_column_names():
         "_duplicate_column_names",
     ],
 )
-def test_can_append_table(append_df, exception, basic_data, store):
+def test_can_append_table(append_df, exception, store):
     # Arrange
     original_df = make_table(rows=10, astype='pandas')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     table.write(original_df)
     # Act
     with pytest.raises(exception) as e:
@@ -85,7 +85,7 @@ def test_can_append_table(append_df, exception, basic_data, store):
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_append_arrow_table(original_df, basic_data, store):
+def test_append_arrow_table(original_df, store):
     # Arrange
     slice_ = original_df.shape[0] // 2
     prewritten_df = original_df.slice(0, slice_)
@@ -96,14 +96,14 @@ def test_append_arrow_table(original_df, basic_data, store):
     index_name = get_index_name(prewritten_df)
 
     partition_size = get_partition_size(original_df,
-                                        basic_data["num_partitions"])
-    store.write_table(basic_data["table_name"],
+                                        NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
                       prewritten_df,
                       partition_size=partition_size,
                       index=index_name)
-    store.append_table(basic_data["table_name"], appended_df)
+    store.append_table(TABLE_NAME, appended_df)
     # Act
-    df = store.read_arrow(basic_data["table_name"])
+    df = store.read_arrow(TABLE_NAME)
     # Assert
     assert df.equals(original_df)
 
@@ -117,7 +117,7 @@ def test_append_arrow_table(original_df, basic_data, store):
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_append_polars_table(original_df, basic_data, store):
+def test_append_polars_table(original_df, store):
     # Arrange
     slice_ = original_df.shape[0] // 2
     prewritten_df = original_df[:slice_]
@@ -128,14 +128,14 @@ def test_append_polars_table(original_df, basic_data, store):
     index_name = get_index_name(prewritten_df)
 
     partition_size = get_partition_size(prewritten_df,
-                                        basic_data["num_partitions"])
-    store.write_table(basic_data["table_name"],
+                                        NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
                       prewritten_df,
                       partition_size=partition_size,
                       index=index_name)
-    store.append_table(basic_data["table_name"], appended_df)
+    store.append_table(TABLE_NAME, appended_df)
     # Act
-    df = store.read_polars(basic_data["table_name"])
+    df = store.read_polars(TABLE_NAME)
     # Assert
     assert df.frame_equal(original_df)
 
@@ -149,7 +149,7 @@ def test_append_polars_table(original_df, basic_data, store):
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_append_pd_dataframe(original_df, basic_data, store):
+def test_append_pd_dataframe(original_df, store):
     # Arrange
     slice_ = original_df.shape[0] // 2
     prewritten_df = original_df.iloc[:slice_]
@@ -159,13 +159,13 @@ def test_append_pd_dataframe(original_df, basic_data, store):
     appended_df = appended_df[shuffled_cols]
 
     partition_size = get_partition_size(original_df,
-                                        basic_data["num_partitions"])
-    store.write_table(basic_data["table_name"],
+                                        NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
                       prewritten_df,
                       partition_size=partition_size)
-    store.append_table(basic_data["table_name"], appended_df)
+    store.append_table(TABLE_NAME, appended_df)
     # Act
-    df = store.read_pandas(basic_data["table_name"])
+    df = store.read_pandas(TABLE_NAME)
     # Assert
     assert df.equals(original_df)
 
@@ -179,19 +179,19 @@ def test_append_pd_dataframe(original_df, basic_data, store):
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_append_pd_series(original_df, basic_data, store):
+def test_append_pd_series(original_df, store):
     # Arrange
     original_df = original_df.squeeze()
     slice_ = original_df.shape[0] // 2
     prewritten_df = original_df[:slice_]
     appended_df = original_df[slice_:]
     partition_size = get_partition_size(original_df,
-                                        basic_data["num_partitions"])
-    store.write_table(basic_data["table_name"],
+                                        NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
                       prewritten_df,
                       partition_size=partition_size)
-    store.append_table(basic_data["table_name"], appended_df)
+    store.append_table(TABLE_NAME, appended_df)
     # Act
-    df = store.read_pandas(basic_data["table_name"])
+    df = store.read_pandas(TABLE_NAME)
     # Assert
     assert df.equals(original_df)

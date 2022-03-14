@@ -52,10 +52,10 @@ def _duplicate_col_names():
         "_duplicate_col_names"
     ]
 )
-def test_can_rename_cols(args, exception, basic_data, store):
+def test_can_rename_cols(args, exception, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     table.write(original_df)
     # Act
     with pytest.raises(exception) as e:
@@ -74,21 +74,21 @@ def test_can_rename_cols(args, exception, basic_data, store):
         (['c2', 'c3'], ['c3', 'c2'], ['c0', 'c1', 'c3', 'c2'])
     ],
 )
-def test_rename_cols(columns, to, result, basic_data, store):
+def test_rename_cols(columns, to, result, store):
     # Arrange
     original_df = make_table(rows=30, cols=4, astype="pandas")
     expected = original_df.copy()
     expected.columns = result
 
     partition_size = get_partition_size(
-        original_df, num_partitions=basic_data['num_partitions'])
-    store.write_table(basic_data["table_name"],
+        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,
                       warnings='ignore')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     # Act
     table.rename_columns(columns, to=to)
     # Assert
-    df = store.read_pandas(basic_data["table_name"])
+    df = store.read_pandas(TABLE_NAME)
     assert_frame_equal(df, expected, check_dtype=False)

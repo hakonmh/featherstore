@@ -3,7 +3,7 @@ from .fixtures import *
 
 
 @pytest.mark.parametrize(["num_partitions", "rows"], [(7, 30), (3, 125), (27, 36)])
-def test_update_table(num_partitions, rows, basic_data, store):
+def test_update_table(num_partitions, rows, store):
     # Arrange
     INDEX_NAME = 'index'
     original_df = make_table(rows=rows, cols=5, astype="pandas")
@@ -18,10 +18,10 @@ def test_update_table(num_partitions, rows, basic_data, store):
 
     partition_size = get_partition_size(original_df,
                                         num_partitions=num_partitions)
-    store.write_table(basic_data["table_name"],
+    store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size)
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     partition_names = table._partition_data.keys()
     partition_data = table._partition_data.read()
 
@@ -29,8 +29,8 @@ def test_update_table(num_partitions, rows, basic_data, store):
     table.update(update_df)
 
     # Assert
-    df = store.read_pandas(basic_data["table_name"])
-    arrow_df = store.read_arrow(basic_data["table_name"])
+    df = store.read_pandas(TABLE_NAME)
+    arrow_df = store.read_arrow(TABLE_NAME)
     arrow_index = arrow_df[INDEX_NAME]
     # Check that partitions keep the same tructure after update
     for partition, partition_name in zip(arrow_index.chunks, partition_names):
@@ -54,10 +54,10 @@ def test_update_table(num_partitions, rows, basic_data, store):
                                                       "2021-01-07"])
                           ]
                          )
-def test_update_table_with_pandas_series(index, rows, basic_data, store):
+def test_update_table_with_pandas_series(index, rows, store):
     # Arrange
     original_df = make_table(index=index, cols=5, astype='pandas')
-    store.write_table(basic_data["table_name"], original_df)
+    store.write_table(TABLE_NAME, original_df)
 
     update_df = make_table(index=index, cols=1, astype='pandas')
     update_series = update_df.squeeze()
@@ -66,11 +66,11 @@ def test_update_table_with_pandas_series(index, rows, basic_data, store):
     expected = original_df.copy()
     expected.loc[rows, 'c0'] = update_series
 
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     # Act
     table.update(update_series)
     # Assert
-    df = store.read_pandas(basic_data["table_name"])
+    df = store.read_pandas(TABLE_NAME)
     assert df.equals(expected)
     assert not df.equals(original_df)
 
@@ -135,11 +135,11 @@ def _duplicate_column_names():
         "_duplicate_column_names",
     ],
 )
-def test_can_update_table(update_df, exception, basic_data, store):
+def test_can_update_table(update_df, exception, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
-    store.write_table(basic_data["table_name"], original_df)
-    table = store.select_table(basic_data["table_name"])
+    store.write_table(TABLE_NAME, original_df)
+    table = store.select_table(TABLE_NAME)
     # Act
     with pytest.raises(exception) as e:
         table.update(update_df)

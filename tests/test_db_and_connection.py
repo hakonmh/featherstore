@@ -2,6 +2,8 @@ import featherstore as fs
 import os
 import shutil
 
+from tests.fixtures import DB_PATH, STORE_NAME
+
 
 def test_create_database():
     # Arrange
@@ -17,9 +19,9 @@ def test_create_database():
     shutil.rmtree(DATABASE_PATH)
 
 
-def test_connect(basic_data, create_db, connect_to_db):
+def test_connect(create_db, connect_to_db):
     # Arrange
-    expected = os.path.abspath(basic_data["db_path"])
+    expected = os.path.abspath(DB_PATH)
     # Act
     connection = fs.current_db()
     # Assert
@@ -49,7 +51,7 @@ def test_drop_store(create_db, connect_to_db):
     assert len(stores_before_deletion) > len(stores_after_deletion)
 
 
-def test_rename_store(basic_data, store):
+def test_rename_store(store):
     # Arrange
     store.rename(to="new_store_name")
     # Act
@@ -59,4 +61,4 @@ def test_rename_store(basic_data, store):
     assert stores == ["new_store_name"]
     assert store_name == "new_store_name"
     # Teardown
-    store.rename(to=basic_data["store_name"])
+    store.rename(to=STORE_NAME)

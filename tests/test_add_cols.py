@@ -1,3 +1,4 @@
+from curses.ascii import TAB
 import pytest
 from .fixtures import *
 
@@ -54,10 +55,10 @@ def _wrong_index_values():
         "_wrong_index_values"
     ]
 )
-def test_can_add_cols(df, exception, basic_data, store):
+def test_can_add_cols(df, exception, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     table.write(original_df)
     # Act
     with pytest.raises(exception) as e:
@@ -66,7 +67,7 @@ def test_can_add_cols(df, exception, basic_data, store):
     assert isinstance(e.type(), exception)
 
 
-def test_add_cols(basic_data, store):
+def test_add_cols(store):
     # Arrange
     original_df = make_table(rows=30, cols=2, astype="pandas")
     new_df = make_table(unsorted_int_index, rows=30, cols=2, astype='pandas')
@@ -76,20 +77,20 @@ def test_add_cols(basic_data, store):
     expected = expected[cols]
 
     partition_size = get_partition_size(
-        original_df, num_partitions=basic_data['num_partitions'])
-    store.write_table(basic_data["table_name"],
+        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,
                       warnings='ignore')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     # Act
     table.add_columns(new_df, idx=1)
     # Assert
-    df = store.read_pandas(basic_data["table_name"])
+    df = store.read_pandas(TABLE_NAME)
     assert df.equals(expected)
 
 
-def test_append_col(basic_data, store):
+def test_append_col(store):
     # Arrange
     original_df = make_table(hardcoded_datetime_index, rows=30, cols=2, astype="pandas")
     new_df = make_table(hardcoded_datetime_index, rows=30, cols=1, astype='pandas')
@@ -97,14 +98,11 @@ def test_append_col(basic_data, store):
     expected = original_df.join(new_df)
 
     partition_size = get_partition_size(
-        original_df, num_partitions=basic_data['num_partitions'])
-    store.write_table(basic_data["table_name"],
-                      original_df,
-                      partition_size=partition_size,
-                      warnings='ignore')
-    table = store.select_table(basic_data["table_name"])
+        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size, warnings='ignore')
     # Act
     table.add_columns(new_df, idx=-1)
     # Assert
-    df = store.read_pandas(basic_data["table_name"])
+    df = store.read_pandas(TABLE_NAME)
     assert df.equals(expected)

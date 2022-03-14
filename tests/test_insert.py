@@ -12,7 +12,7 @@ DROPPED_ROWS_INDICES = [2, 5, 7, 10]
     make_table(unsorted_datetime_index, rows=37, astype="pandas"),
     make_table(unsorted_string_index, rows=125, astype="pandas")
 ])
-def test_insert_table(original_df, basic_data, store):
+def test_insert_table(original_df, store):
     # Arrange
     row_indices = np.random.choice(original_df.index, size=5, replace=False)
     insert_df = original_df.loc[row_indices, :]
@@ -20,20 +20,20 @@ def test_insert_table(original_df, basic_data, store):
     original_df = original_df.drop(index=row_indices)
 
     partition_size = get_partition_size(
-        original_df, num_partitions=basic_data['num_partitions'])
-    store.write_table(basic_data["table_name"],
+        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,
                       warnings='ignore')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     # Act
     table.insert(insert_df)
     # Assert
-    df = store.read_pandas(basic_data["table_name"])
+    df = store.read_pandas(TABLE_NAME)
     assert df.equals(expected)
 
 
-def test_insert_table_with_pandas_series(basic_data, store):
+def test_insert_table_with_pandas_series(store):
     # Arrange
     original_df = make_table(cols=1, astype='pandas').squeeze()
     row_indices = np.random.choice(original_df.index, size=5, replace=False)
@@ -42,16 +42,16 @@ def test_insert_table_with_pandas_series(basic_data, store):
     original_df = original_df.drop(index=row_indices)
 
     partition_size = get_partition_size(
-        original_df, num_partitions=basic_data['num_partitions'])
-    store.write_table(basic_data["table_name"],
+        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,
                       warnings='ignore')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     # Act
     table.insert(insert_df)
     # Assert
-    df = store.read_pandas(basic_data["table_name"])
+    df = store.read_pandas(TABLE_NAME)
     assert df.equals(expected)
 
 
@@ -113,12 +113,12 @@ def _duplicate_column_names():
         "_duplicate_column_names",
     ],
 )
-def test_can_insert_table(insert_df, exception, basic_data, store):
+def test_can_insert_table(insert_df, exception, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     original_df = original_df.drop(index=DROPPED_ROWS_INDICES)
-    store.write_table(basic_data["table_name"], original_df)
-    table = store.select_table(basic_data["table_name"])
+    store.write_table(TABLE_NAME, original_df)
+    table = store.select_table(TABLE_NAME)
     # Act
     with pytest.raises(exception) as e:
         table.insert(insert_df)

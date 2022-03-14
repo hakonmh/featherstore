@@ -27,10 +27,10 @@ def _drop_all_rows():
         "_drop_all_values"
     ],
 )
-def test_can_drop_rows_from_table(rows, exception, basic_data, store):
+def test_can_drop_rows_from_table(rows, exception, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     table.write(original_df)
     # Act
     with pytest.raises(exception) as e:
@@ -48,23 +48,23 @@ def test_can_drop_rows_from_table(rows, exception, basic_data, store):
         (['before', 10], slice(0, 11)),
         (['between', 13, 16], slice(13, 17))
     ])
-def test_drop_rows_from_int_indexed_table(rows, slice_, basic_data, store):
+def test_drop_rows_from_int_indexed_table(rows, slice_, store):
     # Arrange
     original_df = make_table(rows=30, astype="pandas")
     mask = original_df.iloc[slice_, :].index
     expected = original_df.copy().drop(index=mask)
 
     partition_size = get_partition_size(
-        original_df, num_partitions=basic_data['num_partitions'])
-    store.write_table(basic_data["table_name"],
+        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,
                       warnings='ignore')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     # Act
     table.drop(rows=rows)
     # Assert
-    df = store.read_pandas(basic_data["table_name"])
+    df = store.read_pandas(TABLE_NAME)
     assert df.equals(expected)
 
 
@@ -75,23 +75,23 @@ def test_drop_rows_from_int_indexed_table(rows, slice_, basic_data, store):
         (['after', 'row00010'], "'row00010' <= original_df.index"),
         (['before', 'row00010'], "'row00010' >= original_df.index"),
     ])
-def test_drop_rows_from_str_indexed_table(rows, condition, basic_data, store):
+def test_drop_rows_from_str_indexed_table(rows, condition, store):
     # Arrange
     original_df = make_table(hardcoded_string_index, rows=30, astype="pandas")
     mask = original_df.loc[eval(condition)].index
     expected = original_df.copy().drop(index=mask)
 
     partition_size = get_partition_size(
-        original_df, num_partitions=basic_data['num_partitions'])
-    store.write_table(basic_data["table_name"],
+        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,
                       warnings='ignore')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     # Act
     table.drop(rows=rows)
     # Assert
-    df = store.read_pandas(basic_data["table_name"])
+    df = store.read_pandas(TABLE_NAME)
     assert df.equals(expected)
 
 
@@ -102,23 +102,23 @@ def test_drop_rows_from_str_indexed_table(rows, condition, basic_data, store):
         (['after', '2021-01-17'], "'2021-01-17' <= original_df.index"),
         (['before', '2021-01-17'], "'2021-01-17' >= original_df.index"),
     ])
-def test_drop_rows_from_datetime_indexed_table(rows, condition, basic_data, store):
+def test_drop_rows_from_datetime_indexed_table(rows, condition, store):
     # Arrange
     original_df = make_table(hardcoded_datetime_index, rows=30, astype="pandas")
     mask = original_df.loc[eval(condition)].index
     expected = original_df.copy().drop(index=mask)
 
     partition_size = get_partition_size(
-        original_df, num_partitions=basic_data['num_partitions'])
-    store.write_table(basic_data["table_name"],
+        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,
                       warnings='ignore')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     # Act
     table.drop(rows=rows)
     # Assert
-    df = store.read_pandas(basic_data["table_name"])
+    df = store.read_pandas(TABLE_NAME)
     assert df.equals(expected)
 
 
@@ -159,11 +159,11 @@ def _drop_all_cols():
         "_drop_all_cols"
     ],
 )
-def test_can_drop_cols_from_table(cols, exception, basic_data, store):
+def test_can_drop_cols_from_table(cols, exception, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     original_df.index.name = 'index'
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     table.write(original_df)
     # Act
     with pytest.raises(exception) as e:
@@ -180,26 +180,26 @@ def test_can_drop_cols_from_table(cols, exception, basic_data, store):
         ['c0', 'c2', 'c3', 'c4']
     ],
 )
-def test_drop_cols_from_table(cols, basic_data, store):
+def test_drop_cols_from_table(cols, store):
     # Arrange
     original_df = make_table(rows=30, astype="pandas")
     expected = original_df.copy().drop(columns=cols).squeeze()
 
     partition_size = get_partition_size(
-        original_df, num_partitions=basic_data['num_partitions'])
-    store.write_table(basic_data["table_name"],
+        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,
                       warnings='ignore')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     # Act
     table.drop(cols=cols)
     # Assert
-    df = store.read_pandas(basic_data["table_name"])
+    df = store.read_pandas(TABLE_NAME)
     assert df.equals(expected)
 
 
-def test_drop_cols_like_pattern_from_table(basic_data, store):
+def test_drop_cols_like_pattern_from_table(store):
     # Arrange
     original_df = make_table(rows=30, cols=20, astype="pandas")
     dropped_cols = [f"c{x}" for x in range(10)]
@@ -207,14 +207,14 @@ def test_drop_cols_like_pattern_from_table(basic_data, store):
     cols = ['like', 'c?']
 
     partition_size = get_partition_size(
-        original_df, num_partitions=basic_data['num_partitions'])
-    store.write_table(basic_data["table_name"],
+        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,
                       warnings='ignore')
-    table = store.select_table(basic_data["table_name"])
+    table = store.select_table(TABLE_NAME)
     # Act
     table.drop(cols=cols)
     # Assert
-    df = store.read_pandas(basic_data["table_name"])
+    df = store.read_pandas(TABLE_NAME)
     assert df.equals(expected)
