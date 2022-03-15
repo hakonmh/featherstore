@@ -4,44 +4,54 @@ from .fixtures import *
 
 @pytest.mark.parametrize(["num_partitions", "rows"], [(7, 30), (3, 125), (27, 36)])
 def test_update_table(num_partitions, rows, store):
-    # Arrange
-    INDEX_NAME = 'index'
-    original_df = make_table(rows=rows, cols=5, astype="pandas")
-    original_df.index.name = INDEX_NAME
+    fixtures = UpdateFixtures(rows)
+    original_df = fixtures.make_df()
+    update_df = fixtures.generate_update_values()
 
-    ROW_INDICES = [10, 13, 14, 21]
-    COL_INDICES = [3, 1]
-    update_df = make_table(rows=rows, cols=5, astype='pandas')
-    update_df = update_df.iloc[ROW_INDICES, COL_INDICES]
-    expected = original_df.copy()
-    expected.iloc[ROW_INDICES, COL_INDICES] = update_df
-
-    partition_size = get_partition_size(original_df,
-                                        num_partitions=num_partitions)
-    store.write_table(TABLE_NAME,
-                      original_df,
-                      partition_size=partition_size)
+    partition_size = get_partition_size(original_df, num_partitions)
     table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+
     partition_names = table._partition_data.keys()
     partition_data = table._partition_data.read()
+    # Act
+    table.update(update_df)
 
+    # Assert
+    _assert_that_partitons_are_the_same(table, partition_names, partition_data)
+
+
+def _assert_that_partitons_are_the_same(table, partition_names, partition_data):
+    # Check that partitions keep the same structure after update
+    df = table.read_arrow(TABLE_NAME)
+    index = df['index']
+    for partition, partition_name in zip(index.chunks, partition_names):
+        metadata = partition_data[partition_name]
+
+        index_start = partition[0].as_py()
+        index_end = partition[-1].as_py()
+        num_rows = len(partition)
+
+        assert index_start == metadata['min']
+        assert index_end == metadata['max']
+        assert num_rows == metadata['num_rows']
+
+
+def test_update_table(store):
+    # Arrange
+    fixtures = UpdateFixtures()
+    original_df = fixtures.make_df()
+    update_df = fixtures.generate_update_values()
+    expected = fixtures.update_table(update_df)
+
+    partition_size = get_partition_size(original_df, NUMBER_OF_PARTITIONS)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
     # Act
     table.update(update_df)
 
     # Assert
     df = store.read_pandas(TABLE_NAME)
-    arrow_df = store.read_arrow(TABLE_NAME)
-    arrow_index = arrow_df[INDEX_NAME]
-    # Check that partitions keep the same tructure after update
-    for partition, partition_name in zip(arrow_index.chunks, partition_names):
-        metadata = partition_data[partition_name]
-        index_start = partition[0].as_py()
-        index_end = partition[-1].as_py()
-
-        assert index_start == int(metadata['min'])
-        assert index_end == int(metadata['max'])
-        assert len(partition) == metadata['num_rows']
-
     assert df.equals(expected)
     assert not df.equals(original_df)
 
@@ -56,23 +66,46 @@ def test_update_table(num_partitions, rows, store):
                          )
 def test_update_table_with_pandas_series(index, rows, store):
     # Arrange
-    original_df = make_table(index=index, cols=5, astype='pandas')
-    store.write_table(TABLE_NAME, original_df)
-
-    update_df = make_table(index=index, cols=1, astype='pandas')
-    update_series = update_df.squeeze()
-    update_series = update_series[rows]
-
-    expected = original_df.copy()
-    expected.loc[rows, 'c0'] = update_series
+    fixtures = UpdateFixtures(index=index, update_rows=rows, update_cols=['c0'])
+    original_df = fixtures.make_df()
+    update_series = fixtures.generate_update_values(cols=1)
+    expected = fixtures.update_table(update_series)
 
     table = store.select_table(TABLE_NAME)
+    table.write(original_df)
     # Act
     table.update(update_series)
     # Assert
     df = store.read_pandas(TABLE_NAME)
     assert df.equals(expected)
     assert not df.equals(original_df)
+
+
+class UpdateFixtures:
+
+    def __init__(self, rows=30, index=None, update_rows=(10, 13, 14, 21),
+                 update_cols=('c2', 'c0')):
+        self.rows = rows
+        self.index = index
+        self.update_rows = update_rows
+        self.update_cols = update_cols
+
+    def make_df(self, cols=5):
+        self.df = make_table(index=self.index, rows=self.rows, cols=cols, astype="pandas")
+        self.df.index.name = 'index'
+        return self.df
+
+    def generate_update_values(self, cols=5, as_series=False):
+        update_values = make_table(index=self.index, rows=self.rows, cols=cols, astype='pandas')
+        update_values = update_values.loc[self.update_rows, self.update_cols]
+        if as_series:
+            update_values = update_values.squeeze()
+        return update_values
+
+    def update_table(self, values):
+        expected = self.df.copy()
+        expected.loc[self.update_rows, self.update_cols] = values
+        return expected
 
 
 def _wrong_index_dtype():
