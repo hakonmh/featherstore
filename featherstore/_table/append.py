@@ -102,6 +102,7 @@ def append_data(df, *, to):
     cols = to.column_names
     df = _sort_cols(df, cols=cols)
     try:
+        df = _coerce_dtypes(df, to)
         full_table = pa.concat_tables([to, df])
     except pa.ArrowInvalid:
         raise TypeError("Column dtypes doesn't match")
@@ -113,6 +114,10 @@ def _sort_cols(df, cols):
     if cols_not_sorted:
         df = df.select(cols)
     return df
+
+
+def _coerce_dtypes(df, to):
+    return df.cast(to.schema)
 
 
 def create_partitions(df, rows_per_partition, last_partition_name):
