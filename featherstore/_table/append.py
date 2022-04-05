@@ -1,3 +1,4 @@
+import pandas as pd
 import pyarrow as pa
 from pyarrow.compute import add
 
@@ -27,13 +28,19 @@ def can_append_table(
     pd_index = _table_utils.get_pd_index_if_exists(df, index_name)
     index_is_provided = pd_index is not None
     if not has_default_index or index_is_provided:
-        _raise_if_append_data_not_ordered_after_stored_data(df, table_path)
+        if not index_provided_is_default(pd_index):
+            _raise_if_append_data_not_ordered_after_stored_data(df, table_path)
 
     raise_if_index_not_exist(pd_index, has_default_index)
 
     if index_is_provided:
         _raise_if.index_is_not_supported_dtype(pd_index)
         _raise_if.index_values_contains_duplicates(pd_index)
+
+
+def index_provided_is_default(pd_index):
+    default_rangeindex = pd.RangeIndex(len(pd_index))
+    return pd_index.equals(default_rangeindex)
 
 
 def _raise_if_append_data_not_ordered_after_stored_data(df, table_path):

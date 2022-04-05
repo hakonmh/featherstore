@@ -195,3 +195,28 @@ def test_append_pd_series(original_df, store):
     df = store.read_pandas(TABLE_NAME)
     # Assert
     assert df.equals(original_df)
+
+
+@pytest.mark.parametrize(
+    "original_df",
+    [
+        make_table(astype="pandas"),
+    ],
+    ids=["int index"],
+)
+def test_append_using_default_index(original_df, store):
+    slice_ = original_df.shape[0] // 2
+    prewritten_df = original_df.iloc[:slice_]
+    appended_df = original_df.iloc[slice_:]
+    appended_df = appended_df.reset_index(drop=True)
+
+    partition_size = get_partition_size(original_df,
+                                        NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
+                      prewritten_df,
+                      partition_size=partition_size)
+    store.append_table(TABLE_NAME, appended_df)
+    # Act
+    df = store.read_pandas(TABLE_NAME)
+    # Assert
+    assert df.equals(original_df)
