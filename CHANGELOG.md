@@ -1,3 +1,8 @@
+0.1.1
+-----
+* Fixed behavior of `Table.append()` when using the default index
+
+
 0.1.0
 -----
 * Added snapshots
