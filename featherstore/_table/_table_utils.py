@@ -185,10 +185,9 @@ def get_pd_index_if_exists(df, index_name):
 
 
 def _get_index_if_index_in_table(df, index_name):
-    INDEX_NOT_IN_DF = (KeyError, RuntimeError, TypeError)
     try:
         pd_index = _get_index_as_pd_index(df, index_name)
-    except INDEX_NOT_IN_DF:
+    except Exception:
         pd_index = None
     return pd_index
 

@@ -1,4 +1,6 @@
-from calendar import c
+import pyarrow as pa
+import polars as pl
+
 import pytest
 import random
 from .fixtures import *
@@ -190,6 +192,52 @@ def test_append_pd_series(original_df, store):
     store.write_table(TABLE_NAME,
                       prewritten_df,
                       partition_size=partition_size)
+    store.append_table(TABLE_NAME, appended_df)
+    # Act
+    df = store.read_pandas(TABLE_NAME)
+    # Assert
+    assert df.equals(original_df)
+
+
+def _pandas_appended_df(appended_df):
+    appended_df = appended_df.reset_index(drop=True)
+    return appended_df
+
+
+def _polars_appended_df(appended_df):
+    appended_df = _pandas_appended_df(appended_df)
+    appended_df = pl.from_pandas(appended_df)
+    return appended_df
+
+
+def _arrow_appended_df(appended_df):
+    appended_df = _pandas_appended_df(appended_df)
+    appended_df = pa.Table.from_pandas(appended_df)
+    return appended_df
+
+
+@pytest.mark.parametrize(
+    "make_appended_df",
+    [
+        _pandas_appended_df,
+        _polars_appended_df,
+        _arrow_appended_df,
+    ],
+    ids=["pandas", "polars", 'pyarrow'],
+)
+def test_append_using_default_index(make_appended_df, store):
+    original_df = make_table(astype="pandas")
+    slice_ = original_df.shape[0] // 2
+    prewritten_df = original_df.iloc[:slice_]
+    partition_size = get_partition_size(original_df,
+                                        NUMBER_OF_PARTITIONS)
+    store.write_table(TABLE_NAME,
+                      prewritten_df,
+                      partition_size=partition_size)
+
+    appended_df = original_df.iloc[slice_:]
+    appended_df = make_appended_df(appended_df)
+
     store.append_table(TABLE_NAME, appended_df)
     # Act
     df = store.read_pandas(TABLE_NAME)
