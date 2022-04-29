@@ -93,7 +93,7 @@ class Table:
             or `between`, by default `None`
         """
         df = self.read_arrow(cols=cols, rows=rows)
-        df = df.to_pandas()
+        df = df.to_pandas(date_as_object=False)
 
         if read.can_be_converted_to_series(df):
             df = df.squeeze()

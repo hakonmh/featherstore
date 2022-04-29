@@ -173,3 +173,21 @@ def test_filtering_rows_after_low_with_datetime_index(low, store):
     df = store.read_polars(TABLE_NAME, rows=ROWS)
     # Assert
     assert df.frame_equal(expected)
+
+
+def test_polars_to_pandas(store):
+    # Arrange
+    original_df = make_table(astype="polars", cols=4)
+    expected = original_df.to_pandas()
+    expected = expected.astype({'c0': 'string'})
+    partition_size = get_partition_size(original_df,
+                                        NUMBER_OF_PARTITIONS)
+    index_name = get_index_name(original_df)
+    store.write_table(TABLE_NAME,
+                      original_df,
+                      partition_size=partition_size,
+                      index=index_name)
+    # Act
+    df = store.read_pandas(TABLE_NAME)
+    # Assert
+    assert df.equals(expected)

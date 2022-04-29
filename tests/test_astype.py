@@ -116,9 +116,8 @@ def test_change_dtype_to_timestamp(store):
     COL = ['c3']
     DTYPE = [pa.date64()]
 
-    original_df = make_table(rows=60, cols=4, astype="pandas")
-    expected = original_df.copy()
-    expected['c3'] = expected['c3'].apply(_convert_to_date)
+    original_df = make_table(rows=60, cols=4, astype="arrow")
+    expected = _convert_to_date64(original_df, col_idx=3)
 
     partition_size = get_partition_size(
         original_df, num_partitions=NUMBER_OF_PARTITIONS)
@@ -127,9 +126,14 @@ def test_change_dtype_to_timestamp(store):
     # Act
     table.astype(COL, to=DTYPE)
     # Assert
-    df = table.read_pandas()
-    assert_frame_equal(df, expected, check_dtype=True)
+    df = table.read_arrow()
+    assert df.equals(expected)
 
 
-def _convert_to_date(x):
-    return date(x.year, x.month, x.day)
+def _convert_to_date64(df, col_idx):
+    schema = df.schema
+    field = schema.field(col_idx)
+    field = field.with_type(pa.date64())
+    schema = schema.set(col_idx, field)
+    df = df.cast(schema)
+    return df

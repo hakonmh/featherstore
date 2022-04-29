@@ -74,7 +74,6 @@ def test_can_append_table(append_df, exception, store):
     with pytest.raises(exception) as e:
         table.append(append_df)
     # Assert
-    # breakpoint()
     assert isinstance(e.type(), exception)
 
 
