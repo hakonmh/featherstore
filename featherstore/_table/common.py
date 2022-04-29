@@ -157,6 +157,8 @@ def get_numpy_dtype_info(dtype):
     else:
         numpy_dtype = str(dtype)
         extra_metadata = None
+        if numpy_dtype == 'large_string':
+            numpy_dtype = 'string'
     return numpy_dtype, extra_metadata
 
 
