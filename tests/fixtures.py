@@ -186,3 +186,18 @@ def get_partition_size(df, num_partitions):
         byte_size = df.nbytes
     partition_size = byte_size // num_partitions
     return partition_size
+
+
+def convert_to_pandas(df):
+    if isinstance(df, pd.DataFrame):
+        pd_df = df
+    elif isinstance(df, pd.Series):
+        pd_df = df.to_frame()
+    elif isinstance(df, (pa.Table, pl.DataFrame)):
+        pd_df = df.to_pandas()
+
+    if "__index_level_0__" in pd_df.columns:
+        pd_df = pd_df.set_index("__index_level_0__")
+        pd_df.index.name = None
+
+    return pd_df
