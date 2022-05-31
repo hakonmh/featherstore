@@ -1,9 +1,86 @@
+from bdb import Breakpoint
 import pyarrow as pa
 import polars as pl
 
 import pytest
 import random
 from .fixtures import *
+
+
+@pytest.mark.parametrize("index",
+                         [None, sorted_datetime_index, sorted_string_index])
+@pytest.mark.parametrize("astype",
+                         ["arrow", "polars", "pandas"])
+@pytest.mark.parametrize("cols",
+                         [5, 1])
+def test_append_table(store, index, astype, cols):
+    # Arrange
+    fixture = AppendFixtures(index=index, astype=astype, cols=cols)
+    original_df = fixture.original_df
+    appended_df = fixture.appended_df
+
+    partition_size = get_partition_size(original_df, NUMBER_OF_PARTITIONS)
+    index_name = get_index_name(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size, index=index_name)
+    # Act
+    table.append(appended_df)
+    # Assert
+    fixture.assert_equal_expected(table)
+
+
+class AppendFixtures:
+
+    def __init__(self, index=None, rows=30, cols=5, slice_=0.5, astype="pandas"):
+        self._astype = astype
+        self._df = make_table(index=index, rows=rows, cols=cols, astype=self._astype)
+        original_slice = round(rows * slice_)
+        self.original_df = self._df[:original_slice]
+        self._make_appended_df(original_slice, index)
+
+    def _make_appended_df(self, original_slice, index):
+        df = self._df[original_slice:]
+        df = convert_table(df, to='pandas', as_series=False)
+        df = self.__shuffle_cols(df)
+        if index is None:
+            df = self.__make_default_index(df)
+        df = convert_table(df, to=self._astype)
+        self.appended_df = df
+
+    def __shuffle_cols(self, df):
+        cols = df.columns
+        shuffled_cols = random.sample(tuple(cols), len(cols))
+        df = df[shuffled_cols]
+        return df
+
+    def __make_default_index(self, df):
+        """For testing append_data with a default index"""
+        df = df.reset_index(drop=True)
+        return df
+
+    def assert_equal_expected(self, table):
+        expected = self._make_expected()
+
+        if self._astype == "arrow":
+            df = table.read_arrow()
+            if set(df.column_names) == set(expected.column_names):
+                expected = expected.select(df.column_names)
+            assert df.equals(expected)
+
+        elif self._astype == 'polars':
+            df = table.read_polars()
+            if set(df.columns) == set(expected.columns):
+                expected = expected[df.columns]
+            assert df.frame_equal(expected)
+
+        else:
+            df = table.read_pandas()
+            assert all(df.eq(expected))
+
+    def _make_expected(self):
+        index_name = get_index_name(self._df)
+        expected = convert_table(self._df, to=self._astype, index_name=index_name)
+        return expected
 
 
 def _wrong_index_dtype():
@@ -75,170 +152,3 @@ def test_can_append_table(append_df, exception, store):
         table.append(append_df)
     # Assert
     assert isinstance(e.type(), exception)
-
-
-@pytest.mark.parametrize(
-    "original_df",
-    [
-        make_table(),
-        make_table(sorted_datetime_index),
-        make_table(sorted_string_index),
-    ],
-    ids=["int index", "datetime index", "string index"],
-)
-def test_append_arrow_table(original_df, store):
-    # Arrange
-    slice_ = original_df.shape[0] // 2
-    prewritten_df = original_df.slice(0, slice_)
-    appended_df = original_df.slice(slice_)
-    cols = appended_df.column_names
-    shuffled_cols = random.sample(cols, len(cols))
-    appended_df = appended_df.select(shuffled_cols)
-    index_name = get_index_name(prewritten_df)
-
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
-    store.write_table(TABLE_NAME,
-                      prewritten_df,
-                      partition_size=partition_size,
-                      index=index_name)
-    store.append_table(TABLE_NAME, appended_df)
-    # Act
-    df = store.read_arrow(TABLE_NAME)
-    # Assert
-    assert df.equals(original_df)
-
-
-@pytest.mark.parametrize(
-    "original_df",
-    [
-        make_table(astype="polars"),
-        make_table(sorted_datetime_index, astype="polars"),
-        make_table(sorted_string_index, astype="polars"),
-    ],
-    ids=["int index", "datetime index", "string index"],
-)
-def test_append_polars_table(original_df, store):
-    # Arrange
-    slice_ = original_df.shape[0] // 2
-    prewritten_df = original_df[:slice_]
-    appended_df = original_df[slice_:]
-    cols = appended_df.columns
-    shuffled_cols = random.sample(cols, len(cols))
-    appended_df = appended_df[shuffled_cols]
-    index_name = get_index_name(prewritten_df)
-
-    partition_size = get_partition_size(prewritten_df,
-                                        NUMBER_OF_PARTITIONS)
-    store.write_table(TABLE_NAME,
-                      prewritten_df,
-                      partition_size=partition_size,
-                      index=index_name)
-    store.append_table(TABLE_NAME, appended_df)
-    # Act
-    df = store.read_polars(TABLE_NAME)
-    # Assert
-    assert df.frame_equal(original_df)
-
-
-@pytest.mark.parametrize(
-    "original_df",
-    [
-        make_table(astype="pandas"),
-        make_table(sorted_datetime_index, astype="pandas"),
-        make_table(sorted_string_index, astype="pandas"),
-    ],
-    ids=["int index", "datetime index", "string index"],
-)
-def test_append_pd_dataframe(original_df, store):
-    # Arrange
-    slice_ = original_df.shape[0] // 2
-    prewritten_df = original_df.iloc[:slice_]
-    appended_df = original_df.iloc[slice_:]
-    cols = appended_df.columns
-    shuffled_cols = random.sample(tuple(cols), len(cols))
-    appended_df = appended_df[shuffled_cols]
-
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
-    store.write_table(TABLE_NAME,
-                      prewritten_df,
-                      partition_size=partition_size)
-    store.append_table(TABLE_NAME, appended_df)
-    # Act
-    df = store.read_pandas(TABLE_NAME)
-    # Assert
-    assert df.equals(original_df)
-
-
-@pytest.mark.parametrize(
-    "original_df",
-    [
-        make_table(sorted_datetime_index, cols=1, astype="pandas"),
-        make_table(cols=1, astype="pandas"),
-        make_table(sorted_string_index, cols=1, astype="pandas"),
-    ],
-    ids=["int index", "datetime index", "string index"],
-)
-def test_append_pd_series(original_df, store):
-    # Arrange
-    original_df = original_df.squeeze()
-    slice_ = original_df.shape[0] // 2
-    prewritten_df = original_df[:slice_]
-    appended_df = original_df[slice_:]
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
-    store.write_table(TABLE_NAME,
-                      prewritten_df,
-                      partition_size=partition_size)
-    store.append_table(TABLE_NAME, appended_df)
-    # Act
-    df = store.read_pandas(TABLE_NAME)
-    # Assert
-    assert df.equals(original_df)
-
-
-def _pandas_appended_df(appended_df):
-    appended_df = appended_df.reset_index(drop=True)
-    return appended_df
-
-
-def _polars_appended_df(appended_df):
-    appended_df = _pandas_appended_df(appended_df)
-    appended_df = pl.from_pandas(appended_df)
-    return appended_df
-
-
-def _arrow_appended_df(appended_df):
-    appended_df = _pandas_appended_df(appended_df)
-    appended_df = pa.Table.from_pandas(appended_df)
-    return appended_df
-
-
-@pytest.mark.parametrize(
-    "make_appended_df",
-    [
-        _pandas_appended_df,
-        _polars_appended_df,
-        _arrow_appended_df,
-    ],
-    ids=["pandas", "polars", 'pyarrow'],
-)
-def test_append_using_default_index(make_appended_df, store):
-    original_df = make_table(astype="pandas")
-    slice_ = original_df.shape[0] // 2
-    prewritten_df = original_df.iloc[:slice_]
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
-    store.write_table(TABLE_NAME,
-                      prewritten_df,
-                      partition_size=partition_size)
-
-    appended_df = original_df.iloc[slice_:]
-    appended_df = make_appended_df(appended_df)
-
-    store.append_table(TABLE_NAME, appended_df)
-    # Act
-    df = store.read_pandas(TABLE_NAME)
-    # Assert
-    assert df.equals(original_df)

@@ -188,7 +188,17 @@ def get_partition_size(df, num_partitions):
     return partition_size
 
 
-def convert_to_pandas(df):
+def convert_table(df, *, to, index_name=None, as_series=True):
+    if to == 'pandas':
+        df = _convert_to_pandas(df, index_name=index_name, as_series=as_series)
+    elif to == 'arrow':
+        df = _convert_to_arrow(df)
+    elif to == "polars":
+        df = _convert_to_polars(df)
+    return df
+
+
+def _convert_to_pandas(df, index_name=None, as_series=True):
     if isinstance(df, pd.DataFrame):
         pd_df = df
     elif isinstance(df, pd.Series):
@@ -196,8 +206,38 @@ def convert_to_pandas(df):
     elif isinstance(df, (pa.Table, pl.DataFrame)):
         pd_df = df.to_pandas()
 
-    if "__index_level_0__" in pd_df.columns:
+    pd_df = pd_df.convert_dtypes()  # TODO: Change so it only converts object to string
+    if index_name and index_name in pd_df.columns:
+        pd_df = pd_df.set_index(index_name)
+    elif "__index_level_0__" in pd_df.columns:
         pd_df = pd_df.set_index("__index_level_0__")
+    if pd_df.index.name == "__index_level_0__":
         pd_df.index.name = None
 
+    if as_series:
+        pd_df = pd_df.squeeze()
     return pd_df
+
+
+def _convert_to_arrow(df):
+    if isinstance(df, pd.Series):
+        df = df.to_frame()
+    if isinstance(df, pd.DataFrame):
+        df = pa.Table.from_pandas(df, preserve_index=True)
+    elif isinstance(df, pl.DataFrame):
+        df = df.to_arrow()
+    cols = df.column_names
+    if '__index_level_0__' in cols:
+        first_field = df['__index_level_0__'][0].as_py()
+        if isinstance(first_field, int):
+            cols.remove('__index_level_0__')
+    df = df.select(cols)
+    return df
+
+
+def _convert_to_polars(df):
+    if isinstance(df, (pd.Series, pd.DataFrame)):
+        df = _convert_to_arrow(df)
+    if isinstance(df, pa.Table):
+        df = pl.from_arrow(df)
+    return df
