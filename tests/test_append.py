@@ -8,7 +8,7 @@ from .fixtures import *
 
 
 @pytest.mark.parametrize("index",
-                         [None, sorted_datetime_index, sorted_string_index])
+                         [default_index, sorted_datetime_index, sorted_string_index])
 @pytest.mark.parametrize("astype",
                          ["arrow", "polars", "pandas"])
 @pytest.mark.parametrize("cols",

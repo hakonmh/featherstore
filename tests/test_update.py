@@ -3,7 +3,7 @@ from .fixtures import *
 
 
 @pytest.mark.parametrize(["index", "update_rows_loc", "num_cols"],
-                         [(None, [10, 13, 14, 21], 5),
+                         [(default_index, [10, 13, 14, 21], 5),
                           (hardcoded_string_index, ["row00010", "row00013",
                                                     "row00014", "row00021"], 1),
                           (hardcoded_datetime_index, ["2021-01-01", "2021-01-16",
