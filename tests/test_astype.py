@@ -3,7 +3,6 @@ from pandas.testing import assert_frame_equal
 from .fixtures import *
 import pyarrow as pa
 from decimal import Decimal
-from datetime import date
 
 
 def _new_dtypes_provided_twice():
