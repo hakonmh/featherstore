@@ -126,6 +126,11 @@ def __make_index_first_column(df):
     return df
 
 
+def default_index(rows):
+    index = pd.RangeIndex(rows)
+    return index
+
+
 def sorted_string_index(rows):
     index = unsorted_string_index(rows)
     return index.sort_values()
@@ -153,7 +158,7 @@ def hardcoded_string_index(rows):
 
 
 def unsorted_int_index(rows):
-    index = pd.RangeIndex(rows)
+    index = default_index(rows)
     index = pd.Series(index)
     index = index.sample(frac=1)
     return index
