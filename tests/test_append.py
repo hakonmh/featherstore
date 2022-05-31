@@ -19,7 +19,7 @@ def test_append_table(store, index, astype, cols):
     original_df = fixture.original_df
     appended_df = fixture.appended_df
 
-    partition_size = get_partition_size(original_df, NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     index_name = get_index_name(original_df)
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size, index=index_name)

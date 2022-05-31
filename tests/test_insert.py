@@ -19,8 +19,7 @@ def test_insert_table(original_df, store):
     expected = original_df.copy().sort_index()
     original_df = original_df.drop(index=row_indices)
 
-    partition_size = get_partition_size(
-        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,
@@ -41,8 +40,7 @@ def test_insert_table_with_pandas_series(store):
     expected = original_df.copy().sort_index()
     original_df = original_df.drop(index=row_indices)
 
-    partition_size = get_partition_size(
-        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,

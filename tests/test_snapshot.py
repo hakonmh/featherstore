@@ -7,8 +7,7 @@ def test_table_snapshot(store):
     # Arrange
     SNAPSHOT_PATH = 'tests/db/table_snapshot'
     original_df = make_table(astype='pandas')
-    partition_size = get_partition_size(
-        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size, warnings='ignore')
     # Act
@@ -25,8 +24,7 @@ def test_store_snapshot(store):
     SNAPSHOT_PATH = 'tests/db/store_snapshot'
     original_df1 = make_table(astype='pandas')
     original_df2 = make_table(astype='pandas')
-    partition_size = get_partition_size(
-        original_df1, num_partitions=NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df1)
     store.write_table('df1', original_df1,
                       partition_size=partition_size)
     store.write_table('df2', original_df2,

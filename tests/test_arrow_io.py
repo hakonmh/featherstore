@@ -26,7 +26,7 @@ def test_arrow_io(index, partition_size, store):
 
 def _get_partition_size(df, partition_size):
     if partition_size is None:
-        partition_size = get_partition_size(df, NUMBER_OF_PARTITIONS)
+        partition_size = get_partition_size(df)
     return partition_size
 
 

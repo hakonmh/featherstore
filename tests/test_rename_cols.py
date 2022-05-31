@@ -80,8 +80,7 @@ def test_rename_cols(columns, to, result, store):
     expected = original_df.copy()
     expected.columns = result
 
-    partition_size = get_partition_size(
-        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,

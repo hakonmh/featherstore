@@ -54,8 +54,7 @@ def test_drop_rows_from_int_indexed_table(rows, slice_, store):
     mask = original_df.iloc[slice_, :].index
     expected = original_df.copy().drop(index=mask)
 
-    partition_size = get_partition_size(
-        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,
@@ -81,8 +80,7 @@ def test_drop_rows_from_str_indexed_table(rows, condition, store):
     mask = original_df.loc[eval(condition)].index
     expected = original_df.copy().drop(index=mask)
 
-    partition_size = get_partition_size(
-        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,
@@ -108,8 +106,7 @@ def test_drop_rows_from_datetime_indexed_table(rows, condition, store):
     mask = original_df.loc[eval(condition)].index
     expected = original_df.copy().drop(index=mask)
 
-    partition_size = get_partition_size(
-        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,
@@ -185,8 +182,7 @@ def test_drop_cols_from_table(cols, store):
     original_df = make_table(rows=30, astype="pandas")
     expected = original_df.copy().drop(columns=cols).squeeze()
 
-    partition_size = get_partition_size(
-        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,
@@ -206,8 +202,7 @@ def test_drop_cols_like_pattern_from_table(store):
     expected = original_df.copy().drop(columns=dropped_cols)
     cols = ['like', 'c?']
 
-    partition_size = get_partition_size(
-        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size,

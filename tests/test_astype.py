@@ -76,8 +76,7 @@ def test_change_dtype_to_float_and_int(store):
     expected = original_df.copy()
     expected = expected.astype({'c1': 'float32', 'c2': 'int32'})
 
-    partition_size = get_partition_size(
-        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size)
     # Act
@@ -96,8 +95,7 @@ def test_change_dtype_to_decimal(store):
     expected['c1'] = expected['c1'].apply(_convert_to_decimal, args=[5, 5])
     expected['c2'] = expected['c2'].apply(_convert_to_decimal, args=[19, 0])
 
-    partition_size = get_partition_size(
-        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size)
     # Act
@@ -119,8 +117,7 @@ def test_change_dtype_to_timestamp(store):
     original_df = make_table(rows=60, cols=4, astype="arrow")
     expected = _convert_to_date64(original_df, col_idx=3)
 
-    partition_size = get_partition_size(
-        original_df, num_partitions=NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size)
     # Act

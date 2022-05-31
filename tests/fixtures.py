@@ -11,9 +11,6 @@ DB_PATH = os.path.join('tests', 'db')
 STORE_NAME = "test_store"
 TABLE_NAME = "table_name"
 TABLE_PATH = os.path.join(DB_PATH, STORE_NAME, TABLE_NAME)
-NUMBER_OF_PARTITIONS = 5
-
-ROWS = 30
 
 
 def get_index_name(df):
@@ -34,7 +31,7 @@ def get_index_name(df):
     return index_name
 
 
-def make_table(index=None, rows=ROWS, cols=5, *, astype="arrow"):
+def make_table(index=None, rows=30, cols=5, *, astype="arrow"):
     df = _make_df(rows, cols)
     if index is not None:
         df.index = index(rows)
@@ -180,7 +177,7 @@ def unsorted_datetime_index(rows):
     return pd.Series(index, name="Date")
 
 
-def get_partition_size(df, num_partitions):
+def get_partition_size(df, num_partitions=5):
     if isinstance(df, pd.DataFrame):
         byte_size = df.memory_usage(index=True).sum()
     elif isinstance(df, pd.Series):

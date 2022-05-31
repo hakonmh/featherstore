@@ -15,7 +15,7 @@ def test_add_cols(store, index, cols, col_names, col_idx):
     new_cols = fixtures.make_df(index, cols, col_names)
     expected = fixtures.add_cols(new_cols=new_cols, to=original_df, idx=col_idx)
 
-    partition_size = get_partition_size(original_df, NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size, warnings='ignore')
     # Act

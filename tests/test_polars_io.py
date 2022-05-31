@@ -13,8 +13,7 @@ from .fixtures import *
 )
 def test_sorted_polars_io(original_df, store):
     # Arrange
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     index_name = get_index_name(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
@@ -30,8 +29,7 @@ def test_unsorted_polars_io(store):
     # Arrange
     original_df = make_table(unsorted_int_index, astype="polars")
     sorted_original_df = original_df.sort(by="__index_level_0__")
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     index_name = get_index_name(original_df)
     store.write_table(
         TABLE_NAME,
@@ -61,8 +59,7 @@ def test_unsorted_polars_io(store):
 def test_filtering_rows_with_list(original_df, rows, store):
     # Arrange
     original_df.index.name = "index"
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     index_name = get_index_name(original_df)
     store.write_table(
         TABLE_NAME,
@@ -95,8 +92,7 @@ def test_filtering_columns_and_rows_between(low, high, store):
     COLUMNS = ["c0", "c1"]
     ROWS = ["between", low, high]
     original_df = make_table(astype="polars")
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     index_name = get_index_name(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
@@ -129,8 +125,7 @@ def test_filtering_rows_before_low_with_string_index(high, store):
     expected = pandas_df.loc[:high, :]
     expected = pl.from_pandas(expected.reset_index())
 
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(
         TABLE_NAME,
         original_df,
@@ -161,8 +156,7 @@ def test_filtering_rows_after_low_with_datetime_index(low, store):
     expected = pandas_df.loc[low:, :]
     expected = pl.from_pandas(expected.reset_index())
 
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(
         TABLE_NAME,
         original_df,
@@ -180,8 +174,7 @@ def test_polars_to_pandas(store):
     original_df = make_table(astype="polars", cols=4)
     expected = original_df.to_pandas()
     expected = expected.astype({'c0': 'string'})
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     index_name = get_index_name(original_df)
     store.write_table(TABLE_NAME,
                       original_df,

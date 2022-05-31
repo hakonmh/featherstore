@@ -15,8 +15,7 @@ def test_pandas_series_io(original_df, store):
     # Arrange
     original_df = make_table(sorted_string_index, cols=1, astype="pandas")
     original_df = original_df.squeeze()
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size)

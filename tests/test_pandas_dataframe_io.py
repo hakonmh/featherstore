@@ -114,8 +114,7 @@ def test_can_write(arguments, exception, store):
 )
 def test_sorted_pandas_io(original_df, store):
     # Arrange
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size)
@@ -136,8 +135,7 @@ def test_sorted_pandas_io(original_df, store):
 )
 def test_unsorted_pandas_io(original_df, store):
     # Arrange
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(
         TABLE_NAME,
         original_df,
@@ -198,8 +196,7 @@ def test_filter_columns(store):
 )
 def test_filtering_rows_with_list(original_df, rows, store):
     # Arrange
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(
         TABLE_NAME,
         original_df,
@@ -229,8 +226,7 @@ def test_filtering_columns_and_rows_between(low, high, store):
     ROWS = ["between", low, high]
     original_df = make_table(astype="pandas")
     original_df.index.name = "index"
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size)
@@ -253,8 +249,7 @@ def test_filtering_rows_before_low_with_string_index(high, store):
     # Arrange
     ROWS = ["before", high]
     original_df = make_table(sorted_string_index, astype="pandas")
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size)
@@ -278,8 +273,7 @@ def test_filtering_rows_after_low_with_datetime_index(low, store):
     # Arrange
     ROWS = ["after", low]
     original_df = make_table(hardcoded_datetime_index, astype="pandas")
-    partition_size = get_partition_size(original_df,
-                                        NUMBER_OF_PARTITIONS)
+    partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME,
                       original_df,
                       partition_size=partition_size)
