@@ -144,7 +144,7 @@ def get_numpy_dtype_info(dtype):
             'precision': dtype.precision,
             'scale': dtype.scale,
         }
-    elif pd_dtype == 'date':  # Numpy doesn't support date types
+    elif pd_dtype in ('date', 'time'):  # Numpy doesn't support date types
         resolution = str(dtype).split('[')[-1][:-1]
         if resolution == 'day':
             resolution = 'D'
@@ -159,7 +159,7 @@ def get_numpy_dtype_info(dtype):
     else:
         numpy_dtype = str(dtype)
         extra_metadata = None
-        if numpy_dtype == 'large_string':
+        if numpy_dtype in ('large_string', 'binary', 'large_binary'):
             numpy_dtype = 'string'
     return numpy_dtype, extra_metadata
 
