@@ -31,25 +31,32 @@ def get_index_name(df):
     return index_name
 
 
-def make_table(index=None, rows=30, cols=5, *, astype="arrow"):
-    df = _make_df(rows, cols)
+def make_table(index=None, rows=30, cols=5, *, astype="arrow", dtype=None):
+    df = _make_df(rows, cols, dtype=dtype)
     if index is not None:
         df.index = index(rows)
     df = _convert_df_to(df, to=astype)
     return df
 
 
-def _make_df(rows, cols):
-    col_dtypes = [
-        __make_string_col,
-        __make_float_col,
-        __make_int_col,
-        __make_datetime_col,
-    ]
+def _make_df(rows, cols, dtype=None):
+    col_dtypes = {
+        'string': __make_string_col,
+        'float': __make_float_col,
+        'int': __make_int_col,
+        'datetime': __make_datetime_col,
+        'bool': __make_bool_column,
+        'uint': __make_uint_col,
+    }
+    if not dtype:
+        col_dtypes = tuple(col_dtypes.values())[:-1]
 
     random_data = dict()
     for col in range(cols):
-        idx = col % len(col_dtypes)
+        if not dtype:
+            idx = col % len(col_dtypes)
+        else:
+            idx = dtype
         random_data[f"c{col}"] = col_dtypes[idx](rows)
 
     df = pd.DataFrame(random_data)
@@ -58,6 +65,11 @@ def _make_df(rows, cols):
 
 def __make_float_col(rows):
     return np.random.random(size=rows)
+
+
+def __make_uint_col(rows):
+    df = __make_int_col(rows)
+    return np.abs(df)
 
 
 def __make_int_col(rows):
@@ -123,6 +135,13 @@ def __make_index_first_column(df):
     return df
 
 
+def __make_bool_column(rows):
+    df = np.random.randint(0, 2, size=rows)
+    df = pd.Series(df)
+    df = df.astype(bool)
+    return df
+
+
 def default_index(rows):
     index = pd.RangeIndex(rows)
     return index
@@ -183,11 +202,21 @@ def get_partition_size(df, num_partitions=5):
     elif isinstance(df, pd.Series):
         byte_size = df.memory_usage(index=True)
     elif isinstance(df, pl.DataFrame):
-        byte_size = df.to_arrow().nbytes
-    else:
+        df = df.to_arrow()
+    if isinstance(df, pa.Table):
         byte_size = df.nbytes
+        if _has_rangeindex(df):
+            byte_size += 6 * df.shape[0]
     partition_size = byte_size // num_partitions
     return partition_size
+
+
+def _has_rangeindex(df):
+    try:
+        index_type = df.schema.pandas_metadata['index_columns'][0]['kind']
+        return index_type == 'range'
+    except TypeError:
+        return False
 
 
 def convert_table(df, *, to, index_name=None, as_series=True):
