@@ -146,6 +146,8 @@ def get_numpy_dtype_info(dtype):
         }
     elif pd_dtype == 'date':  # Numpy doesn't support date types
         resolution = str(dtype).split('[')[-1][:-1]
+        if resolution == 'day':
+            resolution = 'D'
         numpy_dtype = f'datetime64[{resolution}]'
         extra_metadata = None
     elif hasattr(dtype, 'tz'):  # Store timezone info if exists for dtime types
