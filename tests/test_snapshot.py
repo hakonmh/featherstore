@@ -1,6 +1,7 @@
-from .fixtures import *
-from pandas.testing import assert_frame_equal
 from featherstore import snapshot
+from .fixtures import *
+
+from pandas.testing import assert_frame_equal
 
 
 def test_table_snapshot(store):

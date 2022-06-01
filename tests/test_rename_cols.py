@@ -1,6 +1,7 @@
 import pytest
-from pandas.testing import assert_frame_equal
 from .fixtures import *
+
+from pandas.testing import assert_frame_equal
 
 
 def _new_names_provided_twice():

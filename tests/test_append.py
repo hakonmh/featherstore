@@ -1,5 +1,5 @@
-import pytest
 import random
+import pytest
 from .fixtures import *
 
 

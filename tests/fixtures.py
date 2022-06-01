@@ -49,7 +49,7 @@ def _make_df(rows, cols, dtype=None):
         'uint': __make_uint_col,
     }
     if not dtype:
-        col_dtypes = tuple(col_dtypes.values())[:-1]
+        col_dtypes = tuple(col_dtypes.values())
 
     random_data = dict()
     for col in range(cols):

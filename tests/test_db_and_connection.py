@@ -1,6 +1,6 @@
-import featherstore as fs
 import os
 import shutil
+import featherstore as fs
 
 from tests.fixtures import DB_PATH, STORE_NAME
 
