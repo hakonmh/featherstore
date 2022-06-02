@@ -1,9 +1,8 @@
 import shutil
 import os
-
 import pytest
-import featherstore as fs
 from .fixtures import DB_PATH, STORE_NAME
+import featherstore as fs
 
 
 @pytest.fixture(scope="function", name="store")
@@ -27,7 +26,7 @@ class SetupDB:
         # Teardown
         for table in self._store.list_tables():
             self._store.drop_table(table)
-        fs.drop_store(STORE_NAME)
+        fs.drop_store(STORE_NAME, errors='ignore')
         fs.disconnect()
         shutil.rmtree(DB_PATH, ignore_errors=False)
 

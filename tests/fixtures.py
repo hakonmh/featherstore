@@ -1,11 +1,11 @@
 import os
+from featherstore._table._table_utils import get_col_names
 
 import pyarrow as pa
 import polars as pl
 import pandas as pd
 import numpy as np
 from pandas._testing import rands_array
-from featherstore._table._table_utils import get_col_names
 
 DB_PATH = os.path.join('tests', 'db')
 STORE_NAME = "test_store"
