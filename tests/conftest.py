@@ -1,4 +1,5 @@
 import shutil
+import os
 
 import pytest
 import featherstore as fs
@@ -14,6 +15,8 @@ def setup_db():
 class SetupDB:
     def __enter__(self):
         # Setup
+        if os.path.exists(DB_PATH):
+            shutil.rmtree(DB_PATH, ignore_errors=False)
         fs.create_database(DB_PATH)
         fs.connect(DB_PATH)
         fs.create_store(STORE_NAME)
