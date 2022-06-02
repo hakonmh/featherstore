@@ -6,7 +6,7 @@ from featherstore._table import _table_utils
 
 
 def can_update_table(df, table_path):
-    Connection.is_connected()
+    Connection._raise_if_not_connected()
 
     _raise_if.table_not_exists(table_path)
     _raise_if.df_is_not_pandas_table((df))

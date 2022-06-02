@@ -41,7 +41,7 @@ def create_database(path, errors="raise"):
 
 
 def _make_database_marker(db_path):
-    """A database marker is used to tell FeatherStore that `db_path` is a database directory"""
+    """A database marker tells FeatherStore that `db_path` is a database directory"""
     db_marker_path = os.path.join(db_path, DB_MARKER_NAME)
     open(db_marker_path, "a").close()
     mark_as_hidden(db_marker_path)
@@ -58,6 +58,11 @@ def current_db():
     return Connection.location()
 
 
+def is_connected():
+    """Checks if FeatherStore is connected to a database."""
+    return Connection.is_connected()
+
+
 class Connection:
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "instance"):
@@ -71,17 +76,24 @@ class Connection:
 
     @classmethod
     def disconnect(cls):
-        cls.is_connected()
+        cls._raise_if_not_connected()
         delattr(cls, "instance")
 
     @classmethod
     def location(cls):
-        cls.is_connected()
+        cls._raise_if_not_connected()
         return cls.instance._location
 
     @classmethod
     def is_connected(cls):
-        if not hasattr(cls, "instance"):
+        if hasattr(cls, "instance"):
+            return True
+        else:
+            return False
+
+    @classmethod
+    def _raise_if_not_connected(cls):
+        if not cls.is_connected():
             raise ConnectionError("Not connected to a database")
 
 

@@ -320,7 +320,7 @@ class Store:
 
 
 def _can_create_store(store_name, errors):
-    Connection.is_connected()
+    Connection._raise_if_not_connected()
     _utils.raise_if_errors_argument_is_not_valid(errors)
     if errors == 'raise':
         _raise_if_store_already_exists(store_name)
@@ -328,7 +328,7 @@ def _can_create_store(store_name, errors):
 
 
 def _can_drop_store(store_name, errors):
-    Connection.is_connected()
+    Connection._raise_if_not_connected()
     _utils.raise_if_errors_argument_is_not_valid(errors)
     if errors == "raise":
         _raise_if_store_not_exists(store_name)
@@ -346,14 +346,14 @@ def _raise_if_store_contains_tables(store_name):
 
 
 def _can_init_store(store_name):
-    Connection.is_connected()
+    Connection._raise_if_not_connected()
     _raise_if_store_name_is_str(store_name)
     _raise_if_store_not_exists(store_name)
     _raise_if_store_name_is_forbidden(store_name)
 
 
 def _can_rename_store(new_store_name):
-    Connection.is_connected()
+    Connection._raise_if_not_connected()
     _raise_if_store_name_is_str(new_store_name)
     _raise_if_store_already_exists(new_store_name)
     _raise_if_store_name_is_forbidden(new_store_name)
@@ -382,7 +382,7 @@ def _raise_if_store_already_exists(store_name):
 
 
 def _can_list(like):
-    Connection.is_connected()
+    Connection._raise_if_not_connected()
     _raise_if_like_is_not_str(like)
 
 

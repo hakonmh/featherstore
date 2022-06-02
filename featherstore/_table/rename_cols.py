@@ -4,7 +4,7 @@ from featherstore._metadata import Metadata
 
 
 def can_rename_columns(cols, new_col_names, table_path):
-    Connection.is_connected()
+    Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table_path)
 
     _raise_if_invalid_arg_signature(cols, new_col_names)

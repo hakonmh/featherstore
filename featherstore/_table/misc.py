@@ -5,7 +5,7 @@ from featherstore._table import _raise_if
 
 
 def can_init_table(table_name, store_name):
-    Connection.is_connected()
+    Connection._raise_if_not_connected()
     store._raise_if_store_name_is_str(store_name)
     store._raise_if_store_not_exists(store_name)
 
@@ -14,7 +14,7 @@ def can_init_table(table_name, store_name):
 
 
 def can_rename_table(new_table_name, new_table_path):
-    Connection.is_connected()
+    Connection._raise_if_not_connected()
 
     _raise_if.table_name_is_not_str(new_table_name)
     _raise_if.table_name_is_forbidden(new_table_path)
@@ -22,7 +22,7 @@ def can_rename_table(new_table_name, new_table_path):
 
 
 def can_reorder_columns(cols, table_path):
-    Connection.is_connected()
+    Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table_path)
 
     _raise_if_new_cols_is_not_list(cols)

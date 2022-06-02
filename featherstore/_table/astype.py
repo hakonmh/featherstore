@@ -7,7 +7,7 @@ from featherstore._metadata import Metadata
 
 
 def can_change_type(cols, astype, table_path):
-    Connection.is_connected()
+    Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table_path)
 
     _raise_if_invalid_arg_signature(cols, astype)

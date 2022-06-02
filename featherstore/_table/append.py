@@ -15,7 +15,7 @@ def can_append_table(
     warnings,
     table_path,
 ):
-    Connection.is_connected()
+    Connection._raise_if_not_connected()
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
     _raise_if.table_not_exists(table_path)
     _raise_if.df_is_not_supported_table_dtype(df)

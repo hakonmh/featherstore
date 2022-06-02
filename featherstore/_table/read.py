@@ -13,7 +13,7 @@ from featherstore._table import _table_utils
 
 
 def can_read_table(cols, rows, table_path):
-    Connection.is_connected()
+    Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table_path)
 
     _raise_if.rows_argument_is_not_supported_dtype(rows)

@@ -16,7 +16,7 @@ from featherstore._table import _table_utils
 
 
 def can_write_table(df, table_path, index_name, partition_size, errors, warnings):
-    Connection.is_connected()
+    Connection._raise_if_not_connected()
     _utils.raise_if_errors_argument_is_not_valid(errors)
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
     if errors == 'raise':

@@ -2,7 +2,7 @@ import tarfile
 import os
 import pickle
 from datetime import datetime
-from featherstore.connection import current_db
+from featherstore.connection import Connection, current_db
 
 METADATA_FILE_NAME = 'metadata.pkl'
 
@@ -18,8 +18,7 @@ def restore_table(store, source):
         Path to the snapshot file.
     """
     _can_restore_table(store, source)
-    db_path = current_db()
-    store_path = os.path.join(db_path, store)
+    store_path = os.path.join(current_db(), store)
     _extract_snapshot(store_path, source)
 
 
@@ -32,8 +31,7 @@ def restore_store(source):
         Path to the snapshot file.
     """
     _can_restore_store(source)
-    db_path = current_db()
-    _extract_snapshot(db_path, source)
+    _extract_snapshot(current_db(), source)
 
 
 def _extract_snapshot(output_path, source):
@@ -47,7 +45,7 @@ def _extract_snapshot(output_path, source):
 
 
 def _can_restore_table(store, source):
-    current_db()
+    Connection._raise_if_not_connected()
     __raise_if_store_is_not_str(store)
     __raise_if_store_doesnt_exist(store)
     __raise_if_source_path_is_not_str(source)
@@ -56,7 +54,7 @@ def _can_restore_table(store, source):
 
 
 def _can_restore_store(source):
-    current_db()
+    Connection._raise_if_not_connected()
     __raise_if_source_path_is_not_str(source)
     __raise_if_snapshot_not_found(source)
     __raise_if_not_snapshot_of_store(source)
@@ -68,8 +66,7 @@ def __raise_if_store_is_not_str(store):
 
 
 def __raise_if_store_doesnt_exist(store):
-    db_path = current_db()
-    store_path = os.path.join(db_path, store)
+    store_path = os.path.join(current_db(), store)
     if not os.path.exists(store_path):
         raise FileNotFoundError(f"'store' not found")
 
