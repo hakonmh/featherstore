@@ -1,5 +1,86 @@
+import re
 import pytest
 from .fixtures import *
+
+ARGS = [
+    (default_index, [10, 24, 0, 13], None),
+    (default_index, pd.Index([10, 24, 0, 13]), None),
+    (default_index, pd.RangeIndex(10, 13), None),
+    (default_index, ['before', 10], None),
+    (default_index, ['after', 10], None),
+    (default_index, ['between', 10, 13], None),
+    (hardcoded_string_index, ['row00010', 'row00024', 'row00000'], None),
+    (hardcoded_string_index, pd.Index(['row00010', 'row00000']), None),
+    (hardcoded_string_index, ['before', 'row00010'], None),
+    (hardcoded_string_index, ['after', 'row00010'], None),
+    (hardcoded_string_index, ['between', 'row00010', 'row00013'], None),
+    (hardcoded_datetime_index, ['2021-01-01', '2021-01-17'], None),
+    (hardcoded_datetime_index, pd.DatetimeIndex(['2021-01-01', '2021-01-17']), None),
+    (hardcoded_datetime_index, ['before', '2021-01-17'], None),
+    (hardcoded_datetime_index, ['after', '2021-01-17'], None),
+    (hardcoded_datetime_index, ['between', '2021-01-10', '2021-01-14'], None),
+    (default_index, None, ['c0', 'c3', 'c1']),
+    (hardcoded_string_index, None, ['c0']),
+    (hardcoded_datetime_index, None, ['like', 'c??']),
+]
+
+
+@pytest.mark.parametrize(
+    ["index", "rows", "cols"], ARGS)
+def test_drop(store, index, rows, cols):
+    # Arrange
+    original_df = Table(index, num_cols=12)
+    expected = original_df.drop(rows, cols)
+
+    partition_size = get_partition_size(original_df())
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df(), partition_size=partition_size, warnings='ignore')
+    # Act
+    table.drop(rows=rows, cols=cols)
+    # Assert
+    df = table.read_pandas()
+    assert df.equals(expected)
+
+
+class Table:
+
+    def __init__(self, index, num_rows=30, num_cols=5):
+        self.table = make_table(index=index, rows=num_rows, cols=num_cols, astype='pandas')
+
+    def __call__(self):
+        return self.table
+
+    def drop(self, rows, cols):
+        if rows is not None:
+            df = self._drop_rows(self.table, rows)
+        elif cols is not None:
+            df = self._drop_cols(self.table, cols)
+        return df
+
+    def _drop_rows(self, df, rows):
+        if rows[0] in ('before', 'after', 'between'):
+            index = df.index
+        if rows[0] == 'before':
+            end = rows[1]
+            rows = index[end >= index]
+        elif rows[0] == 'after':
+            start = rows[1]
+            rows = index[start <= index]
+        elif rows[0] == 'between':
+            start = rows[1]
+            end = rows[2]
+            rows = index[start <= index]
+            rows = rows[end >= rows]
+        df = df.drop(rows, axis=0)
+        return df
+
+    def _drop_cols(self, df, cols):
+        if cols[0] == 'like':
+            pattern = cols[1].replace("?", ".").replace("%", ".*") + "$"
+            pattern = re.compile(pattern)
+            cols = list(filter(pattern.search, df.columns))
+        df = df.drop(cols, axis=1)
+        return df
 
 
 def _wrong_index_dtype():
@@ -12,111 +93,6 @@ def _wrong_index_values():
 
 def _drop_all_rows():
     return list(pd.RangeIndex(0, 30))
-
-
-@pytest.mark.parametrize(
-    ("rows", "exception"),
-    [
-        (_wrong_index_dtype(), TypeError),
-        (_wrong_index_values(), ValueError),
-        (_drop_all_rows(), IndexError),
-    ],
-    ids=[
-        "_wrong_index_dtype",
-        "_wrong_index_values",
-        "_drop_all_values"
-    ],
-)
-def test_can_drop_rows_from_table(rows, exception, store):
-    # Arrange
-    original_df = make_table(cols=5, astype='pandas')
-    table = store.select_table(TABLE_NAME)
-    table.write(original_df)
-    # Act
-    with pytest.raises(exception) as e:
-        table.drop(rows=rows)
-    # Assert
-    assert isinstance(e.type(), exception)
-
-
-@pytest.mark.parametrize(
-    ["rows", 'slice_'],
-    [
-        (pd.Index([10, 24, 0, 13]), [10, 24, 0, 13]),
-        ([10, 24, 0, 13], [10, 24, 0, 13]),
-        (['after', 10], slice(10, 30)),
-        (['before', 10], slice(0, 11)),
-        (['between', 13, 16], slice(13, 17))
-    ])
-def test_drop_rows_from_int_indexed_table(rows, slice_, store):
-    # Arrange
-    original_df = make_table(rows=30, astype="pandas")
-    mask = original_df.iloc[slice_, :].index
-    expected = original_df.copy().drop(index=mask)
-
-    partition_size = get_partition_size(original_df)
-    store.write_table(TABLE_NAME,
-                      original_df,
-                      partition_size=partition_size,
-                      warnings='ignore')
-    table = store.select_table(TABLE_NAME)
-    # Act
-    table.drop(rows=rows)
-    # Assert
-    df = store.read_pandas(TABLE_NAME)
-    assert df.equals(expected)
-
-
-@pytest.mark.parametrize(
-    ["rows", 'condition'],
-    [
-        (['row00010', 'row00024', 'row00000'], "['row00010', 'row00024', 'row00000']"),
-        (['after', 'row00010'], "'row00010' <= original_df.index"),
-        (['before', 'row00010'], "'row00010' >= original_df.index"),
-    ])
-def test_drop_rows_from_str_indexed_table(rows, condition, store):
-    # Arrange
-    original_df = make_table(hardcoded_string_index, rows=30, astype="pandas")
-    mask = original_df.loc[eval(condition)].index
-    expected = original_df.copy().drop(index=mask)
-
-    partition_size = get_partition_size(original_df)
-    store.write_table(TABLE_NAME,
-                      original_df,
-                      partition_size=partition_size,
-                      warnings='ignore')
-    table = store.select_table(TABLE_NAME)
-    # Act
-    table.drop(rows=rows)
-    # Assert
-    df = store.read_pandas(TABLE_NAME)
-    assert df.equals(expected)
-
-
-@pytest.mark.parametrize(
-    ["rows", 'condition'],
-    [
-        (['2021-01-01', '2021-01-17'], "['2021-01-01', '2021-01-17']"),
-        (['after', '2021-01-17'], "'2021-01-17' <= original_df.index"),
-        (['before', '2021-01-17'], "'2021-01-17' >= original_df.index"),
-    ])
-def test_drop_rows_from_datetime_indexed_table(rows, condition, store):
-    # Arrange
-    original_df = make_table(hardcoded_datetime_index, rows=30, astype="pandas")
-    mask = original_df.loc[eval(condition)].index
-    expected = original_df.copy().drop(index=mask)
-
-    partition_size = get_partition_size(original_df)
-    store.write_table(TABLE_NAME,
-                      original_df,
-                      partition_size=partition_size,
-                      warnings='ignore')
-    table = store.select_table(TABLE_NAME)
-    # Act
-    table.drop(rows=rows)
-    # Assert
-    df = store.read_pandas(TABLE_NAME)
-    assert df.equals(expected)
 
 
 def _wrong_cols_format():
@@ -139,24 +115,39 @@ def _drop_all_cols():
     return ['like', 'c%']
 
 
+def _drop_rows():
+    return [4, 5]
+
+
+def _drop_cols():
+    return ['c1', 'c2']
+
+
 @pytest.mark.parametrize(
-    ("cols", "exception"),
+    ("rows", "cols", "exception"),
     [
-        (_wrong_cols_format(), TypeError),
-        (_wrong_col_elements_dtype(), TypeError),
-        (_drop_index(), ValueError),
-        (_col_not_in_stored_data(), IndexError),
-        (_drop_all_cols(), IndexError),
+        (_wrong_index_dtype(), None, TypeError),
+        (_wrong_index_values(), None, ValueError),
+        (_drop_all_rows(), None, IndexError),
+        (None, _wrong_cols_format(), TypeError),
+        (None, _wrong_col_elements_dtype(), TypeError),
+        (None, _drop_index(), ValueError),
+        (None, _col_not_in_stored_data(), IndexError),
+        (None, _drop_all_cols(), IndexError),
+        (_drop_rows(), _drop_cols(), AttributeError)
     ],
     ids=[
+        "_wrong_index_dtype",
+        "_wrong_index_values",
+        "_drop_all_values",
         "_wrong_cols_format",
         "_wrong_col_elements_dtype",
         "_drop_index",
         "_col_not_in_stored_data",
-        "_drop_all_cols"
-    ],
-)
-def test_can_drop_cols_from_table(cols, exception, store):
+        "_drop_all_cols",
+        "_drop_rows_and_cols_at_the_same_time"
+    ])
+def test_can_drop(rows, cols, exception, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     original_df.index.name = 'index'
@@ -164,52 +155,6 @@ def test_can_drop_cols_from_table(cols, exception, store):
     table.write(original_df)
     # Act
     with pytest.raises(exception) as e:
-        table.drop(cols=cols)
+        table.drop(rows=rows, cols=cols)
     # Assert
     assert isinstance(e.type(), exception)
-
-
-@pytest.mark.parametrize(
-    "cols",
-    [
-        ['c1', 'c3'],
-        ['c0'],
-        ['c0', 'c2', 'c3', 'c4']
-    ],
-)
-def test_drop_cols_from_table(cols, store):
-    # Arrange
-    original_df = make_table(rows=30, astype="pandas")
-    expected = original_df.copy().drop(columns=cols).squeeze()
-
-    partition_size = get_partition_size(original_df)
-    store.write_table(TABLE_NAME,
-                      original_df,
-                      partition_size=partition_size,
-                      warnings='ignore')
-    table = store.select_table(TABLE_NAME)
-    # Act
-    table.drop(cols=cols)
-    # Assert
-    df = store.read_pandas(TABLE_NAME)
-    assert df.equals(expected)
-
-
-def test_drop_cols_like_pattern_from_table(store):
-    # Arrange
-    original_df = make_table(rows=30, cols=20, astype="pandas")
-    dropped_cols = [f"c{x}" for x in range(10)]
-    expected = original_df.copy().drop(columns=dropped_cols)
-    cols = ['like', 'c?']
-
-    partition_size = get_partition_size(original_df)
-    store.write_table(TABLE_NAME,
-                      original_df,
-                      partition_size=partition_size,
-                      warnings='ignore')
-    table = store.select_table(TABLE_NAME)
-    # Act
-    table.drop(cols=cols)
-    # Assert
-    df = store.read_pandas(TABLE_NAME)
-    assert df.equals(expected)
