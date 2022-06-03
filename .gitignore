@@ -12,5 +12,5 @@ __pycache__
 .pytest_cache
 settings.json
 dev/
-tests/db
+tests/_db
 *.lprof

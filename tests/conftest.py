@@ -19,14 +19,15 @@ class SetupDB:
         fs.create_database(DB_PATH)
         fs.connect(DB_PATH)
         fs.create_store(STORE_NAME)
-        self._store = fs.Store(STORE_NAME)
-        return self._store
+        return fs.Store(STORE_NAME)
 
     def __exit__(self, exception_type, exception_value, traceback):
         # Teardown
-        for table in self._store.list_tables():
-            self._store.drop_table(table)
-        fs.drop_store(STORE_NAME, errors='ignore')
+        for store_name in fs.list_stores():
+            store = fs.Store(store_name)
+            for table in store.list_tables():
+                store.drop_table(table)
+            fs.drop_store(store_name, errors='ignore')
         fs.disconnect()
         shutil.rmtree(DB_PATH, ignore_errors=False)
 

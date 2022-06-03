@@ -1,47 +1,57 @@
-from featherstore import snapshot
+from collections import namedtuple
+import featherstore as fs
+import pytest
 from .fixtures import *
 
 from pandas.testing import assert_frame_equal
 
+SNAPSHOT_PATH = os.path.join(DB_PATH, 'table_snapshot.tar.xz')
+
 
 def test_table_snapshot(store):
     # Arrange
-    SNAPSHOT_PATH = 'tests/db/table_snapshot'
     original_df = make_table(astype='pandas')
+
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
-    table.write(original_df, partition_size=partition_size, warnings='ignore')
+    table.write(original_df, partition_size=partition_size)
     # Act
     table.create_snapshot(SNAPSHOT_PATH)
     table.drop_table()
-    snapshot.restore_table(STORE_NAME, SNAPSHOT_PATH)
+    fs.snapshot.restore_table(STORE_NAME, SNAPSHOT_PATH)
     # Assert
     df = table.read_pandas()
     assert_frame_equal(df, original_df, check_dtype=True)
+    # Teardown
+    os.remove(SNAPSHOT_PATH)
 
 
 def test_store_snapshot(store):
     # Arrange
-    SNAPSHOT_PATH = 'tests/db/store_snapshot'
+    store_name = store.store_name
     original_df1 = make_table(astype='pandas')
     original_df2 = make_table(astype='pandas')
+
     partition_size = get_partition_size(original_df1)
-    store.write_table('df1', original_df1,
-                      partition_size=partition_size)
-    store.write_table('df2', original_df2,
-                      partition_size=partition_size)
+    store.write_table('df1', original_df1, partition_size=partition_size)
+    store.write_table('df2', original_df2, partition_size=partition_size)
     # Act
     store.create_snapshot(SNAPSHOT_PATH)
-    _drop_store(store)
-    snapshot.restore_store(SNAPSHOT_PATH)
+    store.rename(to=f'{store_name}2')
+    fs.snapshot.restore_store(SNAPSHOT_PATH)
     # Assert
-    df1 = store.read_pandas('df1')
-    df2 = store.read_pandas('df2')
-    assert_frame_equal(df1, original_df1, check_dtype=True)
-    assert_frame_equal(df2, original_df2, check_dtype=True)
+    _assert_store_equal(store_name, f'{store_name}2')
+    # Teardown
+    os.remove(SNAPSHOT_PATH)
 
 
-def _drop_store(store):
-    for table_name in store.list_tables():
-        store.drop_table(table_name)
-    store.drop()
+def _assert_store_equal(store_name1, store_name2):
+    store1 = fs.Store(store_name1)
+    store2 = fs.Store(store_name2)
+
+    assert store1.list_tables() == store2.list_tables()
+
+    for table_name in store1.list_tables():
+        df1 = store1.read_pandas(table_name)
+        df2 = store2.read_pandas(table_name)
+        assert_frame_equal(df1, df2)
