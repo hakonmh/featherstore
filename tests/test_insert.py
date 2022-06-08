@@ -1,5 +1,6 @@
 import pytest
 from .fixtures import *
+from collections import namedtuple
 
 import pandas as pd
 import numpy as np
@@ -7,50 +8,50 @@ import numpy as np
 DROPPED_ROWS_INDICES = [2, 5, 7, 10]
 
 
-@pytest.mark.parametrize("original_df", [
-    make_table(unsorted_int_index, rows=30, astype="pandas"),
-    make_table(unsorted_datetime_index, rows=37, astype="pandas"),
-    make_table(unsorted_string_index, rows=125, astype="pandas")
-])
-def test_insert_table(original_df, store):
+@pytest.mark.parametrize(["index", "row_indices"],
+                         [[default_index, [4, 1, 7, 8, 3]],
+                          [unsorted_int_index, [0, 1, 2, 3, 4]],
+                          [unsorted_int_index, [0, 5, 21, 29]],
+                          [hardcoded_string_index, ['row00010', 'row00000']],
+                          [hardcoded_datetime_index, ['2021-01-10', '2021-01-14']],
+                          [hardcoded_datetime_index, ['2021-01-10', '2021-01-14']]]
+                         )
+@pytest.mark.parametrize(["num_rows", "num_cols"],
+                         [[75, 5],
+                          [30, 1]]
+                         )
+@pytest.mark.parametrize("num_partitions", [1, 5, 30])
+def test_insert_table(store, index, row_indices, num_rows, num_cols, num_partitions):
     # Arrange
-    row_indices = np.random.choice(original_df.index, size=5, replace=False)
-    insert_df = original_df.loc[row_indices, :]
-    expected = original_df.copy().sort_index()
-    original_df = original_df.drop(index=row_indices)
+    fixtures = InsertFixtures(index, num_rows, num_cols)
+    original_df = fixtures.original_df(row_indices)
+    insert_df = fixtures.insert_df(row_indices)
+    expected = fixtures.expected()
 
-    partition_size = get_partition_size(original_df)
-    store.write_table(TABLE_NAME,
-                      original_df,
-                      partition_size=partition_size,
-                      warnings='ignore')
+    partition_size = get_partition_size(original_df, num_partitions)
     table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size, warnings='ignore')
     # Act
     table.insert(insert_df)
     # Assert
-    df = store.read_pandas(TABLE_NAME)
+    df = table.read_pandas()
     assert df.equals(expected)
 
 
-def test_insert_table_with_pandas_series(store):
-    # Arrange
-    original_df = make_table(cols=1, astype='pandas').squeeze()
-    row_indices = np.random.choice(original_df.index, size=5, replace=False)
-    insert_df = original_df.loc[row_indices]
-    expected = original_df.copy().sort_index()
-    original_df = original_df.drop(index=row_indices)
+class InsertFixtures:
 
-    partition_size = get_partition_size(original_df)
-    store.write_table(TABLE_NAME,
-                      original_df,
-                      partition_size=partition_size,
-                      warnings='ignore')
-    table = store.select_table(TABLE_NAME)
-    # Act
-    table.insert(insert_df)
-    # Assert
-    df = store.read_pandas(TABLE_NAME)
-    assert df.equals(expected)
+    def __init__(self, index, num_rows, num_cols):
+        df = make_table(index, rows=num_rows, cols=num_cols, astype="pandas")
+        self._df = df.squeeze()
+
+    def original_df(self, row_indices):
+        return self._df.drop(index=row_indices)
+
+    def insert_df(self, row_indices):
+        return self._df.loc[row_indices]
+
+    def expected(self):
+        return self._df.sort_index()
 
 
 def _wrong_index_dtype():
@@ -115,8 +116,8 @@ def test_can_insert_table(insert_df, exception, store):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     original_df = original_df.drop(index=DROPPED_ROWS_INDICES)
-    store.write_table(TABLE_NAME, original_df)
     table = store.select_table(TABLE_NAME)
+    table.write(original_df)
     # Act
     with pytest.raises(exception) as e:
         table.insert(insert_df)
