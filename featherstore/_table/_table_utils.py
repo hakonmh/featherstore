@@ -67,6 +67,20 @@ def convert_to_pandas(df):
     return pd_df
 
 
+def get_previous_item(item, sequence):
+    idx = sequence.index(item)
+    is_not_first_item = idx > 0
+    if is_not_first_item:
+        return sequence[idx - 1]
+
+
+def get_next_item(item, sequence):
+    idx = sequence.index(item)
+    is_not_last_item = idx < (len(sequence) - 1)
+    if is_not_last_item:
+        return sequence[idx + 1]
+
+
 def make_partitions(df, rows_per_partition):
     df = df.combine_chunks()
     if rows_per_partition == -1:

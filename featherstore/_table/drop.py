@@ -19,49 +19,32 @@ def can_drop_rows_from_table(rows, table_path):
 
 
 def get_partition_names(rows, table_path):
-    names = _get_partition_names(rows, table_path)
-    names = _get_adjacent_partition_name(names, table_path)
-    return names
-
-
-def _get_adjacent_partition_name(partition_names, table_path):
-    """Fetches an extra partition name so we can use that partition
-    when combining small partitions.
-    """
-    all_partition_names = Metadata(table_path, 'partition').keys()
-    first_partition = partition_names[0]
-    last_partition = partition_names[-1]
-
-    partition_before = _get_partition_before_if_exists(first_partition,
-                                                       all_partition_names)
-    partition_after = _get_partition_after_if_exists(last_partition,
-                                                     all_partition_names)
-
-    if partition_before:
-        partition_names = _insert_adjacent_partition(partition_before,
-                                                     to=partition_names)
-    elif partition_after:
-        partition_names = _insert_adjacent_partition(partition_after,
-                                                     to=partition_names)
-
+    partition_names = _get_partition_names(rows, table_path)
+    partition_names = _get_adjacent_partition_name(partition_names, table_path)
     return partition_names
 
 
-def _get_partition_before_if_exists(partition, all_partitions):
-    partition_index = all_partitions.index(partition)
-    is_not_first_partition = partition_index > 0
-    if is_not_first_partition:
-        new_partition_idx = partition_index - 1
-        return all_partitions[new_partition_idx]
+def _get_adjacent_partition_name(partitions_selected, table_path):
+    """Fetches an extra partition name so we can use that partition when
+    combining small partitions.
+    """
+    all_partition_names = Metadata(table_path, 'partition').keys()
 
+    partition_before_first = _table_utils.get_previous_item(item=partitions_selected[0],
+                                                            sequence=all_partition_names)
+    partition_after_last = _table_utils.get_next_item(item=partitions_selected[-1],
+                                                      sequence=all_partition_names)
 
-def _get_partition_after_if_exists(partition, all_partitions):
-    partition_index = all_partitions.index(partition)
-    last_partition_index = len(all_partitions) - 1
-    is_not_last_partition = partition_index < last_partition_index
-    if is_not_last_partition:
-        new_partition_idx = partition_index + 1
-        return all_partitions[new_partition_idx]
+    if partition_before_first:
+        partition_names = _insert_adjacent_partition(partition_before_first,
+                                                     to=partitions_selected)
+    elif partition_after_last:
+        partition_names = _insert_adjacent_partition(partition_after_last,
+                                                     to=partitions_selected)
+    else:
+        partition_names = partitions_selected
+
+    return partition_names
 
 
 def _insert_adjacent_partition(adj_partition, *, to):

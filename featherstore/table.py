@@ -240,6 +240,7 @@ class Table:
         index_name = self._table_data["index_name"]
         index_type = self._table_data["index_dtype"]
         rows_per_partition = self._table_data["rows_per_partition"]
+        all_partition_names = self._partition_data.keys()
 
         rows = common.format_rows_arg_if_provided(df.index, index_type)
 
@@ -248,7 +249,8 @@ class Table:
 
         df = insert.insert_data(stored_df, to=df)
         df = common.format_table(df, index_name=index_name, warnings='ignore')
-        partitions = insert.create_partitions(df, rows_per_partition, partition_names)
+        partitions = insert.create_partitions(df, rows_per_partition, partition_names,
+                                              all_partition_names)
 
         metadata = common.update_metadata(partitions, self._table_path, partition_names)
 

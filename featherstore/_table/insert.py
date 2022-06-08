@@ -47,34 +47,38 @@ def _raise_if_rows_in_old_data(old_df, df):
         raise ValueError(f"Some rows already in stored table")
 
 
-def create_partitions(df, rows_per_partition, partition_names):
+def create_partitions(df, rows_per_partition, partition_names, all_partition_names):
     partitions = _table_utils.make_partitions(df, rows_per_partition)
-    new_partition_names = insert_new_partition_ids(partitions, partition_names)
+    new_partition_names = _insert_new_partition_ids(partitions, partition_names,
+                                                    all_partition_names)
     partitions = _table_utils.assign_ids_to_partitions(partitions, new_partition_names)
     return partitions
 
 
-def insert_new_partition_ids(partitioned_df, partition_names):
+def _insert_new_partition_ids(partitioned_df, partition_names, all_partition_names):
     num_partitions = len(partitioned_df)
     num_partition_names = len(partition_names)
-    num_new_names_to_make = num_partitions - num_partition_names
-    new_partition_names = _make_partition_names(num_new_names_to_make,
-                                                partition_names)
+    num_names_to_make = num_partitions - num_partition_names
+    subsequent_partition = _table_utils.get_next_item(item=partition_names[-1],
+                                                      sequence=all_partition_names)
+    new_partition_names = _make_partition_names(num_names_to_make,
+                                                partition_names,
+                                                subsequent_partition)
     return new_partition_names
 
 
-def _make_partition_names(num_names, partition_names):
-    if len(partition_names) > 1:
-        second_last_id = _table_utils.convert_partition_id_to_int(partition_names[-2])
-        last_id = _table_utils.convert_partition_id_to_int(partition_names[-1])
-        increment = (last_id - second_last_id) / (num_names + 1)
-    else:
-        second_last_id = _table_utils.convert_partition_id_to_int(partition_names[-1])
+def _make_partition_names(num_names, partition_names, subsequent_partition):
+    last_id = _table_utils.convert_partition_id_to_int(partition_names[-1])
+    subsequent_partition_exists = subsequent_partition is not None
+    if subsequent_partition_exists:
+        subsequent_id = _table_utils.convert_partition_id_to_int(subsequent_partition)
+        increment = (subsequent_id - last_id) / (num_names + 1)
+    else:  # Called only when partition_names[-1] is the end of the table
         increment = 1
 
     new_partition_names = partition_names.copy()
     for partition_num in range(1, num_names + 1):
-        new_partition_id = second_last_id + increment * partition_num
+        new_partition_id = last_id + increment * partition_num
         new_partition_id = _table_utils.convert_int_to_partition_id(new_partition_id)
         new_partition_names.append(new_partition_id)
 
