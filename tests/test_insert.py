@@ -9,9 +9,7 @@ DROPPED_ROWS_INDICES = [2, 5, 7, 10]
 @pytest.mark.parametrize(["index", "row_indices"],
                          [[default_index, [4, 1, 7, 8, 3]],
                           [unsorted_int_index, [0, 1, 2, 3, 4]],
-                          [unsorted_int_index, [0, 5, 21, 29]],
                           [hardcoded_string_index, ['row00010', 'row00000']],
-                          [hardcoded_datetime_index, ['2021-01-10', '2021-01-14']],
                           [hardcoded_datetime_index, ['2021-01-10', '2021-01-14']]]
                          )
 @pytest.mark.parametrize(["num_rows", "num_cols"],
