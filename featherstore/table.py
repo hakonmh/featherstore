@@ -532,7 +532,6 @@ class Table:
         cols = self._table_data["num_columns"]
         return (rows, cols)
 
-    @property
     def exists(self):
         return os.path.exists(self._table_path)
 

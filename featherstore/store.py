@@ -155,7 +155,7 @@ class Store:
         return tables
 
     def table_exists(self, table_name):
-        return Table(table_name, self.store_name).exists
+        return Table(table_name, self.store_name).exists()
 
     def read_arrow(self, table_name, *, cols=None, rows=None):
         """Reads PyArrow Table from store
