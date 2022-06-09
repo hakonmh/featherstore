@@ -1,9 +1,7 @@
 import pytest
 from .fixtures import *
-from collections import namedtuple
 
 import pandas as pd
-import numpy as np
 
 DROPPED_ROWS_INDICES = [2, 5, 7, 10]
 
@@ -39,7 +37,6 @@ def test_insert_table(store, index, row_indices, num_rows, num_cols, num_partiti
 
 
 class InsertFixtures:
-
     def __init__(self, index, num_rows, num_cols):
         df = make_table(index, rows=num_rows, cols=num_cols, astype="pandas")
         self._df = df.squeeze()

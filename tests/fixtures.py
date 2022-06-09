@@ -77,30 +77,31 @@ def __make_int_col(rows):
 
 
 def __make_datetime_col(rows):
-    start = pd.to_datetime('1943-01-01')
+    start = pd.Timestamp('1943-01-01')
     start = start.value // 10**9
 
-    end = pd.to_datetime('2022-01-01')
+    end = pd.Timestamp('2022-01-01')
     end = end.value // 10**9
 
-    return pd.to_datetime(__random_unique_randint(start, end, rows), unit='s')
+    time_since_epoch = __random_unique_randint(start, end, rows)
+    return np.array(time_since_epoch, dtype='datetime64[s]')
 
 
 def __random_unique_randint(start, end, rows):
-    df = pd.Series(dtype=int)
+    df = np.array([])
     while len(df) < rows:
         new_rows = rows - len(df)
-        df1 = np.random.randint(start, end, size=new_rows)
-        df1 = pd.Series(df1)
-        df = df.append(df1)
-        df = pd.Series(df.unique())
-    return df.to_numpy()
+        new_values = np.random.randint(start, end, size=new_rows)
+        df = np.append(df, new_values)
+        df = np.unique(df)[:rows]
+    np.random.shuffle(df)
+    return df
 
 
 def __make_string_col(rows):
     str_length = 5
     df = rands_array(str_length, rows)
-    df = pd.Series(df).astype("string")
+    df = pd.Series(df, dtype='string')
     return df
 
 
@@ -137,8 +138,7 @@ def __make_index_first_column(df):
 
 def __make_bool_column(rows):
     df = np.random.randint(0, 2, size=rows)
-    df = pd.Series(df)
-    df = df.astype(bool)
+    df = pd.Series(df, dtype=bool)
     return df
 
 
@@ -154,13 +154,15 @@ def sorted_string_index(rows):
 
 def sorted_datetime_index(rows):
     index = __make_datetime_col(rows)
-    index = pd.Series(index, name="Date")
+    index = pd.Index(index)
+    index.name = 'Date'
     return index.sort_values()
 
 
 def hardcoded_datetime_index(rows):
     index = pd.date_range(start="2021-01-01", periods=rows, freq="D")
-    index = pd.Series(index, name="Date")
+    index = pd.Index(index)
+    index.name = 'Date'
     return index
 
 
@@ -169,31 +171,31 @@ def hardcoded_string_index(rows):
     for x in range(rows):
         x = format(x, '05d')
         index.append(f"row{x}")
-    index = pd.Series(index)
-    return index
+    return pd.Index(index)
 
 
 def unsorted_int_index(rows):
-    index = default_index(rows)
-    index = pd.Series(index)
-    index = index.sample(frac=1)
+    index = np.random.default_rng().permutation(rows)
+    index = pd.Index(index)
     return index
 
 
 def unsorted_string_index(rows):
     index = __make_string_col(rows)
-    while len(index.unique()) < rows:
+    index = np.unique(index)
+    while len(index) < rows:
         new_rows = rows - len(index.unique())
         new_elements = __make_string_col(new_rows)
-        index = index.append(new_elements)
-    index = index.unique()
-    index = pd.Series(index)
-    return index
+        index = np.append(index, new_elements)
+        index = np.unique(index)
+    return pd.Index(index)
 
 
 def unsorted_datetime_index(rows):
     index = __make_datetime_col(rows)
-    return pd.Series(index, name="Date")
+    index = pd.Index(index)
+    index.name = 'Date'
+    return index
 
 
 def get_partition_size(df, num_partitions=5):
@@ -236,18 +238,24 @@ def _convert_to_pandas(df, index_name=None, as_series=True):
         pd_df = df.to_frame()
     elif isinstance(df, (pa.Table, pl.DataFrame)):
         pd_df = df.to_pandas()
+        # pd_df = __convert_object_to_string(pd_df)
 
-    pd_df = pd_df.convert_dtypes()  # TODO: Change so it only converts object to string
-    if index_name and index_name in pd_df.columns:
-        pd_df = pd_df.set_index(index_name)
-    elif "__index_level_0__" in pd_df.columns:
-        pd_df = pd_df.set_index("__index_level_0__")
-    if pd_df.index.name == "__index_level_0__":
-        pd_df.index.name = None
+        if index_name and index_name in pd_df.columns:
+            pd_df = pd_df.set_index(index_name)
+        elif "__index_level_0__" in pd_df.columns:
+            pd_df = pd_df.set_index("__index_level_0__")
+        if pd_df.index.name == "__index_level_0__":
+            pd_df.index.name = None
 
     if as_series:
         pd_df = pd_df.squeeze()
     return pd_df
+
+
+def __convert_object_to_string(df):
+    cols = [col for col in df if df[col].dtype == object]
+    astype = {col: 'string' for col in cols}
+    return df.astype(astype)
 
 
 def _convert_to_arrow(df):
