@@ -93,7 +93,7 @@ def _invalid_partition_size_arg():
         "_invalid_partition_size_arg",
     ],
 )
-def test_can_write(arguments, exception, store):
+def test_can_write(store, arguments, exception):
     # Arrange
     arguments, kwargs = arguments
     # Act
@@ -112,7 +112,7 @@ def test_can_write(arguments, exception, store):
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_sorted_pandas_io(original_df, store):
+def test_sorted_pandas_io(store, original_df):
     # Arrange
     partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME,
@@ -133,7 +133,7 @@ def test_sorted_pandas_io(original_df, store):
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_unsorted_pandas_io(original_df, store):
+def test_unsorted_pandas_io(store, original_df):
     # Arrange
     partition_size = get_partition_size(original_df)
     store.write_table(
@@ -194,7 +194,7 @@ def test_filter_columns(store):
                     astype="pandas"), ["row00010", "row00003"]),
     ],
 )
-def test_filtering_rows_with_list(original_df, rows, store):
+def test_filtering_rows_with_list(store, original_df, rows):
     # Arrange
     partition_size = get_partition_size(original_df)
     store.write_table(
@@ -220,7 +220,7 @@ def test_filtering_rows_with_list(original_df, rows, store):
         (3, 19),
     ],
 )
-def test_filtering_columns_and_rows_between(low, high, store):
+def test_filtering_columns_and_rows_between(store, low, high):
     # Arrange
     COLUMNS = ["c0", "c1"]
     ROWS = ["between", low, high]
@@ -245,7 +245,7 @@ def test_filtering_columns_and_rows_between(low, high, store):
         "T9est",
     ],
 )
-def test_filtering_rows_before_low_with_string_index(high, store):
+def test_filtering_rows_before_low_with_string_index(store, high):
     # Arrange
     ROWS = ["before", high]
     original_df = make_table(sorted_string_index, astype="pandas")
@@ -269,7 +269,7 @@ def test_filtering_rows_before_low_with_string_index(high, store):
         "2021-01-12",
     ],
 )
-def test_filtering_rows_after_low_with_datetime_index(low, store):
+def test_filtering_rows_after_low_with_datetime_index(store, low):
     # Arrange
     ROWS = ["after", low]
     original_df = make_table(hardcoded_datetime_index, astype="pandas")

@@ -30,7 +30,7 @@ def test_update_table(store, index, update_rows_loc, num_cols):
 
 
 @pytest.mark.parametrize(["num_partitions", "rows"], [(7, 30), (3, 125), (27, 36)])
-def test_partition_structure_after_update_table(num_partitions, rows, store):
+def test_partition_structure_after_update_table(store, num_partitions, rows):
     fixtures = UpdateFixtures(update_rows_loc=(10, 13, 14, 21),
                               update_cols_loc=('c2', 'c0'),
                               rows=rows)
@@ -151,7 +151,7 @@ def _duplicate_column_names():
         "_duplicate_column_names",
     ],
 )
-def test_can_update_table(update_df, exception, store):
+def test_can_update_table(store, update_df, exception):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     store.write_table(TABLE_NAME, original_df)

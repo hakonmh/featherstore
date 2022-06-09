@@ -147,7 +147,7 @@ def _drop_cols():
         "_drop_all_cols",
         "_drop_rows_and_cols_at_the_same_time"
     ])
-def test_can_drop(rows, cols, exception, store):
+def test_can_drop(store, rows, cols, exception):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     original_df.index.name = 'index'

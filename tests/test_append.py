@@ -138,7 +138,7 @@ def _duplicate_column_names():
         "_duplicate_column_names",
     ],
 )
-def test_can_append_table(append_df, exception, store):
+def test_can_append_table(store, append_df, exception):
     # Arrange
     original_df = make_table(rows=10, astype='pandas')
     table = store.select_table(TABLE_NAME)

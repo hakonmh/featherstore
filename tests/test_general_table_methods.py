@@ -142,7 +142,7 @@ def _contains_duplicates():
         "_contains_duplicates"
     ],
 )
-def test_can_reorder_columns(cols, exception, store):
+def test_can_reorder_columns(store, cols, exception):
     # Arrange
     original_df = make_table(cols=3, astype='pandas')
     table = store.select_table(TABLE_NAME)

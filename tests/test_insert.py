@@ -107,7 +107,7 @@ def _duplicate_column_names():
         "_duplicate_column_names",
     ],
 )
-def test_can_insert_table(insert_df, exception, store):
+def test_can_insert_table(store, insert_df, exception):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     original_df = original_df.drop(index=DROPPED_ROWS_INDICES)

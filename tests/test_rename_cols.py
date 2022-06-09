@@ -77,7 +77,7 @@ def _duplicate_col_names():
         "_duplicate_col_names"
     ]
 )
-def test_can_rename_cols(args, exception, store):
+def test_can_rename_cols(store, args, exception):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     table = store.select_table(TABLE_NAME)

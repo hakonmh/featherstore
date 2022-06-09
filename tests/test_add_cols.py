@@ -103,7 +103,7 @@ def _wrong_index_values():
         "_wrong_index_values"
     ]
 )
-def test_can_add_cols(df, exception, store):
+def test_can_add_cols(store, df, exception):
     # Arrange
     original_df = make_table(cols=5, astype='pandas')
     table = store.select_table(TABLE_NAME)

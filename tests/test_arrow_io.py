@@ -7,7 +7,7 @@ from .fixtures import *
                           unsorted_int_index, unsorted_datetime_index,
                           unsorted_string_index])
 @pytest.mark.parametrize("partition_size", [None, -1])
-def test_arrow_io(index, partition_size, store):
+def test_arrow_io(store, index, partition_size):
     original_df = make_table(index, astype='arrow')
     expected = _sort_df(original_df)
 

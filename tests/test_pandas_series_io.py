@@ -11,7 +11,7 @@ from .fixtures import *
     ],
     ids=["int index", "datetime index", "string index"],
 )
-def test_pandas_series_io(original_df, store):
+def test_pandas_series_io(store, original_df):
     # Arrange
     original_df = make_table(sorted_string_index, cols=1, astype="pandas")
     original_df = original_df.squeeze()
