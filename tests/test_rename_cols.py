@@ -4,6 +4,30 @@ from .fixtures import *
 from pandas.testing import assert_frame_equal
 
 
+@pytest.mark.parametrize(
+    ("columns", "to", "result"),
+    [
+        (['c0', 'c2'], ['d0', 'd2'], ['d0', 'c1', 'd2', 'c3']),
+        ({'c0': 'd0', 'c2': 'd2'}, None, ['d0', 'c1', 'd2', 'c3']),
+        (['c2', 'c3'], ['c3', 'c2'], ['c0', 'c1', 'c3', 'c2'])
+    ],
+)
+def test_rename_cols(store, columns, to, result):
+    # Arrange
+    original_df = make_table(rows=30, cols=4, astype="pandas")
+    expected = original_df.copy()
+    expected.columns = result
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size, warnings='ignore')
+    # Act
+    table.rename_columns(columns, to=to)
+    # Assert
+    df = store.read_pandas(TABLE_NAME)
+    assert_frame_equal(df, expected, check_dtype=False)
+
+
 def _new_names_provided_twice():
     return {'c0': 'd0'}, ['d0']
 
@@ -65,30 +89,3 @@ def test_can_rename_cols(args, exception, store):
         table.rename_columns(col_names, to=new_col_names)
     # Assert
     assert isinstance(e.type(), exception)
-
-
-@pytest.mark.parametrize(
-    ("columns", "to", "result"),
-    [
-        (['c0', 'c2'], ['d0', 'd2'], ['d0', 'c1', 'd2', 'c3']),
-        ({'c0': 'd0', 'c2': 'd2'}, None, ['d0', 'c1', 'd2', 'c3']),
-        (['c2', 'c3'], ['c3', 'c2'], ['c0', 'c1', 'c3', 'c2'])
-    ],
-)
-def test_rename_cols(columns, to, result, store):
-    # Arrange
-    original_df = make_table(rows=30, cols=4, astype="pandas")
-    expected = original_df.copy()
-    expected.columns = result
-
-    partition_size = get_partition_size(original_df)
-    store.write_table(TABLE_NAME,
-                      original_df,
-                      partition_size=partition_size,
-                      warnings='ignore')
-    table = store.select_table(TABLE_NAME)
-    # Act
-    table.rename_columns(columns, to=to)
-    # Assert
-    df = store.read_pandas(TABLE_NAME)
-    assert_frame_equal(df, expected, check_dtype=False)
