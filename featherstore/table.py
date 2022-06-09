@@ -522,14 +522,14 @@ class Table:
 
     @property
     def shape(self):
-        """Fetches the shape of the stored table as `(rows, cols)`
+        """Fetches the shape of the stored table as `(rows, columns)`.
 
         Returns
         -------
         shape : tuple(int, int)
         """
-        cols = self._table_data["num_cols"]
         rows = self._table_data["num_rows"]
+        cols = self._table_data["num_columns"]
         return (rows, cols)
 
     @property
