@@ -285,17 +285,17 @@ def _fetch_rows_between(df, index, low, high):
 
 
 def _compute_lower_bound(row, index):
-    lower_bound = __fetch_row_idx(row, index) - 1
+    lower_bound = __fetch_row_idx(row, index)
     return lower_bound
 
 
 def _compute_upper_bound(row, index):
-    upper_bound = __fetch_row_idx(row, index)
+    upper_bound = __fetch_row_idx(row, index, is_upper_bound=True)
     return upper_bound
 
 
-def __fetch_row_idx(row, index):
-    row_idx = __fetch_exact_row_idx(row, index)
+def __fetch_row_idx(row, index, is_upper_bound=False):
+    row_idx = __fetch_exact_row_idx(row, index, is_upper_bound)
 
     no_row_idx_found = row_idx is None
     if no_row_idx_found:
@@ -307,13 +307,13 @@ def __fetch_row_idx(row, index):
     return row_idx
 
 
-def __fetch_exact_row_idx(row, index):
+def __fetch_exact_row_idx(row, index, is_upper_bound):
     row_idx = index.index(row)
     row_idx = row_idx.as_py()
-    if row_idx != -1:
-        row_idx += 1
-    else:
+    if row_idx == -1:
         row_idx = None
+    elif is_upper_bound:
+        row_idx += 1
     return row_idx
 
 
