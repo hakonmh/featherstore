@@ -1,4 +1,6 @@
 import os
+import itertools
+from string import ascii_lowercase
 from featherstore._table._table_utils import get_col_names
 
 import pyarrow as pa
@@ -31,10 +33,10 @@ def get_index_name(df):
     return index_name
 
 
-def make_table(index=None, rows=30, cols=5, *, astype="arrow", dtype=None):
+def make_table(index=None, rows=30, cols=5, *, astype="arrow", dtype=None, **kwargs):
     df = _make_df(rows, cols, dtype=dtype)
     if index is not None:
-        df.index = index(rows)
+        df.index = index(rows, **kwargs)
     df = _convert_df_to(df, to=astype)
     return df
 
@@ -159,19 +161,26 @@ def sorted_datetime_index(rows):
     return index.sort_values()
 
 
-def hardcoded_datetime_index(rows):
+def continuous_datetime_index(rows):
     index = pd.date_range(start="2021-01-01", periods=rows, freq="D")
     index = pd.Index(index)
     index.name = 'Date'
     return index
 
 
-def hardcoded_string_index(rows):
+def continuous_string_index(rows, size=2):
+    values = _make_continuous_alphabetic_str(size)
     index = []
-    for x in range(rows):
-        x = format(x, '05d')
-        index.append(f"row{x}")
+    for idx, value in enumerate(values):
+        if idx == rows:
+            break
+        index.append(value)
     return pd.Index(index)
+
+
+def _make_continuous_alphabetic_str(size):
+    for letters in itertools.product(ascii_lowercase, repeat=size):
+        yield "".join(letters)
 
 
 def unsorted_int_index(rows):

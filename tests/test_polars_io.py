@@ -49,11 +49,11 @@ def test_unsorted_polars_io(store):
     [
         (make_table(astype="pandas"), [2, 6, 9]),
         (
-            make_table(hardcoded_datetime_index, astype="pandas"),
+            make_table(continuous_datetime_index, astype="pandas"),
             ["2021-01-07", "2021-01-20"],
         ),
-        (make_table(hardcoded_string_index,
-                    astype="pandas"), ["row00010", "row00003"]),
+        (make_table(continuous_string_index,
+                    astype="pandas"), ["al", "aj"]),
     ],
 )
 def test_filtering_rows_with_list(store, original_df, rows):
@@ -150,7 +150,7 @@ def test_filtering_rows_before_low_with_string_index(store, high):
 def test_filtering_rows_after_low_with_datetime_index(store, low):
     # Arrange
     ROWS = ["after", low]
-    pandas_df = make_table(hardcoded_datetime_index, astype="pandas")
+    pandas_df = make_table(continuous_datetime_index, astype="pandas")
     original_df = pl.from_pandas(pandas_df.reset_index())
 
     expected = pandas_df.loc[low:, :]

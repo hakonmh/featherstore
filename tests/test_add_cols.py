@@ -4,7 +4,7 @@ from .fixtures import *
 
 @pytest.mark.parametrize(["index", "cols", "col_names", "col_idx"],
                          [[unsorted_int_index, 2, ['n0', 'n1'], 1],
-                          [hardcoded_datetime_index, 1, ['n0'], -1],
+                          [continuous_datetime_index, 1, ['n0'], -1],
                           [default_index, 1, ['n0'], 0]
                           ]
                          )

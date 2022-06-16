@@ -4,10 +4,10 @@ from .fixtures import *
 
 @pytest.mark.parametrize(["index", "update_rows_loc", "num_cols"],
                          [(default_index, [10, 13, 14, 21], 5),
-                          (hardcoded_string_index, ["row00010", "row00013",
-                                                    "row00014", "row00021"], 1),
-                          (hardcoded_datetime_index, ["2021-01-01", "2021-01-16",
-                                                      "2021-01-07"], 1)
+                          (continuous_string_index, ["al", "aj",
+                                                     "ba", "af"], 1),
+                          (continuous_datetime_index, ["2021-01-01", "2021-01-16",
+                                                       "2021-01-07"], 1)
                           ]
                          )
 def test_update_table(store, index, update_rows_loc, num_cols):
