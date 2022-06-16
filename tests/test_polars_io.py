@@ -2,185 +2,49 @@ import pytest
 from .fixtures import *
 
 
-@pytest.mark.parametrize(
-    "original_df",
-    [
-        make_table(astype="polars"),
-        make_table(sorted_datetime_index, astype="polars"),
-        make_table(sorted_string_index, astype="polars"),
-    ],
-    ids=["int index", "datetime index", "string index"],
-)
-def test_sorted_polars_io(store, original_df):
+@pytest.mark.parametrize("index",
+                         [default_index, sorted_datetime_index, sorted_string_index,
+                          unsorted_int_index, unsorted_datetime_index,
+                          unsorted_string_index])
+def test_polars_io(store, index):
     # Arrange
-    partition_size = get_partition_size(original_df)
+    original_df = make_table(index, astype="polars")
     index_name = get_index_name(original_df)
-    store.write_table(TABLE_NAME,
-                      original_df,
-                      partition_size=partition_size,
-                      index=index_name)
-    # Act
-    df = store.read_polars(TABLE_NAME)
-    # Assert
-    assert df.frame_equal(original_df)
+    expected = _sort_polars_table(original_df, by=index_name)
 
-
-def test_unsorted_polars_io(store):
-    # Arrange
-    original_df = make_table(unsorted_int_index, astype="polars")
-    sorted_original_df = original_df.sort(by="__index_level_0__")
     partition_size = get_partition_size(original_df)
-    index_name = get_index_name(original_df)
-    store.write_table(
-        TABLE_NAME,
-        original_df,
-        partition_size=partition_size,
-        warnings="ignore",
-        index=index_name
-    )
+    table = store.select_table(TABLE_NAME)
     # Act
-    df = store.read_polars(TABLE_NAME)
-    # Assert
-    assert df.frame_equal(sorted_original_df)
-
-
-@pytest.mark.parametrize(
-    ("original_df", "rows"),
-    [
-        (make_table(astype="pandas"), [2, 6, 9]),
-        (
-            make_table(continuous_datetime_index, astype="pandas"),
-            ["2021-01-07", "2021-01-20"],
-        ),
-        (make_table(continuous_string_index,
-                    astype="pandas"), ["al", "aj"]),
-    ],
-)
-def test_filtering_rows_with_list(store, original_df, rows):
-    # Arrange
-    original_df.index.name = "index"
-    partition_size = get_partition_size(original_df)
-    index_name = get_index_name(original_df)
-    store.write_table(
-        TABLE_NAME,
-        original_df,
-        warnings="ignore",
-        partition_size=partition_size,
-        index=index_name
-    )
-    expected = original_df.loc[rows, :]
-    expected = expected.reset_index()
-    expected = pl.from_pandas(expected)
-    # Act
-    df = store.read_polars(TABLE_NAME, rows=rows)
+    table.write(original_df, index=index_name, partition_size=partition_size,
+                warnings='ignore')
+    df = table.read_polars()
     # Assert
     assert df.frame_equal(expected)
 
 
-@pytest.mark.parametrize(
-    ("low", "high"),
-    [
-        (0, 5),
-        (5, 9),
-        (7, 13),
-        (6, 10),
-        (3, 19),
-    ],
-)
-def test_filtering_columns_and_rows_between(store, low, high):
-    # Arrange
-    COLUMNS = ["c0", "c1"]
-    ROWS = ["between", low, high]
-    original_df = make_table(astype="polars")
-    partition_size = get_partition_size(original_df)
-    index_name = get_index_name(original_df)
-    store.write_table(TABLE_NAME,
-                      original_df,
-                      partition_size=partition_size,
-                      index=index_name)
-    expected = original_df[low:(high + 1), COLUMNS]
-    # Act
-    df = store.read_polars(TABLE_NAME, cols=COLUMNS, rows=ROWS)
-    index = df["__index_level_0__"]
-    df = df.drop("__index_level_0__")
-    # Assert
-    assert index[0] == low and index[-1] == high
-    assert df.frame_equal(expected)
-
-
-@pytest.mark.parametrize(
-    "high",
-    [
-        "G",
-        "lR",
-        "T9est",
-    ],
-)
-def test_filtering_rows_before_low_with_string_index(store, high):
-    # Arrange
-    ROWS = ["before", high]
-    pandas_df = make_table(sorted_string_index, astype="pandas")
-    original_df = pl.from_pandas(pandas_df.reset_index())
-
-    expected = pandas_df.loc[:high, :]
-    expected = pl.from_pandas(expected.reset_index())
-
-    partition_size = get_partition_size(original_df)
-    store.write_table(
-        TABLE_NAME,
-        original_df,
-        index="index",
-        partition_size=partition_size,
-    )
-    # Act
-    df = store.read_polars(TABLE_NAME, rows=ROWS)
-    # Assert
-    assert df.frame_equal(expected)
-
-
-@pytest.mark.parametrize(
-    "low",
-    [
-        "2021-01-02",
-        pd.Timestamp("2021-01-02"),
-        "2021-01-05",
-        "2021-01-12",
-    ],
-)
-def test_filtering_rows_after_low_with_datetime_index(store, low):
-    # Arrange
-    ROWS = ["after", low]
-    pandas_df = make_table(continuous_datetime_index, astype="pandas")
-    original_df = pl.from_pandas(pandas_df.reset_index())
-
-    expected = pandas_df.loc[low:, :]
-    expected = pl.from_pandas(expected.reset_index())
-
-    partition_size = get_partition_size(original_df)
-    store.write_table(
-        TABLE_NAME,
-        original_df,
-        index="Date",
-        partition_size=partition_size,
-    )
-    # Act
-    df = store.read_polars(TABLE_NAME, rows=ROWS)
-    # Assert
-    assert df.frame_equal(expected)
+def _sort_polars_table(df, *, by):
+    index_name = by
+    if index_name:
+        df = df.sort(by=index_name)
+    return df
 
 
 def test_polars_to_pandas(store):
     # Arrange
     original_df = make_table(astype="polars", cols=4)
-    expected = original_df.to_pandas()
-    expected = expected.astype({'c0': 'string'})
-    partition_size = get_partition_size(original_df)
+    expected = _make_pd_table(original_df)
+
     index_name = get_index_name(original_df)
-    store.write_table(TABLE_NAME,
-                      original_df,
-                      partition_size=partition_size,
-                      index=index_name)
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
     # Act
-    df = store.read_pandas(TABLE_NAME)
+    table.write(original_df, index=index_name, partition_size=partition_size)
+    df = table.read_pandas()
     # Assert
     assert df.equals(expected)
+
+
+def _make_pd_table(df):
+    expected = df.to_pandas()
+    expected = expected.astype({'c0': 'string'})
+    return expected
