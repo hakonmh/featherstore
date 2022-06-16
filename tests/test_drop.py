@@ -3,30 +3,30 @@ import pytest
 from .fixtures import *
 
 ARGS = [
-    # (default_index, [10, 24, 0, 13], None),
-    # (default_index, pd.Index([10, 24, 0, 13]), None),
-    # (default_index, pd.RangeIndex(10, 13), None),
-    # (default_index, ['before', 10], None),
-    # (default_index, ['after', 10], None),
-    # (default_index, ['between', 10, 13], None),
-    (continuous_string_index, ['ab', 'bd', 'al'], None),
+    (default_index, [10, 24, 0, 13], None),
+    (default_index, pd.RangeIndex(10, 13), None),
+    (default_index, ['before', 10], None),
+    (default_index, ['after', 10], None),
+    (default_index, ['between', 10, 13], None),
     (continuous_string_index, pd.Index(['ab', 'bd', 'al']), None),
     (continuous_string_index, ['before', 'al'], None),
     (continuous_string_index, ['after', 'al'], None),
-    (continuous_string_index, ['between', 'af', 'al'], None),
-    (continuous_datetime_index, ['2021-01-01', '2021-01-17'], None),
+    (continuous_string_index, ['between', 'aj', 'ba'], None),
+    (continuous_string_index, ['between', 'a', 'b'], None),
+    (sorted_string_index, ['between', 'a', 'f'], None),
     (continuous_datetime_index, pd.DatetimeIndex(['2021-01-01', '2021-01-17']), None),
-    (continuous_datetime_index, ['before', '2021-01-17'], None),
+    (continuous_datetime_index, ['before', pd.Timestamp('2021-01-17')], None),
     (continuous_datetime_index, ['after', '2021-01-17'], None),
     (continuous_datetime_index, ['between', '2021-01-10', '2021-01-14'], None),
     (default_index, None, ['c0', 'c3', 'c1']),
-    (continuous_string_index, None, ['c0']),
-    (continuous_datetime_index, None, ['like', 'c??']),
+    (default_index, None, ['like', 'c?']),
+    (default_index, None, ['like', '%1']),
+    (default_index, None, ['like', '?1%']),
 ]
 
 
 @pytest.mark.parametrize(
-    ["index", "rows", "cols"], ARGS)
+    ['index', 'rows', 'cols'], ARGS)
 def test_drop(store, index, rows, cols):
     # Arrange
     original_df = Table(index, num_cols=12)
@@ -76,7 +76,7 @@ class Table:
 
     def _drop_cols(self, df, cols):
         if cols[0] == 'like':
-            pattern = cols[1].replace("?", ".").replace("%", ".*") + "$"
+            pattern = cols[1].replace('?', '.').replace('%', '.*') + '$'
             pattern = re.compile(pattern)
             cols = list(filter(pattern.search, df.columns))
         df = df.drop(cols, axis=1)
@@ -124,7 +124,7 @@ def _drop_cols():
 
 
 @pytest.mark.parametrize(
-    ("rows", "cols", "exception"),
+    ('rows', 'cols', 'exception'),
     [
         (_wrong_index_dtype(), None, TypeError),
         (_wrong_index_values(), None, ValueError),
@@ -137,15 +137,15 @@ def _drop_cols():
         (_drop_rows(), _drop_cols(), AttributeError)
     ],
     ids=[
-        "_wrong_index_dtype",
-        "_wrong_index_values",
-        "_drop_all_values",
-        "_wrong_cols_format",
-        "_wrong_col_elements_dtype",
-        "_drop_index",
-        "_col_not_in_stored_data",
-        "_drop_all_cols",
-        "_drop_rows_and_cols_at_the_same_time"
+        '_wrong_index_dtype',
+        '_wrong_index_values',
+        '_drop_all_values',
+        '_wrong_cols_format',
+        '_wrong_col_elements_dtype',
+        '_drop_index',
+        '_col_not_in_stored_data',
+        '_drop_all_cols',
+        '_drop_rows_and_cols_at_the_same_time'
     ])
 def test_can_drop(store, rows, cols, exception):
     # Arrange
