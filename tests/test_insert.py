@@ -12,11 +12,12 @@ DROPPED_ROWS_INDICES = [2, 5, 7, 10]
                           [hardcoded_string_index, ['row00010', 'row00000']],
                           [hardcoded_datetime_index, ['2021-01-10', '2021-01-14']]]
                          )
-@pytest.mark.parametrize(["num_rows", "num_cols"],
-                         [[75, 5],
-                          [30, 1]]
+@pytest.mark.parametrize(["num_rows", "num_cols", "num_partitions"],
+                         [[75, 5, 5],
+                          [75, 5, 30],
+                          [30, 1, 1],
+                          [30, 1, 5]]
                          )
-@pytest.mark.parametrize("num_partitions", [1, 5, 30])
 def test_insert_table(store, index, row_indices, num_rows, num_cols, num_partitions):
     # Arrange
     fixtures = InsertFixtures(index, num_rows, num_cols)
