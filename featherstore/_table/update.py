@@ -2,7 +2,6 @@ import pandas as pd
 
 from featherstore.connection import Connection
 from featherstore._table import _raise_if
-from featherstore._table import _table_utils
 
 
 def can_update_table(df, table_path):
@@ -32,7 +31,7 @@ def update_data(old_df, *, to):
     old_df = old_df.to_pandas()
     _raise_if_rows_is_not_in_old_data(old_df, new_data)
 
-    new_data = _table_utils.coerce_col_dtypes(new_data, to=old_df)
+    new_data = _coerce_pd_col_dtypes(new_data, to=old_df)
     old_df.loc[new_data.index, new_data.columns] = new_data
     df = old_df
     return df
@@ -44,3 +43,13 @@ def _raise_if_rows_is_not_in_old_data(old_df, df):
     rows_not_in_old_df = not all(index.isin(old_index))
     if rows_not_in_old_df:
         raise ValueError(f"Some rows not in stored table")
+
+
+def _coerce_pd_col_dtypes(df, *, to):
+    cols = df.columns
+    dtypes = to[cols].dtypes
+    try:
+        df = df.astype(dtypes)
+    except ValueError:
+        raise TypeError("New and old column dtypes do not match")
+    return df

@@ -1,5 +1,4 @@
 import pandas as pd
-import pyarrow as pa
 from pyarrow.compute import add
 
 from featherstore.connection import Connection
@@ -52,29 +51,24 @@ def _raise_if_append_data_not_ordered_after_stored_data(df, table_path):
             f" <= {stored_data_end})")
 
 
-def raise_if_index_not_exist(index, has_default_index):
-    index_not_provided = index is None
-    if index_not_provided and not has_default_index:
-        raise ValueError("Must provide index")
-
-
 def _get_first_append_value(df, table_path):
     append_data_start = _get_non_default_index_start(df, table_path)
     return append_data_start
 
 
-def _get_default_index_start(table_path):
-    stored_data_end = _get_last_stored_value(table_path)
-    append_data_start = int(stored_data_end) + 1
-    return append_data_start
-
-
 def _get_non_default_index_start(df, table_path):
     index_col = _metadata.Metadata(table_path, "table")["index_name"]
-    first_row = _table_utils.get_first_row(df)
+    first_row = _get_first_row(df)
     first_row = _table_utils.convert_to_arrow(first_row)
     append_data_start = first_row[index_col][0].as_py()
     return append_data_start
+
+
+def _get_first_row(df):
+    if isinstance(df, pd.DataFrame):
+        return df.iloc[:1]
+    else:
+        return df[:1]
 
 
 def _get_last_stored_value(table_path):
@@ -82,6 +76,12 @@ def _get_last_stored_value(table_path):
     last_partition_name = df.keys()[-1]
     stored_data_end = df[last_partition_name]['max']
     return stored_data_end
+
+
+def raise_if_index_not_exist(index, has_default_index):
+    index_not_provided = index is None
+    if index_not_provided and not has_default_index:
+        raise ValueError("Must provide index")
 
 
 def format_default_index(df, table_path):
@@ -98,26 +98,15 @@ def format_default_index(df, table_path):
     return df
 
 
+def _get_default_index_start(table_path):
+    stored_data_end = _get_last_stored_value(table_path)
+    append_data_start = int(stored_data_end) + 1
+    return append_data_start
+
+
 def append_data(df, *, to):
-    cols = to.column_names
-    df = _sort_cols(df, cols=cols)
-    try:
-        df = _coerce_dtypes(df, to)
-        full_table = pa.concat_tables([to, df])
-    except pa.ArrowInvalid:
-        raise TypeError("Column dtypes doesn't match")
-    return full_table
-
-
-def _sort_cols(df, cols):
-    cols_not_sorted = df.column_names != cols
-    if cols_not_sorted:
-        df = df.select(cols)
+    df = _table_utils.concat_arrow_tables(to, df)
     return df
-
-
-def _coerce_dtypes(df, to):
-    return df.cast(to.schema)
 
 
 def create_partitions(df, rows_per_partition, last_partition_name):

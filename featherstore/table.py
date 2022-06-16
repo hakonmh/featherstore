@@ -243,12 +243,12 @@ class Table:
         all_partition_names = self._partition_data.keys()
 
         rows = common.format_rows_arg_if_provided(df.index, index_type)
+        df = common.format_table(df, index_name=index_name, warnings='ignore')
 
         partition_names = read.get_partition_names(rows, self._table_path)
         stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)
 
-        df = insert.insert_data(stored_df, to=df)
-        df = common.format_table(df, index_name=index_name, warnings='ignore')
+        df = insert.insert_data(df, to=stored_df)
         partitions = insert.create_partitions(df, rows_per_partition, partition_names,
                                               all_partition_names)
 

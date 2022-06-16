@@ -1,4 +1,5 @@
 import pandas as pd
+import pyarrow as pa
 
 from featherstore.connection import Connection
 from featherstore._table import _raise_if
@@ -24,25 +25,21 @@ def can_insert_table(df, table_path):
     _raise_if.cols_does_not_match(df, table_path)
 
 
-def insert_data(old_df, *, to):
-    # TODO: Use arrow instead
-    if isinstance(to, pd.Series):
-        new_data = to.to_frame()
-    else:
-        new_data = to
-    old_df = old_df.to_pandas()
-    _raise_if_rows_in_old_data(old_df, new_data)
-    new_data = new_data[old_df.columns]
-    new_data = _table_utils.coerce_col_dtypes(new_data, to=old_df)
-    df = old_df.append(new_data)
-    df = df.sort_index()
+def insert_data(df, *, to):
+    index_name = _table_utils.get_index_name(df)
+    _raise_if_rows_in_old_data(to, df, index_name)
+
+    df = _table_utils.concat_arrow_tables(to, df)
+    df = _table_utils.sort_arrow_table(df, by=index_name)
     return df
 
 
-def _raise_if_rows_in_old_data(old_df, df):
-    index = df.index
-    old_index = old_df.index
-    rows_in_old_df = any(index.isin(old_index))
+def _raise_if_rows_in_old_data(old_df, df, index_name):
+    index = df[index_name]
+    old_index = old_df[index_name]
+
+    is_in = pa.compute.is_in(index, value_set=old_index)
+    rows_in_old_df = pa.compute.any(is_in).as_py()
     if rows_in_old_df:
         raise ValueError(f"Some rows already in stored table")
 

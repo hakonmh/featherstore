@@ -1,7 +1,7 @@
 import json
+import warnings as _warnings
 
 import pandas as pd
-import polars as pl
 import pyarrow as pa
 from pyarrow import pandas_compat as pc
 
@@ -35,13 +35,13 @@ def _format_rows_arg(rows, index_type):
     rows = list(rows)
     keyword = str(rows[0]).lower()
     if keyword in {"between", "before", "after"}:
-        rows[1:] = _coerce_row_dtypes(rows[1:], to=index_type)
+        rows[1:] = _coerce_row_arg_dtypes(rows[1:], to=index_type)
     else:
-        rows = _coerce_row_dtypes(rows, to=index_type)
+        rows = _coerce_row_arg_dtypes(rows, to=index_type)
     return rows
 
 
-def _coerce_row_dtypes(rows, *, to):
+def _coerce_row_arg_dtypes(rows, *, to):
     rows = [_convert_row(item, to) for item in rows]
     return rows
 
@@ -80,22 +80,11 @@ def _sort_table_if_unsorted(df, index_name, warnings):
     index_is_unordered = not pd_index.is_monotonic_increasing
 
     if index_is_unordered:
-        df = _sort_arrow_table(df, index_name, warnings)
+        if warnings == "warn":
+            _warnings.warn("Index is unsorted and will be sorted before storage")
+        df = _table_utils.sort_arrow_table(df, by=index_name)
     new_metadata = json.dumps({"sorted": index_is_unordered})
     df = _add_featherstore_metadata(df, new_metadata)
-    return df
-
-
-def _sort_arrow_table(df, index_name, warnings="ignore"):
-    if warnings == "warn":
-        warnings.warn("Index is unsorted and will be sorted before storage")
-    schema = df.schema
-
-    df = pl.from_arrow(df, rechunk=False)
-    df = df.sort(index_name)
-    df = df.to_arrow()
-
-    df = df.cast(schema)
     return df
 
 

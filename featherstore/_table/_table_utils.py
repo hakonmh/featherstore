@@ -8,30 +8,62 @@ PARTITION_NAME_LENGTH = 14
 INSERTION_BUFFER_LENGTH = 10**6
 
 
-def get_first_row(df):
-    if isinstance(df, pd.DataFrame):
-        return df.iloc[:1]
-    else:
-        return df[:1]
+def concat_arrow_tables(*dfs):
+    main_df = dfs[0]
+    dfs = _sort_cols(dfs, cols=main_df.column_names)
+    try:
+        dfs = _coerce_arrow_col_dtypes(dfs, schema=main_df.schema)
+        full_table = pa.concat_tables(dfs)
+    except pa.ArrowInvalid:
+        raise TypeError("Column dtypes doesn't match")
+    return full_table
+
+
+def _sort_cols(dfs, cols):
+    sorted_dfs = []
+    for df in dfs:
+        cols_not_sorted = df.column_names != cols
+        if cols_not_sorted:
+            df = df.select(cols)
+        sorted_dfs.append(df)
+    return sorted_dfs
+
+
+def _coerce_arrow_col_dtypes(dfs, schema):
+    coerced_dfs = []
+    for df in dfs:
+        df = df.cast(schema)
+        coerced_dfs.append(df)
+    return coerced_dfs
+
+
+def sort_arrow_table(df, *, by):
+    schema = df.schema
+
+    df = pl.from_arrow(df, rechunk=False)
+    df = df.sort(by)
+    df = df.to_arrow()
+
+    df = df.cast(schema)
+    return df
 
 
 def get_col_names(df, has_default_index):
-    first_row = get_first_row(df)
-    first_row = convert_to_arrow(first_row)
-    cols = first_row.column_names
+    if isinstance(df, (pd.DataFrame, pl.DataFrame)):
+        cols = list(df.columns)
+    elif isinstance(df, pa.Table):
+        cols = df.column_names
+    else:
+        cols = [df.name]
+
+    if isinstance(df, (pd.DataFrame, pd.Series)):
+        index_name = df.index.name
+        index_name = index_name if index_name else DEFAULT_ARROW_INDEX_NAME
+        cols.append(index_name)
     if has_default_index and DEFAULT_ARROW_INDEX_NAME not in cols:
         cols.append(DEFAULT_ARROW_INDEX_NAME)
+
     return cols
-
-
-def coerce_col_dtypes(df, *, to):
-    cols = df.columns
-    dtypes = to[cols].dtypes
-    try:
-        df = df.astype(dtypes)
-    except ValueError:
-        raise TypeError("New and old column dtypes do not match")
-    return df
 
 
 def convert_to_arrow(df):
