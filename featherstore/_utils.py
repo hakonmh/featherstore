@@ -2,15 +2,18 @@ import os
 import platform
 import shutil
 import re
+import ctypes
 
 DEFAULT_ARROW_INDEX_NAME = "__index_level_0__"
 
 
 def mark_as_hidden(path):
+    FILE_ATTRIBUTE_HIDDEN = 0x02
     is_windows = platform.system() == "Windows"
     if is_windows:
-        mark_as_hidden_command = f"attrib +h {path}"
-        os.system(mark_as_hidden_command)
+        success = ctypes.windll.kernel32.SetFileAttributesW(path, FILE_ATTRIBUTE_HIDDEN)
+        if not success:
+            raise ctypes.WinError()
 
 
 def delete_folder_tree(path):
