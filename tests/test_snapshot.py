@@ -1,4 +1,3 @@
-from collections import namedtuple
 import featherstore as fs
 import pytest
 from .fixtures import *
@@ -11,7 +10,6 @@ SNAPSHOT_PATH = os.path.join(DB_PATH, 'table_snapshot.tar.xz')
 def test_table_snapshot(store):
     # Arrange
     original_df = make_table(astype='pandas')
-
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size)
@@ -55,3 +53,29 @@ def _assert_store_equal(store_name1, store_name2):
         df1 = store1.read_pandas(table_name)
         df2 = store2.read_pandas(table_name)
         assert_frame_equal(df1, df2)
+
+
+def test_that_restoring_snapshot_cannot_overwrite_existing_table(store):
+    # Arrange
+    original_df = make_table(astype='pandas')
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+    # Act
+    table.create_snapshot(SNAPSHOT_PATH)
+    # Assert
+    with pytest.raises(FileExistsError):
+        fs.snapshot.restore_table(STORE_NAME, SNAPSHOT_PATH)
+
+
+def test_that_restoring_snapshot_cannot_overwrite_existing_store(store):
+    original_df = make_table(astype='pandas')
+
+    partition_size = get_partition_size(original_df)
+    store.write_table(TABLE_NAME, original_df, partition_size=partition_size)
+    # Act
+    store.create_snapshot(SNAPSHOT_PATH)
+    # Assert
+    with pytest.raises(FileExistsError):
+        fs.snapshot.restore_store(SNAPSHOT_PATH)
