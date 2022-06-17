@@ -7,11 +7,9 @@ from .fixtures import *
                          [default_index, sorted_datetime_index, sorted_string_index])
 @pytest.mark.parametrize("astype",
                          ["arrow", "polars", "pandas"])
-@pytest.mark.parametrize("cols",
-                         [5, 1])
-def test_append_table(store, index, astype, cols):
+def test_append_table(store, index, astype):
     # Arrange
-    fixture = AppendFixtures(index=index, astype=astype, cols=cols)
+    fixture = AppendFixtures(index=index, astype=astype)
     original_df = fixture.original_df
     appended_df = fixture.appended_df
 

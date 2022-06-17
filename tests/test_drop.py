@@ -29,12 +29,12 @@ ARGS = [
     ['index', 'rows', 'cols'], ARGS)
 def test_drop(store, index, rows, cols):
     # Arrange
-    original_df = Table(index, num_cols=12)
-    expected = original_df.drop(rows, cols)
+    original_df = make_table(index, cols=12, astype='pandas')
+    expected = _drop(original_df, rows, cols)
 
-    partition_size = get_partition_size(original_df())
+    partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
-    table.write(original_df(), partition_size=partition_size, warnings='ignore')
+    table.write(original_df, partition_size=partition_size, warnings='ignore')
     # Act
     table.drop(rows=rows, cols=cols)
     # Assert
@@ -42,45 +42,39 @@ def test_drop(store, index, rows, cols):
     assert df.equals(expected)
 
 
-class Table:
+def _drop(df, rows, cols):
+    if rows is not None:
+        df = __drop_rows(df, rows)
+    elif cols is not None:
+        df = __drop_cols(df, cols)
+    return df
 
-    def __init__(self, index, num_rows=30, num_cols=5):
-        self.table = make_table(index=index, rows=num_rows, cols=num_cols, astype='pandas')
 
-    def __call__(self):
-        return self.table
+def __drop_rows(df, rows):
+    if rows[0] in ('before', 'after', 'between'):
+        index = df.index
+    if rows[0] == 'before':
+        end = rows[1]
+        rows = index[end >= index]
+    elif rows[0] == 'after':
+        start = rows[1]
+        rows = index[start <= index]
+    elif rows[0] == 'between':
+        start = rows[1]
+        end = rows[2]
+        rows = index[start <= index]
+        rows = rows[end >= rows]
+    df = df.drop(rows, axis=0)
+    return df
 
-    def drop(self, rows, cols):
-        if rows is not None:
-            df = self._drop_rows(self.table, rows)
-        elif cols is not None:
-            df = self._drop_cols(self.table, cols)
-        return df
 
-    def _drop_rows(self, df, rows):
-        if rows[0] in ('before', 'after', 'between'):
-            index = df.index
-        if rows[0] == 'before':
-            end = rows[1]
-            rows = index[end >= index]
-        elif rows[0] == 'after':
-            start = rows[1]
-            rows = index[start <= index]
-        elif rows[0] == 'between':
-            start = rows[1]
-            end = rows[2]
-            rows = index[start <= index]
-            rows = rows[end >= rows]
-        df = df.drop(rows, axis=0)
-        return df
-
-    def _drop_cols(self, df, cols):
-        if cols[0] == 'like':
-            pattern = cols[1].replace('?', '.').replace('%', '.*') + '$'
-            pattern = re.compile(pattern)
-            cols = list(filter(pattern.search, df.columns))
-        df = df.drop(cols, axis=1)
-        return df
+def __drop_cols(df, cols):
+    if cols[0] == 'like':
+        pattern = cols[1].replace('?', '.').replace('%', '.*') + '$'
+        pattern = re.compile(pattern)
+        cols = list(filter(pattern.search, df.columns))
+    df = df.drop(cols, axis=1)
+    return df
 
 
 def _wrong_index_dtype():

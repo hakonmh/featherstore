@@ -3,8 +3,9 @@ from .fixtures import *
 
 
 @pytest.mark.parametrize("index",
-                         [default_index, sorted_datetime_index, sorted_string_index,
-                          unsorted_int_index, unsorted_datetime_index,
+                         [default_index,
+                          unsorted_int_index,
+                          sorted_datetime_index,
                           unsorted_string_index])
 def test_polars_io(store, index):
     # Arrange

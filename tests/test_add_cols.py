@@ -2,18 +2,17 @@ import pytest
 from .fixtures import *
 
 
-@pytest.mark.parametrize(["index", "cols", "col_names", "col_idx"],
-                         [[unsorted_int_index, 2, ['n0', 'n1'], 1],
+@pytest.mark.parametrize(["index", "num_cols", "col_names", "col_idx"],
+                         [[unsorted_int_index, 2, ['n0', 'n1'], 3],
                           [continuous_datetime_index, 1, ['n0'], -1],
                           [default_index, 1, ['n0'], 0]
                           ]
                          )
-def test_add_cols(store, index, cols, col_names, col_idx):
+def test_add_cols(store, index, num_cols, col_names, col_idx):
     # Arrange
-    fixtures = AddColsFixtures()
-    original_df = fixtures.make_df(index)
-    new_cols = fixtures.make_df(index, cols, col_names)
-    expected = fixtures.add_cols(new_cols=new_cols, to=original_df, idx=col_idx)
+    original_df = _make_df(index)
+    new_cols = _make_df(index, cols=num_cols, col_names=col_names)
+    expected = _add_cols(new_cols, to=original_df, col_idx=col_idx)
 
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
@@ -25,30 +24,26 @@ def test_add_cols(store, index, cols, col_names, col_idx):
     assert df.equals(expected)
 
 
-class AddColsFixtures:
+def _make_df(index, rows=30, cols=5, col_names=None):
+    df = make_table(index=index, rows=rows, cols=cols, astype="pandas")
+    if col_names:
+        df.columns = col_names
+    return df
 
-    def __init__(self, rows=30):
-        self.rows = rows
 
-    def make_df(self, index=None, cols=5, col_names=None):
-        df = make_table(index=index, rows=self.rows, cols=cols, astype="pandas")
-        if col_names:
-            df.columns = col_names
-        return df
+def _add_cols(df, *, to, col_idx):
+    full_df = to.join(df)
 
-    def add_cols(self, to, new_cols, idx=-1):
-        expected = to.join(new_cols)
+    cols = to.columns.tolist()
+    if col_idx != -1:
+        for col in reversed(df.columns):
+            cols.insert(col_idx, col)
+    else:
+        cols = full_df.columns
 
-        cols = to.columns.tolist()
-        if idx != -1:
-            for col in reversed(new_cols.columns):
-                cols.insert(idx, col)
-        else:
-            cols = expected.columns
-
-        expected = expected[cols]
-        expected = expected.sort_index()
-        return expected
+    full_df = full_df[cols]
+    full_df = full_df.sort_index()
+    return full_df
 
 
 def _wrong_df_type():

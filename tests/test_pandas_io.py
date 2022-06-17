@@ -4,8 +4,9 @@ from featherstore._utils import _sql_str_pattern_to_regexp
 
 
 @pytest.mark.parametrize("index",
-                         [default_index, sorted_datetime_index, sorted_string_index,
-                          unsorted_int_index, unsorted_datetime_index,
+                         [default_index,
+                          unsorted_int_index,
+                          sorted_datetime_index,
                           unsorted_string_index])
 @pytest.mark.parametrize("cols", [5, 1])
 def test_pandas_io(store, index, cols):
@@ -41,7 +42,7 @@ def _convert_rangeindex_to_int64_index(df):
     return df
 
 
-@pytest.mark.parametrize("num_cols", [1, 5, 15])
+@pytest.mark.parametrize("num_cols", [1, 15])
 @pytest.mark.parametrize("cols", [['c0'], ["like", "c?"], ["like", "%1"], ["like", "?1%"]])
 def test_filtering_cols(store, num_cols, cols):
     # Arrange
@@ -152,7 +153,7 @@ def _invalid_index():
 def _duplicate_index():
     df = make_table(astype='pandas', rows=15)
     df1 = make_table(astype='pandas', rows=15)
-    df = df.append(df1)
+    df = pd.concat([df, df1])
 
     args = [TABLE_NAME, df]
     kwargs = dict()
