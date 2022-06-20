@@ -5,7 +5,7 @@ from .fixtures import *
 import pyarrow as pa
 from pandas.testing import assert_frame_equal
 
-TypeMapper = namedtuple('TypeMapper', 'arrow_dtype category')
+TypeMapper = namedtuple('TypeMapper', 'arrow_dtype pandas_dtype')
 TYPE_MAP = {
     'float16': TypeMapper(pa.float16(), 'float'),
     'float32': TypeMapper(pa.float32(), 'float'),
@@ -28,10 +28,12 @@ TYPE_MAP = {
     'large_binary': TypeMapper(pa.large_binary(), 'string'),
 }
 
+KWARG_FORMATS = ['dict', 'list']
+kwarg_format_idx = 0
 
-@pytest.mark.parametrize("arg_format", ['list', 'dict'])
+
 @pytest.mark.parametrize(
-    ("from_", "to"),
+    ("from_dtype", "to_dtype"),
     [
         ('float32', 'float64'),
         ('float32', 'decimal128(5, 5)'),
@@ -54,15 +56,16 @@ TYPE_MAP = {
         ('large_string', 'string'),
     ]
 )
-def test_change_dtype(store, arg_format, from_, to):
+def test_change_dtype(store, from_dtype, to_dtype):
     # Arrange
-    original_df = _make_table(dtype=from_, rows=60, cols=3)
-    expected = _change_dtype(original_df, to, cols=['c1', 'c2'])
+    original_df = _make_table(dtype=from_dtype, rows=60, cols=3)
+    expected = _change_dtype(original_df, to_dtype, cols=['c1', 'c2'])
 
-    kwargs = _format_args(to, arg_format)
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size)
+
+    kwargs = _format_kwargs(to_dtype)
     # Act
     table.astype(**kwargs)
     # Assert
@@ -70,14 +73,14 @@ def test_change_dtype(store, arg_format, from_, to):
 
 
 def _make_table(dtype, rows=30, cols=3):
-    pandas_dtype = TYPE_MAP[dtype].category
+    pandas_dtype = TYPE_MAP[dtype].pandas_dtype
     df = make_table(rows=rows, cols=cols, astype="arrow", dtype=pandas_dtype)
     df = _change_dtype(df, dtype)
     return df
 
 
-def _change_dtype(df, to, cols=None):
-    arrow_dtype = TYPE_MAP[to].arrow_dtype
+def _change_dtype(df, to_dtype, cols=None):
+    arrow_dtype = TYPE_MAP[to_dtype].arrow_dtype
     schema = df.schema
     cols = cols if cols else schema.names
     for idx, field in enumerate(schema):
@@ -88,11 +91,19 @@ def _change_dtype(df, to, cols=None):
     return df
 
 
-def _format_args(to, arg_format):
-    arrow_dtype = TYPE_MAP[to].arrow_dtype
-    if arg_format == 'dict':
+def _format_kwargs(to_dtype):
+    """Selects every other test to format arguments as one of either:
+        * cols=['c1', 'c2'], to=[dtype1, dtype2]
+        * cols = {'c1': dtype1, 'c2': dtype2}
+    """
+    global kwarg_format_idx
+    kwarg_format_idx = (kwarg_format_idx + 1) % 2
+    kwarg_format = KWARG_FORMATS[kwarg_format_idx]
+
+    arrow_dtype = TYPE_MAP[to_dtype].arrow_dtype
+    if kwarg_format == 'dict':
         kwargs = {'cols': {'c1': arrow_dtype, 'c2': arrow_dtype}}
-    elif arg_format == 'list':
+    elif kwarg_format == 'list':
         kwargs = {'cols': ['c1', 'c2'], 'to': [arrow_dtype, arrow_dtype]}
     return kwargs
 
