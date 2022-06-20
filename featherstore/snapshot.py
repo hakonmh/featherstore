@@ -3,7 +3,6 @@ import os
 import pickle
 from datetime import datetime
 from featherstore.connection import Connection, current_db
-from featherstore._table import _raise_if
 
 METADATA_FILE_NAME = 'metadata.pkl'
 
