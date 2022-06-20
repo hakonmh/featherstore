@@ -77,11 +77,11 @@ def __drop_cols(df, cols):
     return df
 
 
-def _wrong_index_dtype():
+def _wrong_row_elements_dtype():
     return ['3', '19', '25']
 
 
-def _wrong_index_values():
+def _rows_not_in_table():
     return [2, 5, 7, 10, 459]
 
 
@@ -101,7 +101,7 @@ def _drop_index():
     return ['c1', 'index']
 
 
-def _col_not_in_stored_data():
+def _col_not_in_table():
     return ['c1', 'Non-existant col']
 
 
@@ -120,13 +120,13 @@ def _drop_cols():
 @pytest.mark.parametrize(
     ('rows', 'cols', 'exception'),
     [
-        (_wrong_index_dtype(), None, TypeError),
-        (_wrong_index_values(), None, ValueError),
+        (_wrong_row_elements_dtype(), None, TypeError),
+        (_rows_not_in_table(), None, IndexError),
         (_drop_all_rows(), None, IndexError),
         (None, _wrong_cols_format(), TypeError),
         (None, _wrong_col_elements_dtype(), TypeError),
         (None, _drop_index(), ValueError),
-        (None, _col_not_in_stored_data(), IndexError),
+        (None, _col_not_in_table(), IndexError),
         (None, _drop_all_cols(), IndexError),
         (_drop_rows(), _drop_cols(), AttributeError)
     ],
