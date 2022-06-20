@@ -55,10 +55,8 @@ def _insert_adjacent_partition(adj_partition, *, to):
 
 def drop_rows_from_data(df, rows, index_name):
     index_col = df.select([index_name])
-    rows_to_drop = _table_utils.filter_arrow_table(index_col, rows, index_name)
-    rows_array = rows_to_drop[index_name]
-    _raise_if_rows_not_in_index(rows_array)
-    df = _drop_rows(df, rows_array, index_name)
+    rows_to_drop = _table_utils.filter_arrow_table(index_col, rows, index_name)[0]
+    df = _drop_rows(df, rows_to_drop, index_name)
     _raise_if_all_rows_is_dropped(df)
     return df
 
@@ -69,11 +67,6 @@ def _drop_rows(df, rows, index_name):
     mask = pa.compute.invert(mask)
     df = df.filter(mask)
     return df
-
-
-def _raise_if_rows_not_in_index(rows):
-    if rows.null_count > 0:
-        raise ValueError(f"Some rows not in stored table")
 
 
 def _raise_if_all_rows_is_dropped(df):

@@ -19,7 +19,7 @@ def table_not_exists(table_path):
 def table_already_exists(table_path):
     table_name = table_path.rsplit('/')[-1]
     if os.path.exists(table_path):
-        raise OSError(f"A table with name '{table_name}' already exists")
+        raise FileExistsError(f"A table with name '{table_name}' already exists")
 
 
 def table_name_is_not_str(table_name):

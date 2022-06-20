@@ -261,8 +261,15 @@ def filter_arrow_table(df, rows, index_col_name):
 
 def _fetch_rows_in_list(df, index, rows):
     row_indices = pa.compute.index_in(rows, value_set=index)
+    _raise_if_rows_not_in_table(row_indices)
     df = df.take(row_indices)
     return df
+
+
+def _raise_if_rows_not_in_table(row_indices):
+    contains_null = row_indices.null_count > 0
+    if contains_null:
+        raise IndexError('Trying to access a row not found in table')
 
 
 def _fetch_rows_before(df, index, row):
@@ -295,19 +302,19 @@ def _compute_upper_bound(row, index):
 
 
 def __fetch_row_idx(row, index, is_upper_bound=False):
-    row_idx = __fetch_exact_row_idx(row, index, is_upper_bound)
+    row_idx = _fetch_exact_row_idx(row, index, is_upper_bound)
 
     no_row_idx_found = row_idx is None
     if no_row_idx_found:
-        row_idx = __fetch_closest_row_idx(row, index)
+        row_idx = _fetch_closest_row_idx(row, index)
 
     no_close_row_idx_found = row_idx is None
     if no_close_row_idx_found:
-        row_idx = __fetch_last_row_idx(index)
+        row_idx = _fetch_last_row_idx(index)
     return row_idx
 
 
-def __fetch_exact_row_idx(row, index, is_upper_bound):
+def _fetch_exact_row_idx(row, index, is_upper_bound):
     row_idx = index.index(row)
     row_idx = row_idx.as_py()
     if row_idx == -1:
@@ -317,7 +324,7 @@ def __fetch_exact_row_idx(row, index, is_upper_bound):
     return row_idx
 
 
-def __fetch_closest_row_idx(row, index):
+def _fetch_closest_row_idx(row, index):
     mask = pa.compute.less_equal(row, index)
     row_idx = mask.index(True)
     row_idx = row_idx.as_py()
@@ -326,5 +333,5 @@ def __fetch_closest_row_idx(row, index):
     return row_idx
 
 
-def __fetch_last_row_idx(index):
+def _fetch_last_row_idx(index):
     return len(index)

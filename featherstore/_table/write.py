@@ -28,6 +28,7 @@ def can_write_table(df, table_path, index_name, partition_size, errors, warnings
     cols = _table_utils.get_col_names(df, has_default_index=False)
     _raise_if_index_argument_is_not_supported_dtype(index_name)
     _raise_if_provided_index_not_in_cols(index_name, cols)
+    _raise_if.cols_argument_items_is_not_str(cols)
     _raise_if.col_names_contains_duplicates(cols)
     _raise_if.col_names_are_forbidden(cols)
 
