@@ -31,6 +31,7 @@ def test_update_table(store, index, update_rows_loc, num_cols):
 
 @pytest.mark.parametrize(["num_partitions", "rows"], [(7, 30), (3, 125), (27, 36)])
 def test_partition_structure_after_update_table(store, num_partitions, rows):
+    # Arrange
     fixtures = UpdateFixtures(update_rows_loc=(10, 13, 14, 21),
                               update_cols_loc=('c2', 'c0'),
                               rows=rows)
@@ -83,6 +84,7 @@ class UpdateFixtures:
         update_values = update_values.loc[self.update_rows_loc, self.update_cols_loc]
         if cols == 1:
             update_values = update_values.squeeze()
+        update_values.index.name = 'index'
         return update_values
 
     def update_table(self, values):
@@ -91,26 +93,17 @@ class UpdateFixtures:
         return expected
 
 
-def _wrong_index_dtype():
-    df = make_table(sorted_datetime_index, astype="pandas")
+def _update_table_not_pd_table():
+    df = make_table(astype="polars")
     return df
 
 
-def _wrong_index_values():
-    df = make_table(astype="pandas")
-    df = df.head(5)
-    df.index = [2, 5, 7, 10, 459]
+def _non_matching_index_dtype():
+    df = make_table(sorted_string_index, astype="pandas")
     return df
 
 
-def _duplicate_index_values():
-    df = make_table(astype="pandas")
-    df = df.head(5)
-    df.index = [2, 5, 7, 10, 10]
-    return df
-
-
-def _wrong_column_dtype():
+def _non_matching_column_dtypes():
     df = make_table(sorted_string_index, cols=1, astype="pandas")
     df = df.reset_index()
     df.columns = ['c1', 'c2']
@@ -118,10 +111,31 @@ def _wrong_column_dtype():
     return df
 
 
-def _wrong_column_names():
+def _index_not_in_table():
+    df = make_table(astype="pandas")
+    df = df.head(5)
+    df.index = [2, 5, 7, 10, 459]
+    return df
+
+
+def _column_name_not_in_stored_data():
     df = make_table(cols=2, astype="pandas")
     df = df.head(5)
     df.columns = ['c1', 'non-existant_column']
+    return df
+
+
+def _index_name_not_the_same_as_stored_index():
+    df = make_table(astype="pandas")
+    df = df.head(5)
+    df.index.name = 'new_index_name'
+    return df
+
+
+def _duplicate_index_values():
+    df = make_table(astype="pandas")
+    df = df.head(5)
+    df.index = [2, 5, 7, 10, 10]
     return df
 
 
@@ -135,19 +149,23 @@ def _duplicate_column_names():
 @pytest.mark.parametrize(
     ("update_df", "exception"),
     [
-        (_wrong_index_dtype(), TypeError),
-        (_wrong_index_values(), ValueError),
+        (_update_table_not_pd_table(), TypeError),
+        (_non_matching_index_dtype(), TypeError),
+        (_non_matching_column_dtypes(), TypeError),
+        (_index_not_in_table(), ValueError),
+        (_column_name_not_in_stored_data(), IndexError),
+        (_index_name_not_the_same_as_stored_index(), ValueError),
         (_duplicate_index_values(), IndexError),
-        (_wrong_column_dtype(), TypeError),
-        (_wrong_column_names(), IndexError),
         (_duplicate_column_names(), IndexError),
     ],
     ids=[
-        "_wrong_index_dtype",
-        "_wrong_index_values",
+        "_update_table_not_pd_table",
+        "_non_matching_index_dtype",
+        "_non_matching_column_dtypes",
+        "_index_not_in_table",
+        "_column_name_not_in_stored_data",
+        "_index_name_not_the_same_as_stored_index",
         "_duplicate_index_values",
-        "_wrong_column_dtype",
-        "_wrong_column_names",
         "_duplicate_column_names",
     ],
 )
@@ -157,7 +175,5 @@ def test_can_update_table(store, update_df, exception):
     store.write_table(TABLE_NAME, original_df)
     table = store.select_table(TABLE_NAME)
     # Act
-    with pytest.raises(exception) as e:
+    with pytest.raises(exception):
         table.update(update_df)
-    # Assert
-    assert isinstance(e.type(), exception)

@@ -47,11 +47,11 @@ def _coerce_row_arg_dtypes(rows, *, to):
 
 
 def _convert_row(row, to):
-    if _table_utils.str_is_temporal_dtype(to):
+    if _table_utils.dtype_str_is_temporal(to):
         row = pd.to_datetime(row)
-    elif _table_utils.str_is_string_dtype(to):
+    elif _table_utils.dtype_str_is_string(to):
         row = str(row)
-    elif _table_utils.str_is_int_dtype(to):
+    elif _table_utils.dtype_str_is_int(to):
         row = int(row)
     return row
 

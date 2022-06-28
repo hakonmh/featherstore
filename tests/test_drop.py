@@ -77,69 +77,49 @@ def __drop_cols(df, cols):
     return df
 
 
-def _wrong_row_elements_dtype():
-    return ['3', '19', '25']
-
-
-def _rows_not_in_table():
-    return [2, 5, 7, 10, 459]
-
-
-def _drop_all_rows():
-    return list(pd.RangeIndex(0, 30))
-
-
-def _wrong_cols_format():
-    return ('c1', 'c2', 'c3')
-
-
-def _wrong_col_elements_dtype():
-    return ['c1', 2]
-
-
-def _drop_index():
-    return ['c1', 'index']
-
-
-def _col_not_in_table():
-    return ['c1', 'Non-existant col']
-
-
-def _drop_all_cols():
-    return ['like', 'c%']
-
-
-def _drop_rows():
-    return [4, 5]
-
-
-def _drop_cols():
-    return ['c1', 'c2']
+WRONG_ROWS_FORMAT = 'c1, c2, c3'
+WRONG_ROW_ELEMENTS_DTYPE = ['3', '19', '25']
+ROWS_NOT_IN_TABLE = [2, 5, 7, 10, 459]
+DROP_ALL_ROWS = list(pd.RangeIndex(0, 30))
+DROP_NO_ROWS = []
+WRONG_COLS_FORMAT = ('c1', 'c2', 'c3')
+WRONG_COL_ELEMENTS_DTYPE = ['c1', 2]
+DROP_INDEX = ['c1', 'index']
+COL_NOT_IN_TABLE = ['c1', 'Non-existant col']
+DROP_ALL_COLS = ['like', 'c%']
+DROP_NO_COLS = []
+DROP_ROWS_AND_COLS_AT_THE_SAME_TIME = [[4, 5], ['c1', 'c2']]
 
 
 @pytest.mark.parametrize(
     ('rows', 'cols', 'exception'),
     [
-        (_wrong_row_elements_dtype(), None, TypeError),
-        (_rows_not_in_table(), None, IndexError),
-        (_drop_all_rows(), None, IndexError),
-        (None, _wrong_cols_format(), TypeError),
-        (None, _wrong_col_elements_dtype(), TypeError),
-        (None, _drop_index(), ValueError),
-        (None, _col_not_in_table(), IndexError),
-        (None, _drop_all_cols(), IndexError),
-        (_drop_rows(), _drop_cols(), AttributeError)
+        (WRONG_ROWS_FORMAT, None, TypeError),
+        (WRONG_ROW_ELEMENTS_DTYPE, None, TypeError),
+        (ROWS_NOT_IN_TABLE, None, IndexError),
+        (DROP_ALL_ROWS, None, IndexError),
+        (DROP_NO_ROWS, None, IndexError),
+        (None, WRONG_COLS_FORMAT, TypeError),
+        (None, WRONG_COL_ELEMENTS_DTYPE, TypeError),
+        (None, DROP_INDEX, ValueError),
+        (None, COL_NOT_IN_TABLE, IndexError),
+        (None, DROP_ALL_COLS, IndexError),
+        (None, DROP_NO_COLS, IndexError),
+        (*DROP_ROWS_AND_COLS_AT_THE_SAME_TIME, AttributeError)
     ],
     ids=[
-        '_wrong_index_dtype',
-        '_wrong_index_values',
-        '_drop_all_values',
-        '_wrong_cols_format',
-        '_wrong_col_elements_dtype',
-        '_drop_index',
-        '_col_not_in_stored_data',
-        '_drop_all_cols',
-        '_drop_rows_and_cols_at_the_same_time'
+        'WRONG_ROWS_FORMAT',
+        'WRONG_ROW_ELEMENTS_DTYPE',
+        'ROWS_NOT_IN_TABLE',
+        'DROP_ALL_ROWS',
+        'DROP_NO_ROWS',
+        'WRONG_COLS_FORMAT',
+        'WRONG_COL_ELEMENTS_DTYPE',
+        'DROP_INDEX',
+        'COL_NOT_IN_TABLE',
+        'DROP_ALL_COLS',
+        'DROP_NO_COLS',
+        'DROP_ROWS_AND_COLS_AT_THE_SAME_TIME'
     ])
 def test_can_drop(store, rows, cols, exception):
     # Arrange
@@ -147,8 +127,6 @@ def test_can_drop(store, rows, cols, exception):
     original_df.index.name = 'index'
     table = store.select_table(TABLE_NAME)
     table.write(original_df)
-    # Act
-    with pytest.raises(exception) as e:
+    # Act and Assert
+    with pytest.raises(exception):
         table.drop(rows=rows, cols=cols)
-    # Assert
-    assert isinstance(e.type(), exception)

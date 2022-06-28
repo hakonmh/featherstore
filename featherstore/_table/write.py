@@ -35,7 +35,7 @@ def can_write_table(df, table_path, index_name, partition_size, errors, warnings
     pd_index = _table_utils.get_pd_index_if_exists(df, index_name)
     index_is_provided = pd_index is not None
     if index_is_provided:
-        _raise_if.index_is_not_supported_dtype(pd_index)
+        _raise_if_index_is_not_supported_dtype(pd_index)
         _raise_if.index_values_contains_duplicates(pd_index)
 
 
@@ -54,6 +54,13 @@ def _raise_if_index_argument_is_not_supported_dtype(index):
 def _raise_if_provided_index_not_in_cols(index, cols):
     if isinstance(index, str) and index not in cols:
         raise IndexError("'index' not in table columns")
+
+
+def _raise_if_index_is_not_supported_dtype(index):
+    index_type = index.inferred_type
+    if index_type not in {"integer", "datetime64", "string"}:
+        raise TypeError(f"Table.index type must be either int, str or datetime "
+                        f"(is type {index_type})")
 
 
 def create_partitions(df, rows_per_partition, partition_names=None):

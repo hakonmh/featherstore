@@ -140,53 +140,46 @@ def __convert_object_cols_to_string(df):
     return df
 
 
-def _new_dtypes_provided_twice():
-    return {'c0': pa.int16()}, [pa.int16()]
-
-
-def _new_dtypes_not_provided():
-    return ['c0', 'c1'], None
-
-
-def _num_cols_and_num_dtypes_doesnt_match():
-    return ['c0', 'c1'], [pa.int16()]
-
-
-def _wrong_dtypes_dtype():
-    return ['c0'], [123]
-
-
-def _invalid_index_dtype():
-    return ['__index_level_0__'], [pa.float32()]
-
-
-def _invalid_new_dtype():
-    return ['c0'], [pa.float32()]
-
-
-def _duplicate_col_names():
-    return ['c0', 'c0'], [pa.int16(), pa.int32()]
+NEW_DTYPES_PROVIDED_TWICE = [{'c0': pa.int16()}, [pa.int16()]]
+NEW_DTYPES_NOT_PROVIDED = [['c0', 'c1'], None]
+INVALID_COLS_ARGUMENT_DTYPE = [{'c0'}, [pa.int16()]]
+INVALID_TO_ARGUMENT_DTYPE = [['c0'], {pa.int16()}]
+INVALID_COLS_ITEMS_DTYPE = [{'c0': 123}, None]
+INVALID_TO_ITEMS_DTYPE = [['c0'], [123]]
+NUMBER_OF_COLS_AND_DTYPES_DONT_MATCH = [['c0', 'c1'], [pa.int16()]]
+FORBIDDEN_DTYPE_FOR_INDEX = [['__index_level_0__'], [pa.float32()]]
+NON_ARROW_DTYPE = [['c0'], [float]]
+INVALID_NEW_DTYPE = [['c0'], [pa.float32()]]
+DUPLICATE_COL_NAMES = [['c0', 'c0'], [pa.int16(), pa.int32()]]
 
 
 @pytest.mark.parametrize(
     ("args", "exception"),
     [
-        (_new_dtypes_provided_twice(), AttributeError),
-        (_new_dtypes_not_provided(), AttributeError),
-        (_num_cols_and_num_dtypes_doesnt_match(), ValueError),
-        (_wrong_dtypes_dtype(), TypeError),
-        (_invalid_index_dtype(), TypeError),
-        (_invalid_new_dtype(), pa.ArrowInvalid),
-        (_duplicate_col_names(), IndexError),
+        (NEW_DTYPES_PROVIDED_TWICE, AttributeError),
+        (NEW_DTYPES_NOT_PROVIDED, AttributeError),
+        (NUMBER_OF_COLS_AND_DTYPES_DONT_MATCH, ValueError),
+        (INVALID_COLS_ARGUMENT_DTYPE, TypeError),
+        (INVALID_TO_ARGUMENT_DTYPE, TypeError),
+        (INVALID_COLS_ITEMS_DTYPE, TypeError),
+        (INVALID_TO_ITEMS_DTYPE, TypeError),
+        (FORBIDDEN_DTYPE_FOR_INDEX, TypeError),
+        (NON_ARROW_DTYPE, TypeError),
+        (INVALID_NEW_DTYPE, pa.ArrowInvalid),
+        (DUPLICATE_COL_NAMES, IndexError),
     ],
     ids=[
-        "_new_dtypes_provided_twice",
-        "_new_dtypes_not_provided",
-        "_num_cols_and_num_dtypes_doesnt_match",
-        "_wrong_dtypes_dtype",
-        "_invalid_index_dtype",
-        "_invalid_new_dtype",
-        "_duplicate_col_names"
+        "NEW_DTYPES_PROVIDED_TWICE",
+        "NEW_DTYPES_NOT_PROVIDED",
+        "NUMBER_OF_COLS_AND_DTYPES_DONT_MATCH",
+        "INVALID_COLS_ARGUMENT_DTYPE",
+        "INVALID_TO_ARGUMENT_DTYPE",
+        "INVALID_COLS_ITEMS_DTYPE",
+        "INVALID_TO_ITEMS_DTYPE",
+        "FORBIDDEN_DTYPE_FOR_INDEX",
+        "NON_ARROW_DTYPE",
+        "INVALID_NEW_DTYPE",
+        "DUPLICATE_COL_NAMES"
     ]
 )
 def test_can_change_dtype(store, args, exception):
@@ -194,10 +187,8 @@ def test_can_change_dtype(store, args, exception):
     original_df = make_table(cols=5, astype='pandas')
     table = store.select_table(TABLE_NAME)
     table.write(original_df)
-    # Act
-    with pytest.raises(exception) as e:
+    # Act and Assert
+    with pytest.raises(exception):
         col_names = args[0]
         dtypes = args[1]
         table.astype(col_names, to=dtypes)
-    # Assert
-    assert isinstance(e.type(), exception)

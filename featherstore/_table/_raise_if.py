@@ -113,19 +113,19 @@ def _rows_dtype_matches_index(rows, index_dtype):
 
 
 def _check_if_row_and_index_is_temporal(row, index_dtype):
-    if _table_utils.str_is_temporal_dtype(index_dtype):
+    if _table_utils.dtype_str_is_temporal(index_dtype):
         return _isinstance_temporal(row)
     return False
 
 
 def _check_if_row_and_index_is_str(row, index_dtype):
-    if _table_utils.str_is_string_dtype(index_dtype):
+    if _table_utils.dtype_str_is_string(index_dtype):
         return _isinstance_str(row)
     return False
 
 
 def _check_if_row_and_index_is_int(row, index_dtype):
-    if _table_utils.str_is_int_dtype(index_dtype):
+    if _table_utils.dtype_str_is_int(index_dtype):
         return _isinstance_int(row)
     return False
 
@@ -163,6 +163,14 @@ def index_dtype_not_same_as_stored_index(df, table_path):
             raise TypeError("New and old index types do not match")
 
 
+def index_name_not_same_as_stored_index(df, table_path):
+    stored_index_name = Metadata(table_path, "table")["index_name"]
+    has_default_index = Metadata(table_path, "table")["has_default_index"]
+    cols = _table_utils.get_col_names(df, has_default_index=has_default_index)
+    if stored_index_name not in cols:
+        raise ValueError("New and old index names do not match")
+
+
 def col_names_contains_duplicates(cols):
     cols = pd.Index(cols)
     if cols.has_duplicates:
@@ -178,10 +186,3 @@ def col_names_are_forbidden(cols):
 def index_values_contains_duplicates(index):
     if index.has_duplicates:
         raise IndexError("Values in Table.index must be unique")
-
-
-def index_is_not_supported_dtype(index):
-    index_type = index.inferred_type
-    if index_type not in {"integer", "datetime64", "string"}:
-        raise TypeError(f"Table.index type must be either int, str or datetime "
-                        f"(is type {index_type})")

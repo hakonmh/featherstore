@@ -15,7 +15,16 @@ def can_drop_rows_from_table(rows, table_path):
     Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table_path)
     _raise_if.rows_argument_is_not_supported_dtype(rows)
+    _raise_if_rows_argument_is_empty(rows)
     _raise_if.rows_argument_items_dtype_not_same_as_index(rows, table_path)
+
+
+def _raise_if_rows_argument_is_empty(rows):
+    if rows is not None:
+        rows_is_empty = len(rows) == 0
+        if rows_is_empty:
+            raise IndexError(f"No rows in sequence, rows should be None or a"
+                             "sequence with elements")
 
 
 def get_partition_names(rows, table_path):
@@ -82,11 +91,20 @@ def can_drop_cols_from_table(cols, table_path):
     _raise_if.table_not_exists(table_path)
     _raise_if.cols_argument_is_not_list_or_none(cols)
     _raise_if.cols_argument_items_is_not_str(cols)
+    _raise_if_cols_argument_is_empty(cols)
 
     raise_if = CheckDropCols(cols, table_path)
     raise_if.trying_to_drop_index_col()
     raise_if.cols_are_not_in_stored_data()
     raise_if.trying_to_drop_all_cols()
+
+
+def _raise_if_cols_argument_is_empty(cols):
+    if cols is not None:
+        cols_is_empty = len(cols) == 0
+        if cols_is_empty:
+            raise IndexError("No cols in sequence, cols should be None or a"
+                             "sequence with elements")
 
 
 class CheckDropCols:

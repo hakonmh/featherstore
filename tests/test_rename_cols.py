@@ -28,64 +28,48 @@ def test_rename_cols(store, columns, to, result):
     assert_frame_equal(df, expected, check_dtype=False)
 
 
-def _new_names_provided_twice():
-    return {'c0': 'd0'}, ['d0']
-
-
-def _new_names_not_provided():
-    return ['c0', 'c1'], None
-
-
-def _num_cols_doesnt_match():
-    return ['c0', 'c1'], ['d0']
-
-
-def _wrong_col_dtype():
-    return ['c0'], [1]
-
-
-def _col_name_already_in_table():
-    return {'c0': 'c1'}, None
-
-
-def _forbidden_col_name():
-    return {'c0': 'like'}, None
-
-
-def _duplicate_col_names():
-    return ['c0', 'c1'], ['d0', 'd0']
+NEW_COL_NAMES_PROVIDED_TWICE = [{'c0': 'd0'}, ['d0']]
+NEW_NAMES_NOT_PROVIDED = [['c0', 'c1'], None]
+NUMBER_OF_COLS_DOESNT_MATCH = [['c0', 'c1'], ['d0']]
+WRONG_OLD_COL_NAME_DTYPE = [[1], ['d0']]
+WRONG_NEW_COL_NAME_DTYPE_AS_LIST = [['c0'], [1]]
+WRONG_NEW_COL_NAME_DTYPE_AS_DICT = [{'c0': 1}, None]
+FORBIDDEN_COL_NAME = [{'c0': 'like'}, None]
+DUPLICATE_COL_NAMES = [['c0', 'c1'], ['d0', 'd0']]
+COL_NAME_ALREADY_IN_TABLE = [{'c0': 'c1'}, None]
 
 
 @pytest.mark.parametrize(
     ("args", "exception"),
     [
-        (_new_names_provided_twice(), AttributeError),
-        (_new_names_not_provided(), AttributeError),
-        (_num_cols_doesnt_match(), ValueError),
-        (_wrong_col_dtype(), TypeError),
-        (_col_name_already_in_table(), IndexError),
-        (_forbidden_col_name(), ValueError),
-        (_duplicate_col_names(), IndexError),
+        (NEW_COL_NAMES_PROVIDED_TWICE, AttributeError),
+        (NEW_NAMES_NOT_PROVIDED, AttributeError),
+        (NUMBER_OF_COLS_DOESNT_MATCH, ValueError),
+        (WRONG_OLD_COL_NAME_DTYPE, TypeError),
+        (WRONG_NEW_COL_NAME_DTYPE_AS_LIST, TypeError),
+        (WRONG_NEW_COL_NAME_DTYPE_AS_DICT, TypeError),
+        (FORBIDDEN_COL_NAME, ValueError),
+        (DUPLICATE_COL_NAMES, IndexError),
+        (COL_NAME_ALREADY_IN_TABLE, IndexError),
     ],
     ids=[
-        "_wrong_signature",
-        "_new_names_not_provided",
-        "_num_cols_doesnt_match",
-        "_wrong_col_dtype",
-        "_col_name_already_in_table",
-        "_forbidden_col_name",
-        "_duplicate_col_names"
+        "NEW_COL_NAMES_PROVIDED_TWICE",
+        "NEW_NAMES_NOT_PROVIDED",
+        "NUMBER_OF_COLS_DOESNT_MATCH",
+        "WRONG_OLD_COL_NAME_DTYPE",
+        "WRONG_NEW_COL_NAME_DTYPE_AS_LIST",
+        "WRONG_NEW_COL_NAME_DTYPE_AS_DICT",
+        "FORBIDDEN_COL_NAME",
+        "DUPLICATE_COL_NAMES",
+        "COL_NAME_ALREADY_IN_TABLE",
     ]
 )
 def test_can_rename_cols(store, args, exception):
     # Arrange
+    col_names, new_col_names = args
     original_df = make_table(cols=5, astype='pandas')
     table = store.select_table(TABLE_NAME)
     table.write(original_df)
-    # Act
-    with pytest.raises(exception) as e:
-        col_names = args[0]
-        new_col_names = args[1]
+    # Act and Assert
+    with pytest.raises(exception):
         table.rename_columns(col_names, to=new_col_names)
-    # Assert
-    assert isinstance(e.type(), exception)

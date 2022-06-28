@@ -60,7 +60,7 @@ def get_col_names(df, has_default_index):
         index_name = df.index.name
         index_name = index_name if index_name else DEFAULT_ARROW_INDEX_NAME
         cols.append(index_name)
-    if has_default_index and DEFAULT_ARROW_INDEX_NAME not in cols:
+    elif has_default_index and DEFAULT_ARROW_INDEX_NAME not in cols:
         cols.append(DEFAULT_ARROW_INDEX_NAME)
 
     return cols
@@ -210,15 +210,15 @@ def get_index_dtype(df):
     return index_dtype
 
 
-def str_is_temporal_dtype(index_dtype):
+def dtype_str_is_temporal(index_dtype):
     return "time" in index_dtype or "date" in index_dtype
 
 
-def str_is_string_dtype(index_dtype):
+def dtype_str_is_string(index_dtype):
     return "string" in index_dtype
 
 
-def str_is_int_dtype(index_dtype):
+def dtype_str_is_int(index_dtype):
     return "int" in index_dtype
 
 

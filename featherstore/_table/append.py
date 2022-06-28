@@ -18,6 +18,10 @@ def can_append_table(
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
     _raise_if.table_not_exists(table_path)
     _raise_if.df_is_not_supported_table_dtype(df)
+
+    cols = _table_utils.get_col_names(df, has_default_index=False)
+    _raise_if.index_name_not_same_as_stored_index(df, table_path)
+    _raise_if.col_names_contains_duplicates(cols)
     _raise_if.index_dtype_not_same_as_stored_index(df, table_path)
     _raise_if.cols_does_not_match(df, table_path)
 
@@ -33,7 +37,6 @@ def can_append_table(
     raise_if_index_not_exist(pd_index, has_default_index)
 
     if index_is_provided:
-        _raise_if.index_is_not_supported_dtype(pd_index)
         _raise_if.index_values_contains_duplicates(pd_index)
 
 

@@ -50,35 +50,45 @@ class InsertFixtures:
         return self._df.sort_index()
 
 
-def _wrong_index_dtype():
-    df = make_table(sorted_datetime_index, astype="pandas")
+def _insert_table_not_pd_table():
+    df = make_table(astype="polars")
     return df
 
 
-def _existing_index_values():
+def _non_matching_index_dtype():
+    df = make_table(sorted_string_index, astype="pandas")
+    return df
+
+
+def _non_matching_column_dtypes():
+    df = make_table(dtype='string', astype="pandas")
+    df = df.iloc[DROPPED_ROWS_INDICES, :]
+    return df
+
+
+def _index_values_already_in_stored_data():
     df = make_table(astype="pandas")
+    return df
+
+
+def _column_name_not_in_stored_data():
+    df = make_table(cols=2, astype="pandas")
+    df = df.iloc[DROPPED_ROWS_INDICES, :]
+    df.columns = ['c1', 'non-existant_column']
+    return df
+
+
+def _index_name_not_the_same_as_stored_index():
+    df = make_table(astype="pandas")
+    df = df.iloc[DROPPED_ROWS_INDICES, :]
+    df.index.name = 'new_index_name'
     return df
 
 
 def _duplicate_index_values():
     df = make_table(astype="pandas")
     df = df.iloc[DROPPED_ROWS_INDICES, :]
-    df = pd.concat([df, df])  # Duplicate df
-    return df
-
-
-def _wrong_column_dtype():
-    df = make_table(sorted_string_index, cols=4, astype="pandas")
-    df = df.reset_index()
-    df.columns = ['c0', 'c1', 'c2', 'c3', 'c4']
-    df = df.iloc[DROPPED_ROWS_INDICES, :]
-    return df
-
-
-def _wrong_column_names():
-    df = make_table(cols=2, astype="pandas")
-    df = df.iloc[DROPPED_ROWS_INDICES, :]
-    df.columns = ['c1', 'non-existant_column']
+    df = pd.concat([df, df])
     return df
 
 
@@ -92,19 +102,23 @@ def _duplicate_column_names():
 @pytest.mark.parametrize(
     ("insert_df", "exception"),
     [
-        (_wrong_index_dtype(), TypeError),
-        (_existing_index_values(), ValueError),
+        (_insert_table_not_pd_table(), TypeError),
+        (_non_matching_index_dtype(), TypeError),
+        (_non_matching_column_dtypes(), TypeError),
+        (_index_values_already_in_stored_data(), ValueError),
+        (_column_name_not_in_stored_data(), ValueError),
+        (_index_name_not_the_same_as_stored_index(), ValueError),
         (_duplicate_index_values(), IndexError),
-        (_wrong_column_dtype(), TypeError),
-        (_wrong_column_names(), ValueError),
         (_duplicate_column_names(), IndexError),
     ],
     ids=[
-        "_wrong_index_dtype",
-        "_existing_index_values",
+        "_insert_table_not_pd_table",
+        "_non_matching_index_dtype",
+        "_non_matching_column_dtypes",
+        "_index_values_already_in_stored_data",
+        "_column_name_not_in_stored_data",
+        "_index_name_not_the_same_as_stored_index",
         "_duplicate_index_values",
-        "_wrong_column_dtype",
-        "_wrong_column_names",
         "_duplicate_column_names",
     ],
 )
@@ -114,8 +128,6 @@ def test_can_insert_table(store, insert_df, exception):
     original_df = original_df.drop(index=DROPPED_ROWS_INDICES)
     table = store.select_table(TABLE_NAME)
     table.write(original_df)
-    # Act
-    with pytest.raises(exception) as e:
+    # Act and Assert
+    with pytest.raises(exception):
         table.insert(insert_df)
-    # Assert
-    assert isinstance(e.type(), exception)

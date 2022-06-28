@@ -1,4 +1,6 @@
 import pytest
+
+from tests.test_rename_cols import NUMBER_OF_COLS_DOESNT_MATCH
 from .fixtures import *
 
 
@@ -21,29 +23,31 @@ def test_reorder_columns(store, use_property):
     assert df.equals(expected)
 
 
-def _cols_doesnt_match():
-    return ['c0', 'c2', 'd1']
-
-
-def _index_provided():
-    return ['date', 'c0', 'c1']
-
-
-def _contains_duplicates():
-    return ['c0', 'c1', 'c1']
+COL_NOT_IN_TABLE = ['c0', 'c2', 'd1']
+NUMBER_OF_COLS_DOESNT_MATCH = ['c1', 'c0']
+INDEX_IS_PROVIDED = ['date', 'c0', 'c1']
+CONTAINS_DUPLICATES = ['c0', 'c1', 'c1']
+WRONG_DTYPE = ('c1', 'c0', 'c2')
+WRONG_ELEMENTS_DTYPE = [1, 'c0', 'c2']
 
 
 @pytest.mark.parametrize(
     ("cols", "exception"),
     [
-        (_cols_doesnt_match(), ValueError),
-        (_index_provided(), ValueError),
-        (_contains_duplicates(), IndexError),
+        (COL_NOT_IN_TABLE, ValueError),
+        (NUMBER_OF_COLS_DOESNT_MATCH, ValueError),
+        (INDEX_IS_PROVIDED, ValueError),
+        (CONTAINS_DUPLICATES, IndexError),
+        (WRONG_DTYPE, TypeError),
+        (WRONG_ELEMENTS_DTYPE, TypeError),
     ],
     ids=[
-        "_cols_doesnt_match",
-        "_index_provided",
-        "_contains_duplicates"
+        "COL_NOT_IN_TABLE",
+        "INDEX_IS_PROVIDED",
+        "CONTAINS_DUPLICATES",
+        "WRONG_DTYPE",
+        "WRONG_ELEMENTS_DTYPE",
+        "NUMBER_OF_COLS_DOESNT_MATCH",
     ],
 )
 def test_can_reorder_columns(store, cols, exception):
@@ -51,8 +55,6 @@ def test_can_reorder_columns(store, cols, exception):
     original_df = make_table(cols=3, astype='pandas')
     table = store.select_table(TABLE_NAME)
     table.write(original_df)
-    # Act
-    with pytest.raises(exception) as e:
+    # Act and Assert
+    with pytest.raises(exception):
         table.columns = cols
-    # Assert
-    assert isinstance(e.type(), exception)

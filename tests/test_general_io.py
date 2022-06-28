@@ -1,3 +1,4 @@
+from contextlib import nullcontext
 import pytest
 from .fixtures import *
 
@@ -118,85 +119,55 @@ def _invalid_partition_size_dtype():
 def test_can_write(store, arguments, exception):
     # Arrange
     arguments, kwargs = arguments
-    # Act
-    with pytest.raises(exception) as e:
+    # Act and Assert
+    with pytest.raises(exception):
         store.write_table(*arguments, **kwargs)
-    # Assert
-    assert isinstance(e.type(), exception)
 
 
-def test_trying_to_overwrite_existing_table(store):
+@pytest.mark.parametrize(("errors", "exception"),
+                         [('raise', pytest.raises(FileExistsError)),
+                          ('ignore', nullcontext())]
+                         )
+def test_trying_to_overwrite_existing_table(store, errors, exception):
     # Arrange
-    EXCEPTION = FileExistsError
-    original_df = make_table()
-    store.write_table(TABLE_NAME, make_table())
     table = store.select_table(TABLE_NAME)
-    # Act
-    with pytest.raises(EXCEPTION)as e:
-        table.write(original_df, errors='raise')
-    # Assert
-    assert isinstance(e.type(), EXCEPTION)
+    table.write(make_table())
+    df = make_table()
+    # Act and Assert
+    with exception:
+        table.write(df, errors=errors)
+        df = table.read_arrow()
+        assert df.equals(df)
 
 
-def test_overwriting_existing_table(store):
-    # Arrange
-    original_df = make_table()
-    store.write_table(TABLE_NAME, make_table())
-    table = store.select_table(TABLE_NAME)
-    # Act
-    table.write(original_df, errors='ignore')
-    # Assert
-    df = table.read_arrow()
-    assert df.equals(original_df)
-
-
-def _invalid_table_name_dtype():
-    return 21, dict()
-
-
-def _invalid_row_dtype():
-    return TABLE_NAME, {'rows': 14}
-
-
-def _invalid_row_elements_dtype():
-    return TABLE_NAME, {'rows': [5, 'ab', 7.13]}
-
-
-def _rows_not_in_table():
-    return TABLE_NAME, {'rows': [0, 1, 3334]}
-
-
-def _invalid_col_dtype():
-    return TABLE_NAME, {'cols': 14}
-
-
-def _invalid_col_elements_dtype():
-    return TABLE_NAME, {'cols': ['c1', 7.13]}
-
-
-def _cols_not_in_table():
-    return TABLE_NAME, {'cols': ['c0', 'c1', 'c3334']}
+INVALID_TABLE_NAME_DTYPE = [21, dict()]
+INVALID_ROW_DTYPE = [TABLE_NAME, {'rows': 14}]
+INVALID_ROW_ELEMENTS_DTYPE = [TABLE_NAME, {'rows': [5, 'ab', 7.13]}]
+ROWS_NOT_IN_TABLE = [TABLE_NAME, {'rows': [0, 1, 3334]}]
+INVALID_COL_DTYPE = [TABLE_NAME, {'cols': 14}]
+INVALID_COL_ELEMENTS_DTYPE = [TABLE_NAME, {'cols': ['c1', 'C2', 12]}]
+COLS_NOT_IN_TABLE = [TABLE_NAME, {'cols': ['c0', 'c1', 'c3334']}]
 
 
 @pytest.mark.parametrize(
     ("arguments", "exception"),
     [
-        (_invalid_table_name_dtype(), TypeError),
-        (_invalid_row_dtype(), TypeError),
-        (_invalid_row_elements_dtype(), TypeError),
-        (_rows_not_in_table(), IndexError),
-        (_invalid_col_dtype(), TypeError),
-        (_invalid_col_elements_dtype(), TypeError),
-        (_cols_not_in_table(), IndexError),
+        (INVALID_TABLE_NAME_DTYPE, TypeError),
+        (INVALID_ROW_DTYPE, TypeError),
+        (INVALID_ROW_ELEMENTS_DTYPE, TypeError),
+        (ROWS_NOT_IN_TABLE, IndexError),
+        (INVALID_COL_DTYPE, TypeError),
+        (INVALID_COL_ELEMENTS_DTYPE, TypeError),
+        (COLS_NOT_IN_TABLE, IndexError),
     ],
     ids=[
-        "_invalid_table_name_dtype",
-        "_invalid_row_dtype",
-        "_invalid_row_elements_dtype",
-        "_rows_not_in_table",
-        "_invalid_col_dtype",
-        "_invalid_col_elements_dtype",
-        "_cols_not_in_table",
+        "INVALID_TABLE_NAME_DTYPE",
+        "INVALID_ROW_DTYPE",
+        "INVALID_ROW_ELEMENTS_DTYPE",
+        "ROWS_NOT_IN_TABLE",
+        "INVALID_COL_DTYPE",
+        "INVALID_COL_ELEMENTS_DTYPE",
+        "COLS_NOT_IN_TABLE",
     ],
 )
 def test_can_read(store, arguments, exception):
@@ -204,19 +175,31 @@ def test_can_read(store, arguments, exception):
     table_name, kwargs = arguments
     df = make_table()
     store.write_table(TABLE_NAME, df)
-    # Act
-    with pytest.raises(exception) as e:
+    # Act and Assert
+    with pytest.raises(exception):
         store.read_pandas(table_name, **kwargs)
-    # Assert
-    assert isinstance(e.type(), exception)
 
 
 def test_read_when_no_table_exists(store):
+    # Arrange
     table = store.select_table(TABLE_NAME)
     EXCEPTION = FileNotFoundError
     # Act
-    with pytest.raises(EXCEPTION) as e:
+    with pytest.raises(EXCEPTION):
         table.read_pandas()
     # Assert
     assert not table.exists()
-    assert isinstance(e.type(), EXCEPTION)
+
+
+def test_read_rows_not_in_table(store):
+    # Arrange
+    ROWS_DROPPED = [10, 11, 12, 13, 14]
+    original_df = make_table(astype='pandas')
+    original_df = original_df.drop(ROWS_DROPPED)
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size, warnings='ignore')
+    # Act and Assert
+    with pytest.raises(IndexError):
+        table.read_pandas(rows=ROWS_DROPPED)

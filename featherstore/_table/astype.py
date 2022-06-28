@@ -10,7 +10,8 @@ def can_change_type(cols, astype, table_path):
     Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table_path)
 
-    _raise_if_invalid_arg_signature(cols, astype)
+    _raise_if_new_cols_provided_twice(cols, astype)
+    _raise_if_new_cols_not_provided(cols, astype)
     _raise_if.cols_argument_is_not_list_or_dict(cols)
 
     if isinstance(cols, dict):
@@ -28,12 +29,17 @@ def can_change_type(cols, astype, table_path):
     _raise_if_new_index_type_is_not_valid(cols, astype, table_path)
 
 
-def _raise_if_invalid_arg_signature(cols, astype):
+def _raise_if_new_cols_provided_twice(cols, astype):
     cols_is_dict = isinstance(cols, dict)
     astype_is_provided = astype is not None
     if cols_is_dict and astype_is_provided:
         raise AttributeError("New data types provided twice")
-    elif not cols_is_dict and not astype_is_provided:
+
+
+def _raise_if_new_cols_not_provided(cols, astype):
+    cols_is_dict = isinstance(cols, dict)
+    astype_is_provided = astype is not None
+    if not cols_is_dict and not astype_is_provided:
         raise AttributeError("New data types is not provided")
 
 
