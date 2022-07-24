@@ -2,6 +2,7 @@ import os
 import itertools
 from string import ascii_lowercase
 from featherstore._table._table_utils import get_col_names
+from featherstore._table.write import __is_rangeindex
 
 import pyarrow as pa
 import polars as pl
@@ -275,9 +276,10 @@ def _convert_to_arrow(df):
     elif isinstance(df, pl.DataFrame):
         df = df.to_arrow()
     cols = df.column_names
+
     if '__index_level_0__' in cols:
-        first_field = df['__index_level_0__'][0].as_py()
-        if isinstance(first_field, int):
+        index = df['__index_level_0__']
+        if __is_rangeindex(index):
             cols.remove('__index_level_0__')
     df = df.select(cols)
     return df

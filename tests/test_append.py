@@ -46,6 +46,8 @@ class AppendFixture:
         df = self._shuffle_rows(df)
         if self._index is default_index:
             df = self._make_default_index(df)
+        if 'Date' in df.columns:
+            df = df.set_index('Date')
 
         df = convert_table(df, to=self._astype)
         return df

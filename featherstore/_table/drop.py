@@ -83,6 +83,81 @@ def _raise_if_all_rows_is_dropped(df):
         raise IndexError("Can't drop all rows from stored table")
 
 
+def has_still_default_index(rows, table_metadata, partition_metadata):
+    has_default_index = table_metadata["has_default_index"]
+    if not has_default_index:
+        return False
+
+    if rows[0] == 'before':
+        is_still_def_idx = _idx_still_default_after_dropping_rows_before(rows, partition_metadata)
+    elif rows[0] == 'after':
+        is_still_def_idx = _idx_still_default_after_dropping_rows_after(rows, partition_metadata)
+    elif rows[0] == 'between':
+        is_still_def_idx = _idx_still_default_after_dropping_rows_between(rows, partition_metadata)
+    else:
+        is_still_def_idx = _idx_still_default_after_dropping_rows_list(rows, partition_metadata)
+    return is_still_def_idx
+
+
+def _idx_still_default_after_dropping_rows_before(rows, partition_metadata):
+    first_stored_value = __get_first_stored_value(partition_metadata)
+    first_row_value = rows[-1]
+    no_values_are_removed = first_row_value < first_stored_value
+    if no_values_are_removed:
+        _has_still_default_index = True
+    else:
+        _has_still_default_index = False
+    return _has_still_default_index
+
+
+def _idx_still_default_after_dropping_rows_after(rows, partition_metadata):
+    return True
+
+
+def _idx_still_default_after_dropping_rows_between(rows, partition_metadata):
+    first_stored_value = __get_first_stored_value(partition_metadata)
+    last_stored_value = __get_last_stored_value(partition_metadata)
+    after = rows[1]
+    before = rows[2]
+    start_after_table_end = after > last_stored_value
+    end_after_table_start = before < first_stored_value
+
+    no_values_are_removed = end_after_table_start or start_after_table_end
+    values_removed_only_from_end_of_table = before > last_stored_value
+    if no_values_are_removed or values_removed_only_from_end_of_table:
+        _has_still_default_index = True
+    else:
+        _has_still_default_index = False
+    return _has_still_default_index
+
+
+def _idx_still_default_after_dropping_rows_list(rows, partition_metadata):
+    last_stored_value = __get_last_stored_value(partition_metadata)
+    rows = sorted(rows)
+    last_row_value = rows[-1]
+
+    last_row_removed = last_row_value == last_stored_value
+    rows_are_continuous = all(a + 1 == b for a, b in zip(rows, rows[1:]))
+    values_removed_only_from_end_of_table = last_row_removed and rows_are_continuous
+    if values_removed_only_from_end_of_table:
+        _has_still_default_index = True
+    else:
+        _has_still_default_index = False
+    return _has_still_default_index
+
+
+def __get_first_stored_value(partition_metadata):
+    first_partition = partition_metadata.keys()[0]
+    first_stored_value = partition_metadata[first_partition]['min']
+    return first_stored_value
+
+
+def __get_last_stored_value(partition_metadata):
+    last_partition = partition_metadata.keys()[-1]
+    last_stored_value = partition_metadata[last_partition]['max']
+    return last_stored_value
+
+
 # ----------------- drop_columns ------------------
 
 

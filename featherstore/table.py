@@ -252,7 +252,8 @@ class Table:
         partitions = insert.create_partitions(df, rows_per_partition, partition_names,
                                               all_partition_names)
 
-        metadata = common.update_metadata(partitions, self._table_path, partition_names)
+        metadata = common.update_metadata(partitions, self._table_path,
+                                          partition_names, has_default_index=False)
 
         write.write_metadata(metadata, self._table_path)
         write.write_partitions(partitions, self._table_path)
@@ -336,8 +337,9 @@ class Table:
         df = common.format_table(df, index_name=index_name, warnings=False)
         partitions = drop.create_partitions(df, rows_per_partition, partition_names)
 
+        has_default_index = drop.has_still_default_index(rows, self._table_data, self._partition_data)
         metadata = common.update_metadata(partitions, self._table_path, partition_names,
-                                          has_default_index=False)
+                                          has_default_index=has_default_index)
 
         partitions_to_drop = drop.get_partitions_to_drop(partitions, partition_names)
         drop.drop_partitions(self._table_path, partitions_to_drop)
