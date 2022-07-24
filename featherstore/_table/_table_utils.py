@@ -190,6 +190,18 @@ def assign_ids_to_partitions(df, ids):
     return id_mapping
 
 
+def get_first_stored_index_value(partition_metadata):
+    first_partition = partition_metadata.keys()[0]
+    first_stored_value = partition_metadata[first_partition]['min']
+    return first_stored_value
+
+
+def get_last_stored_index_value(partition_metadata):
+    last_partition = partition_metadata.keys()[-1]
+    last_stored_value = partition_metadata[last_partition]['max']
+    return last_stored_value
+
+
 def get_index_name(df):
     pd_metadata = df.schema.pandas_metadata
     if pd_metadata is None:

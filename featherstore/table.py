@@ -244,6 +244,7 @@ class Table:
 
         rows = common.format_rows_arg_if_provided(df.index, index_type)
         df = common.format_table(df, index_name=index_name, warnings='ignore')
+        has_default_index = insert.has_still_default_index(df, self._table_data, self._partition_data)
 
         partition_names = read.get_partition_names(rows, self._table_path)
         stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)
@@ -252,8 +253,8 @@ class Table:
         partitions = insert.create_partitions(df, rows_per_partition, partition_names,
                                               all_partition_names)
 
-        metadata = common.update_metadata(partitions, self._table_path,
-                                          partition_names, has_default_index=False)
+        metadata = common.update_metadata(partitions, self._table_path, partition_names,
+                                          has_default_index=has_default_index)
 
         write.write_metadata(metadata, self._table_path)
         write.write_partitions(partitions, self._table_path)

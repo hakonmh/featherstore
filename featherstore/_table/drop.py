@@ -100,7 +100,7 @@ def has_still_default_index(rows, table_metadata, partition_metadata):
 
 
 def _idx_still_default_after_dropping_rows_before(rows, partition_metadata):
-    first_stored_value = __get_first_stored_value(partition_metadata)
+    first_stored_value = _table_utils.get_first_stored_index_value(partition_metadata)
     first_row_value = rows[-1]
     no_values_are_removed = first_row_value < first_stored_value
     if no_values_are_removed:
@@ -115,8 +115,8 @@ def _idx_still_default_after_dropping_rows_after(rows, partition_metadata):
 
 
 def _idx_still_default_after_dropping_rows_between(rows, partition_metadata):
-    first_stored_value = __get_first_stored_value(partition_metadata)
-    last_stored_value = __get_last_stored_value(partition_metadata)
+    first_stored_value = _table_utils.get_first_stored_index_value(partition_metadata)
+    last_stored_value = _table_utils.get_last_stored_index_value(partition_metadata)
     after = rows[1]
     before = rows[2]
     start_after_table_end = after > last_stored_value
@@ -132,7 +132,7 @@ def _idx_still_default_after_dropping_rows_between(rows, partition_metadata):
 
 
 def _idx_still_default_after_dropping_rows_list(rows, partition_metadata):
-    last_stored_value = __get_last_stored_value(partition_metadata)
+    last_stored_value = _table_utils.get_last_stored_index_value(partition_metadata)
     rows = sorted(rows)
     last_row_value = rows[-1]
 
@@ -144,18 +144,6 @@ def _idx_still_default_after_dropping_rows_list(rows, partition_metadata):
     else:
         _has_still_default_index = False
     return _has_still_default_index
-
-
-def __get_first_stored_value(partition_metadata):
-    first_partition = partition_metadata.keys()[0]
-    first_stored_value = partition_metadata[first_partition]['min']
-    return first_stored_value
-
-
-def __get_last_stored_value(partition_metadata):
-    last_partition = partition_metadata.keys()[-1]
-    last_stored_value = partition_metadata[last_partition]['max']
-    return last_stored_value
 
 
 # ----------------- drop_columns ------------------

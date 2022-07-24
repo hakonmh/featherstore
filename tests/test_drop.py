@@ -58,7 +58,8 @@ def test_default_index_behavior_when_dropping(store, rows):
     # Arrange
     original_df = make_table(default_index, cols=5, astype='pandas')
     expected = _drop(original_df, rows, None)
-    expected = _convert_to_arrow(expected)
+    expected = convert_table(expected, to='arrow')
+    expected = format_arrow_table(expected)
 
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
@@ -67,29 +68,7 @@ def test_default_index_behavior_when_dropping(store, rows):
     table.drop(rows=rows)
     # Assert
     df = table.read_arrow()
-    # breakpoint()
     assert df.equals(expected)
-
-
-def _convert_to_arrow(df):
-    df = convert_table(df, to='arrow')
-    if __index_in_columns(df):
-        df = __make_index_first_column(df)
-    return df
-
-
-def __index_in_columns(df):
-    index_name = df.schema.pandas_metadata["index_columns"][0]
-    return index_name in df.column_names
-
-
-def __make_index_first_column(df):
-    index_name = df.schema.pandas_metadata["index_columns"][0]
-    cols = df.column_names
-    cols.remove(index_name)
-    cols.insert(0, index_name)
-    df = df.select(cols)
-    return df
 
 
 def _drop(df, rows, cols):

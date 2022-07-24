@@ -79,3 +79,23 @@ def _make_partition_names(num_names, partition_names, subsequent_partition):
         new_partition_names.append(new_partition_id)
 
     return sorted(new_partition_names)
+
+
+def has_still_default_index(df, table_metadata, partition_metadata):
+    has_default_index = table_metadata["has_default_index"]
+    if not has_default_index:
+        return False
+
+    index_name = table_metadata["index_name"]
+    rows = df[index_name]
+    last_stored_value = _table_utils.get_last_stored_index_value(partition_metadata)
+    first_row_value = rows[0].as_py()
+
+    rows_are_continuous = all(a.as_py() + 1 == b.as_py() for a, b in zip(rows, rows[1:]))
+    if first_row_value > last_stored_value and rows_are_continuous:
+        _has_still_default_index = True
+    elif len(rows) == 0:
+        _has_still_default_index = True
+    else:
+        _has_still_default_index = False
+    return _has_still_default_index

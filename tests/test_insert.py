@@ -23,7 +23,7 @@ def test_insert_table(store, index, row_indices, num_rows, num_cols, num_partiti
     fixtures = InsertFixtures(index, num_rows, num_cols)
     original_df = fixtures.original_df(row_indices)
     insert_df = fixtures.insert_df(row_indices)
-    expected = fixtures.expected()
+    expected = fixtures.expected(original_df, insert_df)
 
     partition_size = get_partition_size(original_df, num_partitions)
     table = store.select_table(TABLE_NAME)
@@ -35,19 +35,64 @@ def test_insert_table(store, index, row_indices, num_rows, num_cols, num_partiti
     assert df.equals(expected)
 
 
+@pytest.mark.parametrize("row_indices", ([-2, -1], [30, 33], [33, 30, 32, 31]))
+def test_default_index_behavior_when_inserting(store, row_indices):
+    # Arrange
+    fixtures = InsertFixtures(default_index, 30, 5)
+    original_df = fixtures.original_df(row_indices)
+    insert_df = fixtures.insert_df(row_indices)
+    expected = fixtures.expected(original_df, insert_df)
+    expected = convert_table(expected, to='arrow')
+    expected = format_arrow_table(expected)
+
+    partition_size = get_partition_size(original_df, 5)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size, warnings='ignore')
+    # Act
+    table.insert(insert_df)
+    # Assert
+    df = table.read_arrow()
+    assert df.equals(expected)
+
+
 class InsertFixtures:
     def __init__(self, index, num_rows, num_cols):
-        df = make_table(index, rows=num_rows, cols=num_cols, astype="pandas")
-        self._df = df.squeeze()
+        self._index = index
+        self._num_rows = num_rows
+        self._num_cols = num_cols
 
     def original_df(self, row_indices):
-        return self._df.drop(index=row_indices)
+        df = make_table(self._index, rows=self._num_rows, cols=self._num_cols,
+                        astype="pandas")
+
+        row_indices = pd.Index(row_indices)
+        if isinstance(df.index, pd.DatetimeIndex):
+            row_indices = pd.DatetimeIndex(row_indices)
+
+        if row_indices.isin(df.index).all():
+            df = df.drop(index=row_indices)
+
+        df = df.squeeze()
+        return df
 
     def insert_df(self, row_indices):
-        return self._df.loc[row_indices]
+        df = make_table(self._index, rows=len(row_indices), cols=self._num_cols,
+                        astype="pandas")
 
-    def expected(self):
-        return self._df.sort_index()
+        row_indices = pd.Index(row_indices)
+        if isinstance(df.index, pd.DatetimeIndex):
+            row_indices = pd.DatetimeIndex(row_indices)
+
+        index_name = df.index.name
+        df.index = row_indices
+        df.index.name = index_name
+
+        df = df.squeeze()
+        return df
+
+    def expected(self, original_df, insert_df):
+        df = pd.concat([original_df, insert_df])
+        return df.sort_index()
 
 
 def _insert_table_not_pd_table():

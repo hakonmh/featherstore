@@ -291,3 +291,23 @@ def _convert_to_polars(df):
     if isinstance(df, pa.Table):
         df = pl.from_arrow(df)
     return df
+
+
+def format_arrow_table(df):
+    if __index_in_columns(df):
+        df = __make_index_first_column(df)
+    return df
+
+
+def __index_in_columns(df):
+    index_name = df.schema.pandas_metadata["index_columns"][0]
+    return index_name in df.column_names
+
+
+def __make_index_first_column(df):
+    index_name = df.schema.pandas_metadata["index_columns"][0]
+    cols = df.column_names
+    cols.remove(index_name)
+    cols.insert(0, index_name)
+    df = df.select(cols)
+    return df
