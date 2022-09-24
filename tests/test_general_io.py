@@ -132,12 +132,12 @@ def test_trying_to_overwrite_existing_table(store, errors, exception):
     # Arrange
     table = store.select_table(TABLE_NAME)
     table.write(make_table())
-    df = make_table()
+    expected = make_table()
     # Act and Assert
     with exception:
-        table.write(df, errors=errors)
+        table.write(expected, errors=errors)
         df = table.read_arrow()
-        assert df.equals(df)
+        assert df.equals(expected)
 
 
 INVALID_TABLE_NAME_DTYPE = [21, dict()]
