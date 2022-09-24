@@ -1,5 +1,6 @@
 import pytest
 from .fixtures import *
+from pandas.testing import assert_frame_equal
 
 
 def test_rename_table(store):
@@ -96,3 +97,46 @@ def test_get_columns(store):
     columns = table.columns
     # Assert
     assert columns == expected
+
+
+@pytest.mark.parametrize("index", [default_index, sorted_datetime_index])
+@pytest.mark.parametrize("astype", ['arrow', 'pandas'])
+@pytest.mark.parametrize("num_partitions", [5, 2, -1])
+def test_repartition(store, index, astype, num_partitions):
+    # Arrange
+    original_df = make_table(index, astype=astype)
+    index_name = get_index_name(original_df)
+
+    partition_size = get_partition_size(original_df, num_partitions=4)
+    new_partition_size = get_partition_size(original_df, num_partitions=num_partitions)
+    if num_partitions == -1:
+        new_partition_size = -1
+
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, index=index_name, partition_size=partition_size)
+    expected = _read_table(table, astype)
+    # Act
+    table.repartition(new_partition_size)
+    # Assert
+    df = _read_table(table, astype)
+    _assert_equals(df, expected)
+    assert table.partition_size == new_partition_size
+
+
+def _read_table(table, astype):
+    if astype == 'pandas':
+        df = table.read_pandas()
+    elif astype == 'arrow':
+        df = table.read_arrow()
+    else:
+        df = table.read_polars()
+    return df
+
+
+def _assert_equals(df, expected):
+    if isinstance(expected, (pd.DataFrame, pd.Series)):
+        assert_frame_equal(df, expected, check_dtype=True)
+    elif isinstance(expected, pa.Table):
+        assert df.equals(expected)
+    else:
+        assert df.frame_equal(expected)

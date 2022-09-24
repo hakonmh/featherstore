@@ -523,6 +523,24 @@ class Table:
         """
         _create_snapshot(path, self._table_path, 'table')
 
+    def repartition(self, new_partition_size):
+        """Repartitions a table so that each partition is `new_partition_size` big.
+
+        Parameters
+        ----------
+        new_partition_size : int
+            The size of each partition in bytes. A `new_partition_size` value of `-1`
+            disables partitioning
+        """
+        df = self.read_arrow()
+        has_default_index = self._table_data["has_default_index"]
+        if has_default_index:
+            index_name = None
+        else:
+            index_name = self._table_data["index_name"]
+        self.write(df, index=index_name, partition_size=new_partition_size,
+                   errors='ignore')
+
     @property
     def shape(self):
         """Fetches the shape of the stored table as `(rows, columns)`.
