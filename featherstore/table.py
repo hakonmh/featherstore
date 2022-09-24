@@ -535,6 +535,16 @@ class Table:
         cols = self._table_data["num_columns"]
         return (rows, cols)
 
+    @property
+    def partition_size(self):
+        """Fetches the table partition size in bytes.
+
+        Returns
+        -------
+        partition_size : int
+        """
+        return self._table_data["partition_size"]
+
     def exists(self):
         return os.path.exists(self._table_path)
 
