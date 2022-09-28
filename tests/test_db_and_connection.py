@@ -73,3 +73,14 @@ def test_rename_store(store):
     store_name = store.store_name
     assert stores == ["new_store_name"]
     assert store_name == "new_store_name"
+
+
+def test_store_exists(create_db, connect_to_db):
+    # Arrange
+    store_existed_before_write = fs.store_exists("test_store")
+    # Act
+    store = fs.create_store("test_store")
+    # Assert
+    store_exists_after_write = fs.store_exists("test_store")
+    assert not store_existed_before_write
+    assert store_exists_after_write

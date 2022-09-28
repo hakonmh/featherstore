@@ -86,6 +86,11 @@ def list_stores(*, like=None):
     return stores
 
 
+def store_exists(store_name):
+    store_path = os.path.join(current_db(), store_name)
+    return os.path.exists(store_path)
+
+
 class Store:
     def __init__(self, store_name):
         """A class for doing basic tasks with tables within a store.
