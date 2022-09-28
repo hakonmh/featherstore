@@ -234,10 +234,10 @@ class Store:
 
         Parameters
         ----------
-        df : Pandas DataFrame or Series, Pyarrow Table, or Polars DataFrame
-            The DataFrame to be stored
         table_name : str
             The name of the table the DataFrame will be stored as
+        df : Pandas DataFrame or Series, Pyarrow Table, or Polars DataFrame
+            The DataFrame to be stored
         index : str, optional
             The name of the column to be used as index. Uses current index for
             Pandas or a standard integer index for Arrow and Polars if `index` not
