@@ -16,8 +16,8 @@ def create_store(store_name, *, errors="raise"):
         The name of the store to be created
     errors : str, optional
         Whether or not to raise an error if the store already exist. Can be either
-        `raise` or `ignore`, `ignore` overwrites the existing store and its tables,
-        by default `raise`
+        `raise` or `ignore`, `ignore` passes if the store already exists, by
+        default `raise`
     """
     _can_create_store(store_name, errors)
 
