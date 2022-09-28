@@ -25,6 +25,7 @@ def create_store(store_name, *, errors="raise"):
     store_already_exists = os.path.exists(store_path)
     if not store_already_exists:
         os.mkdir(store_path)
+    return Store(store_name)
 
 
 def rename_store(store_name, *, to):
