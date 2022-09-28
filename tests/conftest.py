@@ -16,7 +16,7 @@ class SetupDB:
         # Setup
         if os.path.exists(DB_PATH):
             shutil.rmtree(DB_PATH, ignore_errors=False)
-        fs.create_database(DB_PATH)
+        fs.create_database(DB_PATH, connect=False)
         fs.connect(DB_PATH)
         fs.create_store(STORE_NAME)
         return fs.Store(STORE_NAME)
@@ -35,7 +35,7 @@ class SetupDB:
 @pytest.fixture(scope="function")
 def create_db():
     # Setup
-    fs.create_database(DB_PATH)
+    fs.create_database(DB_PATH, connect=False)
     # Test
     yield
     # Teardown

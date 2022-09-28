@@ -8,7 +8,7 @@ def test_create_database():
     # Arrange
     before_create_db = os.path.exists(DB_PATH)
     # Act
-    fs.create_database(DB_PATH)
+    fs.create_database(DB_PATH, connect=False)
     # Assert
     db_exists_after_create_db = os.path.exists(DB_PATH)
     db_folder_is_db = ".featherstore" in os.listdir(DB_PATH)

@@ -21,7 +21,7 @@ def disconnect():
     Connection.disconnect()
 
 
-def create_database(path, errors="raise"):
+def create_database(path, *, errors="raise", connect=True):
     """Creates a new database.
 
     Parameters
@@ -32,12 +32,16 @@ def create_database(path, errors="raise"):
         Whether or not to raise an error if the database directory already exist.
         Can be either `raise` or `ignore`, `ignore` tries to create a database
         in existing directory, by default `raise`
+    connect : bool
+        Whether or not to connect to the created database, by default True
     """
     _can_create_database(path, errors)
     path = expand_home_dir_modifier(path)
     if not os.path.exists(path):
         os.mkdir(path)
     _make_database_marker(path)
+    if connect:
+        return Connection(path)
 
 
 def _make_database_marker(db_path):
@@ -63,10 +67,25 @@ def is_connected():
     return Connection.is_connected()
 
 
+def database_exists(path):
+    db_marker_path = os.path.join(path, DB_MARKER_NAME)
+    if os.path.exists(db_marker_path):
+        return True
+    else:
+        return False
+
+
 class Connection:
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "instance"):
             cls.instance = super(Connection, cls).__new__(cls)
+        else:
+            if not cls.is_connected():
+                cls.instance = super(Connection, cls).__new__(cls)
+            else:
+                location = cls.instance._location
+                raise ConnectionRefusedError(f'Already connected to {location}, '
+                                             'please disconnect first')
         return cls.instance
 
     def __init__(self, connection_string):
@@ -87,9 +106,10 @@ class Connection:
     @classmethod
     def is_connected(cls):
         if hasattr(cls, "instance"):
-            return True
-        else:
-            return False
+            location = cls.instance._location
+            if database_exists(location):
+                return True
+        return False
 
     @classmethod
     def _raise_if_not_connected(cls):
