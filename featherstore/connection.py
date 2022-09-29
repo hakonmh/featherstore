@@ -41,7 +41,7 @@ def create_database(path, *, errors="raise", connect=True):
         os.mkdir(path)
     _make_database_marker(path)
     if connect:
-        return Connection(path)
+        Connection(path)
 
 
 def _make_database_marker(db_path):
@@ -77,15 +77,7 @@ def database_exists(path):
 
 class Connection:
     def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, "instance"):
-            cls.instance = super(Connection, cls).__new__(cls)
-        else:
-            if not cls.is_connected():
-                cls.instance = super(Connection, cls).__new__(cls)
-            else:
-                location = cls.instance._location
-                raise ConnectionRefusedError(f'Already connected to {location}, '
-                                             'please disconnect first')
+        cls.instance = super(Connection, cls).__new__(cls)
         return cls.instance
 
     def __init__(self, connection_string):
