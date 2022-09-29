@@ -12,13 +12,13 @@ def can_change_type(cols, astype, table_path):
 
     _raise_if_new_cols_provided_twice(cols, astype)
     _raise_if_new_cols_not_provided(cols, astype)
-    _raise_if.cols_argument_is_not_list_or_dict(cols)
+    _raise_if.cols_argument_is_not_collection(cols)
 
     if isinstance(cols, dict):
         astype = list(cols.values())
         cols = list(cols.keys())
     else:
-        _raise_if.to_argument_is_not_list(astype)
+        _raise_if.to_argument_is_not_sequence(astype)
         _raise_if_length_of_cols_and_astype_doesnt_match(cols, astype)
 
     _raise_if.cols_argument_items_is_not_str(cols)

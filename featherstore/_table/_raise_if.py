@@ -1,5 +1,6 @@
 import os
 from numbers import Integral
+from collections.abc import Collection, Sequence
 
 import pandas as pd
 import polars as pl
@@ -44,22 +45,36 @@ def df_is_not_pandas_table(df):
             f"'df' must be a pd.DataFrame or pd.Series (is type {type(df)})")
 
 
-def to_argument_is_not_list(to):
-    is_valid_col_format = isinstance(to, list)
-    if not is_valid_col_format:
-        raise TypeError(f"'to' must be of type list (is type {type(to)})")
+def rows_argument_is_not_collection(rows):
+    is_collection_or_none = _is_collection(rows) or rows is None
+    if not is_collection_or_none:
+        raise TypeError(f"'rows' must be a collection or None (is type {type(rows)})")
 
 
-def cols_argument_is_not_list_or_none(cols):
-    is_valid_col_format = isinstance(cols, (list, type(None)))
-    if not is_valid_col_format:
-        raise TypeError(f"'cols' must be either list or None (is type {type(cols)})")
+def to_argument_is_not_sequence(cols):
+    is_collection = _is_sequence(cols)
+    if not is_collection:
+        raise TypeError(f"'to' must be a sequence (is type {type(cols)})")
 
 
-def cols_argument_is_not_list_or_dict(cols):
-    is_valid_col_format = isinstance(cols, (list, dict))
-    if not is_valid_col_format:
-        raise TypeError(f"'cols' must be either list or dict (is type {type(cols)})")
+def cols_argument_is_not_collection(cols):
+    is_collection = _is_collection(cols)
+    if not is_collection:
+        raise TypeError(f"'cols' must be a collection (is type {type(cols)})")
+
+
+def cols_argument_is_not_collection_or_none(cols):
+    is_collection_or_none = _is_collection(cols) or cols is None
+    if not is_collection_or_none:
+        raise TypeError(f"'cols' must be a collection or None (is type {type(cols)})")
+
+
+def _is_collection(item):
+    return isinstance(item, Collection) and not isinstance(item, str)
+
+
+def _is_sequence(item):
+    return isinstance(item, Sequence)
 
 
 def cols_argument_items_is_not_str(cols):
@@ -84,16 +99,12 @@ def cols_not_in_table(cols, table_path):
     table_metadata = Metadata(table_path, 'table')
     stored_cols = table_metadata["columns"]
 
-    cols = common.filter_cols_if_like_provided(cols, stored_cols)
+    if common.like_is_provided(cols):
+        cols = common.get_cols_like_pattern(cols, stored_cols)
+
     some_cols_not_in_stored_cols = set(cols) - set(stored_cols)
     if some_cols_not_in_stored_cols:
         raise IndexError("Trying to access a column not found in table")
-
-
-def rows_argument_is_not_supported_dtype(rows):
-    is_valid_row_format = isinstance(rows, (list, pd.Index, type(None)))
-    if not is_valid_row_format:
-        raise TypeError(f"'rows' must be either List, pd.Index or None (is type {type(rows)})")
 
 
 def rows_argument_items_dtype_not_same_as_index(rows, table_path):

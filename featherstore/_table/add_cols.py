@@ -30,7 +30,8 @@ def _raise_if_col_name_already_in_table(cols, table_path):
     table_metadata = Metadata(table_path, 'table')
     stored_cols = table_metadata["columns"]
 
-    cols = common.filter_cols_if_like_provided(cols, stored_cols)
+    if common.like_is_provided(cols):
+        cols = common.get_cols_like_pattern(cols, stored_cols)
     some_cols_in_stored_cols = set(stored_cols) - (set(stored_cols) - set(cols))
     if some_cols_in_stored_cols:
         raise IndexError("Column name already exists in table")

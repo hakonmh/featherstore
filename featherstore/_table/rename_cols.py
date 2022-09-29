@@ -8,13 +8,13 @@ def can_rename_columns(cols, new_col_names, table_path):
     _raise_if.table_not_exists(table_path)
 
     _raise_if_invalid_arg_signature(cols, new_col_names)
-    _raise_if.cols_argument_is_not_list_or_dict(cols)
+    _raise_if.cols_argument_is_not_collection(cols)
 
     if isinstance(cols, dict):
         new_col_names = list(cols.values())
         cols = list(cols.keys())
     else:
-        _raise_if.to_argument_is_not_list(new_col_names)
+        _raise_if.to_argument_is_not_sequence(new_col_names)
         _raise_if_length_of_cols_and_new_cols_doesnt_match(cols, new_col_names)
 
     _raise_if.cols_argument_items_is_not_str(cols)

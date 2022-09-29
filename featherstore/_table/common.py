@@ -13,14 +13,27 @@ PARTITION_NAME_LENGTH = 14
 INSERTION_BUFFER_LENGTH = 10**6
 
 
-def filter_cols_if_like_provided(cols, table_cols):
+def format_cols_arg_if_provided(cols):
+    cols_is_provided = cols is not None
+    if cols_is_provided:
+        if not isinstance(cols, dict):
+            cols = list(cols)
+    return cols
+
+
+def like_is_provided(cols):
     cols_are_provided = bool(cols)
     if cols_are_provided:
         keyword = str(cols[0]).lower()
         like_is_provided = keyword == "like"
-        if like_is_provided:
-            pattern = cols[1]
-            cols = _utils.filter_items_like_pattern(table_cols, like=pattern)
+    else:
+        like_is_provided = False
+    return like_is_provided
+
+
+def get_cols_like_pattern(cols, table_cols):
+    pattern = cols[1]
+    cols = _utils.filter_items_like_pattern(table_cols, like=pattern)
     return cols
 
 

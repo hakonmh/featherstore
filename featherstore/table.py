@@ -54,10 +54,10 @@ class Table:
 
         Parameters
         ----------
-        cols : list, optional
+        cols : Collection, optional
             list of column names or, filter-predicates in the form of
             `[like, pattern]`, by default `None`
-        rows : list, optional
+        rows : Collection, optional
             list of index values or filter-predicates in the form of
             `[keyword, value]`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
@@ -69,8 +69,10 @@ class Table:
         has_default_index = self._table_data["has_default_index"]
         stored_cols = self._table_data["columns"]
 
+        cols = common.format_cols_arg_if_provided(cols)
+        if common.like_is_provided(cols):
+            cols = common.get_cols_like_pattern(cols, stored_cols)
         rows = common.format_rows_arg_if_provided(rows, index_type)
-        cols = common.filter_cols_if_like_provided(cols, stored_cols)
 
         partition_names = read.get_partition_names(rows, self._table_path)
         df = read.read_table(partition_names, self._table_path, cols, rows)
@@ -84,10 +86,10 @@ class Table:
 
         Parameters
         ----------
-        cols : list, optional
+        cols : Collection, optional
             list of column names or filter-predicates in the form of
             `[like, pattern]`, by default `None`
-        rows : list, optional
+        rows : Collection, optional
             list of index values or, filter-predicates in the form of
             `[keyword, value]`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
@@ -107,10 +109,10 @@ class Table:
 
         Parameters
         ----------
-        cols : list, optional
+        cols : Collection, optional
             list of column names or filter-predicates in the form of
             `[like, pattern]`, by default `None`
-        rows : list, optional
+        rows : Collection, optional
             list of index values or, filter-predicates in the form of
             `[keyword, value]`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
@@ -295,10 +297,10 @@ class Table:
     def drop(self, *, cols=None, rows=None):
         """Drop specified labels from rows or columns.
 
-        cols : list, optional
+        cols : Collection, optional
             list of column names or filter-predicates in the form of
             `[like, pattern]`, by default `None`
-        rows : list, optional
+        rows : Collection, optional
             list of index values or, filter-predicates in the form of
             `[keyword, value]`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
@@ -358,7 +360,9 @@ class Table:
         partition_size = self._table_data["partition_size"]
         stored_cols = self._table_data["columns"]
 
-        cols = common.filter_cols_if_like_provided(cols, stored_cols)
+        cols = common.format_cols_arg_if_provided(cols)
+        if common.like_is_provided(cols):
+            cols = common.get_cols_like_pattern(cols, stored_cols)
         partition_names = drop.get_partition_names(None, self._table_path)
 
         stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)
@@ -389,16 +393,19 @@ class Table:
 
         Parameters
         ----------
-        cols : list or dict
+        cols : Collection or dict
             Either a list of columns to be renamed, or a dict mapping columns
             to be renamed to new column names
-        to : list[str], optional
+        to : Collection[str], optional
             New column names, by default `None`
         """
         rename_cols.can_rename_columns(cols, to, self._table_path)
 
         index_name = self._table_data["index_name"]
         rows_per_partition = self._table_data["rows_per_partition"]
+
+        cols = common.format_cols_arg_if_provided(cols)
+        to = common.format_cols_arg_if_provided(to)
 
         partition_names = read.get_partition_names(None, self._table_path)
         df = read.read_table(partition_names, self._table_path, edit_mode=True)
@@ -463,10 +470,10 @@ class Table:
 
         Parameters
         ----------
-        cols : list or dict
+        cols : Sequence or dict
             Either a list of columns to have its data types changed, or a
             dict mapping columns to new column data types.
-        to : list[Pyarrow DataType], optional
+        to : Sequence[Pyarrow DataType], optional
             New column data types, by default `None`
         """
         astype.can_change_type(cols, to, self._table_path)

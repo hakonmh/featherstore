@@ -14,7 +14,7 @@ from featherstore._table.read import get_partition_names as _get_partition_names
 def can_drop_rows_from_table(rows, table_path):
     Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table_path)
-    _raise_if.rows_argument_is_not_supported_dtype(rows)
+    _raise_if.rows_argument_is_not_collection(rows)
     _raise_if_rows_argument_is_empty(rows)
     _raise_if.rows_argument_items_dtype_not_same_as_index(rows, table_path)
 
@@ -152,7 +152,7 @@ def _idx_still_default_after_dropping_rows_list(rows, partition_metadata):
 def can_drop_cols_from_table(cols, table_path):
     Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table_path)
-    _raise_if.cols_argument_is_not_list_or_none(cols)
+    _raise_if.cols_argument_is_not_collection(cols)
     _raise_if.cols_argument_items_is_not_str(cols)
     _raise_if_cols_argument_is_empty(cols)
 
@@ -175,7 +175,7 @@ class CheckDropCols:
     def __init__(self, cols, table_path):
         self._table_data = Metadata(table_path, 'table')
         self._index_name = self._table_data["index_name"]
-        self.cols = cols
+        self.cols = common.format_cols_arg_if_provided(cols)
 
         self._stored_cols = self._get_stored_cols()
         self._dropped_cols = self._get_dropped_cols()
@@ -186,8 +186,11 @@ class CheckDropCols:
         return set(stored_cols)
 
     def _get_dropped_cols(self):
-        dropped_cols = common.filter_cols_if_like_provided(self.cols, self._stored_cols)
-        return set(dropped_cols)
+        if common.like_is_provided(self.cols):
+            cols_to_drop = common.get_cols_like_pattern(self.cols, self._stored_cols)
+        else:
+            cols_to_drop = self.cols
+        return set(cols_to_drop)
 
     def trying_to_drop_index_col(self):
         if self._index_name in self.cols:

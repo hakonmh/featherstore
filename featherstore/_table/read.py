@@ -16,10 +16,10 @@ def can_read_table(cols, rows, table_path):
     Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table_path)
 
-    _raise_if.rows_argument_is_not_supported_dtype(rows)
+    _raise_if.rows_argument_is_not_collection(rows)
     _raise_if.rows_argument_items_dtype_not_same_as_index(rows, table_path)
 
-    _raise_if.cols_argument_is_not_list_or_none(cols)
+    _raise_if.cols_argument_is_not_collection_or_none(cols)
     cols_are_provided = isinstance(cols, list)
     if cols_are_provided:
         _raise_if.cols_argument_items_is_not_str(cols)
