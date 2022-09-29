@@ -145,6 +145,9 @@ def get_numpy_dtype_info(dtype):
             extra_metadata = {'timezone': pa.lib.tzinfo_to_string(pd_dtype.tz)}
         except Exception:
             extra_metadata = {'timezone': None}
+    elif pd_dtype[:4] == 'list':
+        numpy_dtype = 'object'
+        extra_metadata = None
     else:
         numpy_dtype = str(dtype)
         extra_metadata = None
