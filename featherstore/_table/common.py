@@ -6,67 +6,35 @@ import pyarrow as pa
 from pyarrow import pandas_compat as pc
 
 from featherstore._metadata import Metadata
-from featherstore import _utils
 from featherstore._table import _table_utils
+from featherstore._table._indexers import ColIndexer, RowIndexer
 
 PARTITION_NAME_LENGTH = 14
 INSERTION_BUFFER_LENGTH = 10**6
 
 
-def format_cols_arg_if_provided(cols):
-    cols_is_provided = cols is not None
-    if cols_is_provided:
-        if not isinstance(cols, dict):
-            cols = list(cols)
+def format_cols_arg(cols, *, like=None):
+    cols = ColIndexer(cols)
+    if like:
+        cols = cols.like(like)
     return cols
 
 
-def like_is_provided(cols):
-    cols_are_provided = bool(cols)
-    if cols_are_provided:
-        keyword = str(cols[0]).lower()
-        like_is_provided = keyword == "like"
-    else:
-        like_is_provided = False
-    return like_is_provided
-
-
-def get_cols_like_pattern(cols, table_cols):
-    pattern = cols[1]
-    cols = _utils.filter_items_like_pattern(table_cols, like=pattern)
-    return cols
-
-
-def format_rows_arg_if_provided(rows, index_type):
-    rows_is_provided = rows is not None
-    if rows_is_provided:
-        rows = _format_rows_arg(rows, index_type)
+def format_rows_arg(rows, *, to_dtype=None):
+    rows = RowIndexer(rows)
+    if to_dtype:
+        rows = rows.convert_types(to=to_dtype)
     return rows
 
 
-def _format_rows_arg(rows, index_type):
-    rows = list(rows)
-    keyword = str(rows[0]).lower()
-    if keyword in {"between", "before", "after"}:
-        rows[1:] = _coerce_row_arg_dtypes(rows[1:], to=index_type)
-    else:
-        rows = _coerce_row_arg_dtypes(rows, to=index_type)
-    return rows
+def format_cols_and_to_args(cols, to):
+    if isinstance(cols, dict):
+        to = cols.values()
+        cols = cols.keys()
 
-
-def _coerce_row_arg_dtypes(rows, *, to):
-    rows = [_convert_row(item, to) for item in rows]
-    return rows
-
-
-def _convert_row(row, to):
-    if _table_utils.dtype_str_is_temporal(to):
-        row = pd.to_datetime(row)
-    elif _table_utils.dtype_str_is_string(to):
-        row = str(row)
-    elif _table_utils.dtype_str_is_int(to):
-        row = int(row)
-    return row
+    formatted_cols = ColIndexer(to)
+    formatted_cols.set_keys(cols)
+    return formatted_cols
 
 
 def format_table(df, index_name, warnings):
@@ -126,7 +94,7 @@ def _make_pd_metadata(df, index_name):
 def __make_column_metadata(df, col):
     dtype = df[col].type
     pd_dtype = pc.get_logical_type(dtype)
-    np_dtype, extra_data = get_numpy_dtype_info(dtype)
+    np_dtype, extra_data = __get_numpy_dtype_info(dtype)
 
     metadata = {"name": col,
                 "field_name": col,
@@ -137,7 +105,7 @@ def __make_column_metadata(df, col):
     return metadata
 
 
-def get_numpy_dtype_info(dtype):
+def __get_numpy_dtype_info(dtype):
     pd_dtype = pc.get_logical_type(dtype)
 
     if pd_dtype == 'decimal':

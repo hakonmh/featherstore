@@ -5,7 +5,7 @@ from .fixtures import *
 import numpy as np
 
 
-def _invalid_table_type():
+def _invalid_table_dtype():
     df = make_table(astype='pandas')
     args = [TABLE_NAME, df.values]
     kwargs = dict()
@@ -50,15 +50,6 @@ def _invalid_col_names_dtype():
     return args, kwargs
 
 
-def _forbidden_col_name():
-    df = make_table(cols=1, astype='pandas')
-    df.columns = ['like']
-
-    args = [TABLE_NAME, df]
-    kwargs = dict()
-    return args, kwargs
-
-
 def _duplicate_col_names():
     df = make_table(cols=2, astype='pandas')
     df.columns = ['c0', 'c0']
@@ -85,31 +76,29 @@ def _invalid_errors_arg():
 def _invalid_partition_size_dtype():
     df = make_table()
     args = [TABLE_NAME, df]
-    kwargs = dict(partition_size='abcd')
+    kwargs = dict(partition_size=3.15)
     return args, kwargs
 
 
 @pytest.mark.parametrize(
     ("arguments", "exception"),
     [
-        (_invalid_table_type(), TypeError),
+        (_invalid_table_dtype(), TypeError),
         (_invalid_index_dtype(), TypeError),
         (_duplicate_index(), IndexError),
         (_index_not_in_cols(), IndexError),
         (_invalid_col_names_dtype(), TypeError),
-        (_forbidden_col_name(), ValueError),
         (_duplicate_col_names(), IndexError),
         (_invalid_warnings_arg(), ValueError),
         (_invalid_errors_arg(), ValueError),
         (_invalid_partition_size_dtype(), TypeError),
     ],
     ids=[
-        "_invalid_table_type",
+        "_invalid_table_dtype",
         "_invalid_index_dtype",
         "_duplicate_index",
         "_index_not_in_cols",
         "_invalid_col_names_dtype",
-        "_forbidden_col_name",
         "_duplicate_col_names",
         "_invalid_warnings_arg",
         "_invalid_errors_arg",
@@ -142,7 +131,8 @@ def test_trying_to_overwrite_existing_table(store, errors, exception):
 
 INVALID_TABLE_NAME_DTYPE = [21, dict()]
 INVALID_ROW_DTYPE = [TABLE_NAME, {'rows': 14}]
-INVALID_ROW_ELEMENTS_DTYPE = [TABLE_NAME, {'rows': [5, 'ab', 7.13]}]
+ROW_ELEMENTS_NOT_ALL_SAME_DTYPE = [TABLE_NAME, {'rows': [5, 'ab', 7.13]}]
+ROWS_NOT_SAME_DTYPE_AS_INDEX = [TABLE_NAME, {'rows': ['index', 'not', 'string']}]
 ROWS_NOT_IN_TABLE = [TABLE_NAME, {'rows': [0, 1, 3334]}]
 INVALID_COL_DTYPE = [TABLE_NAME, {'cols': 14}]
 INVALID_COL_ELEMENTS_DTYPE = [TABLE_NAME, {'cols': ['c1', 'C2', 12]}]
@@ -154,7 +144,8 @@ COLS_NOT_IN_TABLE = [TABLE_NAME, {'cols': ['c0', 'c1', 'c3334']}]
     [
         (INVALID_TABLE_NAME_DTYPE, TypeError),
         (INVALID_ROW_DTYPE, TypeError),
-        (INVALID_ROW_ELEMENTS_DTYPE, TypeError),
+        (ROW_ELEMENTS_NOT_ALL_SAME_DTYPE, TypeError),
+        (ROWS_NOT_SAME_DTYPE_AS_INDEX, TypeError),
         (ROWS_NOT_IN_TABLE, IndexError),
         (INVALID_COL_DTYPE, TypeError),
         (INVALID_COL_ELEMENTS_DTYPE, TypeError),
@@ -163,7 +154,8 @@ COLS_NOT_IN_TABLE = [TABLE_NAME, {'cols': ['c0', 'c1', 'c3334']}]
     ids=[
         "INVALID_TABLE_NAME_DTYPE",
         "INVALID_ROW_DTYPE",
-        "INVALID_ROW_ELEMENTS_DTYPE",
+        "ROW_ELEMENTS_NOT_ALL_SAME_DTYPE",
+        "ROWS_NOT_SAME_DTYPE_AS_INDEX",
         "ROWS_NOT_IN_TABLE",
         "INVALID_COL_DTYPE",
         "INVALID_COL_ELEMENTS_DTYPE",
@@ -183,23 +175,8 @@ def test_can_read(store, arguments, exception):
 def test_read_when_no_table_exists(store):
     # Arrange
     table = store.select_table(TABLE_NAME)
-    EXCEPTION = FileNotFoundError
     # Act
-    with pytest.raises(EXCEPTION):
+    with pytest.raises(FileNotFoundError):
         table.read_pandas()
     # Assert
     assert not table.exists()
-
-
-def test_read_rows_not_in_table(store):
-    # Arrange
-    ROWS_DROPPED = [10, 11, 12, 13, 14]
-    original_df = make_table(astype='pandas')
-    original_df = original_df.drop(ROWS_DROPPED)
-
-    partition_size = get_partition_size(original_df)
-    table = store.select_table(TABLE_NAME)
-    table.write(original_df, partition_size=partition_size, warnings='ignore')
-    # Act and Assert
-    with pytest.raises(IndexError):
-        table.read_pandas(rows=ROWS_DROPPED)

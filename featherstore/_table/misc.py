@@ -25,23 +25,11 @@ def can_reorder_columns(cols, table_path):
     Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table_path)
 
-    _raise_if_new_cols_is_not_list(cols)
+    _raise_if.cols_argument_is_not_sequence(cols)
     _raise_if.cols_argument_items_is_not_str(cols)
-    _raise_if_index_in_cols(cols, table_path)
+    _raise_if.index_in_cols(cols, table_path)
     _raise_if.col_names_contains_duplicates(cols)
     _raise_if_cols_doesnt_match(cols, table_path)
-
-
-def _raise_if_new_cols_is_not_list(cols):
-    is_valid_col_format = isinstance(cols, list)
-    if not is_valid_col_format:
-        raise TypeError(f"'cols' must be of type list (is type {type(cols)})")
-
-
-def _raise_if_index_in_cols(cols, table_path):
-    index_name = Metadata(table_path, 'table')["index_name"]
-    if index_name in cols:
-        raise ValueError("Index name provided when trying to reorganize columns")
 
 
 def _raise_if_cols_doesnt_match(cols, table_path):

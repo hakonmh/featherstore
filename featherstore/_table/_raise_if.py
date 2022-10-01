@@ -1,20 +1,19 @@
 import os
 from numbers import Integral
-from collections.abc import Collection, Sequence
 
 import pandas as pd
 import polars as pl
 import pyarrow as pa
 
 from featherstore._metadata import METADATA_FOLDER_NAME, Metadata
-from featherstore._table import common
 from featherstore._table import _table_utils
+from featherstore._table._indexers import ColIndexer
 
 
 def table_not_exists(table_path):
     table_name = table_path.rsplit('/')[-1]
     if not os.path.exists(table_path):
-        raise FileNotFoundError(f"Table '{table_name}' doesn't exist")
+        raise FileNotFoundError(f"Table '{table_name}' not found")
 
 
 def table_already_exists(table_path):
@@ -34,47 +33,50 @@ def table_name_is_forbidden(table_name):
         raise ValueError(f"Table name '{METADATA_FOLDER_NAME}' is forbidden")
 
 
-def df_is_not_supported_table_dtype(df):
+def df_is_not_supported_table_type(df):
     if not isinstance(df, (pd.DataFrame, pd.Series, pl.DataFrame, pa.Table)):
-        raise TypeError(f"'df' must be a supported DataFrame dtype (is type {type(df)})")
+        raise TypeError(f"'df' must be a supported DataFrame type (is type {type(df)})")
 
 
 def df_is_not_pandas_table(df):
     if not isinstance(df, (pd.DataFrame, pd.Series)):
-        raise TypeError(
-            f"'df' must be a pd.DataFrame or pd.Series (is type {type(df)})")
+        raise TypeError(f"'df' must be a pd.DataFrame or pd.Series (is type {type(df)})")
 
 
 def rows_argument_is_not_collection(rows):
-    is_collection_or_none = _is_collection(rows) or rows is None
+    is_collection_or_none = _table_utils.is_collection(rows)
+    if not is_collection_or_none:
+        raise TypeError(f"'rows' must be a collection(is type {type(rows)})")
+
+
+def rows_argument_is_not_collection_or_none(rows):
+    is_collection_or_none = _table_utils.is_collection(rows) or rows is None
     if not is_collection_or_none:
         raise TypeError(f"'rows' must be a collection or None (is type {type(rows)})")
 
 
-def to_argument_is_not_sequence(cols):
-    is_collection = _is_sequence(cols)
-    if not is_collection:
-        raise TypeError(f"'to' must be a sequence (is type {type(cols)})")
+def to_argument_is_not_sequence(to):
+    is_sequence = _table_utils.is_sequence(to)
+    if not is_sequence:
+        raise TypeError(f"'to' must be a sequence (is type {type(to)})")
+
+
+def cols_argument_is_not_sequence(cols):
+    is_sequence = _table_utils.is_sequence(cols)
+    if not is_sequence:
+        raise TypeError(f"'cols' must be a sequence (is type {type(cols)})")
 
 
 def cols_argument_is_not_collection(cols):
-    is_collection = _is_collection(cols)
+    is_collection = _table_utils.is_collection(cols)
     if not is_collection:
         raise TypeError(f"'cols' must be a collection (is type {type(cols)})")
 
 
 def cols_argument_is_not_collection_or_none(cols):
-    is_collection_or_none = _is_collection(cols) or cols is None
+    is_collection_or_none = _table_utils.is_collection(cols) or cols is None
     if not is_collection_or_none:
         raise TypeError(f"'cols' must be a collection or None (is type {type(cols)})")
-
-
-def _is_collection(item):
-    return isinstance(item, Collection) and not isinstance(item, str)
-
-
-def _is_sequence(item):
-    return isinstance(item, Sequence)
 
 
 def cols_argument_items_is_not_str(cols):
@@ -84,6 +86,11 @@ def cols_argument_items_is_not_str(cols):
         col_elements_are_str = all(isinstance(item, str) for item in cols)
     if not col_elements_are_str:
         raise TypeError("Elements in 'cols' must be of type str")
+
+
+def length_of_cols_and_to_doesnt_match(cols, to):
+    if len(cols) != len(to):
+        raise ValueError(f"Length of 'cols' != length of 'to' ({len(cols)} != {len(to)})")
 
 
 def cols_does_not_match(df, table_path):
@@ -96,25 +103,49 @@ def cols_does_not_match(df, table_path):
 
 
 def cols_not_in_table(cols, table_path):
-    table_metadata = Metadata(table_path, 'table')
-    stored_cols = table_metadata["columns"]
+    stored_cols = Metadata(table_path, 'table')["columns"]
+    if not isinstance(cols, ColIndexer):
+        cols = ColIndexer(cols)
 
-    if common.like_is_provided(cols):
-        cols = common.get_cols_like_pattern(cols, stored_cols)
-
+    cols = cols.like(stored_cols)
     some_cols_not_in_stored_cols = set(cols) - set(stored_cols)
     if some_cols_not_in_stored_cols:
         raise IndexError("Trying to access a column not found in table")
 
 
-def rows_argument_items_dtype_not_same_as_index(rows, table_path):
+def to_is_provided_twice(cols, to):
+    cols_is_dict = isinstance(cols, dict)
+    to_is_provided = to is not None
+    if cols_is_dict and to_is_provided:
+        raise AttributeError(r"'to' is provided twice, use either 'cols={<COL>: <TO>, ...}"
+                             "to=None' or 'cols=[<COL>, ...], to=[<TO>, ...]'")
+
+
+def to_not_provided(cols, to):
+    cols_is_dict = isinstance(cols, dict)
+    to_is_provided = to is not None
+    if not cols_is_dict and not to_is_provided:
+        raise AttributeError("'to' is not provided")
+
+
+def rows_items_not_all_same_type(rows):
+    try:
+        rows = rows.values()
+        if rows is not None:
+            pa.array(rows)
+    except Exception:
+        raise TypeError("'rows' items not all of same type")
+
+
+def rows_argument_items_type_not_same_as_index(rows, table_path):
     index_dtype = Metadata(table_path, "table")["index_dtype"]
-    if rows is not None and not _rows_dtype_matches_index(rows, index_dtype):
-        raise TypeError("'rows' dtype doesn't match table index dtype")
+    if rows:
+        if not _rows_type_matches_index(rows, index_dtype):
+            raise TypeError("'rows' type doesn't match table index dtype")
 
 
-def _rows_dtype_matches_index(rows, index_dtype):
-    row = rows[-1]
+def _rows_type_matches_index(rows, index_dtype):
+    row = rows[0]
     matches_dtime_idx = _check_if_row_and_index_is_temporal(row, index_dtype)
     matches_str_idx = _check_if_row_and_index_is_str(row, index_dtype)
     matches_int_idx = _check_if_row_and_index_is_int(row, index_dtype)
@@ -124,19 +155,19 @@ def _rows_dtype_matches_index(rows, index_dtype):
 
 
 def _check_if_row_and_index_is_temporal(row, index_dtype):
-    if _table_utils.dtype_str_is_temporal(index_dtype):
+    if _table_utils.typestring_is_temporal(index_dtype):
         return _isinstance_temporal(row)
     return False
 
 
 def _check_if_row_and_index_is_str(row, index_dtype):
-    if _table_utils.dtype_str_is_string(index_dtype):
+    if _table_utils.typestring_is_string(index_dtype):
         return _isinstance_str(row)
     return False
 
 
 def _check_if_row_and_index_is_int(row, index_dtype):
-    if _table_utils.dtype_str_is_int(index_dtype):
+    if _table_utils.typestring_is_int(index_dtype):
         return _isinstance_int(row)
     return False
 
@@ -166,7 +197,7 @@ def _isinstance_int(obj):
     return is_int
 
 
-def index_dtype_not_same_as_stored_index(df, table_path):
+def index_type_not_same_as_stored_index(df, table_path):
     if isinstance(df, (pd.DataFrame, pd.Series)):
         index_type = str(pa.Array.from_pandas(df.index).type)
         stored_index_type = Metadata(table_path, "table")["index_dtype"]
@@ -182,18 +213,19 @@ def index_name_not_same_as_stored_index(df, table_path):
         raise ValueError("New and old index names do not match")
 
 
+def index_in_cols(cols, table_path):
+    index_name = Metadata(table_path, 'table')["index_name"]
+    if index_name in cols:
+        raise ValueError("Index name in 'cols'")
+
+
 def col_names_contains_duplicates(cols):
     cols = pd.Index(cols)
     if cols.has_duplicates:
         raise IndexError("Column names must be unique")
 
 
-def col_names_are_forbidden(cols):
-    cols = {col.lower() for col in cols}
-    if "like" in cols:
-        raise ValueError("df contains invalid column name 'like'")
-
-
 def index_values_contains_duplicates(index):
-    if index.has_duplicates:
-        raise IndexError("Values in Table.index must be unique")
+    if index is not None:
+        if index.has_duplicates:
+            raise IndexError("Index values must be unique")

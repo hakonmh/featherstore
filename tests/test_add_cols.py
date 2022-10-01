@@ -56,15 +56,15 @@ def _col_name_already_in_table():
     return make_table(cols=2, astype='pandas')
 
 
-def _new_cols_contain_duplicate_names():
-    df = make_table(cols=2, astype='pandas')
-    df.columns = ['new_c1', 'new_c1']
+def _add_col_named_same_as_index():
+    df = make_table(cols=1, astype='pandas')
+    df.columns = [DEFAULT_ARROW_INDEX_NAME]
     return df
 
 
-def _forbidden_col_name():
-    df = make_table(cols=1, astype='pandas')
-    df.columns = ['like']
+def _new_cols_contain_duplicate_names():
+    df = make_table(cols=2, astype='pandas')
+    df.columns = ['new_c1', 'new_c1']
     return df
 
 
@@ -92,8 +92,8 @@ def _non_matching_index_values():
     [
         (_wrong_table_type(), TypeError),
         (_col_name_already_in_table(), IndexError),
+        (_add_col_named_same_as_index(), ValueError),
         (_new_cols_contain_duplicate_names(), IndexError),
-        (_forbidden_col_name(), ValueError),
         (_non_matching_index_dtype(), TypeError),
         (_num_rows_doesnt_match(), IndexError),
         (_non_matching_index_values(), ValueError),
@@ -101,8 +101,8 @@ def _non_matching_index_values():
     ids=[
         "_wrong_table_type",
         "_col_name_already_in_table",
+        "_add_col_named_same_as_index",
         "_new_cols_contain_duplicate_names",
-        "_forbidden_col_name",
         "_non_matching_index_dtype",
         "_num_rows_doesnt_match",
         "_non_matching_index_values"

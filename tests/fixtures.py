@@ -2,6 +2,8 @@ import os
 import itertools
 from string import ascii_lowercase
 from featherstore._table._table_utils import get_col_names
+from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
+from featherstore.connection import DB_MARKER_NAME
 from featherstore._table.write import __is_rangeindex
 
 import pyarrow as pa
@@ -27,8 +29,8 @@ def get_index_name(df):
             index_name = 'index'
         elif 'Index' in cols:
             index_name = 'index'
-        elif "__index_level_0__" in cols:
-            index_name = "__index_level_0__"
+        elif DEFAULT_ARROW_INDEX_NAME in cols:
+            index_name = DEFAULT_ARROW_INDEX_NAME
         else:
             index_name = None
     return index_name
@@ -252,9 +254,9 @@ def _convert_to_pandas(df, index_name=None, as_series=True):
 
         if index_name and index_name in pd_df.columns:
             pd_df = pd_df.set_index(index_name)
-        elif "__index_level_0__" in pd_df.columns:
-            pd_df = pd_df.set_index("__index_level_0__")
-        if pd_df.index.name == "__index_level_0__":
+        elif DEFAULT_ARROW_INDEX_NAME in pd_df.columns:
+            pd_df = pd_df.set_index(DEFAULT_ARROW_INDEX_NAME)
+        if pd_df.index.name == DEFAULT_ARROW_INDEX_NAME:
             pd_df.index.name = None
 
     if as_series:
@@ -277,10 +279,10 @@ def _convert_to_arrow(df):
         df = df.to_arrow()
     cols = df.column_names
 
-    if '__index_level_0__' in cols:
-        index = df['__index_level_0__']
+    if DEFAULT_ARROW_INDEX_NAME in cols:
+        index = df[DEFAULT_ARROW_INDEX_NAME]
         if __is_rangeindex(index):
-            cols.remove('__index_level_0__')
+            cols.remove(DEFAULT_ARROW_INDEX_NAME)
     df = df.select(cols)
     return df
 

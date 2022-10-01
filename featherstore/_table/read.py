@@ -10,24 +10,30 @@ from featherstore.connection import Connection
 from featherstore._metadata import Metadata
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
+from featherstore._table._indexers import ColIndexer, RowIndexer
 
 
 def can_read_table(cols, rows, table_path):
     Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table_path)
 
-    _raise_if.rows_argument_is_not_collection(rows)
-    _raise_if.rows_argument_items_dtype_not_same_as_index(rows, table_path)
+    _raise_if.rows_argument_is_not_collection_or_none(rows)
+    rows = RowIndexer(rows)
+    _raise_if.rows_items_not_all_same_type(rows)
+    _raise_if.rows_argument_items_type_not_same_as_index(rows, table_path)
 
     _raise_if.cols_argument_is_not_collection_or_none(cols)
-    cols_are_provided = isinstance(cols, list)
-    if cols_are_provided:
-        _raise_if.cols_argument_items_is_not_str(cols)
+    cols = ColIndexer(cols)
+    if cols:
+        _raise_if.cols_argument_items_is_not_str(cols.values())
         _raise_if.cols_not_in_table(cols, table_path)
 
 
 def get_partition_names(rows, table_path):
-    if rows:
+    if rows is None:
+        rows = RowIndexer(None)
+
+    if rows.values():
         partition_names = _predicate_filtering(rows, table_path)
     else:
         partition_names = Metadata(table_path, 'partition').keys()
@@ -35,73 +41,77 @@ def get_partition_names(rows, table_path):
 
 
 def _predicate_filtering(rows, table_path):
-    keyword = str(rows[0]).lower()
-
     partition_names = Metadata(table_path, 'partition').keys()
-    if keyword == "before":
+    if rows.keyword == "before":
         start = 0
-        end = __binary_search(rows[1], partition_names, table_path)
-    elif keyword == "after":
-        start = __binary_search(rows[1], partition_names, table_path)
+        target = rows[0]
+        end = _binary_search(target, partition_names, table_path)
+    elif rows.keyword == "after":
+        target = rows[0]
+        start = _binary_search(target, partition_names, table_path)
         end = len(partition_names)
-    elif keyword == "between":
-        start = __binary_search(rows[1], partition_names, table_path)
-        end = __binary_search(rows[2], partition_names, table_path)
+    elif rows.keyword == "between":
+        target_start = rows[0]
+        target_end = rows[1]
+        start = _binary_search(target_start, partition_names, table_path)
+        end = _binary_search(target_end, partition_names, table_path)
     else:  # When a list of rows is provided
-        start = __binary_search(min(rows), partition_names, table_path)
-        end = __binary_search(max(rows), partition_names, table_path)
+
+        start = _binary_search(min(rows.values()), partition_names, table_path)
+        end = _binary_search(max(rows.values()), partition_names, table_path)
 
     partition_names = partition_names[start:end + 1]
     return partition_names
 
 
-def __binary_search(row, partition_names, table_path):
-    possible_partitions = partition_names
+def _binary_search(target, partition_names, table_path):
+    possible_partition_names = partition_names
 
-    while len(possible_partitions) > 1:
-        idx = len(possible_partitions) // 2
-        candidate_name = possible_partitions[idx]
+    while len(possible_partition_names) > 1:
+        mid = len(possible_partition_names) // 2
+        candidate_name = possible_partition_names[mid]
         candidate = Metadata(table_path, 'partition')[candidate_name]
-        if _row_inside_candidate(row, candidate):
-            break
-        elif _row_before_candidate(row, candidate):
-            possible_partitions = possible_partitions[idx:]
-        elif _row_after_candidate(row, candidate):
-            possible_partitions = possible_partitions[:idx]
+
+        if _row_inside_candidate(target, candidate):
+            break  # return candidate_name
+        elif _row_before_candidate(target, candidate):
+            possible_partition_names = possible_partition_names[mid:]
+        elif _row_after_candidate(target, candidate):
+            possible_partition_names = possible_partition_names[:mid]
     else:
-        candidate_name = possible_partitions[0]
+        candidate_name = possible_partition_names[0]
 
-    idx = partition_names.index(candidate_name)
-    return idx
+    return partition_names.index(candidate_name)
 
 
-def _row_inside_candidate(row, candidate):
+def _row_inside_candidate(target, candidate):
     candidate_min = candidate['min']
     candidate_max = candidate['max']
-    return row <= candidate_max and row >= candidate_min
+    return target <= candidate_max and target >= candidate_min
 
 
-def _row_before_candidate(row, candidate):
+def _row_before_candidate(target, candidate):
     candidate_max = candidate['max']
-    if row >= candidate_max:
+    if target >= candidate_max:
         return True
     else:
         return False
 
 
-def _row_after_candidate(row, candidate):
+def _row_after_candidate(target, candidate):
     candidate_min = candidate['min']
-    if row <= candidate_min:
+    if target <= candidate_min:
         return True
     else:
         return False
 
 
-def read_table(partition_names, table_path, cols=None, rows=None, edit_mode=False):
-    metadata = Metadata(table_path, "table")
-    index_name = metadata["index_name"]
-    if cols is None:
-        cols = metadata["columns"]
+def read_table(partition_names, table_path, cols=ColIndexer(None),
+               rows=RowIndexer(None), edit_mode=False):
+    table_data = Metadata(table_path, "table")
+    index_name = table_data["index_name"]
+    if cols.values() is None:
+        cols = ColIndexer(table_data["columns"])
     dfs = _read_partitions(partition_names, table_path, cols, edit_mode)
     df = _combine_partitions(dfs)
     df = _filter_table_rows(df, rows, index_name)
@@ -109,8 +119,7 @@ def read_table(partition_names, table_path, cols=None, rows=None, edit_mode=Fals
 
 
 def _read_partitions(partition_names, table_path, cols, edit_mode):
-    if cols is not None:
-        cols = __add_index_to_cols(cols, table_path)
+    cols = __add_index_to_cols(cols, table_path)
 
     partitions = []
     for partition_name in partition_names:
@@ -123,7 +132,6 @@ def _read_partitions(partition_names, table_path, cols, edit_mode):
 def __add_index_to_cols(cols, table_path):
     index_col = Metadata(table_path, "table")["index_name"]
     if index_col not in cols:
-        cols = cols.copy()
         cols.append(index_col)
     return cols
 
@@ -132,9 +140,9 @@ def __read_feather(path, cols, edit_mode):
     is_windows = platform.system() == "Windows"
     if is_windows and edit_mode:
         with open(path, 'rb') as f:
-            df = feather.read_table(f, columns=cols, memory_map=True)
+            df = feather.read_table(f, columns=cols.values(), memory_map=True)
     else:
-        df = feather.read_table(path, columns=cols, memory_map=True)
+        df = feather.read_table(path, columns=cols.values(), memory_map=True)
     return df
 
 
@@ -144,7 +152,7 @@ def _combine_partitions(partitions):
 
 
 def _filter_table_rows(df, rows, index_col_name):
-    should_be_filtered = rows is not None
+    should_be_filtered = rows.values() is not None
     if should_be_filtered:
         df = _table_utils.filter_arrow_table(df, rows, index_col_name)
     return df

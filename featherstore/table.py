@@ -55,12 +55,16 @@ class Table:
         Parameters
         ----------
         cols : Collection, optional
-            list of column names or, filter-predicates in the form of
-            `[like, pattern]`, by default `None`
+            List of column names or, filter-predicates in the form of
+            `{'like': pattern}`, by default `None`
         rows : Collection, optional
-            list of index values or filter-predicates in the form of
-            `[keyword, value]`, where keyword can be either `before`, `after`,
+            List of index values or filter-predicates in the form of
+            `{keyword: value}`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
+
+        Returns
+        -------
+        pyarrow.Table
         """
         read.can_read_table(cols, rows, self._table_path)
 
@@ -69,14 +73,12 @@ class Table:
         has_default_index = self._table_data["has_default_index"]
         stored_cols = self._table_data["columns"]
 
-        cols = common.format_cols_arg_if_provided(cols)
-        if common.like_is_provided(cols):
-            cols = common.get_cols_like_pattern(cols, stored_cols)
-        rows = common.format_rows_arg_if_provided(rows, index_type)
+        cols = common.format_cols_arg(cols, like=stored_cols)
+        rows = common.format_rows_arg(rows, to_dtype=index_type)
 
         partition_names = read.get_partition_names(rows, self._table_path)
         df = read.read_table(partition_names, self._table_path, cols, rows)
-        if has_default_index and rows is None:
+        if has_default_index and rows.values() is None:
             df = read.drop_default_index(df, index_name)
 
         return df
@@ -87,12 +89,16 @@ class Table:
         Parameters
         ----------
         cols : Collection, optional
-            list of column names or filter-predicates in the form of
-            `[like, pattern]`, by default `None`
+            List of column names or filter-predicates in the form of
+            `{'like': pattern}`, by default `None`
         rows : Collection, optional
-            list of index values or, filter-predicates in the form of
-            `[keyword, value]`, where keyword can be either `before`, `after`,
+            List of index values or, filter-predicates in the form of
+            `{keyword: value}`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
+
+        Returns
+        -------
+        pandas.DataFrame or pandas.Series
         """
         df = self.read_arrow(cols=cols, rows=rows)
         df = df.to_pandas(date_as_object=False)
@@ -110,12 +116,16 @@ class Table:
         Parameters
         ----------
         cols : Collection, optional
-            list of column names or filter-predicates in the form of
-            `[like, pattern]`, by default `None`
+            List of column names or filter-predicates in the form of
+            `{'like': pattern}`, by default `None`
         rows : Collection, optional
-            list of index values or, filter-predicates in the form of
-            `[keyword, value]`, where keyword can be either `before`, `after`,
+            List of index values or, filter-predicates in the form of
+            `{keyword: value}`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
+
+        Returns
+        -------
+        polars.DataFrame
         """
         df = self.read_arrow(cols=cols, rows=rows)
         df = read.convert_table_to_polars(df)
@@ -150,8 +160,6 @@ class Table:
         write.can_write_table(df, self._table_path, index,
                               partition_size, errors, warnings)
 
-        self.drop_table()
-
         df = common.format_table(df, index, warnings)
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
         partitions = write.create_partitions(df, rows_per_partition)
@@ -159,6 +167,7 @@ class Table:
         metadata = write.generate_metadata(partitions, partition_size,
                                            rows_per_partition)
 
+        self.drop_table()
         self._create_table()
         write.write_metadata(metadata, self._table_path)
         write.write_partitions(partitions, self._table_path)
@@ -217,7 +226,7 @@ class Table:
         index_type = self._table_data["index_dtype"]
         rows_per_partition = self._table_data["rows_per_partition"]
 
-        rows = common.format_rows_arg_if_provided(df.index, index_type)
+        rows = common.format_rows_arg(df.index, to_dtype=index_type)
 
         partition_names = read.get_partition_names(rows, self._table_path)
         stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)
@@ -244,7 +253,8 @@ class Table:
         rows_per_partition = self._table_data["rows_per_partition"]
         all_partition_names = self._partition_data.keys()
 
-        rows = common.format_rows_arg_if_provided(df.index, index_type)
+        rows = common.format_rows_arg(df.index, to_dtype=index_type)
+
         df = common.format_table(df, index_name=index_name, warnings='ignore')
         has_default_index = insert.has_still_default_index(df, self._table_data, self._partition_data)
 
@@ -299,10 +309,10 @@ class Table:
 
         cols : Collection, optional
             list of column names or filter-predicates in the form of
-            `[like, pattern]`, by default `None`
+            `{'like': pattern}`, by default `None`
         rows : Collection, optional
             list of index values or, filter-predicates in the form of
-            `[keyword, value]`, where keyword can be either `before`, `after`,
+            `{keyword: value}`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
 
         Raises
@@ -323,7 +333,7 @@ class Table:
     def drop_rows(self, rows):
         """Drops specified rows from table
 
-        Same as `Table.drop(rows=val)`
+        Same as `Table.drop(rows=value)`
         """
         drop.can_drop_rows_from_table(rows, self._table_path)
 
@@ -331,16 +341,17 @@ class Table:
         index_type = self._table_data["index_dtype"]
         rows_per_partition = self._table_data["rows_per_partition"]
 
-        rows = common.format_rows_arg_if_provided(rows, index_type)
-        partition_names = drop.get_partition_names(rows, self._table_path)
+        rows = common.format_rows_arg(rows, to_dtype=index_type)
 
+        partition_names = drop.get_partition_names(rows, self._table_path)
         stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)
 
         df = drop.drop_rows_from_data(stored_df, rows, index_name)
         df = common.format_table(df, index_name=index_name, warnings=False)
         partitions = drop.create_partitions(df, rows_per_partition, partition_names)
 
-        has_default_index = drop.has_still_default_index(rows, self._table_data, self._partition_data)
+        has_default_index = drop.has_still_default_index(rows, self._table_data,
+                                                         self._partition_data)
         metadata = common.update_metadata(partitions, self._table_path, partition_names,
                                           has_default_index=has_default_index)
 
@@ -352,7 +363,7 @@ class Table:
     def drop_columns(self, cols):
         """Drops specified rows from table
 
-        Same as `Table.drop(cols=val)`
+        Same as `Table.drop(cols=value)`
         """
         drop.can_drop_cols_from_table(cols, self._table_path)
 
@@ -360,11 +371,9 @@ class Table:
         partition_size = self._table_data["partition_size"]
         stored_cols = self._table_data["columns"]
 
-        cols = common.format_cols_arg_if_provided(cols)
-        if common.like_is_provided(cols):
-            cols = common.get_cols_like_pattern(cols, stored_cols)
-        partition_names = drop.get_partition_names(None, self._table_path)
+        cols = common.format_cols_arg(cols, like=stored_cols)
 
+        partition_names = drop.get_partition_names(None, self._table_path)
         stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)
 
         df = drop.drop_cols_from_data(stored_df, cols)
@@ -404,13 +413,12 @@ class Table:
         index_name = self._table_data["index_name"]
         rows_per_partition = self._table_data["rows_per_partition"]
 
-        cols = common.format_cols_arg_if_provided(cols)
-        to = common.format_cols_arg_if_provided(to)
+        cols_mapping = common.format_cols_and_to_args(cols, to)
 
         partition_names = read.get_partition_names(None, self._table_path)
         df = read.read_table(partition_names, self._table_path, edit_mode=True)
 
-        df = rename_cols.rename_columns(df, cols, to)
+        df = rename_cols.rename_columns(df, cols_mapping)
         df = common.format_table(df, index_name=index_name, warnings=False)
         partitions = write.create_partitions(df, rows_per_partition, partition_names)
 
@@ -423,7 +431,8 @@ class Table:
 
         Returns
         -------
-        columns : list
+        list
+            The table columns
         """
         return self._table_data["columns"]
 
@@ -431,8 +440,14 @@ class Table:
     def columns(self, cols):
         """Same as `Table.reorder_columns(values)`
 
-        *Note*: You can't use this setter method to rename columns, use
-        `rename_columns` instead.
+        *Note*: You can not use this method to rename columns, use `rename_columns`
+        instead.
+
+        Parameters
+        ----------
+        cols : Sequence[str]
+            The new column ordering. The column names provided must be the
+            same as the column names used in the table.
         """
         misc.can_reorder_columns(cols, self._table_path)
         self._table_data["columns"] = cols
@@ -442,7 +457,7 @@ class Table:
 
         Parameters
         ----------
-        cols : list[str]
+        cols : Sequence[str]
             The new column ordering. The column names provided must be the
             same as the column names used in the table.
         """
@@ -454,7 +469,7 @@ class Table:
 
         Returns
         -------
-        index : Pandas Index
+        pandas.Index
         """
         index = self.read_arrow(cols=[])
         index = index.to_pandas().index
@@ -470,8 +485,8 @@ class Table:
 
         Parameters
         ----------
-        cols : Sequence or dict
-            Either a list of columns to have its data types changed, or a
+        cols : Sequence[str] or dict
+            Either a sequence of columns to have its data types changed, or a
             dict mapping columns to new column data types.
         to : Sequence[Pyarrow DataType], optional
             New column data types, by default `None`
@@ -480,10 +495,12 @@ class Table:
         index_name = self._table_data["index_name"]
         partition_size = self._table_data["partition_size"]
 
+        astype_mapping = common.format_cols_and_to_args(cols, to)
+
         partition_names = read.get_partition_names(None, self._table_path)
         df = read.read_table(partition_names, self._table_path, edit_mode=True)
 
-        df = astype.change_type(df, cols, to)
+        df = astype.change_type(df, astype_mapping)
         df = common.format_table(df, index_name=index_name, warnings=False)
 
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
@@ -554,7 +571,8 @@ class Table:
 
         Returns
         -------
-        shape : tuple(int, int)
+        tuple(int, int)
+            The shape of the table
         """
         rows = self._table_data["num_rows"]
         cols = self._table_data["num_columns"]
@@ -566,7 +584,8 @@ class Table:
 
         Returns
         -------
-        partition_size : int
+        int
+            The partition size in bytes.
         """
         return self._table_data["partition_size"]
 
