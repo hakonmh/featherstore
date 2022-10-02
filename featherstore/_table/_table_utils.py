@@ -1,4 +1,4 @@
-from collections.abc import Collection, Sequence
+from collections.abc import Iterable, Set
 
 import pyarrow as pa
 import pandas as pd
@@ -273,10 +273,9 @@ def filter_arrow_table(df, rows, index_col_name):
 
 
 def _fetch_rows_in_list(df, index, rows):
-    if rows:
-        row_indices = pa.compute.index_in(rows, value_set=index)
-    else:
-        row_indices = pa.array(rows, type=index.type)
+    if not rows:
+        rows = pa.array([], type=index.type)
+    row_indices = pa.compute.index_in(rows, value_set=index)
     _raise_if_rows_not_in_table(row_indices)
     df = df.take(row_indices)
     return df
@@ -353,9 +352,12 @@ def _fetch_last_row_idx(index):
     return len(index)
 
 
-def is_collection(item):
-    return isinstance(item, Collection) and not isinstance(item, str)
+def is_collection(obj):
+    return isinstance(obj, Iterable) and not isinstance(obj, (str, bytes))
 
 
-def is_sequence(item):
-    return isinstance(item, Sequence)
+def is_list_like(obj):
+    is_iterable = isinstance(obj, Iterable)
+    is_not_string = not isinstance(obj, (str, bytes))
+    is_not_set = not isinstance(obj, Set)
+    return is_iterable and is_not_string and is_not_set

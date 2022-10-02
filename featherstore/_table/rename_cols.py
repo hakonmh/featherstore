@@ -13,7 +13,7 @@ def can_rename_columns(cols, new_col_names, table_path):
     _raise_if.to_not_provided(cols, new_col_names)
 
     if not isinstance(cols, dict):
-        _raise_if.to_argument_is_not_sequence(new_col_names)
+        _raise_if.to_argument_is_not_list_like(new_col_names)
         _raise_if.length_of_cols_and_to_doesnt_match(cols, new_col_names)
     cols = common.format_cols_and_to_args(cols, new_col_names)
 

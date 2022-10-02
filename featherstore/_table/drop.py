@@ -188,7 +188,7 @@ class CheckDropCols:
             raise IndexError("Can't drop all columns. To drop full table, use 'drop_table()'")
 
     def items_not_str(self):
-        _raise_if.cols_argument_items_is_not_str(self._cols)
+        _raise_if.cols_argument_items_is_not_str(self._cols.values())
 
 
 def drop_cols_from_data(df, cols):

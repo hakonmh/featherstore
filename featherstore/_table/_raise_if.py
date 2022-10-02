@@ -46,7 +46,7 @@ def df_is_not_pandas_table(df):
 def rows_argument_is_not_collection(rows):
     is_collection_or_none = _table_utils.is_collection(rows)
     if not is_collection_or_none:
-        raise TypeError(f"'rows' must be a collection(is type {type(rows)})")
+        raise TypeError(f"'rows' must be a collection (is type {type(rows)})")
 
 
 def rows_argument_is_not_collection_or_none(rows):
@@ -55,16 +55,16 @@ def rows_argument_is_not_collection_or_none(rows):
         raise TypeError(f"'rows' must be a collection or None (is type {type(rows)})")
 
 
-def to_argument_is_not_sequence(to):
-    is_sequence = _table_utils.is_sequence(to)
-    if not is_sequence:
-        raise TypeError(f"'to' must be a sequence (is type {type(to)})")
+def to_argument_is_not_list_like(to):
+    is_list_like = _table_utils.is_list_like(to)
+    if not is_list_like:
+        raise TypeError(f"'to' must be list like (is type {type(to)})")
 
 
-def cols_argument_is_not_sequence(cols):
-    is_sequence = _table_utils.is_sequence(cols)
-    if not is_sequence:
-        raise TypeError(f"'cols' must be a sequence (is type {type(cols)})")
+def cols_argument_is_not_list_like(cols):
+    is_list_like = _table_utils.is_list_like(cols)
+    if not is_list_like:
+        raise TypeError(f"'cols' must be list like (is type {type(cols)})")
 
 
 def cols_argument_is_not_collection(cols):

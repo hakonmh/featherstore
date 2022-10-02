@@ -16,7 +16,7 @@ def can_change_type(cols, astype, table_path):
     _raise_if.to_not_provided(cols, astype)
 
     if not isinstance(cols, dict):
-        _raise_if.to_argument_is_not_sequence(astype)
+        _raise_if.to_argument_is_not_list_like(astype)
         _raise_if.length_of_cols_and_to_doesnt_match(cols, astype)
     cols = common.format_cols_and_to_args(cols, astype)
 

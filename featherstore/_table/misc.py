@@ -25,7 +25,7 @@ def can_reorder_columns(cols, table_path):
     Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table_path)
 
-    _raise_if.cols_argument_is_not_sequence(cols)
+    _raise_if.cols_argument_is_not_list_like(cols)
     _raise_if.cols_argument_items_is_not_str(cols)
     _raise_if.index_in_cols(cols, table_path)
     _raise_if.col_names_contains_duplicates(cols)
