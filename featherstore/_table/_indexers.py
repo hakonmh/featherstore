@@ -37,16 +37,16 @@ class Indexer:
 
     def _set_list(self, items):
         if self.items_are_collections(items):
-            _values = list(chain(*items))
+            items = chain(*items)
+
+        if isinstance(items, list):
+            _values = items
+        elif hasattr(items, 'tolist'):
+            _values = items.tolist()
+        elif hasattr(items, 'to_list'):
+            _values = items.to_list()
         else:
-            if isinstance(items, list):
-                _values = items
-            elif hasattr(items, 'tolist'):
-                _values = items.tolist()
-            elif hasattr(items, 'to_list'):
-                _values = items.to_list()
-            else:
-                _values = list(items)
+            _values = list(items)
         return _values
 
     def items_are_collections(self, items):
@@ -78,7 +78,7 @@ class Indexer:
         return self._values
 
     def items(self):
-        return list(zip(self.keys(), self.values()))
+        return tuple(zip(self.keys(), self.values()))
 
     def append(self, value):
         self.values().append(value)
@@ -135,18 +135,21 @@ class RowIndexer(Indexer):
     def convert_types(self, *, to):
         formatted_rows = self.copy()
         if formatted_rows:
-            rows = [self._convert_row(item, to) for item in self.values()]
+            rows = self._convert_rows(self.values(), to)
             formatted_rows.set_values(rows)
         return formatted_rows
 
-    def _convert_row(self, row, to):
+    def _convert_rows(self, rows, to):
         if _table_utils.typestring_is_temporal(to):
-            row = pd.to_datetime(row)
+            if len(rows) >= 2_000:  # Approx. threshold for when Pandas is faster
+                rows = pd.to_datetime(rows).tolist()
+            else:
+                rows = list(map(pd.to_datetime, rows))
         elif _table_utils.typestring_is_string(to):
-            row = str(row)
+            rows = list(map(str, rows))
         elif _table_utils.typestring_is_int(to):
-            row = int(row)
-        return row
+            rows = list(map(int, rows))
+        return rows
 
 
 class ColIndexer(Indexer):
