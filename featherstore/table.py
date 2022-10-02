@@ -402,7 +402,7 @@ class Table:
 
         Parameters
         ----------
-        cols : Collection or dict
+        cols : Collection
             Either a list of columns to be renamed, or a dict mapping columns
             to be renamed to new column names
         to : Collection[str], optional

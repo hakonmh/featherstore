@@ -1,4 +1,6 @@
-from collections.abc import Collection
+from collections.abc import MappingView
+from itertools import chain
+
 import pandas as pd
 from featherstore._utils import filter_items_like_pattern
 from featherstore._table import _table_utils
@@ -25,23 +27,39 @@ class Indexer:
         if items is None:
             self._keys = None
         else:
-            self._keys = list(items)
+            self._keys = self._set_list(items)
 
     def set_values(self, items):
         if items is None:
             self._values = None
         else:
-            self._values = list(items)
-            if self._items_are_sequences(self._values):
-                self._values = [i for sub_list in self._values for i in sub_list]
+            self._values = self._set_list(items)
 
-    def _items_are_sequences(self, items):
-        temp = []
-        for item in items:
-            is_collection = isinstance(item, Collection)
-            is_not_string = not isinstance(item, str)
-            temp.append(is_collection and is_not_string)
-        return all(temp)
+    def _set_list(self, items):
+        if self.items_are_collections(items):
+            _values = list(chain(*items))
+        else:
+            if isinstance(items, list):
+                _values = items
+            elif hasattr(items, 'tolist'):
+                _values = items.tolist()
+            elif hasattr(items, 'to_list'):
+                _values = items.to_list()
+            else:
+                _values = list(items)
+        return _values
+
+    def items_are_collections(self, items):
+        try:
+            if isinstance(items, MappingView):
+                item = next(iter(items))
+            elif isinstance(items, (pd.Series, pd.DataFrame)):
+                item = items.index[0]
+            else:
+                item = items[0]
+        except Exception:
+            item = None
+        return _table_utils.is_collection(item)
 
     def set_keyword(self, keywords):
         keyword = None
@@ -68,8 +86,8 @@ class Indexer:
     def copy(self):
         cls = self.__class__
         new = cls(None)
-        new.set_keys(self.keys())
-        new.set_values(self.values())
+        new._keys = self.keys()
+        new._values = self.values()
         new.keyword = self.keyword
         return new
 
@@ -117,7 +135,7 @@ class RowIndexer(Indexer):
     def convert_types(self, *, to):
         formatted_rows = self.copy()
         if formatted_rows:
-            rows = (self._convert_row(item, to) for item in formatted_rows)
+            rows = [self._convert_row(item, to) for item in self.values()]
             formatted_rows.set_values(rows)
         return formatted_rows
 
