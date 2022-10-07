@@ -140,10 +140,10 @@ def __read_feather(path, cols, edit_mode):
     is_windows = platform.system() == "Windows"
     if is_windows and edit_mode:
         with open(path, 'rb') as f:
-            df = feather.read_table(f, columns=cols.values(), memory_map=True)
+            df = feather.read_table(f, columns=None, memory_map=True)
     else:
-        df = feather.read_table(path, columns=cols.values(), memory_map=True)
-    return df
+        df = feather.read_table(path, columns=None, memory_map=True)
+    return df.select(cols.values())
 
 
 def _combine_partitions(partitions):
