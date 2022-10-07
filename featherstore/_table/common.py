@@ -9,9 +9,6 @@ from featherstore._metadata import Metadata
 from featherstore._table import _table_utils
 from featherstore._table._indexers import ColIndexer, RowIndexer
 
-PARTITION_NAME_LENGTH = 14
-INSERTION_BUFFER_LENGTH = 10**6
-
 
 def format_cols_arg(cols, *, like=None):
     cols = ColIndexer(cols)
