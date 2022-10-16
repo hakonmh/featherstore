@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Benchmarks &#8212; FeatherStore 0.1.0 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Benchmarks &#8212; FeatherStore 0.1.1 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet">
   <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -179,7 +180,7 @@
               
               <div>
                 
-  <div class="section" id="benchmarks">
+  <section id="benchmarks">
 <h1>Benchmarks<a class="headerlink" href="#benchmarks" title="Permalink to this headline">¶</a></h1>
 <p>In this benchmark we’ll compare how well FeatherStore, Feather, Parquet, CSV,
 PyStore and DuckDB perform when reading and writing Pandas DataFrames.</p>
@@ -194,7 +195,7 @@ load it back into Pandas again.</p>
 </ul>
 <p>The times quoted below are the fastest query times seen during a series of
 runs.</p>
-<div class="section" id="first-dataset">
+<section id="first-dataset">
 <h2>First Dataset<a class="headerlink" href="#first-dataset" title="Permalink to this headline">¶</a></h2>
 <p>This dataset is made up of 1 billion fields of random data in the shape 10
 million rows and 100 columns (Approx. 19.3 gb of data when stored as CSV).
@@ -218,8 +219,8 @@ of each data type.</p>
 <li><p>Read PyStore:      13 514.46 ms</p></li>
 <li><p>Read DuckDB:       18 228.74 ms</p></li>
 </ul>
-</div>
-<div class="section" id="second-dataset">
+</section>
+<section id="second-dataset">
 <h2>Second Dataset<a class="headerlink" href="#second-dataset" title="Permalink to this headline">¶</a></h2>
 <p>The second dataset is made up of 94.6 million fields of random data in the
 shape 15.8 million rows and 6 columns. (Approx. 2.0 gb of data when stored
@@ -245,8 +246,8 @@ intraday OHLCV asset data (15.8 million records is equal to 30 years of
 <li><p>Read PyStore:       994.11 ms</p></li>
 <li><p>Read DuckDB:      1 304.28 ms</p></li>
 </ul>
-</div>
-<div class="section" id="internal-benchmarks">
+</section>
+<section id="internal-benchmarks">
 <h2>Internal Benchmarks<a class="headerlink" href="#internal-benchmarks" title="Permalink to this headline">¶</a></h2>
 <p>In addition to supporting reading and writing Pandas DataFrames, FeatherStore
 also supports reading and writing Polars DataFrames and PyArrow Tables.
@@ -268,8 +269,8 @@ using FeatherStore.</p>
 <li><p>Read Polars:    241.79 ms</p></li>
 <li><p>Read Arrow:      16.60 ms</p></li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
               </div>

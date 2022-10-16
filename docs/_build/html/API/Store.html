@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Store &#8212; FeatherStore 0.1.0 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Store &#8212; FeatherStore 0.1.1 documentation</title>
     
   <link href="../_static/css/theme.css" rel="stylesheet">
   <link href="../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -182,20 +183,26 @@
               
               <div>
                 
-  <div class="section" id="module-featherstore.store">
+  <section id="module-featherstore.store">
 <span id="store"></span><h1>Store<a class="headerlink" href="#module-featherstore.store" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.store.create_store">
 <span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">create_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.create_store" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a new store.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>store_name</strong> (<em>str</em>) – The name of the store to be created</p></li>
 <li><p><strong>errors</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to raise an error if the store already exist. Can be either
-<cite>raise</cite> or <cite>ignore</cite>, <cite>ignore</cite> overwrites the existing store and its tables,
-by default <cite>raise</cite></p></li>
+<cite>raise</cite> or <cite>ignore</cite>, <cite>ignore</cite> passes if the store already exists, by
+default <cite>raise</cite></p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#featherstore.store.Store" title="featherstore.store.Store">Store</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -205,7 +212,7 @@ by default <cite>raise</cite></p></li>
 <span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">rename_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.rename_store" title="Permalink to this definition">¶</a></dt>
 <dd><p>Renames a store</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>store_name</strong> (<em>str</em>) – The name of the store to be renamed</p></li>
 <li><p><strong>to</strong> (<em>str</em>) – The new name of the store.</p></li>
@@ -221,7 +228,7 @@ by default <cite>raise</cite></p></li>
 <p><em>Warning</em>: You can not delete a store containing tables. All tables must
 be deleted first.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>store_name</strong> (<em>str</em>) – The name of the store to be deleted</p></li>
 <li><p><strong>errors</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to raise an error if the store doesn’t exist. Can be either
@@ -236,7 +243,7 @@ be deleted first.</p>
 <span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">list_stores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">like</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.list_stores" title="Permalink to this definition">¶</a></dt>
 <dd><p>Lists stores in database</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>like</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Filters out stores not matching string pattern, by default <cite>None</cite>.</p>
 <p>There are two wildcards that can be used in conjunction with <cite>like</cite>:</p>
 <ul class="simple">
@@ -245,8 +252,19 @@ be deleted first.</p>
 </ul>
 </p>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of the tables in the store</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
 </dl>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="featherstore.store.store_exists">
+<span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">store_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.store_exists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="featherstore.store.Store">
@@ -256,7 +274,7 @@ be deleted first.</p>
 <p>Stores are directories for organizing data in logical groups
 within your FeatherStore database.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>store_name</strong> (<em>str</em>) – The name of the store to be selected</p>
 </dd>
 </dl>
@@ -265,7 +283,7 @@ within your FeatherStore database.</p>
 <span class="sig-name descname"><span class="pre">rename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store.rename" title="Permalink to this definition">¶</a></dt>
 <dd><p>Renames the current store</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>to</strong> (<em>str</em>) – The new name of the store.</p>
 </dd>
 </dl>
@@ -278,7 +296,7 @@ within your FeatherStore database.</p>
 <p><em>Warning</em>: You can not delete a store containing tables. All tables must
 be deleted first.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>errors</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to raise an error if the store doesn’t exist. Can be either
 <cite>raise</cite> or <cite>ignore</cite>, by default <cite>raise</cite></p>
 </dd>
@@ -290,7 +308,7 @@ be deleted first.</p>
 <span class="sig-name descname"><span class="pre">list_tables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">like</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store.list_tables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Lists tables in store</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>like</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Filters out tables not matching string pattern, by default None.</p>
 <p>There are two wildcards that can be used in conjunction with <cite>like</cite>:</p>
 <ul class="simple">
@@ -298,6 +316,12 @@ be deleted first.</p>
 <li><p>The percent sign (<cite>%</cite>) matches any number of any characters</p></li>
 </ul>
 </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of the tables in the store</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
 </dd>
 </dl>
 </dd></dl>
@@ -312,7 +336,7 @@ be deleted first.</p>
 <span class="sig-name descname"><span class="pre">read_arrow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store.read_arrow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads PyArrow Table from store</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>table_name</strong> (<em>str</em>) – The name of the table</p></li>
 <li><p><strong>cols</strong> (<em>list</em><em>, </em><em>optional</em>) – list of column names or, filter-predicates in the form of
@@ -321,6 +345,12 @@ be deleted first.</p>
 <cite>[keyword, value]</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
 or <cite>between</cite>, by default <cite>None</cite></p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyarrow.Table</p>
 </dd>
 </dl>
 </dd></dl>
@@ -330,7 +360,7 @@ or <cite>between</cite>, by default <cite>None</cite></p></li>
 <span class="sig-name descname"><span class="pre">read_pandas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store.read_pandas" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads Pandas DataFrame from store</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>table_name</strong> (<em>str</em>) – The name of the table</p></li>
 <li><p><strong>cols</strong> (<em>list</em><em>, </em><em>optional</em>) – list of column names or, filter-predicates in the form of
@@ -340,6 +370,12 @@ or <cite>between</cite>, by default <cite>None</cite></p></li>
 or <cite>between</cite>, by default <cite>None</cite></p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame or pandas.Series</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -348,7 +384,7 @@ or <cite>between</cite>, by default <cite>None</cite></p></li>
 <span class="sig-name descname"><span class="pre">read_polars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store.read_polars" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads Polars DataFrame from store</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>table_name</strong> (<em>str</em>) – The name of the table</p></li>
 <li><p><strong>cols</strong> (<em>list</em><em>, </em><em>optional</em>) – list of column names or, filter-predicates in the form of
@@ -357,6 +393,12 @@ or <cite>between</cite>, by default <cite>None</cite></p></li>
 <cite>[keyword, value]</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
 or <cite>between</cite>, by default <cite>None</cite></p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>polars.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -368,10 +410,10 @@ or <cite>between</cite>, by default <cite>None</cite></p></li>
 <p>The DataFrame index column, if provided, must be either of type int, str,
 or datetime. FeatherStore sorts the DataFrame by the index before storage.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Series</em><em>, </em><em>Pyarrow Table</em><em>, or </em><em>Polars DataFrame</em>) – The DataFrame to be stored</p></li>
 <li><p><strong>table_name</strong> (<em>str</em>) – The name of the table the DataFrame will be stored as</p></li>
+<li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Series</em><em>, </em><em>Pyarrow Table</em><em>, or </em><em>Polars DataFrame</em>) – The DataFrame to be stored</p></li>
 <li><p><strong>index</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the column to be used as index. Uses current index for
 Pandas or a standard integer index for Arrow and Polars if <cite>index</cite> not
 provided, by default <cite>None</cite></p></li>
@@ -390,7 +432,7 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 <span class="sig-name descname"><span class="pre">append_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store.append_table" title="Permalink to this definition">¶</a></dt>
 <dd><p>Appends data to a table</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>table_name</strong> (<em>str</em>) – The name of the table you want to append to</p></li>
 <li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Series</em><em>, </em><em>Pyarrow Table</em><em>, or </em><em>Polars DataFrame</em>) – The data to be appended</p></li>
@@ -406,7 +448,7 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 <span class="sig-name descname"><span class="pre">rename_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store.rename_table" title="Permalink to this definition">¶</a></dt>
 <dd><p>Renames a table</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>table_name</strong> (<em>str</em>) – The name of the table to be renamed</p></li>
 <li><p><strong>to</strong> (<em>str</em>) – The new name of the table.</p></li>
@@ -420,7 +462,7 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 <span class="sig-name descname"><span class="pre">drop_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.store.Store.drop_table" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deletes a table</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>table_name</strong> (<em>str</em>) – The name of the table to be deleted</p>
 </dd>
 </dl>
@@ -432,13 +474,13 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 <dd><p>Selects a single table.</p>
 <p>Table objects have more features for editing stored tables.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>table_name</strong> (<em>str</em>) – The name of the table to be returned</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p></p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="Table.html#featherstore.table.Table" title="featherstore.table.Table">Table</a></p>
 </dd>
 </dl>
@@ -450,7 +492,7 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 <dd><p>Creates a compressed backup of the store.</p>
 <p>The store can later be restored by using <cite>snapshot.restore_store()</cite>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to the snapshot archive.</p>
 </dd>
 </dl>
@@ -458,7 +500,7 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 
 </dd></dl>
 
-</div>
+</section>
 
 
               </div>
