@@ -1,6 +1,7 @@
 
 # FeatherStore
-[![Documentation Status](https://readthedocs.org/projects/featherstore/badge/?version=latest)](https://featherstore.readthedocs.io/en/latest/index.html)
+[![Documentation Status](https://readthedocs.org/projects/featherstore/badge/?version=latest)](https://featherstore.readthedocs.io/en/stable/index.html)
+[![Test Status](https://img.shields.io/github/workflow/status/hakonmh/featherstore/Test%20Python%20package)](https://github.com/hakonmh/featherstore/actions)
 [![PyPI version](https://img.shields.io/pypi/v/FeatherStore?color=blue)](https://pypi.org/project/FeatherStore/)
 [![Dev Status](https://img.shields.io/pypi/status/featherstore?color=important)](https://pypi.org/project/FeatherStore/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/hakonmh/featherstore/blob/master/LICENSE)
@@ -11,6 +12,7 @@ FeatherStore is a fast datastore for storing Pandas DataFrames, Pandas Series, P
 DataFrames and PyArrow Tables as partitioned [Feather Files](https://arrow.apache.org/docs/python/feather.html).
 FeatherStore supports several operations on stored tables that can be done without loading
 in the full data:
+
 * Partial reading of data
 * Append data
 * Insert data
@@ -85,13 +87,16 @@ store.read_pandas('example_table', rows={'after': '2021-01-05'}, cols=['D', 'A']
 ```
 
 ## Performance
+
 FeatherStore is very fast, and in fact is one of the best performing solutions available.
 See the performance benchmark [here](https://featherstore.readthedocs.io/en/latest/Benchmarks.html).
 
 ## Installation
+
 FeatherStore can be installed by using `$ pip install featherstore`
 
 ## Requirements
+
 * Python >= 3.8
 * Arrow
 * Pandas
@@ -99,4 +104,5 @@ FeatherStore can be installed by using `$ pip install featherstore`
 * Numpy
 
 ## Documentation
+
 Want to know about all the features FeatherStore support? [Read the docs!](https://featherstore.readthedocs.io/en/latest/index.html)
