@@ -172,6 +172,7 @@ class Store:
         if like:
             pattern = like
             tables = _utils.filter_items_like_pattern(tables, like=pattern)
+        tables.sort()
         return tables
 
     def table_exists(self, table_name):
