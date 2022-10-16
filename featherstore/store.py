@@ -38,11 +38,11 @@ def rename_store(store_name, *, to):
     Parameters
     ----------
     store_name : str
-        The name of the store to be renamed
+        The name of the store to be renamed.
     to : str
         The new name of the store.
     """
-    Store(store_name).rename(to)
+    Store(store_name).rename(to=to)
 
 
 def drop_store(store_name, *, errors="raise"):
@@ -93,6 +93,7 @@ def list_stores(*, like=None):
         path = os.path.join(current_db(), item)
         if os.path.isdir(path):
             stores.append(item)
+    stores.sort()
     return stores
 
 

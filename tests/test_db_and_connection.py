@@ -54,17 +54,23 @@ def test_create_store(create_db, connect_to_db):
 
 def test_drop_store(create_db, connect_to_db):
     # Arrange
-    fs.create_store("test_store")
-    stores_before_deletion = fs.list_stores()
+    store = fs.create_store("test_store")
+    stores_existed_before_delete = fs.store_exists(store.store_name)
     # Act
-    fs.drop_store("test_store")
+    fs.drop_store(store.store_name)
     # Assert
-    stores_after_deletion = fs.list_stores()
-    assert stores_after_deletion == []
-    assert len(stores_before_deletion) > len(stores_after_deletion)
+    assert stores_existed_before_delete
+    assert not fs.store_exists(store.store_name)
 
 
-def test_rename_store(store):
+def test_store_drop(store):
+    # Act
+    store.drop()
+    # Assert
+    assert not fs.store_exists(store.store_name)
+
+
+def test_store_rename(store):
     # Arrange
     store.rename(to="new_store_name")
     # Act
@@ -75,12 +81,32 @@ def test_rename_store(store):
     assert store_name == "new_store_name"
 
 
+def test_rename_store(store):
+    # Arrange
+    fs.rename_store(store.store_name, to="new_store_name")
+    # Act
+    stores = fs.list_stores()
+    # Assert
+    assert stores == ["new_store_name"]
+
+
 def test_store_exists(create_db, connect_to_db):
     # Arrange
     store_existed_before_write = fs.store_exists("test_store")
     # Act
-    store = fs.create_store("test_store")
+    fs.create_store("test_store")
     # Assert
     store_exists_after_write = fs.store_exists("test_store")
     assert not store_existed_before_write
     assert store_exists_after_write
+
+
+def test_list_stores(create_db, connect_to_db):
+    # Arrange
+    fs.create_store("store")
+    fs.create_store("bonds")
+    fs.create_store("stocks")
+    # Act
+    stores = fs.list_stores(like="sto%")
+    # Assert
+    assert stores == ["stocks", 'store']
