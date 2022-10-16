@@ -18,6 +18,10 @@ def create_store(store_name, *, errors="raise"):
         Whether or not to raise an error if the store already exist. Can be either
         `raise` or `ignore`, `ignore` passes if the store already exists, by
         default `raise`
+
+    Returns
+    -------
+    Store
     """
     _can_create_store(store_name, errors)
 
@@ -72,6 +76,11 @@ def list_stores(*, like=None):
 
         - Question mark (`?`) matches any single character
         - The percent sign (`%`) matches any number of any characters
+
+    Returns
+    -------
+    List
+        A list of the tables in the store
     """
     _can_list(like)
 
@@ -151,6 +160,11 @@ class Store:
 
             - Question mark (`?`) matches any single character
             - The percent sign (`%`) matches any number of any characters
+
+        Returns
+        -------
+        List
+            A list of the tables in the store
         """
         _can_list(like)
 
@@ -177,6 +191,10 @@ class Store:
             list of index values or, filter-predicates in the form of
             `[keyword, value]`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
+
+        Returns
+        -------
+        pyarrow.Table
         """
         return Table(table_name, self.store_name).read_arrow(cols=cols, rows=rows)
 
@@ -194,6 +212,10 @@ class Store:
             list of index values or, filter-predicates in the form of
             `[keyword, value]`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
+
+        Returns
+        -------
+        pandas.DataFrame or pandas.Series
         """
         return Table(table_name, self.store_name).read_pandas(cols=cols,
                                                               rows=rows)
@@ -212,6 +234,10 @@ class Store:
             list of index values or, filter-predicates in the form of
             `[keyword, value]`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
+
+        Returns
+        -------
+        polars.DataFrame
         """
         return Table(table_name, self.store_name).read_polars(cols=cols,
                                                               rows=rows)

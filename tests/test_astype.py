@@ -58,16 +58,17 @@ kwarg_format_idx = 0
 )
 def test_change_dtype(store, from_dtype, to_dtype):
     # Arrange
+    COLS = ['c1', 'c2']
     original_df = _make_table(dtype=from_dtype, rows=60, cols=3)
-    expected = _change_dtype(original_df, to_dtype, cols=['c1', 'c2'])
+    expected = _change_dtype(original_df, to_dtype, cols=COLS)
 
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size)
 
-    kwargs = _format_kwargs(to_dtype)
+    cols, dtype = _format_cols_and_to_key_args(COLS, to_dtype)
     # Act
-    table.astype(**kwargs)
+    table.astype(cols, to=dtype)
     # Assert
     _assert_frame_equal(table, expected)
 
@@ -91,7 +92,7 @@ def _change_dtype(df, to_dtype, cols=None):
     return df
 
 
-def _format_kwargs(to_dtype):
+def _format_cols_and_to_key_args(cols, to_dtype):
     """Selects every other test to format arguments as one of either:
         * cols=['c1', 'c2'], to=[dtype1, dtype2]
         * cols = {'c1': dtype1, 'c2': dtype2}
@@ -102,10 +103,11 @@ def _format_kwargs(to_dtype):
 
     arrow_dtype = TYPE_MAP[to_dtype].arrow_dtype
     if kwarg_format == 'dict':
-        kwargs = {'cols': {'c1': arrow_dtype, 'c2': arrow_dtype}}
+        cols = {col: arrow_dtype for col in cols}
+        to = None
     elif kwarg_format == 'list':
-        kwargs = {'cols': ['c1', 'c2'], 'to': [arrow_dtype, arrow_dtype]}
-    return kwargs
+        to = [arrow_dtype] * len(cols)
+    return cols, to
 
 
 def _assert_frame_equal(table, expected):
@@ -142,12 +144,13 @@ def __convert_object_cols_to_string(df):
 
 NEW_DTYPES_PROVIDED_TWICE = [{'c0': pa.int16()}, [pa.int16()]]
 NEW_DTYPES_NOT_PROVIDED = [['c0', 'c1'], None]
-INVALID_COLS_ARGUMENT_DTYPE = [{'c0'}, [pa.int16()]]
-INVALID_TO_ARGUMENT_DTYPE = [['c0'], {pa.int16()}]
-INVALID_COLS_ITEMS_DTYPE = [{'c0': 123}, None]
+INVALID_COLS_ARGUMENT_DTYPE = ['c0', [pa.int16()]]
+INVALID_COLS_KEYS_ARGUMENT_DTYPE = [{1: pa.int32}, None]
+INVALID_COLS_VALUES_ARGUMENT_DTYPE = [{'c0': 123}, None]
+INVALID_TO_ARGUMENT_DTYPE = [['c0'], pa.int16()]
 INVALID_TO_ITEMS_DTYPE = [['c0'], [123]]
 NUMBER_OF_COLS_AND_DTYPES_DONT_MATCH = [['c0', 'c1'], [pa.int16()]]
-FORBIDDEN_DTYPE_FOR_INDEX = [['__index_level_0__'], [pa.float32()]]
+FORBIDDEN_INDEX_DTYPE = [[DEFAULT_ARROW_INDEX_NAME], [pa.float32()]]
 NON_ARROW_DTYPE = [['c0'], [float]]
 INVALID_NEW_DTYPE = [['c0'], [pa.float32()]]
 DUPLICATE_COL_NAMES = [['c0', 'c0'], [pa.int16(), pa.int32()]]
@@ -160,10 +163,11 @@ DUPLICATE_COL_NAMES = [['c0', 'c0'], [pa.int16(), pa.int32()]]
         (NEW_DTYPES_NOT_PROVIDED, AttributeError),
         (NUMBER_OF_COLS_AND_DTYPES_DONT_MATCH, ValueError),
         (INVALID_COLS_ARGUMENT_DTYPE, TypeError),
+        (INVALID_COLS_KEYS_ARGUMENT_DTYPE, TypeError),
+        (INVALID_COLS_VALUES_ARGUMENT_DTYPE, TypeError),
         (INVALID_TO_ARGUMENT_DTYPE, TypeError),
-        (INVALID_COLS_ITEMS_DTYPE, TypeError),
         (INVALID_TO_ITEMS_DTYPE, TypeError),
-        (FORBIDDEN_DTYPE_FOR_INDEX, TypeError),
+        (FORBIDDEN_INDEX_DTYPE, TypeError),
         (NON_ARROW_DTYPE, TypeError),
         (INVALID_NEW_DTYPE, pa.ArrowInvalid),
         (DUPLICATE_COL_NAMES, IndexError),
@@ -173,10 +177,11 @@ DUPLICATE_COL_NAMES = [['c0', 'c0'], [pa.int16(), pa.int32()]]
         "NEW_DTYPES_NOT_PROVIDED",
         "NUMBER_OF_COLS_AND_DTYPES_DONT_MATCH",
         "INVALID_COLS_ARGUMENT_DTYPE",
+        "INVALID_COLS_KEYS_ARGUMENT_DTYPE",
+        "INVALID_COLS_VALUES_ARGUMENT_DTYPE",
         "INVALID_TO_ARGUMENT_DTYPE",
-        "INVALID_COLS_ITEMS_DTYPE",
         "INVALID_TO_ITEMS_DTYPE",
-        "FORBIDDEN_DTYPE_FOR_INDEX",
+        "FORBIDDEN_INDEX_DTYPE",
         "NON_ARROW_DTYPE",
         "INVALID_NEW_DTYPE",
         "DUPLICATE_COL_NAMES"
@@ -187,8 +192,8 @@ def test_can_change_dtype(store, args, exception):
     original_df = make_table(cols=5, astype='pandas')
     table = store.select_table(TABLE_NAME)
     table.write(original_df)
+    col_names = args[0]
+    dtypes = args[1]
     # Act and Assert
     with pytest.raises(exception):
-        col_names = args[0]
-        dtypes = args[1]
         table.astype(col_names, to=dtypes)

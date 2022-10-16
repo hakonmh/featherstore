@@ -1,3 +1,5 @@
+from collections.abc import Iterable, Set
+
 import pyarrow as pa
 import pandas as pd
 import polars as pl
@@ -12,10 +14,10 @@ def concat_arrow_tables(*dfs):
     main_df = dfs[0]
     dfs = _sort_cols(dfs, cols=main_df.column_names)
     try:
-        dfs = _coerce_arrow_col_dtypes(dfs, schema=main_df.schema)
+        dfs = _coerce_arrow_col_types(dfs, schema=main_df.schema)
         full_table = pa.concat_tables(dfs)
     except pa.ArrowInvalid:
-        raise TypeError("Column dtypes doesn't match")
+        raise TypeError("New and old column types doesn't match")
     return full_table
 
 
@@ -29,7 +31,7 @@ def _sort_cols(dfs, cols):
     return sorted_dfs
 
 
-def _coerce_arrow_col_dtypes(dfs, schema):
+def _coerce_arrow_col_types(dfs, schema):
     coerced_dfs = []
     for df in dfs:
         df = df.cast(schema)
@@ -222,15 +224,15 @@ def get_index_dtype(df):
     return index_dtype
 
 
-def dtype_str_is_temporal(index_dtype):
+def typestring_is_temporal(index_dtype):
     return "time" in index_dtype or "date" in index_dtype
 
 
-def dtype_str_is_string(index_dtype):
+def typestring_is_string(index_dtype):
     return "string" in index_dtype
 
 
-def dtype_str_is_int(index_dtype):
+def typestring_is_int(index_dtype):
     return "int" in index_dtype
 
 
@@ -258,20 +260,21 @@ def _get_index_as_pd_index(df, index_name):
 
 
 def filter_arrow_table(df, rows, index_col_name):
-    keyword = str(rows[0]).lower()
     index = df[index_col_name]
-    if keyword not in ('before', 'after', 'between'):
-        df = _fetch_rows_in_list(df, index, rows)
-    elif keyword == 'before':
-        df = _fetch_rows_before(df, index, rows[1])
-    elif keyword == 'after':
-        df = _fetch_rows_after(df, index, rows[1])
-    elif keyword == 'between':
-        df = _fetch_rows_between(df, index, low=rows[1], high=rows[2])
+    if not rows.keyword:
+        df = _fetch_rows_in_list(df, index, rows.values())
+    elif rows.keyword == 'before':
+        df = _fetch_rows_before(df, index, rows[0])
+    elif rows.keyword == 'after':
+        df = _fetch_rows_after(df, index, rows[0])
+    elif rows.keyword == 'between':
+        df = _fetch_rows_between(df, index, low=rows[0], high=rows[1])
     return df
 
 
 def _fetch_rows_in_list(df, index, rows):
+    if not rows:
+        rows = pa.array([], type=index.type)
     row_indices = pa.compute.index_in(rows, value_set=index)
     _raise_if_rows_not_in_table(row_indices)
     df = df.take(row_indices)
@@ -347,3 +350,14 @@ def _fetch_closest_row_idx(row, index):
 
 def _fetch_last_row_idx(index):
     return len(index)
+
+
+def is_collection(obj):
+    return isinstance(obj, Iterable) and not isinstance(obj, (str, bytes))
+
+
+def is_list_like(obj):
+    is_iterable = isinstance(obj, Iterable)
+    is_not_string = not isinstance(obj, (str, bytes))
+    is_not_set = not isinstance(obj, Set)
+    return is_iterable and is_not_string and is_not_set

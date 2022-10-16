@@ -114,11 +114,11 @@ We can also query parts of the data. FeatherStore uses predicate filtering to
 only load the partitions and columns specified by the query.
 
 By using sorted indices, FeatherStore allows for range-queries on rows by using
-``['before', end]``, ``['after', start]`` and ``['between', start, end]``
+``{'before': end}``, ``{'after': start}`` and ``{'between': [start, end]}``
 
 .. code-block:: python
 
-    store.read_pandas('example_table', rows=['after', '2021-01-05'], cols=['D', 'A'])
+    store.read_pandas('example_table', rows={'after': '2021-01-05'}, cols=['D', 'A'])
 
     # All range queries are inclusive
     >>                 D         A
@@ -184,7 +184,7 @@ Other features include ``Table.update()`` and ``Table.drop()`` which updates and
     # 1  0  1
     # 2  2  3
     table.update(df3)
-    table.drop(rows=['after', 5])
+    table.drop(rows={'after': 5})
     # You can also drop columns using table.drop(cols=['col1', 'col2'])
 
     >>        A         B

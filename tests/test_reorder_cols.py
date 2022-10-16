@@ -23,31 +23,31 @@ def test_reorder_columns(store, use_property):
     assert df.equals(expected)
 
 
-COL_NOT_IN_TABLE = ['c0', 'c2', 'd1']
+COLS_NOT_IN_TABLE = ['c0', 'c2', 'd1']
 NUMBER_OF_COLS_DOESNT_MATCH = ['c1', 'c0']
-INDEX_IS_PROVIDED = ['date', 'c0', 'c1']
+INDEX_IS_PROVIDED = [DEFAULT_ARROW_INDEX_NAME, 'c0', 'c1']
 CONTAINS_DUPLICATES = ['c0', 'c1', 'c1']
-WRONG_DTYPE = ('c1', 'c0', 'c2')
-WRONG_ELEMENTS_DTYPE = [1, 'c0', 'c2']
+INVALID_DTYPE = {'c1', 'c0', 'c2'}
+INVALID_ELEMENTS_DTYPE = [1, 'c0', 'c2']
 
 
 @pytest.mark.parametrize(
     ("cols", "exception"),
     [
-        (COL_NOT_IN_TABLE, ValueError),
+        (COLS_NOT_IN_TABLE, ValueError),
         (NUMBER_OF_COLS_DOESNT_MATCH, ValueError),
         (INDEX_IS_PROVIDED, ValueError),
         (CONTAINS_DUPLICATES, IndexError),
-        (WRONG_DTYPE, TypeError),
-        (WRONG_ELEMENTS_DTYPE, TypeError),
+        (INVALID_DTYPE, TypeError),
+        (INVALID_ELEMENTS_DTYPE, TypeError),
     ],
     ids=[
-        "COL_NOT_IN_TABLE",
+        "COLS_NOT_IN_TABLE",
+        "NUMBER_OF_COLS_DOESNT_MATCH",
         "INDEX_IS_PROVIDED",
         "CONTAINS_DUPLICATES",
-        "WRONG_DTYPE",
-        "WRONG_ELEMENTS_DTYPE",
-        "NUMBER_OF_COLS_DOESNT_MATCH",
+        "INVALID_DTYPE",
+        "INVALID_ELEMENTS_DTYPE",
     ],
 )
 def test_can_reorder_columns(store, cols, exception):

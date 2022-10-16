@@ -22,7 +22,7 @@ def can_write_table(df, table_path, index_name, partition_size, errors, warnings
     if errors == 'raise':
         _raise_if.table_already_exists(table_path)
 
-    _raise_if.df_is_not_supported_table_dtype(df)
+    _raise_if.df_is_not_supported_table_type(df)
     _raise_if_partition_size_is_not_int(partition_size)
 
     cols = _table_utils.get_col_names(df, has_default_index=False)
@@ -30,13 +30,10 @@ def can_write_table(df, table_path, index_name, partition_size, errors, warnings
     _raise_if_provided_index_not_in_cols(index_name, cols)
     _raise_if.cols_argument_items_is_not_str(cols)
     _raise_if.col_names_contains_duplicates(cols)
-    _raise_if.col_names_are_forbidden(cols)
 
     pd_index = _table_utils.get_pd_index_if_exists(df, index_name)
-    index_is_provided = pd_index is not None
-    if index_is_provided:
-        _raise_if_index_is_not_supported_dtype(pd_index)
-        _raise_if.index_values_contains_duplicates(pd_index)
+    _raise_if_index_is_not_supported_type(pd_index)
+    _raise_if.index_values_contains_duplicates(pd_index)
 
 
 def _raise_if_partition_size_is_not_int(partition_size):
@@ -56,11 +53,12 @@ def _raise_if_provided_index_not_in_cols(index, cols):
         raise IndexError("'index' not in table columns")
 
 
-def _raise_if_index_is_not_supported_dtype(index):
-    index_type = index.inferred_type
-    if index_type not in {"integer", "datetime64", "string"}:
-        raise TypeError(f"Table.index type must be either int, str or datetime "
-                        f"(is type {index_type})")
+def _raise_if_index_is_not_supported_type(index):
+    if index is not None:
+        index_type = index.inferred_type
+        if index_type not in {"integer", "datetime64", "string"}:
+            raise TypeError(f"Table.index type must be either int, str or datetime "
+                            f"(is type {index_type})")
 
 
 def create_partitions(df, rows_per_partition, partition_names=None):

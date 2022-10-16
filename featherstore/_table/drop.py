@@ -6,25 +6,19 @@ import pyarrow as pa
 from featherstore.connection import Connection
 from featherstore._metadata import Metadata
 from featherstore._table import _raise_if
-from featherstore._table import common
 from featherstore._table import _table_utils
 from featherstore._table.read import get_partition_names as _get_partition_names
+from featherstore._table._indexers import ColIndexer, RowIndexer
 
 
 def can_drop_rows_from_table(rows, table_path):
     Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table_path)
-    _raise_if.rows_argument_is_not_supported_dtype(rows)
-    _raise_if_rows_argument_is_empty(rows)
-    _raise_if.rows_argument_items_dtype_not_same_as_index(rows, table_path)
+    _raise_if.rows_argument_is_not_collection(rows)
 
-
-def _raise_if_rows_argument_is_empty(rows):
-    if rows is not None:
-        rows_is_empty = len(rows) == 0
-        if rows_is_empty:
-            raise IndexError(f"No rows in sequence, rows should be None or a"
-                             "sequence with elements")
+    rows = RowIndexer(rows)
+    _raise_if.rows_items_not_all_same_type(rows)
+    _raise_if.rows_argument_items_type_not_same_as_index(rows, table_path)
 
 
 def get_partition_names(rows, table_path):
@@ -88,21 +82,24 @@ def has_still_default_index(rows, table_metadata, partition_metadata):
     if not has_default_index:
         return False
 
-    if rows[0] == 'before':
+    if rows.keyword == 'before':
         is_still_def_idx = _idx_still_default_after_dropping_rows_before(rows, partition_metadata)
-    elif rows[0] == 'after':
-        is_still_def_idx = _idx_still_default_after_dropping_rows_after(rows, partition_metadata)
-    elif rows[0] == 'between':
+    elif rows.keyword == 'after':
+        is_still_def_idx = True
+    elif rows.keyword == 'between':
         is_still_def_idx = _idx_still_default_after_dropping_rows_between(rows, partition_metadata)
-    else:
+    elif rows:
         is_still_def_idx = _idx_still_default_after_dropping_rows_list(rows, partition_metadata)
+    else:
+        is_still_def_idx = True
+
     return is_still_def_idx
 
 
 def _idx_still_default_after_dropping_rows_before(rows, partition_metadata):
     first_stored_value = _table_utils.get_first_stored_index_value(partition_metadata)
-    first_row_value = rows[-1]
-    no_values_are_removed = first_row_value < first_stored_value
+    before = rows[0]
+    no_values_are_removed = before < first_stored_value
     if no_values_are_removed:
         _has_still_default_index = True
     else:
@@ -110,15 +107,11 @@ def _idx_still_default_after_dropping_rows_before(rows, partition_metadata):
     return _has_still_default_index
 
 
-def _idx_still_default_after_dropping_rows_after(rows, partition_metadata):
-    return True
-
-
 def _idx_still_default_after_dropping_rows_between(rows, partition_metadata):
     first_stored_value = _table_utils.get_first_stored_index_value(partition_metadata)
     last_stored_value = _table_utils.get_last_stored_index_value(partition_metadata)
-    after = rows[1]
-    before = rows[2]
+    after = rows[0]
+    before = rows[1]
     start_after_table_end = after > last_stored_value
     end_after_table_start = before < first_stored_value
 
@@ -152,60 +145,54 @@ def _idx_still_default_after_dropping_rows_list(rows, partition_metadata):
 def can_drop_cols_from_table(cols, table_path):
     Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table_path)
-    _raise_if.cols_argument_is_not_list_or_none(cols)
-    _raise_if.cols_argument_items_is_not_str(cols)
-    _raise_if_cols_argument_is_empty(cols)
+    _raise_if.cols_argument_is_not_collection(cols)
 
     raise_if = CheckDropCols(cols, table_path)
-    raise_if.trying_to_drop_index_col()
+    raise_if.items_not_str()
+    raise_if.index_is_dropped()
     raise_if.cols_are_not_in_stored_data()
-    raise_if.trying_to_drop_all_cols()
-
-
-def _raise_if_cols_argument_is_empty(cols):
-    if cols is not None:
-        cols_is_empty = len(cols) == 0
-        if cols_is_empty:
-            raise IndexError("No cols in sequence, cols should be None or a"
-                             "sequence with elements")
+    raise_if.all_rows_are_dropped()
 
 
 class CheckDropCols:
 
     def __init__(self, cols, table_path):
-        self._table_data = Metadata(table_path, 'table')
-        self._index_name = self._table_data["index_name"]
-        self.cols = cols
+        self._table_path = table_path
+        self._table_data = Metadata(self._table_path, 'table')
+        self._cols = ColIndexer(cols)
 
         self._stored_cols = self._get_stored_cols()
         self._dropped_cols = self._get_dropped_cols()
 
     def _get_stored_cols(self):
         stored_cols = self._table_data["columns"]
-        stored_cols.remove(self._index_name)
+        index_name = self._table_data["index_name"]
+        stored_cols.remove(index_name)
         return set(stored_cols)
 
     def _get_dropped_cols(self):
-        dropped_cols = common.filter_cols_if_like_provided(self.cols, self._stored_cols)
+        dropped_cols = self._cols.like(self._stored_cols)
         return set(dropped_cols)
 
-    def trying_to_drop_index_col(self):
-        if self._index_name in self.cols:
-            raise ValueError("Can't drop index column")
+    def index_is_dropped(self):
+        _raise_if.index_in_cols(self._dropped_cols, self._table_path)
 
     def cols_are_not_in_stored_data(self):
         some_cols_not_in_stored_cols = bool(self._dropped_cols - self._stored_cols)
         if some_cols_not_in_stored_cols:
             raise IndexError("Trying to drop a column not found in table")
 
-    def trying_to_drop_all_cols(self):
+    def all_rows_are_dropped(self):
         trying_to_drop_all_cols = not bool(self._stored_cols - self._dropped_cols)
         if trying_to_drop_all_cols:
             raise IndexError("Can't drop all columns. To drop full table, use 'drop_table()'")
 
+    def items_not_str(self):
+        _raise_if.cols_argument_items_is_not_str(self._cols.values())
+
 
 def drop_cols_from_data(df, cols):
-    return df.drop(cols)
+    return df.drop(cols.values())
 
 
 def create_partitions(df, rows_per_partition, partition_names):

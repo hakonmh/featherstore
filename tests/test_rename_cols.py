@@ -7,8 +7,8 @@ from pandas.testing import assert_frame_equal
 @pytest.mark.parametrize(
     ("columns", "to", "result"),
     [
-        (['c0', 'c2'], ['d0', 'd2'], ['d0', 'c1', 'd2', 'c3']),
-        ({'c0': 'd0', 'c2': 'd2'}, None, ['d0', 'c1', 'd2', 'c3']),
+        (['c0', 'c2'], ['d0', 'like'], ['d0', 'c1', 'like', 'c3']),
+        ({'c0': 'd0', 'c2': 'like'}, None, ['d0', 'c1', 'like', 'c3']),
         (['c2', 'c3'], ['c3', 'c2'], ['c0', 'c1', 'c3', 'c2'])
     ],
 )
@@ -31,12 +31,13 @@ def test_rename_cols(store, columns, to, result):
 NEW_COL_NAMES_PROVIDED_TWICE = [{'c0': 'd0'}, ['d0']]
 NEW_NAMES_NOT_PROVIDED = [['c0', 'c1'], None]
 NUMBER_OF_COLS_DOESNT_MATCH = [['c0', 'c1'], ['d0']]
-WRONG_OLD_COL_NAME_DTYPE = [[1], ['d0']]
-WRONG_NEW_COL_NAME_DTYPE_AS_LIST = [['c0'], [1]]
-WRONG_NEW_COL_NAME_DTYPE_AS_DICT = [{'c0': 1}, None]
-FORBIDDEN_COL_NAME = [{'c0': 'like'}, None]
+INVALID_OLD_COLS_ARGUMENT_DTYPE = [[1], ['d0']]
+INVALID_NEW_COLS_ARGUMENT_DTYPE = [['c0'], [1]]
+INVALID_COLS_KEYS_ARGUMENT_DTYPE = [{0: 'd0'}, None]
+INVALID_COLS_VALUES_ARGUMENT_DTYPE = [{'c0': 1}, None]
 DUPLICATE_COL_NAMES = [['c0', 'c1'], ['d0', 'd0']]
 COL_NAME_ALREADY_IN_TABLE = [{'c0': 'c1'}, None]
+RENAME_COL_TO_INDEX_NAME = [{'c0': DEFAULT_ARROW_INDEX_NAME}, None]
 
 
 @pytest.mark.parametrize(
@@ -45,23 +46,25 @@ COL_NAME_ALREADY_IN_TABLE = [{'c0': 'c1'}, None]
         (NEW_COL_NAMES_PROVIDED_TWICE, AttributeError),
         (NEW_NAMES_NOT_PROVIDED, AttributeError),
         (NUMBER_OF_COLS_DOESNT_MATCH, ValueError),
-        (WRONG_OLD_COL_NAME_DTYPE, TypeError),
-        (WRONG_NEW_COL_NAME_DTYPE_AS_LIST, TypeError),
-        (WRONG_NEW_COL_NAME_DTYPE_AS_DICT, TypeError),
-        (FORBIDDEN_COL_NAME, ValueError),
+        (INVALID_OLD_COLS_ARGUMENT_DTYPE, TypeError),
+        (INVALID_NEW_COLS_ARGUMENT_DTYPE, TypeError),
+        (INVALID_COLS_KEYS_ARGUMENT_DTYPE, TypeError),
+        (INVALID_COLS_VALUES_ARGUMENT_DTYPE, TypeError),
         (DUPLICATE_COL_NAMES, IndexError),
         (COL_NAME_ALREADY_IN_TABLE, IndexError),
+        (RENAME_COL_TO_INDEX_NAME, ValueError),
     ],
     ids=[
         "NEW_COL_NAMES_PROVIDED_TWICE",
         "NEW_NAMES_NOT_PROVIDED",
         "NUMBER_OF_COLS_DOESNT_MATCH",
-        "WRONG_OLD_COL_NAME_DTYPE",
-        "WRONG_NEW_COL_NAME_DTYPE_AS_LIST",
-        "WRONG_NEW_COL_NAME_DTYPE_AS_DICT",
-        "FORBIDDEN_COL_NAME",
+        "INVALID_OLD_COLS_ARGUMENT_DTYPE",
+        "INVALID_NEW_COLS_ARGUMENT_DTYPE",
+        "INVALID_COLS_KEYS_ARGUMENT_DTYPE",
+        "INVALID_COLS_VALUES_ARGUMENT_DTYPE",
         "DUPLICATE_COL_NAMES",
         "COL_NAME_ALREADY_IN_TABLE",
+        "RENAME_COL_TO_INDEX_NAME",
     ]
 )
 def test_can_rename_cols(store, args, exception):

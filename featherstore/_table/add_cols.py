@@ -1,10 +1,10 @@
 import pandas as pd
 
 from featherstore._metadata import Metadata
-from featherstore._table import common
 from featherstore.connection import Connection
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
+from featherstore._table._indexers import ColIndexer
 
 
 def can_add_columns(df, table_path):
@@ -17,20 +17,21 @@ def can_add_columns(df, table_path):
         cols = [df.name]
     else:
         cols = df.columns.tolist()
-    _raise_if.col_names_are_forbidden(cols)
     _raise_if.col_names_contains_duplicates(cols)
+    _raise_if.index_in_cols(cols, table_path)
     _raise_if_col_name_already_in_table(cols, table_path)
 
     _raise_if_num_rows_does_not_match(df, table_path)
     _raise_if.index_values_contains_duplicates(df.index)
-    _raise_if.index_dtype_not_same_as_stored_index(df, table_path)
+    _raise_if.index_type_not_same_as_stored_index(df, table_path)
 
 
 def _raise_if_col_name_already_in_table(cols, table_path):
     table_metadata = Metadata(table_path, 'table')
     stored_cols = table_metadata["columns"]
+    cols = ColIndexer(cols)
 
-    cols = common.filter_cols_if_like_provided(cols, stored_cols)
+    cols = cols.like(stored_cols)
     some_cols_in_stored_cols = set(stored_cols) - (set(stored_cols) - set(cols))
     if some_cols_in_stored_cols:
         raise IndexError("Column name already exists in table")

@@ -50,7 +50,7 @@ fs.list_stores()
 ['example_store']
 
 >>> # Connects to store
-store = fs.Store('example_table')
+store = fs.Store('example_store')
 # Saves table to store; partition size defines the size of each partition in bytes
 PARTITION_SIZE = 128  # bytes
 store.write_table('example_table', df, partition_size=PARTITION_SIZE)
@@ -76,7 +76,7 @@ new_dates = pd.date_range("2021-01-06", periods=1)
 df1 = pd.DataFrame(randn(1, 4), index=new_dates, columns=list("ABCD"))
 store.append_table('example_table', df1)
 # It also supports querying parts of the data
-store.read_pandas('example_table', rows=['after', '2021-01-05'], cols=['D', 'A'])
+store.read_pandas('example_table', rows={'after': '2021-01-05'}, cols=['D', 'A'])
 
                    D         A
 2021-01-05  0.396745 -0.649335

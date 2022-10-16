@@ -17,8 +17,8 @@ def can_update_table(df, table_path):
 
     _raise_if.index_name_not_same_as_stored_index(df, table_path)
     _raise_if.col_names_contains_duplicates(cols)
+    _raise_if.index_type_not_same_as_stored_index(df, table_path)
     _raise_if.index_values_contains_duplicates(df.index)
-    _raise_if.index_dtype_not_same_as_stored_index(df, table_path)
     _raise_if.cols_not_in_table(cols, table_path)
 
 

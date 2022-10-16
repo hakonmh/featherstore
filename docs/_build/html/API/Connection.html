@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Database and Connection &#8212; FeatherStore 0.1.0 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Database and Connection &#8212; FeatherStore 0.1.1 documentation</title>
     
   <link href="../_static/css/theme.css" rel="stylesheet">
   <link href="../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -182,14 +183,14 @@
               
               <div>
                 
-  <div class="section" id="module-featherstore.connection">
+  <section id="module-featherstore.connection">
 <span id="database-and-connection"></span><h1>Database and Connection<a class="headerlink" href="#module-featherstore.connection" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.connection.connect">
 <span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection_string</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.connection.connect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Connects to a database.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>connection_string</strong> (<em>str</em>) – Path to the database directory</p>
 </dd>
 </dl>
@@ -203,15 +204,16 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.connection.create_database">
-<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">create_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.connection.create_database" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">create_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.connection.create_database" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a new database.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> (<em>str</em>) – Where to create the database.</p></li>
 <li><p><strong>errors</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to raise an error if the database directory already exist.
 Can be either <cite>raise</cite> or <cite>ignore</cite>, <cite>ignore</cite> tries to create a database
 in existing directory, by default <cite>raise</cite></p></li>
+<li><p><strong>connect</strong> (<em>bool</em>) – Whether or not to connect to the created database, by default True</p></li>
 </ul>
 </dd>
 </dl>
@@ -222,14 +224,25 @@ in existing directory, by default <cite>raise</cite></p></li>
 <span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">current_db</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.connection.current_db" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetches the active database.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The current database directory</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="featherstore.connection.is_connected">
+<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">is_connected</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.connection.is_connected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if FeatherStore is connected to a database.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="featherstore.connection.database_exists">
+<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">database_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.connection.database_exists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="featherstore.connection.Connection">
@@ -252,7 +265,7 @@ in existing directory, by default <cite>raise</cite></p></li>
 
 </dd></dl>
 
-</div>
+</section>
 
 
               </div>
