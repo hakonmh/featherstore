@@ -74,7 +74,7 @@ def _raise_if_rows_not_in_old_data(old_df, df):
     index = df.index
     old_index = old_df.index
     if not index.equals(old_index):
-        raise ValueError(f"New and old indices doesn't match")
+        raise ValueError("New and old indices doesn't match")
 
 
 def _add_cols(old_df, df, index):

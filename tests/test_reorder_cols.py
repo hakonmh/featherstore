@@ -1,6 +1,5 @@
 import pytest
 
-from tests.test_rename_cols import NUMBER_OF_COLS_DOESNT_MATCH
 from .fixtures import *
 
 

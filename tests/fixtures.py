@@ -3,7 +3,7 @@ import itertools
 from string import ascii_lowercase
 from featherstore._table._table_utils import get_col_names
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
-from featherstore.connection import DB_MARKER_NAME
+from featherstore.connection import DB_MARKER_NAME  # Used as a fixture
 from featherstore._table.write import __is_rangeindex
 
 import pyarrow as pa
@@ -131,14 +131,6 @@ def __is_default_index(df):
     except Exception:
         is_default_index = False
     return is_default_index
-
-
-def __make_index_first_column(df):
-    index_name = df.schema.pandas_metadata["index_columns"]
-    column_names = df.column_names[:-1]
-    columns = index_name + column_names
-    df = df.select(columns)
-    return df
 
 
 def __make_bool_column(rows):

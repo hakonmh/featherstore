@@ -37,7 +37,7 @@ class TimeSuiteWrite:
         _delete_db(self.db_path)
 
     def write_table(self, table):
-        self.store.write_table(f'df_benchmark', table, errors='ignore')
+        self.store.write_table('df_benchmark', table, errors='ignore')
 
 
 class TimeSuiteRead:

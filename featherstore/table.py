@@ -256,7 +256,8 @@ class Table:
         rows = common.format_rows_arg(df.index, to_dtype=index_type)
 
         df = common.format_table(df, index_name=index_name, warnings='ignore')
-        has_default_index = insert.has_still_default_index(df, self._table_data, self._partition_data)
+        has_default_index = insert.has_still_default_index(df, self._table_data,
+                                                           self._partition_data)
 
         partition_names = read.get_partition_names(rows, self._table_path)
         stored_df = read.read_table(partition_names, self._table_path, edit_mode=True)

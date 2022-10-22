@@ -78,7 +78,7 @@ def __raise_if_store_is_not_str(store):
 def __raise_if_store_doesnt_exist(store):
     store_path = os.path.join(current_db(), store)
     if not os.path.exists(store_path):
-        raise FileNotFoundError(f"'store' not found")
+        raise FileNotFoundError("'store' not found")
 
 
 def __raise_if_source_path_is_not_str(source):
@@ -160,7 +160,7 @@ def _can_create_snapshot(output_path, input_path, input_type):
 
 def __raise_if_input_doesnt_exists(input_path):
     if not os.path.exists(input_path):
-        raise FileNotFoundError(f"Snapshot target not found")
+        raise FileNotFoundError("Snapshot target not found")
 
 
 def __raise_if_input_type_is_not_valid(input_type):

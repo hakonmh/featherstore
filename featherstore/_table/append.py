@@ -112,6 +112,7 @@ def append_data(df, *, to):
 
 def create_partitions(df, rows_per_partition, last_partition_name):
     partitions = _table_utils.make_partitions(df, rows_per_partition)
-    new_partition_names = _table_utils.append_new_partition_ids(len(partitions), [last_partition_name])
+    new_partition_names = _table_utils.append_new_partition_ids(len(partitions),
+                                                                [last_partition_name])
     partitions = _table_utils.assign_ids_to_partitions(partitions, new_partition_names)
     return partitions

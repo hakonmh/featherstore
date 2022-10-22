@@ -41,7 +41,7 @@ def _raise_if_rows_is_not_in_old_data(old_df, df):
     old_index = old_df.index
     rows_not_in_old_df = not all(index.isin(old_index))
     if rows_not_in_old_df:
-        raise ValueError(f"Some rows not in stored table")
+        raise ValueError("Some rows not in stored table")
 
 
 def _coerce_pd_col_dtypes(df, *, to):
