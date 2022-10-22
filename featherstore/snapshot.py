@@ -168,12 +168,6 @@ def __raise_if_input_type_is_not_valid(input_type):
         raise ValueError("Input type should be either 'table' or 'store")
 
 
-def _can_restore_store(source, errors):
-    __raise_if_snapshot_not_found(source)
-    __raise_if_not_snapshot_of_store(source)
-    __raise_if_store_already_exists(source, errors)
-
-
 def __create_snapshot_metadata(metadata_path, source_type):
     snapshot_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     metadata = {'type': source_type,
