@@ -29,10 +29,9 @@ setup(
     keywords='feather arrow pandas polars datastore',
     packages=find_packages(exclude=['tests', 'docs', 'benchmarks' 'dev']),
     install_requires=[
-        'numpy>=1.21.0',
         'pandas>=1.1.0',
-        'polars>=0.10.16',
-        'pyarrow>=5.0.0',
+        'polars>=0.14.0',
+        'pyarrow>=7.0.0',
     ],
     project_urls={
         'Documentation': r'https://featherstore.readthedocs.io/en/latest/'
