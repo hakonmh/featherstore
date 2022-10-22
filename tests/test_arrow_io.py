@@ -23,6 +23,16 @@ def test_arrow_io(store, index, partition_size):
     assert df.equals(expected)
 
 
+def test_store_read_arrow(store):
+    # Arrange
+    original_df = make_table(astype='arrow')
+    store.write_table(TABLE_NAME, original_df, warnings='ignore')
+    # Act
+    df = store.read_arrow(TABLE_NAME)
+    # Assert
+    assert df.equals(original_df)
+
+
 def _sort_arrow_table(df, *, by):
     index_name = by
     if index_name:

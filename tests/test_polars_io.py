@@ -23,6 +23,16 @@ def test_polars_io(store, index):
     assert df.frame_equal(expected)
 
 
+def test_store_read_polars(store):
+    # Arrange
+    original_df = make_table(astype='polars')
+    store.write_table(TABLE_NAME, original_df, warnings='ignore')
+    # Act
+    df = store.read_polars(TABLE_NAME)
+    # Assert
+    assert df.frame_equal(original_df)
+
+
 def _sort_polars_table(df, *, by):
     index_name = by
     if index_name:

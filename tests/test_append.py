@@ -24,6 +24,20 @@ def test_append_table(store, index, astype):
     _assert_table_equals(table, expected)
 
 
+def test_store_append_table(store):
+    fixture = AppendFixture(index=default_index, astype='pandas')
+    original_df = fixture.original_df
+    append_df = fixture.appended_df
+    expected = _append(append_df, to=original_df, index=default_index)
+
+    store.write_table(TABLE_NAME, original_df)
+    # Act
+    store.append_table(TABLE_NAME, append_df, warnings='ignore')
+    # Assert
+    df = store.read_pandas(TABLE_NAME)
+    assert df.equals(expected)
+
+
 class AppendFixture:
 
     def __init__(self, index, rows=30, astype="pandas"):
