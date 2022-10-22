@@ -1,5 +1,6 @@
 
 # FeatherStore
+
 [![Documentation Status](https://readthedocs.org/projects/featherstore/badge/?version=latest)](https://featherstore.readthedocs.io/en/stable/index.html)
 [![Test Status](https://img.shields.io/github/workflow/status/hakonmh/featherstore/Test%20Python%20package)](https://github.com/hakonmh/featherstore/actions)
 [![PyPI version](https://img.shields.io/pypi/v/FeatherStore?color=blue)](https://pypi.org/project/FeatherStore/)

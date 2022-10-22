@@ -1,8 +1,13 @@
+# Dependencies
 pandas>=1.1.0
 polars[timezone]>=0.14.11
 pyarrow>=7.0.0
 numpy>=1.21.0
+
+# Tools
 pytest>=7.0.0
-flake8
+flake8>=5.0.4
+
+# Docs
 sphinx
 pydata-sphinx-theme
