@@ -41,36 +41,36 @@ def get_partition_names(rows, table_path):
 
 
 def _predicate_filtering(rows, table_path):
-    partition_names = Metadata(table_path, 'partition').keys()
+    partititon_data = Metadata(table_path, 'partition')
+    partition_names = partititon_data.keys()
     if rows.keyword == "before":
         start = 0
         target = rows[0]
-        end = _binary_search(target, partition_names, table_path)
+        end = _binary_search(target, partition_names, partititon_data)
     elif rows.keyword == "after":
         target = rows[0]
-        start = _binary_search(target, partition_names, table_path)
+        start = _binary_search(target, partition_names, partititon_data)
         end = len(partition_names)
     elif rows.keyword == "between":
         target_start = rows[0]
         target_end = rows[1]
-        start = _binary_search(target_start, partition_names, table_path)
-        end = _binary_search(target_end, partition_names, table_path)
+        start = _binary_search(target_start, partition_names, partititon_data)
+        end = _binary_search(target_end, partition_names, partititon_data)
     else:  # When a list of rows is provided
-
-        start = _binary_search(min(rows.values()), partition_names, table_path)
-        end = _binary_search(max(rows.values()), partition_names, table_path)
+        start = _binary_search(min(rows.values()), partition_names, partititon_data)
+        end = _binary_search(max(rows.values()), partition_names, partititon_data)
 
     partition_names = partition_names[start:end + 1]
     return partition_names
 
 
-def _binary_search(target, partition_names, table_path):
+def _binary_search(target, partition_names, partititon_data):
     possible_partition_names = partition_names
 
     while len(possible_partition_names) > 1:
         mid = len(possible_partition_names) // 2
         candidate_name = possible_partition_names[mid]
-        candidate = Metadata(table_path, 'partition')[candidate_name]
+        candidate = partititon_data[candidate_name]
 
         if _row_inside_candidate(target, candidate):
             break  # return candidate_name
