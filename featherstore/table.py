@@ -314,17 +314,15 @@ class Table:
         Raises
         ------
         AttributeError
-            Raised if both or neither of `rows` and `cols` are provided.
+            Raised if neither of `rows` and `cols` are provided.
         """
-        both_rows_and_cols_is_provided = cols is not None and rows is not None
-        if both_rows_and_cols_is_provided:
-            raise AttributeError("Can't drop both rows and columns at the same time")
-        elif rows is not None:
-            self.drop_rows(rows)
-        elif cols is not None:
-            self.drop_columns(cols)
-        else:
+        neither_of_rows_and_cols_are_provided = cols is None and rows is None
+        if neither_of_rows_and_cols_are_provided:
             raise AttributeError("Neither 'rows' or 'cols' is provided")
+        if rows is not None:
+            self.drop_rows(rows)
+        if cols is not None:
+            self.drop_columns(cols)
 
     def drop_rows(self, rows):
         """Drops specified rows from table

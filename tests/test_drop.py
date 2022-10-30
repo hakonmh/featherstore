@@ -23,6 +23,7 @@ ARGS = [
     (default_index, None, {'like': 'c?'}),
     (default_index, None, {'like': '%1'}),
     (default_index, None, {'like': '?1%'}),
+    (default_index, {'between': [10, 13]}, {'like': 'c?'}),
     (default_index, None, []),
 ]
 
@@ -78,7 +79,7 @@ def test_default_index_behavior_when_dropping(store, rows):
 def _drop(df, rows, cols):
     if rows is not None:
         df = __drop_rows(df, rows)
-    elif cols is not None:
+    if cols is not None:
         df = __drop_cols(df, cols)
     return df
 
@@ -128,7 +129,6 @@ INVALID_COLS_ELEMENTS_DTYPE = ['c1', 2]
 DROP_INDEX = ['c1', 'index']
 COL_NOT_IN_TABLE = ['c1', 'Non-existant col']
 DROP_ALL_COLS = {'like': 'c%'}
-DROP_ROWS_AND_COLS_AT_THE_SAME_TIME = [[4, 5], ['c1', 'c2']]
 
 
 @pytest.mark.parametrize(
@@ -142,8 +142,7 @@ DROP_ROWS_AND_COLS_AT_THE_SAME_TIME = [[4, 5], ['c1', 'c2']]
         (None, INVALID_COLS_ELEMENTS_DTYPE, TypeError),
         (None, DROP_INDEX, ValueError),
         (None, COL_NOT_IN_TABLE, IndexError),
-        (None, DROP_ALL_COLS, IndexError),
-        (*DROP_ROWS_AND_COLS_AT_THE_SAME_TIME, AttributeError)
+        (None, DROP_ALL_COLS, IndexError)
     ],
     ids=[
         'INVALID_ROWS_DTYPE',
@@ -155,7 +154,6 @@ DROP_ROWS_AND_COLS_AT_THE_SAME_TIME = [[4, 5], ['c1', 'c2']]
         'DROP_INDEX',
         'COL_NOT_IN_TABLE',
         'DROP_ALL_COLS',
-        'DROP_ROWS_AND_COLS_AT_THE_SAME_TIME'
     ])
 def test_can_drop(store, rows, cols, exception):
     # Arrange
