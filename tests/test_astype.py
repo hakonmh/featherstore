@@ -56,7 +56,7 @@ kwarg_format_idx = 0
         ('large_string', 'string'),
     ]
 )
-def test_change_dtype(store, from_dtype, to_dtype):
+def test_change_pa_dtype(store, from_dtype, to_dtype):
     # Arrange
     COLS = ['c1', 'c2']
     original_df = _make_table(dtype=from_dtype, rows=60, cols=3)
@@ -67,6 +67,33 @@ def test_change_dtype(store, from_dtype, to_dtype):
     table.write(original_df, partition_size=partition_size)
 
     cols, dtype = _format_cols_and_to_key_args(COLS, to_dtype)
+    # Act
+    table.astype(cols, to=dtype)
+    # Assert
+    _assert_frame_equal(table, expected)
+
+
+@pytest.mark.parametrize(
+    ("from_dtype", "to_dtype"),
+    [
+        ('float32', 'float64'),
+        ('int64', 'int32'),
+        ('int32', 'float64'),
+        ('uint32', 'int32'),
+        ('bool', 'int16'),
+        ('int64', 'bool'),
+    ]
+)
+def test_change_np_dtype(store, from_dtype, to_dtype):
+    # Arrange
+    COLS = ['c1', 'c2']
+    original_df = _make_table(dtype=from_dtype, rows=60, cols=3)
+    expected = _change_dtype(original_df, to_dtype, cols=COLS)
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+    cols, dtype = _format_cols_and_to_key_args(COLS, to_dtype, as_numpy_dtype=True)
     # Act
     table.astype(cols, to=dtype)
     # Assert
@@ -92,7 +119,7 @@ def _change_dtype(df, to_dtype, cols=None):
     return df
 
 
-def _format_cols_and_to_key_args(cols, to_dtype):
+def _format_cols_and_to_key_args(cols, to_dtype, as_numpy_dtype=False):
     """Selects every other test to format arguments as one of either:
         * cols=['c1', 'c2'], to=[dtype1, dtype2]
         * cols = {'c1': dtype1, 'c2': dtype2}
@@ -101,12 +128,14 @@ def _format_cols_and_to_key_args(cols, to_dtype):
     kwarg_format_idx = (kwarg_format_idx + 1) % 2
     kwarg_format = KWARG_FORMATS[kwarg_format_idx]
 
-    arrow_dtype = TYPE_MAP[to_dtype].arrow_dtype
+    dtype = TYPE_MAP[to_dtype].arrow_dtype
+    if as_numpy_dtype:
+        dtype = dtype.to_pandas_dtype()
     if kwarg_format == 'dict':
-        cols = {col: arrow_dtype for col in cols}
+        cols = {col: dtype for col in cols}
         to = None
     elif kwarg_format == 'list':
-        to = [arrow_dtype] * len(cols)
+        to = [dtype] * len(cols)
     return cols, to
 
 
@@ -151,7 +180,7 @@ INVALID_TO_ARGUMENT_DTYPE = [['c0'], pa.int16()]
 INVALID_TO_ITEMS_DTYPE = [['c0'], [123]]
 NUMBER_OF_COLS_AND_DTYPES_DONT_MATCH = [['c0', 'c1'], [pa.int16()]]
 FORBIDDEN_INDEX_DTYPE = [[DEFAULT_ARROW_INDEX_NAME], [pa.float32()]]
-NON_ARROW_DTYPE = [['c0'], [float]]
+NON_ARROW_DTYPE = [['c0'], [pl.Float32()]]
 INVALID_NEW_DTYPE = [['c0'], [pa.float32()]]
 DUPLICATE_COL_NAMES = [['c0', 'c0'], [pa.int16(), pa.int32()]]
 

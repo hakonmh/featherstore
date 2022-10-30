@@ -20,17 +20,27 @@ def can_change_type(table, cols, astype):
     cols = common.format_cols_and_to_args(cols, astype)
 
     _raise_if.cols_argument_items_is_not_str(cols.keys())
-    _raise_if_astype_items_is_not_arrow_types(cols.values())
+    _raise_if_astype_items_are_not_pa_or_np_types(cols.values())
 
     _raise_if.col_names_contains_duplicates(cols.keys())
     _raise_if.cols_not_in_table(cols.keys(), table._table_data)
     _raise_if_new_index_type_is_not_valid(cols, table._table_data)
 
 
-def _raise_if_astype_items_is_not_arrow_types(astype):
-    col_elements_are_arrow_types = all(isinstance(item, pa.DataType) for item in astype)
-    if not col_elements_are_arrow_types:
-        raise TypeError("Elements in 'to' must be Arrow types")
+def _raise_if_astype_items_are_not_pa_or_np_types(astype):
+    col_elements_are_arrow_types = all(isinstance(item, (pa.DataType)) for item in astype)
+    col_elements_are_np_types = all(__is_valid_dtype(item) for item in astype)
+
+    if not (col_elements_are_arrow_types or col_elements_are_np_types):
+        raise TypeError("Elements in 'to' must be Arrow or Numpy types")
+
+
+def __is_valid_dtype(item):
+    try:
+        pa.from_numpy_dtype(item)
+        return True
+    except Exception:
+        return False
 
 
 def _raise_if_new_index_type_is_not_valid(cols, table_data):
@@ -54,12 +64,19 @@ def change_type(df, cols):
 
     schema = df.schema
     for col, dtype in cols.items():
+        dtype = _convert_to_pa_dtype(dtype)
         idx = schema.get_field_index(col)
         field = schema.field(idx)
         field = field.with_type(dtype)
         schema = schema.set(idx, field)
     df = df.cast(schema)
     return df
+
+
+def _convert_to_pa_dtype(dtype):
+    if __is_valid_dtype(dtype):
+        dtype = pa.from_numpy_dtype(dtype)
+    return dtype
 
 
 def create_partitions(df, rows_per_partition, partition_names=None):
