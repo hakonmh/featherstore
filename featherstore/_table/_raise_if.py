@@ -12,7 +12,7 @@ from featherstore._table._indexers import ColIndexer
 
 def table_not_exists(table):
     if not table.exists():
-        raise FileNotFoundError(f"Table '{table.name()}' not found")
+        raise FileNotFoundError(f"Table '{table.name}' not found")
 
 
 def table_already_exists(table_path):

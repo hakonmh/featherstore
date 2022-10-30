@@ -587,6 +587,7 @@ class Table:
     def exists(self):
         return os.path.exists(self._table_path)
 
+    @property
     def name(self):
         table_name = os.path.split(self._table_path)[-1]
         return table_name
