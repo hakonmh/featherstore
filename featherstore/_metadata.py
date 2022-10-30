@@ -12,19 +12,6 @@ class Metadata():
         self._metadata_folder = os.path.join(path, METADATA_FOLDER_NAME)
         self._db_path = os.path.join(self._metadata_folder, file_name) + '.db'
         self.index = KeyIndex(self._metadata_folder, file_name)
-        self._counter = self._count()
-
-    def _count(self):
-        counter = 0
-        if os.path.exists(self._db_path):
-            with open(self._db_path, 'rb') as f:
-                while True:
-                    try:
-                        pickle.load(f)
-                        counter += 1
-                    except EOFError:
-                        break
-        return counter
 
     def create(self):
         if not os.path.exists(self._metadata_folder):
@@ -74,19 +61,18 @@ class Metadata():
         self._compact()
 
     def __len__(self):
-        return self._counter
+        return self.index._db_size
 
     def _write_item(self, f, value):
         byte_offset = f.tell()
-        pickle.dump(value, f,)
-        self._counter += 1
+        pickle.dump(value, f)
         return byte_offset
 
     def _compact(self):
         if len(self) > len(self.index) * 2:
             items = self.read()
             os.remove(self._db_path)
-            self._counter = 0
+            self.index._db_size = 0
             self.write(items)
 
 
@@ -95,12 +81,14 @@ class KeyIndex:
     def __init__(self, metadata_folder, file_name):
         self._path = os.path.join(metadata_folder, file_name) + '.index'
         if os.path.exists(self._path):
-            self._data = self._read_data()
+            self._data, self._db_size = self._read_data()
         else:
             self._data = {}
+            self._db_size = 0
 
     def write(self, items):
         self._data.update(dict(items))
+        self._db_size += len(items)
         self._write_data()
 
     def keys(self):
@@ -111,6 +99,7 @@ class KeyIndex:
 
     def __setitem__(self, key, value):
         self._data[key] = value
+        self._db_size += 1
         self._write_data()
 
     def __delitem__(self, key):
@@ -123,11 +112,13 @@ class KeyIndex:
     def _write_data(self):
         with open(self._path, 'wb') as f:
             pickle.dump(self._data, f)
+            pickle.dump(self._db_size, f)
 
     def _read_data(self):
         with open(self._path, 'rb') as f:
             data = pickle.load(f)
-        return data
+            size = pickle.load(f)
+        return data, size
 
 
 def _can_init_metadata(base_path, db_name):
