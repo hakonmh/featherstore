@@ -116,7 +116,7 @@ class Store:
         """
         _can_init_store(store_name)
 
-        self.store_name = store_name
+        self.name = store_name
         self._store_path = os.path.join(current_db(), store_name)
 
     def rename(self, *, to):
@@ -132,7 +132,7 @@ class Store:
 
         new_path = os.path.join(current_db(), new_store_name)
         os.rename(self._store_path, new_path)
-        self.store_name = new_store_name
+        self.name = new_store_name
         self._store_path = new_path
 
     def drop(self, *, errors="raise"):
@@ -147,7 +147,7 @@ class Store:
             Whether or not to raise an error if the store doesn't exist. Can be either
             `raise` or `ignore`, by default `raise`
         """
-        drop_store(self.store_name, errors=errors)
+        drop_store(self.name, errors=errors)
 
     def list_tables(self, *, like=None):
         """Lists tables in store
@@ -177,7 +177,7 @@ class Store:
         return tables
 
     def table_exists(self, table_name):
-        return Table(table_name, self.store_name).exists()
+        return Table(table_name, self.name).exists()
 
     def read_arrow(self, table_name, *, cols=None, rows=None):
         """Reads PyArrow Table from store
@@ -198,7 +198,7 @@ class Store:
         -------
         pyarrow.Table
         """
-        return Table(table_name, self.store_name).read_arrow(cols=cols, rows=rows)
+        return Table(table_name, self.name).read_arrow(cols=cols, rows=rows)
 
     def read_pandas(self, table_name, *, cols=None, rows=None):
         """Reads Pandas DataFrame from store
@@ -219,8 +219,7 @@ class Store:
         -------
         pandas.DataFrame or pandas.Series
         """
-        return Table(table_name, self.store_name).read_pandas(cols=cols,
-                                                              rows=rows)
+        return Table(table_name, self.name).read_pandas(cols=cols, rows=rows)
 
     def read_polars(self, table_name, *, cols=None, rows=None):
         """Reads Polars DataFrame from store
@@ -241,8 +240,7 @@ class Store:
         -------
         polars.DataFrame
         """
-        return Table(table_name, self.store_name).read_polars(cols=cols,
-                                                              rows=rows)
+        return Table(table_name, self.name).read_polars(cols=cols, rows=rows)
 
     def write_table(
         self,
@@ -279,7 +277,7 @@ class Store:
             Whether or not to warn if a unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
         """
-        Table(table_name, self.store_name).write(
+        Table(table_name, self.name).write(
             df,
             index=index,
             errors=errors,
@@ -300,7 +298,7 @@ class Store:
             Whether or not to warn if a unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
         """
-        Table(table_name, self.store_name).append(df, warnings=warnings)
+        Table(table_name, self.name).append(df, warnings=warnings)
 
     def rename_table(self, table_name, *, to):
         """Renames a table
@@ -312,7 +310,7 @@ class Store:
         to : str
             The new name of the table.
         """
-        Table(table_name, self.store_name).rename_table(to=to)
+        Table(table_name, self.name).rename_table(to=to)
 
     def drop_table(self, table_name):
         """Deletes a table
@@ -322,7 +320,7 @@ class Store:
         table_name : str
             The name of the table to be deleted
         """
-        Table(table_name, self.store_name).drop_table()
+        Table(table_name, self.name).drop_table()
 
     def select_table(self, table_name):
         """Selects a single table.
@@ -338,7 +336,7 @@ class Store:
         -------
         Table
         """
-        return Table(table_name, self.store_name)
+        return Table(table_name, self.name)
 
     def create_snapshot(self, path):
         """Creates a compressed backup of the store.

@@ -27,7 +27,7 @@ def test_table_snapshot(store):
 
 def test_store_snapshot(store):
     # Arrange
-    store_name = store.store_name
+    store_name = store.name
     original_df1 = make_table(astype='pandas')
     original_df2 = make_table(astype='pandas')
 

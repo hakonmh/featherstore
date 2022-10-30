@@ -55,19 +55,19 @@ def test_create_store(create_db, connect_to_db):
 def test_drop_store(create_db, connect_to_db):
     # Arrange
     store = fs.create_store("test_store")
-    stores_existed_before_delete = fs.store_exists(store.store_name)
+    stores_existed_before_delete = fs.store_exists(store.name)
     # Act
-    fs.drop_store(store.store_name)
+    fs.drop_store(store.name)
     # Assert
     assert stores_existed_before_delete
-    assert not fs.store_exists(store.store_name)
+    assert not fs.store_exists(store.name)
 
 
 def test_store_drop(store):
     # Act
     store.drop()
     # Assert
-    assert not fs.store_exists(store.store_name)
+    assert not fs.store_exists(store.name)
 
 
 def test_store_rename(store):
@@ -76,14 +76,14 @@ def test_store_rename(store):
     # Act
     stores = fs.list_stores()
     # Assert
-    store_name = store.store_name
+    store_name = store.name
     assert stores == ["new_store_name"]
     assert store_name == "new_store_name"
 
 
 def test_rename_store(store):
     # Arrange
-    fs.rename_store(store.store_name, to="new_store_name")
+    fs.rename_store(store.name, to="new_store_name")
     # Act
     stores = fs.list_stores()
     # Assert
