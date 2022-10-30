@@ -16,6 +16,7 @@ DB_PATH = os.path.join('tests', '_db')
 STORE_NAME = "test_store"
 TABLE_NAME = "table_name"
 TABLE_PATH = os.path.join(DB_PATH, STORE_NAME, TABLE_NAME)
+MD_NAME = 'db'
 
 
 def get_index_name(df):
