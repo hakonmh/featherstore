@@ -5,7 +5,6 @@ import pandas as pd
 import pyarrow as pa
 from pyarrow import pandas_compat as pc
 
-from featherstore._metadata import Metadata
 from featherstore._table import _table_utils
 from featherstore._table._indexers import ColIndexer, RowIndexer
 
@@ -171,9 +170,9 @@ def compute_rows_per_partition(df, target_size):
     return rows_per_partition
 
 
-def update_metadata(df, table_path, old_partition_names, **kwargs):
+def update_metadata(table, df, old_partition_names, **kwargs):
     new_partition_metadata = _make_partition_metadata(df)
-    table_metadata = _update_table_metadata(table_path, new_partition_metadata,
+    table_metadata = _update_table_metadata(table, new_partition_metadata,
                                             old_partition_names)
     for key, value in kwargs.items():
         table_metadata[key] = value
@@ -205,17 +204,17 @@ def _get_index_max(df, index_name):
     return last_index_value
 
 
-def _update_table_metadata(table_path, new_partitions_data,
+def _update_table_metadata(table, new_partitions_data,
                            dropped_partitions):
     # TODO: Clean up, new name, generalize(?)
-    dropped_partitions_data = _get_dropped_partitions_data(dropped_partitions,
-                                                           table_path)
-    num_rows = _update_num_rows(table_path,
-                                dropped_partitions_data,
-                                new_partitions_data)
-    num_partitions = _update_num_partitions(table_path,
-                                            dropped_partitions_data,
-                                            new_partitions_data)
+    dropped_partitions_data = _get_dropped_partitions_data(table._partition_data,
+                                                           dropped_partitions)
+    num_rows = table._table_data['num_rows']
+    num_rows += _update_num_rows(dropped_partitions_data,
+                                 new_partitions_data)
+    num_partitions = table._table_data['num_partitions']
+    num_partitions += _update_num_partitions(dropped_partitions_data,
+                                             new_partitions_data)
 
     table_metadata = {
         "num_partitions": num_partitions,
@@ -224,23 +223,18 @@ def _update_table_metadata(table_path, new_partitions_data,
     return table_metadata
 
 
-def _get_dropped_partitions_data(partition_names, table_path):
-    partition_data = Metadata(table_path, 'partition')
+def _get_dropped_partitions_data(partition_data, partition_names):
     metadata = {name: partition_data[name] for name in partition_names}
     return metadata
 
 
-def _update_num_rows(table_path, dropped_partitions_data, new_partitions_data):
-    current = Metadata(table_path, 'table')['num_rows']
-    dropped = [item['num_rows'] for item in dropped_partitions_data.values()]
-    added = [item['num_rows'] for item in new_partitions_data.values()]
-    updated_num_rows = current + sum(added) - sum(dropped)
-    return updated_num_rows
+def _update_num_rows(dropped_partitions_data, new_partitions_data):
+    dropped = (item['num_rows'] for item in dropped_partitions_data.values())
+    added = (item['num_rows'] for item in new_partitions_data.values())
+    return sum(added) - sum(dropped)
 
 
-def _update_num_partitions(table_path, dropped_partitions_data, new_partitions_data):
-    current = Metadata(table_path, 'table')['num_partitions']
+def _update_num_partitions(dropped_partitions_data, new_partitions_data):
     dropped = len(dropped_partitions_data)
     added = len(new_partitions_data)
-    updated_num_partitions = current + added - dropped
-    return updated_num_partitions
+    return added - dropped

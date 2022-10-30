@@ -5,15 +5,14 @@ import pandas as pd
 import polars as pl
 import pyarrow as pa
 
-from featherstore._metadata import METADATA_FOLDER_NAME, Metadata
+from featherstore._metadata import METADATA_FOLDER_NAME
 from featherstore._table import _table_utils
 from featherstore._table._indexers import ColIndexer
 
 
-def table_not_exists(table_path):
-    table_name = table_path.rsplit('/')[-1]
-    if not os.path.exists(table_path):
-        raise FileNotFoundError(f"Table '{table_name}' not found")
+def table_not_exists(table):
+    if not table.exists():
+        raise FileNotFoundError(f"Table '{table.name()}' not found")
 
 
 def table_already_exists(table_path):
@@ -93,17 +92,17 @@ def length_of_cols_and_to_doesnt_match(cols, to):
         raise ValueError(f"Length of 'cols' != length of 'to' ({len(cols)} != {len(to)})")
 
 
-def cols_does_not_match(df, table_path):
-    stored_data_cols = Metadata(table_path, "table")["columns"]
-    has_default_index = Metadata(table_path, "table")["has_default_index"]
+def cols_does_not_match(df, table_data):
+    stored_data_cols = table_data["columns"]
+    has_default_index = table_data["has_default_index"]
     new_data_cols = _table_utils.get_col_names(df, has_default_index)
 
     if sorted(new_data_cols) != sorted(stored_data_cols):
         raise ValueError("New and old columns doesn't match")
 
 
-def cols_not_in_table(cols, table_path):
-    stored_cols = Metadata(table_path, 'table')["columns"]
+def cols_not_in_table(cols, table_data):
+    stored_cols = table_data["columns"]
     if not isinstance(cols, ColIndexer):
         cols = ColIndexer(cols)
 
@@ -137,8 +136,8 @@ def rows_items_not_all_same_type(rows):
         raise TypeError("'rows' items not all of same type")
 
 
-def rows_argument_items_type_not_same_as_index(rows, table_path):
-    index_dtype = Metadata(table_path, "table")["index_dtype"]
+def rows_argument_items_type_not_same_as_index(rows, table_data):
+    index_dtype = table_data["index_dtype"]
     if rows:
         if not _rows_type_matches_index(rows, index_dtype):
             raise TypeError("'rows' type doesn't match table index dtype")
@@ -197,24 +196,24 @@ def _isinstance_int(obj):
     return is_int
 
 
-def index_type_not_same_as_stored_index(df, table_path):
+def index_type_not_same_as_stored_index(df, table_data):
     if isinstance(df, (pd.DataFrame, pd.Series)):
         index_type = str(pa.Array.from_pandas(df.index).type)
-        stored_index_type = Metadata(table_path, "table")["index_dtype"]
+        stored_index_type = table_data["index_dtype"]
         if index_type != stored_index_type:
             raise TypeError("New and old index types do not match")
 
 
-def index_name_not_same_as_stored_index(df, table_path):
-    stored_index_name = Metadata(table_path, "table")["index_name"]
-    has_default_index = Metadata(table_path, "table")["has_default_index"]
+def index_name_not_same_as_stored_index(df, table_data):
+    stored_index_name = table_data['index_name']
+    has_default_index = table_data["has_default_index"]
     cols = _table_utils.get_col_names(df, has_default_index=has_default_index)
     if stored_index_name not in cols:
         raise ValueError("New and old index names do not match")
 
 
-def index_in_cols(cols, table_path):
-    index_name = Metadata(table_path, 'table')["index_name"]
+def index_in_cols(cols, table_data):
+    index_name = table_data["index_name"]
     if index_name in cols:
         raise ValueError("Index name in 'cols'")
 

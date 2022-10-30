@@ -4,12 +4,11 @@ from featherstore.connection import Connection
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
 from featherstore._table import common
-from featherstore._metadata import Metadata
 
 
-def can_change_type(cols, astype, table_path):
+def can_change_type(table, cols, astype):
     Connection._raise_if_not_connected()
-    _raise_if.table_not_exists(table_path)
+    _raise_if.table_not_exists(table)
 
     _raise_if.cols_argument_is_not_collection(cols)
     _raise_if.to_is_provided_twice(cols, astype)
@@ -24,8 +23,8 @@ def can_change_type(cols, astype, table_path):
     _raise_if_astype_items_is_not_arrow_types(cols.values())
 
     _raise_if.col_names_contains_duplicates(cols.keys())
-    _raise_if.cols_not_in_table(cols.keys(), table_path)
-    _raise_if_new_index_type_is_not_valid(cols, table_path)
+    _raise_if.cols_not_in_table(cols.keys(), table._table_data)
+    _raise_if_new_index_type_is_not_valid(cols, table._table_data)
 
 
 def _raise_if_astype_items_is_not_arrow_types(astype):
@@ -34,8 +33,8 @@ def _raise_if_astype_items_is_not_arrow_types(astype):
         raise TypeError("Elements in 'to' must be Arrow types")
 
 
-def _raise_if_new_index_type_is_not_valid(cols, table_path):
-    index_name = Metadata(table_path, 'table')['index_name']
+def _raise_if_new_index_type_is_not_valid(cols, table_data):
+    index_name = table_data['index_name']
     if index_name in cols.keys():
         new_index_dtype = cols[index_name]
         __raise_if_index_is_not_supported_type(new_index_dtype)

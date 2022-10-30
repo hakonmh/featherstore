@@ -1,16 +1,15 @@
 import pandas as pd
 
-from featherstore._metadata import Metadata
 from featherstore.connection import Connection
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
 from featherstore._table._indexers import ColIndexer
 
 
-def can_add_columns(df, table_path):
+def can_add_columns(table, df):
     Connection._raise_if_not_connected()
 
-    _raise_if.table_not_exists(table_path)
+    _raise_if.table_not_exists(table)
     _raise_if.df_is_not_pandas_table(df)
 
     if isinstance(df, pd.Series):
@@ -18,17 +17,16 @@ def can_add_columns(df, table_path):
     else:
         cols = df.columns.tolist()
     _raise_if.col_names_contains_duplicates(cols)
-    _raise_if.index_in_cols(cols, table_path)
-    _raise_if_col_name_already_in_table(cols, table_path)
+    _raise_if.index_in_cols(cols, table._table_data)
+    _raise_if_col_name_already_in_table(cols, table._table_data)
 
-    _raise_if_num_rows_does_not_match(df, table_path)
+    _raise_if_num_rows_does_not_match(df, table._table_data)
     _raise_if.index_values_contains_duplicates(df.index)
-    _raise_if.index_type_not_same_as_stored_index(df, table_path)
+    _raise_if.index_type_not_same_as_stored_index(df, table._table_data)
 
 
-def _raise_if_col_name_already_in_table(cols, table_path):
-    table_metadata = Metadata(table_path, 'table')
-    stored_cols = table_metadata["columns"]
+def _raise_if_col_name_already_in_table(cols, table_data):
+    stored_cols = table_data["columns"]
     cols = ColIndexer(cols)
 
     cols = cols.like(stored_cols)
@@ -37,9 +35,8 @@ def _raise_if_col_name_already_in_table(cols, table_path):
         raise IndexError("Column name already exists in table")
 
 
-def _raise_if_num_rows_does_not_match(df, table_path):
-    table_metadata = Metadata(table_path, 'table')
-    stored_table_length = table_metadata["num_rows"]
+def _raise_if_num_rows_does_not_match(df, table_data):
+    stored_table_length = table_data["num_rows"]
 
     new_cols_length = len(df)
 

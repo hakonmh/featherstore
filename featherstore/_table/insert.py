@@ -6,10 +6,10 @@ from featherstore._table import _raise_if
 from featherstore._table import _table_utils
 
 
-def can_insert_table(df, table_path):
+def can_insert_table(table, df):
     Connection._raise_if_not_connected()
 
-    _raise_if.table_not_exists(table_path)
+    _raise_if.table_not_exists(table)
     _raise_if.df_is_not_pandas_table(df)
 
     if isinstance(df, pd.Series):
@@ -17,11 +17,11 @@ def can_insert_table(df, table_path):
     else:
         cols = df.columns.tolist()
 
-    _raise_if.index_name_not_same_as_stored_index(df, table_path)
+    _raise_if.index_name_not_same_as_stored_index(df, table._table_data)
     _raise_if.col_names_contains_duplicates(cols)
     _raise_if.index_values_contains_duplicates(df.index)
-    _raise_if.index_type_not_same_as_stored_index(df, table_path)
-    _raise_if.cols_does_not_match(df, table_path)
+    _raise_if.index_type_not_same_as_stored_index(df, table._table_data)
+    _raise_if.cols_does_not_match(df, table._table_data)
 
 
 def insert_data(df, *, to):
@@ -81,14 +81,14 @@ def _make_partition_names(num_names, partition_names, subsequent_partition):
     return sorted(new_partition_names)
 
 
-def has_still_default_index(df, table_metadata, partition_metadata):
-    has_default_index = table_metadata["has_default_index"]
+def has_still_default_index(table, df):
+    has_default_index = table._table_data["has_default_index"]
     if not has_default_index:
         return False
 
-    index_name = table_metadata["index_name"]
+    index_name = table._table_data["index_name"]
     rows = df[index_name]
-    last_stored_value = _table_utils.get_last_stored_index_value(partition_metadata)
+    last_stored_value = _table_utils.get_last_stored_index_value(table._partition_data)
     first_row_value = rows[0].as_py()
 
     rows_are_continuous = all(a.as_py() + 1 == b.as_py() for a, b in zip(rows, rows[1:]))

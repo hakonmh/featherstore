@@ -9,18 +9,17 @@ from pyarrow import feather
 from featherstore.connection import Connection
 from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
-from featherstore._metadata import Metadata
 from featherstore._table import common
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
 
 
-def can_write_table(df, table_path, index_name, partition_size, errors, warnings):
+def can_write_table(table, df, index_name, partition_size, errors, warnings):
     Connection._raise_if_not_connected()
     _utils.raise_if_errors_argument_is_not_valid(errors)
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
     if errors == 'raise':
-        _raise_if.table_already_exists(table_path)
+        _raise_if.table_already_exists(table._table_path)
 
     _raise_if.df_is_not_supported_table_type(df)
     _raise_if_partition_size_is_not_int(partition_size)
@@ -159,10 +158,10 @@ def __make_rangeindex(index):
     return pa.array(pd.RangeIndex(len(index)))
 
 
-def write_metadata(metadata, table_path):
+def write_metadata(table, metadata):
     table_metadata, partition_metadata = metadata
-    Metadata(table_path, 'table').write(table_metadata)
-    Metadata(table_path, 'partition').write(partition_metadata)
+    table._table_data.write(table_metadata)
+    table._partition_data.write(partition_metadata)
 
 
 def write_partitions(partitions, table_path):

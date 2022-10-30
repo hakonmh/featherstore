@@ -4,10 +4,10 @@ from featherstore.connection import Connection
 from featherstore._table import _raise_if
 
 
-def can_update_table(df, table_path):
+def can_update_table(table, df):
     Connection._raise_if_not_connected()
 
-    _raise_if.table_not_exists(table_path)
+    _raise_if.table_not_exists(table)
     _raise_if.df_is_not_pandas_table(df)
 
     if isinstance(df, pd.Series):
@@ -15,11 +15,11 @@ def can_update_table(df, table_path):
     else:
         cols = df.columns.tolist()
 
-    _raise_if.index_name_not_same_as_stored_index(df, table_path)
+    _raise_if.index_name_not_same_as_stored_index(df, table._table_data)
     _raise_if.col_names_contains_duplicates(cols)
-    _raise_if.index_type_not_same_as_stored_index(df, table_path)
+    _raise_if.index_type_not_same_as_stored_index(df, table._table_data)
     _raise_if.index_values_contains_duplicates(df.index)
-    _raise_if.cols_not_in_table(cols, table_path)
+    _raise_if.cols_not_in_table(cols, table._table_data)
 
 
 def update_data(old_df, *, to):

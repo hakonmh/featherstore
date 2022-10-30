@@ -4,34 +4,33 @@ import bisect
 import pyarrow as pa
 
 from featherstore.connection import Connection
-from featherstore._metadata import Metadata
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
 from featherstore._table.read import get_partition_names as _get_partition_names
 from featherstore._table._indexers import ColIndexer, RowIndexer
 
 
-def can_drop_rows_from_table(rows, table_path):
+def can_drop_rows_from_table(table, rows):
     Connection._raise_if_not_connected()
-    _raise_if.table_not_exists(table_path)
+    _raise_if.table_not_exists(table)
     _raise_if.rows_argument_is_not_collection(rows)
 
     rows = RowIndexer(rows)
     _raise_if.rows_items_not_all_same_type(rows)
-    _raise_if.rows_argument_items_type_not_same_as_index(rows, table_path)
+    _raise_if.rows_argument_items_type_not_same_as_index(rows, table._table_data)
 
 
-def get_partition_names(rows, table_path):
-    partition_names = _get_partition_names(rows, table_path)
-    partition_names = _get_adjacent_partition_name(partition_names, table_path)
+def get_partition_names(table, rows):
+    partition_names = _get_partition_names(table, rows)
+    partition_names = _get_adjacent_partition_name(table, partition_names)
     return partition_names
 
 
-def _get_adjacent_partition_name(partitions_selected, table_path):
+def _get_adjacent_partition_name(table, partitions_selected):
     """Fetches an extra partition name so we can use that partition when
     combining small partitions.
     """
-    all_partition_names = Metadata(table_path, 'partition').keys()
+    all_partition_names = table._partition_data.keys()
 
     partition_before_first = _table_utils.get_previous_item(item=partitions_selected[0],
                                                             sequence=all_partition_names)
@@ -77,11 +76,12 @@ def _raise_if_all_rows_is_dropped(df):
         raise IndexError("Can't drop all rows from stored table")
 
 
-def has_still_default_index(rows, table_metadata, partition_metadata):
-    has_default_index = table_metadata["has_default_index"]
+def has_still_default_index(table, rows):
+    has_default_index = table._table_data["has_default_index"]
     if not has_default_index:
         return False
 
+    partition_metadata = table._partition_data
     if rows.keyword == 'before':
         is_still_def_idx = _idx_still_default_after_dropping_rows_before(rows, partition_metadata)
     elif rows.keyword == 'after':
@@ -142,12 +142,12 @@ def _idx_still_default_after_dropping_rows_list(rows, partition_metadata):
 # ----------------- drop_columns ------------------
 
 
-def can_drop_cols_from_table(cols, table_path):
+def can_drop_cols_from_table(table, cols):
     Connection._raise_if_not_connected()
-    _raise_if.table_not_exists(table_path)
+    _raise_if.table_not_exists(table)
     _raise_if.cols_argument_is_not_collection(cols)
 
-    raise_if = CheckDropCols(cols, table_path)
+    raise_if = CheckDropCols(cols, table)
     raise_if.items_not_str()
     raise_if.index_is_dropped()
     raise_if.cols_are_not_in_stored_data()
@@ -156,9 +156,9 @@ def can_drop_cols_from_table(cols, table_path):
 
 class CheckDropCols:
 
-    def __init__(self, cols, table_path):
-        self._table_path = table_path
-        self._table_data = Metadata(self._table_path, 'table')
+    def __init__(self, cols, table):
+        self._table_path = table._table_path
+        self._table_data = table._table_data
         self._cols = ColIndexer(cols)
 
         self._stored_cols = self._get_stored_cols()
@@ -175,7 +175,7 @@ class CheckDropCols:
         return set(dropped_cols)
 
     def index_is_dropped(self):
-        _raise_if.index_in_cols(self._dropped_cols, self._table_path)
+        _raise_if.index_in_cols(self._dropped_cols, self._table_data)
 
     def cols_are_not_in_stored_data(self):
         some_cols_not_in_stored_cols = bool(self._dropped_cols - self._stored_cols)
@@ -207,10 +207,10 @@ def get_partitions_to_drop(df, partition_names):
     return names
 
 
-def drop_partitions(table_path, partitions):
+def drop_partitions(table, partitions):
     for partition in partitions:
-        _delete_partition(table_path, partition)
-        _delete_partition_metadata(table_path, partition)
+        _delete_partition(table._table_path, partition)
+        _delete_partition_metadata(table, partition)
 
 
 def _delete_partition(table_path, partition_name):
@@ -224,8 +224,5 @@ def _delete_partition(table_path, partition_name):
             raise PermissionError('File still opened by memory-map')
 
 
-def _delete_partition_metadata(table_path, partition_name):
-    partition_data = Metadata(table_path, 'partition')
-    partition_names = partition_data.keys()
-    partition_names = partition_names.remove(partition_name)
-    del partition_data[partition_name]
+def _delete_partition_metadata(table, partition_name):
+    del table._partition_data[partition_name]

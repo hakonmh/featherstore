@@ -7,12 +7,12 @@ from featherstore.connection import Connection, current_db
 METADATA_FILE_NAME = 'metadata.pkl'
 
 
-def restore_table(store, source, errors='raise'):
+def restore_table(store_name, source, errors='raise'):
     """Restores a table in to the currently selected db.
 
     Parameters
     ----------
-    store : str
+    store_name : str
         The name of the store to restore the table into.
     source : str
         Path to the snapshot file.
@@ -20,10 +20,16 @@ def restore_table(store, source, errors='raise'):
         Whether or not to raise an error if a table with the same name already
         exist. Can be either `raise` or `ignore`, `ignore` overwrites existing
         table, by default `raise`.
+
+    Returns
+    -------
+    str
+        The name of the table restored.
     """
-    _can_restore_table(store, source, errors)
-    store_path = os.path.join(current_db(), store)
-    _extract_snapshot(store_path, source)
+    _can_restore_table(store_name, source, errors)
+    store_path = os.path.join(current_db(), store_name)
+    table_name = _extract_snapshot(store_path, source)
+    return table_name
 
 
 def restore_store(source, errors='raise'):
@@ -37,9 +43,15 @@ def restore_store(source, errors='raise'):
         Whether or not to raise an error if a store with the same name already
         exist. Can be either `raise` or `ignore`, `ignore` overwrites existing
         store, by default `raise`.
+
+    Returns
+    -------
+    str
+        The name of the store restored.
     """
     _can_restore_store(source, errors)
-    _extract_snapshot(current_db(), source)
+    store_name = _extract_snapshot(current_db(), source)
+    return store_name
 
 
 def _extract_snapshot(output_path, source):
@@ -48,8 +60,10 @@ def _extract_snapshot(output_path, source):
     with tarfile.open(source, "r") as tar:
         members = tar.getnames()
         members.remove(METADATA_FILE_NAME)
+        name = members[0]
         for member in members:
             tar.extract(member, output_path)
+    return name
 
 
 def _can_restore_table(store, source, errors):
@@ -110,8 +124,7 @@ def __raise_if_table_already_exists(store, source, errors):
 
         if '.tar.xz' not in source:
             source = f'{source}.tar.xz'
-        with tarfile.open(source, "r") as tar:
-            table_name = tar.getnames()[0]
+        table_name = __get_name(source)
 
         if table_name in os.listdir(store_path):
             raise FileExistsError(f"A table with name {table_name} already exists")
@@ -120,8 +133,7 @@ def __raise_if_table_already_exists(store, source, errors):
 def __raise_if_store_already_exists(source, errors):
     if '.tar.xz' not in source:
         source = f'{source}.tar.xz'
-    with tarfile.open(source, "r") as tar:
-        store_name = tar.getnames()[0]
+    store_name = __get_name(source)
 
     if store_name in os.listdir(current_db()) and errors == 'raise':
         raise FileExistsError(f"A store with name {store_name} already exists")
@@ -137,6 +149,11 @@ def __raise_if_not_snapshot_of_store(source):
     if metadata['type'] != 'store':
         raise ValueError("File is not a snapshot of a store")
 
+
+def __get_name(source):
+    with tarfile.open(source, "r") as tar:
+        name = tar.getnames()[0]
+    return name
 
 # ----------------- create snapshot ------------------
 

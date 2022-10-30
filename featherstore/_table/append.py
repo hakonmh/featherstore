@@ -2,37 +2,34 @@ import pandas as pd
 from pyarrow.compute import add
 
 from featherstore.connection import Connection
-from featherstore import _metadata
 from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
 
 
-def can_append_table(
-    df,
-    warnings,
-    table_path,
-):
+def can_append_table(table, df, warnings):
     Connection._raise_if_not_connected()
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
-    _raise_if.table_not_exists(table_path)
+    _raise_if.table_not_exists(table)
     _raise_if.df_is_not_supported_table_type(df)
 
+    table_data = table._table_data
     cols = _table_utils.get_col_names(df, has_default_index=False)
-    _raise_if.index_name_not_same_as_stored_index(df, table_path)
+    _raise_if.index_name_not_same_as_stored_index(df, table_data)
     _raise_if.col_names_contains_duplicates(cols)
-    _raise_if.index_type_not_same_as_stored_index(df, table_path)
-    _raise_if.cols_does_not_match(df, table_path)
+    _raise_if.index_type_not_same_as_stored_index(df, table_data)
+    _raise_if.cols_does_not_match(df, table_data)
 
-    has_default_index = _metadata.Metadata(table_path, 'table')['has_default_index']
-    index_name = _metadata.Metadata(table_path, 'table')['index_name']
+    has_default_index = table_data['has_default_index']
+    index_name = table_data['index_name']
 
     pd_index = _table_utils.get_pd_index_if_exists(df, index_name)
     index_is_provided = pd_index is not None
     if not has_default_index or index_is_provided:
         if not _index_provided_is_default(pd_index):
-            _raise_if_append_data_not_ordered_after_stored_data(df, table_path)
+            _raise_if_append_data_not_ordered_after_stored_data(df, table_data,
+                                                                table._partition_data)
 
     raise_if_index_not_exist(pd_index, has_default_index)
     _raise_if.index_values_contains_duplicates(pd_index)
@@ -43,22 +40,22 @@ def _index_provided_is_default(pd_index):
     return pd_index.equals(default_rangeindex)
 
 
-def _raise_if_append_data_not_ordered_after_stored_data(df, table_path):
-    append_data_start = _get_first_append_value(df, table_path)
-    stored_data_end = _get_last_stored_value(table_path)
+def _raise_if_append_data_not_ordered_after_stored_data(df, table_data, partition_data):
+    append_data_start = _get_first_append_value(df, table_data)
+    stored_data_end = _get_last_stored_value(partition_data)
     if append_data_start <= stored_data_end:
         raise ValueError(
             f"New_data.index can't be <= old_data.index[-1] ({append_data_start}"
             f" <= {stored_data_end})")
 
 
-def _get_first_append_value(df, table_path):
-    append_data_start = _get_non_default_index_start(df, table_path)
+def _get_first_append_value(df, table_data):
+    append_data_start = _get_non_default_index_start(df, table_data)
     return append_data_start
 
 
-def _get_non_default_index_start(df, table_path):
-    index_col = _metadata.Metadata(table_path, "table")["index_name"]
+def _get_non_default_index_start(df, table_data):
+    index_col = table_data["index_name"]
     first_row = _get_first_row(df)
     first_row = _table_utils.convert_to_arrow(first_row)
     append_data_start = first_row[index_col][0].as_py()
@@ -72,8 +69,8 @@ def _get_first_row(df):
         return df[:1]
 
 
-def _get_last_stored_value(table_path):
-    df = _metadata.Metadata(table_path, 'partition')
+def _get_last_stored_value(partition_data):
+    df = partition_data
     last_partition_name = df.keys()[-1]
     stored_data_end = df[last_partition_name]['max']
     return stored_data_end
@@ -85,12 +82,12 @@ def raise_if_index_not_exist(index, has_default_index):
         raise ValueError("Must provide index")
 
 
-def format_default_index(df, table_path):
+def format_default_index(table, df):
     """Formats the appended data's index to continue from where the stored
     data's index stops
     """
     index_col = df[DEFAULT_ARROW_INDEX_NAME]
-    first_value = _get_default_index_start(table_path)
+    first_value = _get_default_index_start(table._partition_data)
 
     formatted_index_col = add(index_col, first_value)
 
@@ -99,8 +96,8 @@ def format_default_index(df, table_path):
     return df
 
 
-def _get_default_index_start(table_path):
-    stored_data_end = _get_last_stored_value(table_path)
+def _get_default_index_start(partition_data):
+    stored_data_end = _get_last_stored_value(partition_data)
     append_data_start = int(stored_data_end) + 1
     return append_data_start
 

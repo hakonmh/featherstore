@@ -1,170 +1,133 @@
-from logging import exception
 import os
 import pickle
-import weakref
 from featherstore import _utils
-import bisect
-import operator
-
 
 METADATA_FOLDER_NAME = ".metadata"
 
 
-class Metadata:
+class Metadata():
 
-    def __init__(self, path, file_name=None):
+    def __init__(self, path, file_name):
         _can_init_metadata(path, file_name)
         self._metadata_folder = os.path.join(path, METADATA_FOLDER_NAME)
-        self.db_path = os.path.join(self._metadata_folder, file_name)
-        self.index = KeyIndex(self.db_path)
-        self.db_path += '.db'
-        self._counter = self.count()
+        self._db_path = os.path.join(self._metadata_folder, file_name) + '.db'
+        self.index = KeyIndex(self._metadata_folder, file_name)
+        self._counter = self._count()
 
-    def count(self):
-        if os.path.exists(self.db_path):
-            with open(self.db_path, 'rb') as fp:  # TODO: Make a counter
-                count = len(fp.readlines())
-        else:
-            count = 0
-        return count
-
-    def exists(self):
-        return os.path.exists(self._metadata_folder)
+    def _count(self):
+        counter = 0
+        if os.path.exists(self._db_path):
+            with open(self._db_path, 'rb') as f:
+                while True:
+                    try:
+                        pickle.load(f)
+                        counter += 1
+                    except EOFError:
+                        break
+        return counter
 
     def create(self):
-        if not self.exists():
+        if not os.path.exists(self._metadata_folder):
             os.makedirs(self._metadata_folder)
             _utils.mark_as_hidden(self._metadata_folder)
-            _touch(self.db_path)
-
-    def read(self):
-        items = dict()
-        with open(self.db_path, "rb") as f:
-            for key in self.keys():
-                byte_offset = self.index[key]
-                f.seek(byte_offset)
-                line = f.peek()
-                value = pickle.loads(line)
-                items[key] = value
-        return items
-
-    def keys(self):
-        return self.index.keys()
+            with open(self._db_path, 'ab'):
+                pass
 
     def write(self, new_data: dict):
         _can_write_metadata(new_data)
         byte_offsets = []
-        with open(self.db_path, "ab") as f:
+        with open(self._db_path, "ab") as f:
             for key, value in new_data.items():
                 byte_offset = self._write_item(f, value)
                 byte_offsets.append((key, byte_offset))
-                self._counter += 1
         self.index.write(byte_offsets)
-        self.compact()
+        self._compact()
 
-    def _write_item(self, f, value):
-        byte_offset = f.tell()
-        f.write(pickle.dumps(value))
-        return byte_offset
+    def keys(self):
+        return self.index.keys()
+
+    def read(self):
+        items = dict()
+        with open(self._db_path, "rb") as f:
+            for key in self.keys():
+                byte_offset = self.index[key]
+                f.seek(byte_offset)
+                value = pickle.load(f)
+                items[key] = value
+        return items
 
     def __getitem__(self, key: str):
-        with open(self.db_path, "rb") as f:
+        with open(self._db_path, "rb") as f:
             byte_offset = self.index[key]
             f.seek(byte_offset)
-            line = f.peek()
-            value = pickle.loads(line)
+            value = pickle.load(f)
             return value
 
     def __setitem__(self, key: str, value):
-        with open(self.db_path, "ab") as f:
+        with open(self._db_path, "ab") as f:
             byte_offsets = self._write_item(f, value)
-        self._counter += 1
         self.index[key] = byte_offsets
-        self.compact()
+        self._compact()
 
     def __delitem__(self, key: str):
         del self.index[key]
-
-    def __repr__(self):
-        return self.db_path
+        self._compact()
 
     def __len__(self):
-        return len(self.index)
+        return self._counter
 
-    def compact(self):
-        if len(self) * 2 < self._counter:
+    def _write_item(self, f, value):
+        byte_offset = f.tell()
+        pickle.dump(value, f,)
+        self._counter += 1
+        return byte_offset
+
+    def _compact(self):
+        if len(self) > len(self.index) * 2:
             items = self.read()
-            os.remove(self.db_path)
+            os.remove(self._db_path)
             self._counter = 0
             self.write(items)
 
 
 class KeyIndex:
-    dbs = weakref.WeakValueDictionary()
-    data = weakref.WeakKeyDictionary()
 
-    def __new__(cls, file_path):
-        file_path += '.index'
-        # if db_files exists: return existing instance, else create new
-        if file_path in cls.dbs:
-            instance = cls.dbs[file_path]
-        else:
-            instance = super(KeyIndex, cls).__new__(cls)
-        return instance
-
-    def __init__(self, path, /):
-        self._path = path + '.index'
-        self.__class__.dbs[self._path] = self
-        if self.exists():
+    def __init__(self, metadata_folder, file_name):
+        self._path = os.path.join(metadata_folder, file_name) + '.index'
+        if os.path.exists(self._path):
             self._data = self._read_data()
         else:
             self._data = {}
 
-    def _read_data(self):
-        with open(self._path, 'rb') as f:
-            data = pickle.load(f)
-        return data
-
-    @property
-    def _data(self):
-        return self.__class__.data[self]
-
-    @_data.setter
-    def _data(self, data):
-        self.__class__.data[self] = data
-
-    def exists(self):
-        return os.path.exists(self._path)
-
     def write(self, items):
         self._data.update(dict(items))
-        self._write_file()
+        self._write_data()
 
     def keys(self):
         return sorted(self._data.keys())
-
-    def __len__(self):
-        return len(self._data)
 
     def __getitem__(self, key):
         return self._data[key]
 
     def __setitem__(self, key, value):
         self._data[key] = value
-        self._write_file()
+        self._write_data()
 
     def __delitem__(self, key):
         del self._data[key]
-        self._write_file()
+        self._write_data()
 
-    def _write_file(self):
+    def __len__(self):
+        return len(self._data)
+
+    def _write_data(self):
         with open(self._path, 'wb') as f:
             pickle.dump(self._data, f)
 
-
-def _touch(path):
-    with open(path, 'ab'):
-        pass
+    def _read_data(self):
+        with open(self._path, 'rb') as f:
+            data = pickle.load(f)
+        return data
 
 
 def _can_init_metadata(base_path, db_name):

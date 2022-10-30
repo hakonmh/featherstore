@@ -13,36 +13,34 @@ from featherstore._table import _table_utils
 from featherstore._table._indexers import ColIndexer, RowIndexer
 
 
-def can_read_table(cols, rows, table_path):
+def can_read_table(table, cols, rows):
     Connection._raise_if_not_connected()
-    _raise_if.table_not_exists(table_path)
+    _raise_if.table_not_exists(table)
 
     _raise_if.rows_argument_is_not_collection_or_none(rows)
     rows = RowIndexer(rows)
     _raise_if.rows_items_not_all_same_type(rows)
-    _raise_if.rows_argument_items_type_not_same_as_index(rows, table_path)
+    _raise_if.rows_argument_items_type_not_same_as_index(rows, table._table_data)
 
     _raise_if.cols_argument_is_not_collection_or_none(cols)
     cols = ColIndexer(cols)
     if cols:
         _raise_if.cols_argument_items_is_not_str(cols.values())
-        _raise_if.cols_not_in_table(cols, table_path)
+        _raise_if.cols_not_in_table(cols, table._table_data)
 
 
-def get_partition_names(rows, table_path):
+def get_partition_names(table, rows):
+    partititon_data = table._partition_data
     if rows is None:
         rows = RowIndexer(None)
 
+    partition_names = partititon_data.keys()
     if rows.values():
-        partition_names = _predicate_filtering(rows, table_path)
-    else:
-        partition_names = Metadata(table_path, 'partition').keys()
+        partition_names = _predicate_filtering(rows, partition_names, partititon_data)
     return partition_names
 
 
-def _predicate_filtering(rows, table_path):
-    partititon_data = Metadata(table_path, 'partition')
-    partition_names = partititon_data.keys()
+def _predicate_filtering(rows, partition_names, partititon_data):
     if rows.keyword == "before":
         start = 0
         target = rows[0]
@@ -106,13 +104,12 @@ def _row_after_candidate(target, candidate):
         return False
 
 
-def read_table(partition_names, table_path, cols=ColIndexer(None),
+def read_table(table, partition_names, cols=ColIndexer(None),
                rows=RowIndexer(None), edit_mode=False):
-    table_data = Metadata(table_path, "table")
-    index_name = table_data["index_name"]
+    index_name = table._table_data["index_name"]
     if cols.values() is None:
-        cols = ColIndexer(table_data["columns"])
-    dfs = _read_partitions(partition_names, table_path, cols, edit_mode)
+        cols = ColIndexer(table._table_data["columns"])
+    dfs = _read_partitions(partition_names, table._table_path, cols, edit_mode)
     df = _combine_partitions(dfs)
     df = _filter_table_rows(df, rows, index_name)
     return df

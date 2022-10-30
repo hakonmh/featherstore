@@ -16,8 +16,9 @@ def test_table_snapshot(store):
     # Act
     table.create_snapshot(SNAPSHOT_PATH)
     table.drop_table()
-    fs.snapshot.restore_table(STORE_NAME, SNAPSHOT_PATH)
+    table_name = fs.snapshot.restore_table(STORE_NAME, SNAPSHOT_PATH)
     # Assert
+    table = store.select_table(table_name)
     df = table.read_pandas()
     assert_frame_equal(df, original_df, check_dtype=True)
     # Teardown
