@@ -1,7 +1,7 @@
 
 # FeatherStore
 
-[![Documentation Status](https://readthedocs.org/projects/featherstore/badge/?version=latest)](https://featherstore.readthedocs.io/en/stable/index.html)
+[![Documentation Status](https://readthedocs.org/projects/featherstore/badge/?version=latest)](https://featherstore.readthedocs.io/en/latest/index.html)
 [![Test Status](https://img.shields.io/github/workflow/status/hakonmh/featherstore/Test%20Python%20package)](https://github.com/hakonmh/featherstore/actions)
 [![PyPI version](https://img.shields.io/pypi/v/FeatherStore?color=blue)](https://pypi.org/project/FeatherStore/)
 [![Dev Status](https://img.shields.io/pypi/status/featherstore?color=important)](https://pypi.org/project/FeatherStore/)
@@ -22,7 +22,7 @@ in the full data:
 * Read metadata (column names, index, table shape, etc)
 * Changing column types
 
-To learn more, read the [User Guide](https://featherstore.readthedocs.io/en/latest/Quickstart.html).
+To learn more, read the [User Guide](https://featherstore.readthedocs.io/en/stable/Quickstart.html).
 
 ## Using FeatherStore
 
@@ -90,7 +90,7 @@ store.read_pandas('example_table', rows={'after': '2021-01-05'}, cols=['D', 'A']
 ## Performance
 
 FeatherStore is very fast, and in fact is one of the best performing solutions available.
-See the performance benchmark [here](https://featherstore.readthedocs.io/en/latest/Benchmarks.html).
+See the performance benchmark [here](https://featherstore.readthedocs.io/en/stable/Benchmarks.html).
 
 ## Installation
 
@@ -106,4 +106,4 @@ FeatherStore can be installed by using `$ pip install featherstore`
 
 ## Documentation
 
-Want to know about all the features FeatherStore support? [Read the docs!](https://featherstore.readthedocs.io/en/latest/index.html)
+Want to know about all the features FeatherStore support? [Read the docs!](https://featherstore.readthedocs.io/en/stable/index.html)

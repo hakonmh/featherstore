@@ -34,6 +34,6 @@ setup(
         'pyarrow>=7.0.0',
     ],
     project_urls={
-        'Documentation': r'https://featherstore.readthedocs.io/en/latest/'
+        'Documentation': r'https://featherstore.readthedocs.io/en/stable/'
     },
 )
