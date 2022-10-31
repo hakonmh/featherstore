@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Snapshot &#8212; FeatherStore 0.1.1 documentation</title>
+    <title>Snapshot &#8212; FeatherStore 0.2.0 documentation</title>
     
   <link href="../_static/css/theme.css" rel="stylesheet">
   <link href="../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -192,17 +192,23 @@ and <code class="docutils literal notranslate"><span class="pre">Store.create_sn
 </aside>
 <span class="target" id="module-featherstore.snapshot"></span><dl class="py function">
 <dt class="sig sig-object py" id="featherstore.snapshot.restore_table">
-<span class="sig-prename descclassname"><span class="pre">featherstore.snapshot.</span></span><span class="sig-name descname"><span class="pre">restore_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.snapshot.restore_table" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">featherstore.snapshot.</span></span><span class="sig-name descname"><span class="pre">restore_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#featherstore.snapshot.restore_table" title="Permalink to this definition">¶</a></dt>
 <dd><p>Restores a table in to the currently selected db.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>store</strong> (<em>str</em>) – The name of the store to restore the table into.</p></li>
+<li><p><strong>store_name</strong> (<em>str</em>) – The name of the store to restore the table into.</p></li>
 <li><p><strong>source</strong> (<em>str</em>) – Path to the snapshot file.</p></li>
 <li><p><strong>errors</strong> (<em>str</em>) – Whether or not to raise an error if a table with the same name already
 exist. Can be either <cite>raise</cite> or <cite>ignore</cite>, <cite>ignore</cite> overwrites existing
 table, by default <cite>raise</cite>.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The name of the table restored.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
@@ -219,6 +225,12 @@ table, by default <cite>raise</cite>.</p></li>
 exist. Can be either <cite>raise</cite> or <cite>ignore</cite>, <cite>ignore</cite> overwrites existing
 store, by default <cite>raise</cite>.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The name of the store restored.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
