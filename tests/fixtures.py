@@ -19,24 +19,6 @@ TABLE_PATH = os.path.join(DB_PATH, STORE_NAME, TABLE_NAME)
 MD_NAME = 'db'
 
 
-def get_index_name(df):
-    if isinstance(df, (pd.Series, pd.DataFrame)):
-        index_name = None
-    else:
-        cols = get_col_names(df, has_default_index=False)
-        if 'Date' in cols:
-            index_name = 'Date'
-        elif 'index' in cols:
-            index_name = 'index'
-        elif 'Index' in cols:
-            index_name = 'index'
-        elif DEFAULT_ARROW_INDEX_NAME in cols:
-            index_name = DEFAULT_ARROW_INDEX_NAME
-        else:
-            index_name = None
-    return index_name
-
-
 def make_table(index=None, rows=30, cols=5, *, astype="arrow", dtype=None, **kwargs):
     df = _make_df(rows, cols, dtype=dtype)
     if index is not None:
@@ -54,18 +36,17 @@ def _make_df(rows, cols, dtype=None):
         'bool': __make_bool_column,
         'uint': __make_uint_col,
     }
-    if not dtype:
-        col_dtypes = tuple(col_dtypes.values())
 
-    random_data = dict()
+    if dtype:
+        col_dtypes = itertools.cycle([col_dtypes[dtype]])
+    else:
+        col_dtypes = itertools.cycle(col_dtypes.values())
+
+    data = dict()
     for col in range(cols):
-        if not dtype:
-            idx = col % len(col_dtypes)
-        else:
-            idx = dtype
-        random_data[f"c{col}"] = col_dtypes[idx](rows)
-
-    df = pd.DataFrame(random_data)
+        col_dtype = next(col_dtypes)
+        data[f"c{col}"] = col_dtype(rows)
+    df = pd.DataFrame.from_dict(data)
     return df
 
 
@@ -74,41 +55,36 @@ def __make_float_col(rows):
 
 
 def __make_uint_col(rows):
-    df = __make_int_col(rows)
-    return np.abs(df)
+    return np.random.randint(0, 200000, size=rows)
 
 
 def __make_int_col(rows):
-    return np.random.randint(-100000, 100000, rows)
+    return np.random.randint(-100000, 100000, size=rows)
 
 
 def __make_datetime_col(rows):
-    start = pd.Timestamp('1943-01-01')
-    start = start.value // 10**9
-
-    end = pd.Timestamp('2022-01-01')
-    end = end.value // 10**9
-
-    time_since_epoch = __random_unique_randint(start, end, rows)
-    return np.array(time_since_epoch, dtype='datetime64[s]')
+    start = -852076800  # 1943-01-01 in seconds relative to epoch
+    end = 1640995200  # 2022-01-01 in seconds relative to epoch
+    times_since_epoch = __random_unique_numbers(start, end, rows)
+    dtime = times_since_epoch.astype('datetime64[s]')
+    return dtime
 
 
-def __random_unique_randint(start, end, rows):
-    df = np.array([])
-    while len(df) < rows:
-        new_rows = rows - len(df)
-        new_values = np.random.randint(start, end, size=new_rows)
-        df = np.append(df, new_values)
-        df = np.unique(df)[:rows]
-    np.random.shuffle(df)
+def __random_unique_numbers(start, end, rows):
+    df = np.random.randint(start, end, size=round(rows * 1.25), dtype=np.int32)
+    df = np.unique(df)[:rows]
     return df
 
 
 def __make_string_col(rows):
     str_length = 5
     df = rands_array(str_length, rows)
-    df = pd.Series(df, dtype='string')
+    df = pd.Index(df, dtype='string')
     return df
+
+
+def __make_bool_column(rows):
+    return np.random.randint(0, 2, size=rows, dtype=bool)
 
 
 def _convert_df_to(df, *, to):
@@ -122,6 +98,15 @@ def _convert_df_to(df, *, to):
     return df
 
 
+def __make_index_first_column(df):
+    index_name = df.schema.pandas_metadata["index_columns"][0]
+    cols = df.column_names
+    cols.remove(index_name)
+    cols.insert(0, index_name)
+    df = df.select(cols)
+    return df
+
+
 def __is_default_index(df):
     index_data = df.schema.pandas_metadata["index_columns"][0]
     try:
@@ -132,12 +117,6 @@ def __is_default_index(df):
     except Exception:
         is_default_index = False
     return is_default_index
-
-
-def __make_bool_column(rows):
-    df = np.random.randint(0, 2, size=rows)
-    df = pd.Series(df, dtype=bool)
-    return df
 
 
 def default_index(rows):
@@ -201,6 +180,24 @@ def unsorted_datetime_index(rows):
     index = pd.Index(index)
     index.name = 'Date'
     return index
+
+
+def get_index_name(df):
+    if isinstance(df, (pd.Series, pd.DataFrame)):
+        index_name = None
+    else:
+        cols = get_col_names(df, has_default_index=False)
+        if 'Date' in cols:
+            index_name = 'Date'
+        elif 'index' in cols:
+            index_name = 'index'
+        elif 'Index' in cols:
+            index_name = 'index'
+        elif DEFAULT_ARROW_INDEX_NAME in cols:
+            index_name = DEFAULT_ARROW_INDEX_NAME
+        else:
+            index_name = None
+    return index_name
 
 
 def get_partition_size(df, num_partitions=5):
@@ -297,12 +294,3 @@ def format_arrow_table(df):
 def __index_in_columns(df):
     index_name = df.schema.pandas_metadata["index_columns"][0]
     return index_name in df.column_names
-
-
-def __make_index_first_column(df):
-    index_name = df.schema.pandas_metadata["index_columns"][0]
-    cols = df.column_names
-    cols.remove(index_name)
-    cols.insert(0, index_name)
-    df = df.select(cols)
-    return df
