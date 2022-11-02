@@ -3,7 +3,7 @@ import itertools
 from string import ascii_lowercase
 from featherstore._table._table_utils import get_col_names
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
-from featherstore.connection import DB_MARKER_NAME  # Used as a fixture
+from featherstore.connection import DB_MARKER_NAME
 from featherstore._table.write import __is_rangeindex
 
 import pyarrow as pa
@@ -12,6 +12,7 @@ import pandas as pd
 import numpy as np
 from pandas._testing import rands_array
 
+DB_MARKER_NAME = DB_MARKER_NAME  # Remove flake8 warning
 DB_PATH = os.path.join('tests', '_db')
 STORE_NAME = "test_store"
 TABLE_NAME = "table_name"
