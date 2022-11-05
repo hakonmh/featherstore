@@ -80,7 +80,7 @@ def __random_unique_numbers(start, end, rows):
 def __make_string_col(rows):
     str_length = 5
     df = rands_array(str_length, rows)
-    df = pd.Index(df, dtype='string')
+    df = pd.Series(df, dtype='string')
     return df
 
 
@@ -235,30 +235,21 @@ def convert_table(df, *, to, index_name=None, as_series=True):
 
 
 def _convert_to_pandas(df, index_name=None, as_series=True):
-    if isinstance(df, pd.DataFrame):
-        pd_df = df
-    elif isinstance(df, pd.Series):
-        pd_df = df.to_frame()
-    elif isinstance(df, (pa.Table, pl.DataFrame)):
-        pd_df = df.to_pandas()
-        # pd_df = __convert_object_to_string(pd_df)
+    if isinstance(df, (pa.Table, pl.DataFrame)):
+        df = df.to_pandas()
 
-        if index_name and index_name in pd_df.columns:
-            pd_df = pd_df.set_index(index_name)
-        elif DEFAULT_ARROW_INDEX_NAME in pd_df.columns:
-            pd_df = pd_df.set_index(DEFAULT_ARROW_INDEX_NAME)
-        if pd_df.index.name == DEFAULT_ARROW_INDEX_NAME:
-            pd_df.index.name = None
+        if index_name and index_name in df.columns:
+            df = df.set_index(index_name)
+        elif DEFAULT_ARROW_INDEX_NAME in df.columns:
+            df = df.set_index(DEFAULT_ARROW_INDEX_NAME)
+        if df.index.name == DEFAULT_ARROW_INDEX_NAME:
+            df.index.name = None
 
-    if as_series:
-        pd_df = pd_df.squeeze()
-    return pd_df
-
-
-def __convert_object_to_string(df):
-    cols = [col for col in df if df[col].dtype == object]
-    astype = {col: 'string' for col in cols}
-    return df.astype(astype)
+    if as_series and isinstance(df, pd.DataFrame):
+        df = df.squeeze()
+    if isinstance(df, pd.Series):
+        df = df.to_frame()
+    return df
 
 
 def _convert_to_arrow(df):
