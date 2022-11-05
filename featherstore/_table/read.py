@@ -104,24 +104,23 @@ def _row_after_candidate(target, candidate):
         return False
 
 
-def read_table(table, partition_names, cols=ColIndexer(None),
-               rows=RowIndexer(None), edit_mode=False):
+def read_table(table, partition_names, cols=ColIndexer(None), rows=RowIndexer(None)):
     index_name = table._table_data["index_name"]
     if cols.values() is None:
         cols = ColIndexer(table._table_data["columns"])
-    dfs = _read_partitions(partition_names, table._table_path, cols, edit_mode)
+    dfs = _read_partitions(partition_names, table._table_path, cols)
     df = _combine_partitions(dfs)
     df = _filter_table_rows(df, rows, index_name)
     return df
 
 
-def _read_partitions(partition_names, table_path, cols, edit_mode):
+def _read_partitions(partition_names, table_path, cols):
     cols = __add_index_to_cols(cols, table_path)
 
     partitions = []
     for partition_name in partition_names:
         partition_path = os.path.join(table_path, f"{partition_name}.feather")
-        partition = __read_feather(partition_path, cols, edit_mode)
+        partition = __read_feather(partition_path, cols)
         partitions.append(partition)
     return partitions
 
@@ -133,9 +132,10 @@ def __add_index_to_cols(cols, table_path):
     return cols
 
 
-def __read_feather(path, cols, edit_mode):
+def __read_feather(path, cols):
     is_windows = platform.system() == "Windows"
-    if is_windows and edit_mode:
+    if is_windows:
+        # To prevent permission error when deleting/overwriting the file
         with open(path, 'rb') as f:
             df = feather.read_table(f, columns=None, memory_map=True)
     else:

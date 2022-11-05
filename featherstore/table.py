@@ -192,7 +192,7 @@ class Table:
         df = common.format_table(df, index_name, warnings)
         if has_default_index:
             df = append.format_default_index(self, df)
-        last_partition = read.read_table(self, [last_partition_name], edit_mode=True)
+        last_partition = read.read_table(self, [last_partition_name])
 
         df = append.append_data(df, to=last_partition)
         partitions = append.create_partitions(df, rows_per_partition,
@@ -225,7 +225,7 @@ class Table:
         rows = common.format_rows_arg(df.index, to_dtype=index_type)
 
         partition_names = read.get_partition_names(self, rows)
-        stored_df = read.read_table(self, partition_names, edit_mode=True)
+        stored_df = read.read_table(self, partition_names)
 
         df = update.update_data(stored_df, to=df)
         df = common.format_table(df, index_name=index_name, warnings=False)
@@ -255,7 +255,7 @@ class Table:
         has_default_index = insert.has_still_default_index(self, df)
 
         partition_names = read.get_partition_names(self, rows)
-        stored_df = read.read_table(self, partition_names, edit_mode=True)
+        stored_df = read.read_table(self, partition_names)
 
         df = insert.insert_data(df, to=stored_df)
         partitions = insert.create_partitions(df, rows_per_partition, partition_names,
@@ -284,7 +284,7 @@ class Table:
         partition_size = self._table_data["partition_size"]
 
         partition_names = read.get_partition_names(self, None)
-        stored_df = read.read_table(self, partition_names, edit_mode=True)
+        stored_df = read.read_table(self, partition_names)
 
         df = add_cols.add_columns(stored_df, df, index=idx)
         df = common.format_table(df, index_name=index_name, warnings=False)
@@ -338,7 +338,7 @@ class Table:
         rows = common.format_rows_arg(rows, to_dtype=index_type)
 
         partition_names = drop.get_partition_names(self, rows)
-        stored_df = read.read_table(self, partition_names, edit_mode=True)
+        stored_df = read.read_table(self, partition_names)
 
         df = drop.drop_rows_from_data(stored_df, rows, index_name)
         df = common.format_table(df, index_name=index_name, warnings=False)
@@ -367,7 +367,7 @@ class Table:
         cols = common.format_cols_arg(cols, like=stored_cols)
 
         partition_names = drop.get_partition_names(self, None)
-        stored_df = read.read_table(self, partition_names, edit_mode=True)
+        stored_df = read.read_table(self, partition_names)
 
         df = drop.drop_cols_from_data(stored_df, cols)
         df = common.format_table(df, index_name=index_name, warnings=False)
@@ -409,7 +409,7 @@ class Table:
         cols_mapping = common.format_cols_and_to_args(cols, to)
 
         partition_names = read.get_partition_names(self, None)
-        df = read.read_table(self, partition_names, edit_mode=True)
+        df = read.read_table(self, partition_names)
 
         df = rename_cols.rename_columns(df, cols_mapping)
         df = common.format_table(df, index_name=index_name, warnings=False)
@@ -491,7 +491,7 @@ class Table:
         astype_mapping = common.format_cols_and_to_args(cols, to)
 
         partition_names = read.get_partition_names(self, None)
-        df = read.read_table(self, partition_names, edit_mode=True)
+        df = read.read_table(self, partition_names)
 
         df = astype.change_type(df, astype_mapping)
         df = common.format_table(df, index_name=index_name, warnings=False)
