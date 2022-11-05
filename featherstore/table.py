@@ -526,7 +526,7 @@ class Table:
 
     def drop_table(self):
         """Deletes the current table"""
-        _utils.delete_folder_tree(self._table_path)
+        _utils.delete_folder_tree(self._table_path, current_db())
         self._table_data = Metadata(self._table_path, "table")
         self._partition_data = Metadata(self._table_path, "partition")
 

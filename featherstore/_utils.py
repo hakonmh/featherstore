@@ -3,8 +3,15 @@ import platform
 import shutil
 import re
 import ctypes
+from pathlib import Path
 
+DB_MARKER_NAME = ".featherstore"
 DEFAULT_ARROW_INDEX_NAME = "__index_level_0__"
+
+
+def touch(path, flag='ab'):
+    with open(path, flag):
+        pass
 
 
 def mark_as_hidden(path):
@@ -16,7 +23,20 @@ def mark_as_hidden(path):
             raise ctypes.WinError()
 
 
-def delete_folder_tree(path):
+def delete_folder_tree(path, db_path):
+    if _is_in_database(path, db_path):
+        __delete_folder_tree(path)
+    else:
+        raise PermissionError("Not a database!")
+
+
+def _is_in_database(path, db_path):
+    path = Path(path)
+    db_path = Path(db_path)
+    return db_path in path.parents
+
+
+def __delete_folder_tree(path):
     try:
         shutil.rmtree(path)
     except FileNotFoundError:
@@ -25,7 +45,7 @@ def delete_folder_tree(path):
         # Force delete stubborn open file on Windows
         os.system(f'cmd /k "del /f /q /a {e.filename}"')
         # Try to delete folder with stubborn file deleted
-        delete_folder_tree(path)
+        __delete_folder_tree(path)
 
 
 def expand_home_dir_modifier(path):

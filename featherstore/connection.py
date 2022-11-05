@@ -1,8 +1,6 @@
 import os
 from featherstore import _utils
-from featherstore._utils import mark_as_hidden, expand_home_dir_modifier
-
-DB_MARKER_NAME = ".featherstore"
+from featherstore._utils import mark_as_hidden, expand_home_dir_modifier, DB_MARKER_NAME
 
 
 def connect(connection_string):
@@ -47,7 +45,7 @@ def create_database(path, *, errors="raise", connect=True):
 def _make_database_marker(db_path):
     """A database marker tells FeatherStore that `db_path` is a database directory"""
     db_marker_path = os.path.join(db_path, DB_MARKER_NAME)
-    open(db_marker_path, "a").close()
+    _utils.touch(db_marker_path)
     mark_as_hidden(db_marker_path)
 
 

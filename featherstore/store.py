@@ -1,8 +1,9 @@
 import os
 
 from featherstore import _utils
+from featherstore._utils import DB_MARKER_NAME
 from featherstore.table import Table, DEFAULT_PARTITION_SIZE
-from featherstore.connection import current_db, DB_MARKER_NAME, Connection
+from featherstore.connection import current_db, Connection
 from featherstore.snapshot import _create_snapshot
 
 
@@ -61,7 +62,7 @@ def drop_store(store_name, *, errors="raise"):
     """
     _can_drop_store(store_name, errors)
     store_path = os.path.join(current_db(), store_name)
-    _utils.delete_folder_tree(store_path)
+    _utils.delete_folder_tree(store_path, current_db())
 
 
 def list_stores(*, like=None):

@@ -2,8 +2,7 @@ import os
 import itertools
 from string import ascii_lowercase
 from featherstore._table._table_utils import get_col_names
-from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
-from featherstore.connection import DB_MARKER_NAME
+from featherstore._utils import DEFAULT_ARROW_INDEX_NAME, DB_MARKER_NAME
 from featherstore._table.write import __is_rangeindex
 
 import pyarrow as pa

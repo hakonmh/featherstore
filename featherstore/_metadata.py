@@ -17,8 +17,7 @@ class Metadata():
         if not os.path.exists(self._metadata_folder):
             os.makedirs(self._metadata_folder)
             _utils.mark_as_hidden(self._metadata_folder)
-            with open(self._db_path, 'ab'):
-                pass
+            _utils.touch(self._db_path, flag='ab')
 
     def write(self, new_data: dict):
         _can_write_metadata(new_data)
