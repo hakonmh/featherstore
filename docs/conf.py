@@ -67,8 +67,8 @@ html_static_path = ['_static']
 html_favicon = '_static/favicon.ico'
 html_theme_options = {
     "logo": {
-        "image_light": "_static/logo-dark.png",
-        "image_dark": "_static/logo-light.png",
+        "image_light": "logo-dark.png",
+        "image_dark": "logo-light.png",
     },
     "icon_links": [
         {
