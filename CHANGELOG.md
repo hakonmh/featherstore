@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.2.1
+-----
+
+* Fixed PermissionError when trying to modify a previously opened file on windows
+* Changed minimum PyArrow requirement from 7.0.0 to 8.0.0
+
 0.2.0
 -----
 
