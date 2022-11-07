@@ -135,7 +135,10 @@ def __get_numpy_dtype_info(dtype):
 
 def _add_pd_metadata(df, metadata):
     old_metadata = df.schema.metadata
-    old_metadata[b'pandas'] = metadata[b'pandas']
+    if old_metadata:
+        old_metadata[b'pandas'] = metadata[b'pandas']
+    else:
+        old_metadata = {b'pandas': metadata[b'pandas']}
     df = df.replace_schema_metadata(old_metadata)
     return df
 

@@ -31,7 +31,7 @@ setup(
     install_requires=[
         'pandas>=1.1.0',
         'polars[timezone]>=0.14.11',
-        'pyarrow>=7.0.0',
+        'pyarrow>=8.0.0',
     ],
     project_urls={
         'Documentation': r'https://featherstore.readthedocs.io/en/stable/'

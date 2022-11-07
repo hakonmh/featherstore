@@ -2,4 +2,4 @@
 exclude = dev,benchmarks,build,dist
 ignore = F405,F403
 max_line_length = 100
-count=true
+count = true

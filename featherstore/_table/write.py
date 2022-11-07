@@ -173,7 +173,4 @@ def write_partitions(partitions, table_path):
 
 def _write_feather(df, file_path):
     CHUNKSIZE = 128 * 1024**2  # bytes
-    feather.write_feather(df,
-                          file_path,
-                          compression="uncompressed",
-                          chunksize=CHUNKSIZE)
+    feather.write_feather(df, file_path, compression="uncompressed", chunksize=CHUNKSIZE)
