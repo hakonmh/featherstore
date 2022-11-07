@@ -1,2 +1,9 @@
+# Dependencies
+pandas
+polars[timezone]
+pyarrow
+numpy
+
+# Docs dependencies
 sphinx
 pydata-sphinx-theme
