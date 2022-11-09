@@ -4,6 +4,7 @@ from string import ascii_lowercase
 from featherstore._table._table_utils import get_col_names
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME, DB_MARKER_NAME
 from featherstore._table.write import __is_rangeindex
+from featherstore.table import DEFAULT_PARTITION_SIZE
 
 import pyarrow as pa
 import polars as pl
@@ -201,6 +202,11 @@ def get_index_name(df):
 
 
 def get_partition_size(df, num_partitions=5):
+    if num_partitions == 0:
+        return DEFAULT_PARTITION_SIZE
+    elif num_partitions < 0:
+        return -1
+
     if isinstance(df, pd.DataFrame):
         byte_size = df.memory_usage(index=True).sum()
     elif isinstance(df, pd.Series):
