@@ -1,2 +1,1 @@
-from external_benches import (csv, duckdb, feather, parquet,  # noqa: F401
-                              pickle, pystore, fstore)  # noqa: F401
+from . import csv, duckdb, feather, parquet, pickle, fstore  # noqa: F401

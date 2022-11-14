@@ -1,18 +1,34 @@
 import itertools
 import string
 import copy
+import os
 
 import pyarrow as pa
 import polars as pl
 import pandas as pd
 import numpy as np
-from featherstore._utils import filter_items_like_pattern
+
+import featherstore as fs
+from featherstore._utils import (
+    filter_items_like_pattern,
+    delete_folder_tree,
+    DB_MARKER_NAME
+)
 from featherstore._table._indexers import RowIndexer
 from featherstore._table._table_utils import filter_arrow_table
 from featherstore._table.common import _format_pd_metadata
 from featherstore.table import DEFAULT_PARTITION_SIZE
 
 RANDS_CHARS = np.array(list(string.ascii_lowercase + ' '))
+
+
+def delete_db():
+    db_path = fs.current_db()
+    items = os.listdir(db_path)
+    if DB_MARKER_NAME in items:
+        delete_folder_tree(db_path, db_path)
+    else:
+        raise RuntimeError("Not a database!")
 
 
 def __make_float_col(rows):

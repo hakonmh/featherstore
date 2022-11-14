@@ -8,7 +8,8 @@ def write_bmark(shape, num_partitions=0, **kwargs):
     write.write_pandas(shape, num_partitions=num_partitions)
     write.write_polars(shape, num_partitions=num_partitions)
     header = f'Write benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
-    write.write_bench.run(header=header, **kwargs)
+    result = write.write_bench.run(header=header, **kwargs)
+    return result
 
 
 def read_bmark(shape, num_partitions=0, **kwargs):
@@ -16,8 +17,9 @@ def read_bmark(shape, num_partitions=0, **kwargs):
 
     read.read_bench.setup(shape, num_partitions=num_partitions)
     header = f'Full read benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
-    read.read_bench.run(header, **kwargs)
+    result = read.read_bench.run(header, **kwargs)
     read.read_bench.teardown()
+    return result
 
 
 def read_rows_bmark(shape, rows_ratio, num_partitions=0, **kwargs):
@@ -25,8 +27,9 @@ def read_rows_bmark(shape, rows_ratio, num_partitions=0, **kwargs):
 
     read.read_bench.setup(shape, num_partitions=num_partitions)
     header = f'Partial read rows benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
-    read.read_bench.run(header, **kwargs)
+    result = read.read_bench.run(header, **kwargs)
     read.read_bench.teardown()
+    return result
 
 
 def read_cols_bmark(shape, cols_ratio, num_partitions=0, **kwargs):
@@ -34,8 +37,9 @@ def read_cols_bmark(shape, cols_ratio, num_partitions=0, **kwargs):
 
     read.read_bench.setup(shape, num_partitions=num_partitions)
     header = f'Partial read columns benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
-    read.read_bench.run(header, **kwargs)
+    result = read.read_bench.run(header, **kwargs)
     read.read_bench.teardown()
+    return result
 
 
 def _read_fs(*args, **kwargs):
@@ -52,43 +56,50 @@ def append_bmark(shape, append_ratio, num_partitions=0, **kwargs):
     append.append_polars(shape, num_rows_to_append, num_partitions=num_partitions)
 
     header = f'Append benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
-    append.append_bench.run(header, **kwargs)
+    result = append.append_bench.run(header, **kwargs)
+    return result
 
 
 def insert_rows_bmark(shape, insert_ratio, num_partitions=0, **kwargs):
     _do_rows(insert.insert, shape, insert_ratio, shape=shape, num_partitions=num_partitions)
     header = f'Insert rows benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
-    insert.insert_bench.run(header, **kwargs)
+    result = insert.insert_bench.run(header, **kwargs)
+    return result
 
 
 def insert_cols_bmark(shape, insert_ratio, num_partitions=0, **kwargs):
     _do_cols(insert.insert, shape, insert_ratio, shape=shape, num_partitions=num_partitions)
     header = f'Insert columns benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
-    insert.insert_bench.run(header, **kwargs)
+    result = insert.insert_bench.run(header, **kwargs)
+    return result
 
 
 def update_rows_bmark(shape, update_ratio, num_partitions=0, **kwargs):
     _do_rows(update.update, shape, update_ratio, shape=shape, num_partitions=num_partitions)
     header = f'Update rows benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
-    update.update_bench.run(header, **kwargs)
+    result = update.update_bench.run(header, **kwargs)
+    return result
 
 
 def update_cols_bmark(shape, update_ratio, num_partitions=0, **kwargs):
     _do_cols(update.update, shape, update_ratio, shape=shape, num_partitions=num_partitions)
     header = f'Update columns benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
-    update.update_bench.run(header, **kwargs)
+    result = update.update_bench.run(header, **kwargs)
+    return result
 
 
 def drop_rows_bmark(shape, drop_ratio, num_partitions=0, **kwargs):
     _do_rows(drop.drop, shape, drop_ratio, shape=shape, num_partitions=num_partitions)
     header = f'Drop rows benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
-    drop.drop_bench.run(header, **kwargs)
+    result = drop.drop_bench.run(header, **kwargs)
+    return result
 
 
 def drop_cols_bmark(shape, drop_ratio, num_partitions=0, **kwargs):
     _do_cols(drop.drop, shape, drop_ratio, shape=shape, num_partitions=num_partitions)
     header = f'Drop columns benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
-    drop.drop_bench.run(header, **kwargs)
+    result = drop.drop_bench.run(header, **kwargs)
+    return result
 
 
 def astype_bmark(shape, astype_ratio, num_partitions=0, **kwargs):
@@ -110,7 +121,8 @@ def astype_bmark(shape, astype_ratio, num_partitions=0, **kwargs):
                   num_partitions=num_partitions)
 
     header = f'Change dtype benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
-    astype.astype_bench.run(header, **kwargs)
+    result = astype.astype_bench.run(header, **kwargs)
+    return result
 
 
 def _do_rows(func, shp, ratio, **kwargs):
@@ -138,7 +150,7 @@ if __name__ == '__main__':
     num_partitions = 5
     run_kwargs = {
         'n': 1,
-        'r': 5,
+        'r': 4,
         'sort': False
     }
 

@@ -1,6 +1,6 @@
 import bmark
 import featherstore as fs
-import fixtures as fx
+from . import _fixtures as fx
 
 write_bench = bmark.Benchmark()
 
@@ -23,7 +23,7 @@ class WriteFS(bmark.Benched):
         fs.create_database('db')
 
     def teardown(self):
-        fx.io.delete_db()
+        fx.delete_db()
 
     def __enter__(self):
         self._store = fs.create_store('store_name')

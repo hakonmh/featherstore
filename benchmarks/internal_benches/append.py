@@ -1,5 +1,5 @@
 import bmark
-import dev.fixtures as fx
+from . import _fixtures as fx
 import featherstore as fs
 
 append_bench = bmark.Benchmark()
@@ -29,7 +29,7 @@ class AppendFS(bmark.Benched):
     def teardown(self):
         self._table.drop_table()
         fs.drop_store('store_name')
-        fx.io.delete_db()
+        fx.delete_db()
 
     def __exit__(self, exc, value, traceback):
         self._table.drop(rows=self._rows)

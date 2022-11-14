@@ -1,7 +1,9 @@
-import bmark
-import fixtures as fx
 import os
 import shutil
+import sys
+import bmark
+sys.path.insert(0, '')
+from internal_benches import _fixtures as fx  # noqa: E402
 
 BENCH_DIR = 'db'
 BENCH_MARKER = '.bmark'

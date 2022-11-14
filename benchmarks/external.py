@@ -2,7 +2,7 @@ from external_benches import *
 import bmark
 
 
-def benchmark_writes(shape, num_partitions=0, **kwargs):
+def benchmark_writes(shape, num_partitions=0, plot=False, **kwargs):
     benched = (
         fstore.fs_write_pd(shape, num_partitions=num_partitions),
         csv.pd_write_csv(shape),
@@ -10,14 +10,17 @@ def benchmark_writes(shape, num_partitions=0, **kwargs):
         parquet.pd_write_parquet(shape),
         pickle.pd_write_pickle(shape),
         duckdb.duckdb_write_pd(shape),
-        pystore.pystore_write_pd(shape)
     )
     write_bench = bmark.Benchmark(benched)
     header = f'Write benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
-    write_bench.run(header=header, **kwargs)
+    quiet = plot
+    result = write_bench.run(header=header, quiet=quiet, **kwargs)
+    if plot:
+        result.plot()
+    return result
 
 
-def benchmark_reads(shape, num_partitions=0, **kwargs):
+def benchmark_reads(shape, num_partitions=0, plot=False, **kwargs):
     benched = (
         fstore.fs_read_pd(shape, num_partitions=num_partitions),
         csv.pd_read_csv(shape),
@@ -25,20 +28,24 @@ def benchmark_reads(shape, num_partitions=0, **kwargs):
         parquet.pd_read_parquet(shape),
         pickle.pd_read_pickle(shape),
         duckdb.duckdb_read_pd(shape),
-        pystore.pystore_read_pd(shape)
     )
     read_bench = bmark.Benchmark(benched)
     header = f'Read benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
-    read_bench.run(header=header, **kwargs)
+    quiet = plot
+    result = read_bench.run(header=header, quiet=quiet, **kwargs)
+    if plot:
+        result.plot()
+    return result
 
 
 if __name__ == '__main__':
-    shape = (100_000, 10)
-    num_partitions = 5
+    shape = (1_000, 10)
+    num_partitions = 20
+    plot = True
     run_kwargs = {
-        'n': 1,
-        'r': 2,
+        'n': 3,
+        'r': 4,
         'sort': True
     }
-    benchmark_writes(shape, num_partitions, **run_kwargs)
-    benchmark_reads(shape, num_partitions, **run_kwargs)
+    benchmark_writes(shape, num_partitions, plot=plot, **run_kwargs)
+    benchmark_reads(shape, num_partitions, plot=plot, **run_kwargs)

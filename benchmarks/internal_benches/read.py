@@ -1,5 +1,5 @@
 import bmark
-import dev.fixtures as fx
+from . import _fixtures as fx
 import featherstore as fs
 
 read_bench = bmark.Benchmark()
@@ -19,7 +19,7 @@ def _setup(shape, num_partitions=0):
 def _teardown():
     store = fs.Store('store_name')
     store.drop_table('table_name')
-    fx.io.delete_db()
+    fx.delete_db()
 
 
 class ReadFS(bmark.Benched):
@@ -27,7 +27,8 @@ class ReadFS(bmark.Benched):
     def __init__(self, rows, cols, name):
         self._rows = rows
         self._cols = cols
-        self.name = self.name + ' ' + name
+        if name:
+            self.name = self.name + ' ' + name
 
     def setup(self):
         self._store = fs.Store('store_name')

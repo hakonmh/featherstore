@@ -1,5 +1,5 @@
 import bmark
-import dev.fixtures as fx
+from . import _fixtures as fx
 import featherstore as fs
 import pyarrow as pa
 
@@ -52,7 +52,7 @@ class astype(bmark.Benched):
 
     def teardown(self):
         fs.drop_store('store_name')
-        fx.io.delete_db()
+        fx.delete_db()
 
     def __enter__(self):
         self._table.write(self._df, index='index', partition_size=self._partition_size)

@@ -1,6 +1,8 @@
 import bmark
 import featherstore as fs
-import fixtures as fx
+import sys
+sys.path.insert(0, '')
+from internal_benches import _fixtures as fx  # noqa: E402
 
 
 class fs_write_pd(bmark.Benched):
@@ -21,7 +23,7 @@ class fs_write_pd(bmark.Benched):
         fs.create_database('db')
 
     def teardown(self):
-        fx.io.delete_db()
+        fx.delete_db()
 
     def __enter__(self):
         self._store = fs.create_store('store_name')
@@ -55,4 +57,4 @@ class fs_read_pd(bmark.Benched):
     def teardown(self):
         self._store.drop_table('table_name')
         fs.drop_store('store_name')
-        fx.io.delete_db()
+        fx.delete_db()
