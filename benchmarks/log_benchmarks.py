@@ -49,7 +49,7 @@ if __name__ == '__main__':
     args = [
         ((1_000, 10), 5),
         ((100_000, 50), 500),
-        ((1_000_000, 100), -1),
+        ((1_000_000, 100), 0),
     ]
     for shape, num_partitions in args:
         log_benchmark(shape, num_partitions, version=version, quiet=True)

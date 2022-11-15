@@ -146,11 +146,11 @@ def _do_cols(func, shp, ratio, **kwargs):
 
 
 if __name__ == '__main__':
-    shape = (100_000, 50)
-    num_partitions = 5
+    shape = (1_000, 12)
+    num_partitions = 20
     run_kwargs = {
-        'n': 1,
-        'r': 4,
+        'n': 3,
+        'r': 5,
         'sort': False
     }
 

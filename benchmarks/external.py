@@ -39,12 +39,12 @@ def benchmark_reads(shape, num_partitions=0, plot=False, **kwargs):
 
 
 if __name__ == '__main__':
-    shape = (1_000, 10)
-    num_partitions = 20
+    shape = (100_000, 6)
+    num_partitions = 0
     plot = True
     run_kwargs = {
         'n': 3,
-        'r': 4,
+        'r': 5,
         'sort': True
     }
     benchmark_writes(shape, num_partitions, plot=plot, **run_kwargs)

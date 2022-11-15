@@ -1,5 +1,6 @@
 from ._fixtures import OtherIO
 from pyarrow import feather
+import os
 
 
 class pd_write_feather(OtherIO):
@@ -28,11 +29,19 @@ class pd_read_feather(OtherIO):
 
     def setup(self):
         super().setup()
-        return self
-
-    def __enter__(self):
         CHUNKSIZE = 128 * 1024**2  # bytes
         feather.write_feather(self._df, self._path,
                               compression="uncompressed",
                               chunksize=CHUNKSIZE)
+        del self._df
+
+    def __enter__(self):
         return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        pass
+
+    def teardown(self):
+        if os.path.exists(self._path):
+            os.remove(self._path)
+        return super().teardown()

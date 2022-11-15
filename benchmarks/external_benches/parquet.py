@@ -1,5 +1,6 @@
 from ._fixtures import OtherIO
 import pandas as pd
+import os
 
 
 class pd_write_parquet(OtherIO):
@@ -25,8 +26,20 @@ class pd_read_parquet(OtherIO):
     def run(self):
         pd.read_parquet(self._path, engine='pyarrow', memory_map=True)
 
-    def __enter__(self):
+    def setup(self):
+        super().setup()
         self._df.to_parquet(self._path, engine='pyarrow', compression=None,
                             data_page_size=1024, use_dictionary=False,
                             row_group_size=512 * 1024**2)
+        del self._df
+
+    def __enter__(self):
         return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        pass
+
+    def teardown(self):
+        if os.path.exists(self._path):
+            os.remove(self._path)
+        return super().teardown()

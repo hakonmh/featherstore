@@ -1,5 +1,6 @@
 from ._fixtures import OtherIO
 import duckdb
+import os
 
 
 class duckdb_write_pd(OtherIO):
@@ -38,17 +39,21 @@ class duckdb_read_pd(OtherIO):
 
     def setup(self):
         super().setup()
-        return self
-
-    def __enter__(self):
         df = self._df  # noqa: F841
         con = duckdb.connect(self._path)
         con.execute("CREATE TABLE table_name AS SELECT * FROM df")
         con.execute("INSERT INTO table_name SELECT * FROM df")
         con.close()
+        del self._df, df
+
+    def __enter__(self):
         self._con = duckdb.connect(self._path, read_only=True)
         return self
 
     def __exit__(self, exception_type, exception_value, traceback):
         self._con.close()
-        super().__exit__(exception_type, exception_value, traceback)
+
+    def teardown(self):
+        if os.path.exists(self._path):
+            os.remove(self._path)
+        return super().teardown()

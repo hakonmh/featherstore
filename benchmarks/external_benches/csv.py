@@ -1,5 +1,6 @@
 from ._fixtures import OtherIO
 import pandas as pd
+import os
 
 
 class pd_write_csv(OtherIO):
@@ -23,6 +24,15 @@ class pd_read_csv(OtherIO):
     def run(self):
         pd.read_csv(self._path)
 
-    def __enter__(self):
+    def setup(self):
+        super().setup()
         self._df.to_csv(self._path)
-        return self
+        del self._df
+
+    def teardown(self):
+        if os.path.exists(self._path):
+            os.remove(self._path)
+        return super().teardown()
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        pass

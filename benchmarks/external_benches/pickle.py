@@ -1,5 +1,6 @@
 from ._fixtures import OtherIO
 import pandas as pd
+import os
 
 
 class pd_write_pickle(OtherIO):
@@ -16,13 +17,25 @@ class pd_write_pickle(OtherIO):
 class pd_read_pickle(OtherIO):
 
     def __init__(self, shape):
-        super().__init__(shape, astype='pandas')
         self.name = "Pandas read Pickle"
+        super().__init__(shape, astype='pandas')
         self._path += '.pickle'
 
     def run(self):
         pd.read_pickle(self._path)
 
-    def __enter__(self):
+    def setup(self):
+        super().setup()
         self._df.to_pickle(self._path)
+        del self._df
+
+    def __enter__(self):
         return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        pass
+
+    def teardown(self):
+        if os.path.exists(self._path):
+            os.remove(self._path)
+        return super().teardown()
