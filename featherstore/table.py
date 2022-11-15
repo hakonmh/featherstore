@@ -526,9 +526,10 @@ class Table:
 
     def drop_table(self):
         """Deletes the current table"""
-        _utils.delete_folder_tree(self._table_path, current_db())
-        self._table_data = Metadata(self._table_path, "table")  # Resets the index
-        self._partition_data = Metadata(self._table_path, "partition")  # Resets the index
+        if self.exists():
+            _utils.delete_folder_tree(self._table_path, current_db())
+            self._table_data = Metadata(self._table_path, "table")  # Resets the index
+            self._partition_data = Metadata(self._table_path, "partition")  # Resets the index
 
     def create_snapshot(self, path):
         """Creates a compressed backup of the table.
