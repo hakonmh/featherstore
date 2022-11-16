@@ -1,18 +1,18 @@
 import os
 import itertools
 from string import ascii_lowercase
-from featherstore._table._table_utils import get_col_names
-from featherstore._utils import DEFAULT_ARROW_INDEX_NAME, DB_MARKER_NAME
-from featherstore._table.write import __is_rangeindex
-from featherstore.table import DEFAULT_PARTITION_SIZE
 
 import pyarrow as pa
 import polars as pl
 import pandas as pd
 import numpy as np
-from pandas._testing import rands_array
 
-DB_MARKER_NAME = DB_MARKER_NAME  # Remove flake8 warning
+from featherstore._table._table_utils import get_col_names
+from featherstore._utils import DEFAULT_ARROW_INDEX_NAME, DB_MARKER_NAME  # noqa: F401
+from featherstore._table.write import __is_rangeindex
+from featherstore.table import DEFAULT_PARTITION_SIZE
+
+RANDS_CHARS = np.array(list(ascii_lowercase + ' '))
 DB_PATH = os.path.join('tests', '_db')
 STORE_NAME = "test_store"
 TABLE_NAME = "table_name"
@@ -22,6 +22,8 @@ MD_NAME = 'db'
 
 def make_table(index=None, rows=30, cols=5, *, astype="arrow", dtype=None, **kwargs):
     df = _make_df(rows, cols, dtype=dtype)
+    if index == default_index:
+        index = None
     if index is not None:
         df.index = index(rows, **kwargs)
     df = _convert_df_to(df, to=astype)
@@ -66,20 +68,18 @@ def __make_int_col(rows):
 def __make_datetime_col(rows):
     start = -852076800  # 1943-01-01 in seconds relative to epoch
     end = 1640995200  # 2022-01-01 in seconds relative to epoch
-    times_since_epoch = __random_unique_numbers(start, end, rows)
+    times_since_epoch = np.random.randint(start, end, size=rows, dtype=np.int32)
     dtime = times_since_epoch.astype('datetime64[s]')
     return dtime
 
 
-def __random_unique_numbers(start, end, rows):
-    df = np.random.randint(start, end, size=round(rows * 1.25), dtype=np.int32)
-    df = np.unique(df)[:rows]
-    return df
-
-
 def __make_string_col(rows):
     str_length = 5
-    df = rands_array(str_length, rows)
+    df = (
+        np.random.choice(RANDS_CHARS, size=str_length * rows)
+        .view((np.str_, str_length))
+        .reshape(rows)
+    )
     df = pd.Series(df, dtype='string')
     return df
 
@@ -131,10 +131,24 @@ def sorted_string_index(rows):
 
 
 def sorted_datetime_index(rows):
-    index = __make_datetime_col(rows)
+    index = __make_unique_datetime_col(rows)
     index = pd.Index(index)
     index.name = 'Date'
     return index.sort_values()
+
+
+def __make_unique_datetime_col(rows):
+    start = -852076800  # 1943-01-01 in seconds relative to epoch
+    end = 1640995200  # 2022-01-01 in seconds relative to epoch
+    times_since_epoch = __random_unique_numbers(start, end, rows)
+    dtime = times_since_epoch.astype('datetime64[s]')
+    return dtime
+
+
+def __random_unique_numbers(start, end, rows):
+    df = np.random.randint(start, end, size=round(rows * 1.25), dtype=np.int32)
+    df = np.unique(df)[:rows]
+    return df
 
 
 def continuous_datetime_index(rows):
@@ -177,7 +191,7 @@ def unsorted_string_index(rows):
 
 
 def unsorted_datetime_index(rows):
-    index = __make_datetime_col(rows)
+    index = __make_unique_datetime_col(rows)
     index = pd.Index(index)
     index.name = 'Date'
     return index
@@ -208,9 +222,10 @@ def get_partition_size(df, num_partitions=5):
         return -1
 
     if isinstance(df, pd.DataFrame):
-        byte_size = df.memory_usage(index=True).sum()
+        byte_size = sum(df[col].nbytes for col in df.columns)
+        byte_size += df.index.nbytes
     elif isinstance(df, pd.Series):
-        byte_size = df.memory_usage(index=True)
+        byte_size = df.nbytes + df.index.nbytes
     elif isinstance(df, pl.DataFrame):
         df = df.to_arrow()
     if isinstance(df, pa.Table):
