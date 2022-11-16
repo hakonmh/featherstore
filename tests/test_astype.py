@@ -1,65 +1,71 @@
-from collections import namedtuple
 import pytest
 from .fixtures import *
 
 import pyarrow as pa
 from pandas.testing import assert_frame_equal
 
-TypeMapper = namedtuple('TypeMapper', 'arrow_dtype pandas_dtype')
-TYPE_MAP = {
-    'float16': TypeMapper(pa.float16(), 'float'),
-    'float32': TypeMapper(pa.float32(), 'float'),
-    'float64': TypeMapper(pa.float64(), 'float'),
-    'decimal128(5, 5)': TypeMapper(pa.decimal128(5, 5), 'float'),
-    'decimal128(19, 0)': TypeMapper(pa.decimal128(19, 0), 'float'),
-    'int16': TypeMapper(pa.int16(), 'int'),
-    'int32': TypeMapper(pa.int32(), 'int'),
-    'int64': TypeMapper(pa.int64(), 'int'),
-    'uint32': TypeMapper(pa.uint32(), 'uint'),
-    'bool': TypeMapper(pa.bool_(), 'bool'),
-    'date32': TypeMapper(pa.date32(), 'datetime'),
-    'date64': TypeMapper(pa.date64(), 'datetime'),
-    'time32': TypeMapper(pa.time32('ms'), 'datetime'),
-    'time64': TypeMapper(pa.time64('us'), 'datetime'),
-    'timestamp': TypeMapper(pa.timestamp('us'), 'datetime'),
-    'string': TypeMapper(pa.string(), 'string'),
-    'large_string': TypeMapper(pa.large_string(), 'string'),
-    'binary': TypeMapper(pa.binary(), 'string'),
-    'large_binary': TypeMapper(pa.large_binary(), 'string'),
-}
 
-KWARG_FORMATS = ['dict', 'list']
-kwarg_format_idx = 0
+TYPE_MAP = {
+    pa.float16(): 'float',
+    pa.float32(): 'float',
+    pa.float64(): 'float',
+    pa.int16(): 'int',
+    pa.int32(): 'int',
+    pa.int64(): 'int',
+    pa.uint32(): 'uint',
+    pa.bool_(): 'bool',
+    pa.date32(): 'datetime',
+    pa.date64(): 'datetime',
+    pa.time32('ms'): 'datetime',
+    pa.time64('us'): 'datetime',
+    pa.timestamp('us'): 'datetime',
+    pa.string(): 'string',
+    pa.large_string(): 'string',
+    pa.binary(): 'string',
+    pa.large_binary(): 'string',
+}
+kwargs_as_list = True
 
 
 @pytest.mark.parametrize(
     ("from_dtype", "to_dtype"),
     [
-        ('float32', 'float64'),
-        ('float32', 'decimal128(5, 5)'),
-        ('int64', 'int32'),
-        ('int32', 'float64'),
-        ('int32', 'decimal128(19, 0)'),
-        ('uint32', 'int32'),
-        ('bool', 'int16'),
-        ('bool', 'string'),
-        ('int64', 'bool'),
-        ('date32', 'date64'),
-        ('date32', 'timestamp'),
-        ('date64', 'date32'),
-        ('timestamp', 'date64'),
-        ('timestamp', 'time32'),
-        ('time32', 'time64'),
-        ('binary', 'large_binary'),
-        ('binary', 'string'),
-        ('string', 'binary'),
-        ('large_string', 'string'),
+        (pa.float32(), pa.float64()),
+        (pa.float32(), pa.decimal128(5, 5)),
+        (pa.int64(), pa.int32()),
+        (pa.int32(), pa.float64()),
+        (pa.int32(), pa.decimal128(19, 0)),
+        (pa.uint32(), pa.int32()),
+        (pa.bool_(), pa.int16()),
+        (pa.bool_(), pa.string()),
+        (pa.int64(), pa.bool_()),
+        (pa.date32(), pa.date64()),
+        (pa.date32(), pa.timestamp('us')),
+        (pa.date64(), pa.date32()),
+        (pa.timestamp('us'), pa.date64()),
+        (pa.timestamp('us'), pa.time32('ms')),
+        (pa.time32('ms'), pa.time64('us')),
+        (pa.binary(), pa.large_binary()),
+        (pa.binary(), pa.string()),
+        (pa.string(), pa.binary()),
+        (pa.large_string(), pa.string()),
+        (np.int64, np.int32),
+        (np.float32, np.float64),
+        (np.int64, np.int32),
+        (np.int32, np.float64),
+        (np.uint32, np.int32),
+        (bool, np.int16),
+        (np.int64, bool),
     ]
 )
 def test_change_pa_dtype(store, from_dtype, to_dtype):
     # Arrange
     COLS = ['c1', 'c2']
-    original_df = _make_table(dtype=from_dtype, rows=60, cols=3)
+    from_dtype = _convert_to_pa_dtype(from_dtype)
+    dtype_string = TYPE_MAP[from_dtype]
+
+    original_df = make_table(rows=60, cols=3, astype="arrow", dtype=dtype_string)
+    original_df = _change_dtype(original_df, from_dtype)
     expected = _change_dtype(original_df, to_dtype, cols=COLS)
 
     partition_size = get_partition_size(original_df)
@@ -73,69 +79,46 @@ def test_change_pa_dtype(store, from_dtype, to_dtype):
     _assert_frame_equal(table, expected)
 
 
-@pytest.mark.parametrize(
-    ("from_dtype", "to_dtype"),
-    [
-        ('float32', 'float64'),
-        ('int64', 'int32'),
-        ('int32', 'float64'),
-        ('uint32', 'int32'),
-        ('bool', 'int16'),
-        ('int64', 'bool'),
-    ]
-)
-def test_change_np_dtype(store, from_dtype, to_dtype):
-    # Arrange
-    COLS = ['c1', 'c2']
-    original_df = _make_table(dtype=from_dtype, rows=60, cols=3)
-    expected = _change_dtype(original_df, to_dtype, cols=COLS)
-
-    partition_size = get_partition_size(original_df)
-    table = store.select_table(TABLE_NAME)
-    table.write(original_df, partition_size=partition_size)
-    cols, dtype = _format_cols_and_to_key_args(COLS, to_dtype, as_numpy_dtype=True)
-    # Act
-    table.astype(cols, to=dtype)
-    # Assert
-    _assert_frame_equal(table, expected)
-
-
-def _make_table(dtype, rows=30, cols=3):
-    pandas_dtype = TYPE_MAP[dtype].pandas_dtype
-    df = make_table(rows=rows, cols=cols, astype="arrow", dtype=pandas_dtype)
-    df = _change_dtype(df, dtype)
-    return df
-
-
-def _change_dtype(df, to_dtype, cols=None):
-    arrow_dtype = TYPE_MAP[to_dtype].arrow_dtype
+def _change_dtype(df, to, index_name='index', cols=None):
+    arrow_dtype = _convert_to_pa_dtype(to)
     schema = df.schema
     cols = cols if cols else schema.names
     for idx, field in enumerate(schema):
-        if field.name in cols:
+        if field.name in cols and field.name != index_name:
             field = field.with_type(arrow_dtype)
             schema = schema.set(idx, field)
     df = df.cast(schema)
     return df
 
 
-def _format_cols_and_to_key_args(cols, to_dtype, as_numpy_dtype=False):
+def _convert_to_pa_dtype(dtype):
+    if __is_valid_dtype(dtype):
+        dtype = pa.from_numpy_dtype(dtype)
+    return dtype
+
+
+def __is_valid_dtype(item):
+    try:
+        pa.from_numpy_dtype(item)
+        return True
+    except Exception:
+        return False
+
+
+def _format_cols_and_to_key_args(cols, to):
     """Selects every other test to format arguments as one of either:
         * cols=['c1', 'c2'], to=[dtype1, dtype2]
         * cols = {'c1': dtype1, 'c2': dtype2}
     """
-    global kwarg_format_idx
-    kwarg_format_idx = (kwarg_format_idx + 1) % 2
-    kwarg_format = KWARG_FORMATS[kwarg_format_idx]
+    global kwargs_as_list
+    kwargs_as_list = not kwargs_as_list
+    kwarg_format = 'list' if kwargs_as_list else 'dict'
 
-    dtype = TYPE_MAP[to_dtype].arrow_dtype
-    if as_numpy_dtype:
-        dtype = dtype.to_pandas_dtype()
     if kwarg_format == 'dict':
-        cols = {col: dtype for col in cols}
+        cols = {col: to for col in cols}
         to = None
     elif kwarg_format == 'list':
-        to = [dtype] * len(cols)
+        to = [to] * len(cols)
     return cols, to
 
 
