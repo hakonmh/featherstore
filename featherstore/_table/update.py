@@ -1,3 +1,4 @@
+import warnings
 import pandas as pd
 
 from featherstore.connection import Connection
@@ -27,12 +28,13 @@ def update_data(old_df, *, to):
         new_data = to.to_frame()
     else:
         new_data = to
-    old_df = old_df.to_pandas()
-    _raise_if_rows_is_not_in_old_data(old_df, new_data)
+    df = old_df.to_pandas()
+    _raise_if_rows_is_not_in_old_data(df, new_data)
 
-    new_data = _coerce_pd_col_dtypes(new_data, to=old_df)
-    old_df.loc[new_data.index, new_data.columns] = new_data
-    df = old_df
+    new_data = _coerce_pd_col_dtypes(new_data, to=df)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        df.loc[new_data.index, new_data.columns] = new_data
     return df
 
 
