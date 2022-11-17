@@ -1,6 +1,8 @@
-import random
 import pytest
 from .fixtures import *
+import pandas as pd
+import polars as pl
+import pyarrow as pa
 
 
 @pytest.mark.parametrize("index",
@@ -9,10 +11,9 @@ from .fixtures import *
                          ["arrow", "polars", "pandas"])
 def test_append_table(store, index, astype):
     # Arrange
-    fixture = AppendFixture(index=index, astype=astype)
-    original_df = fixture.original_df
-    append_df = fixture.appended_df
-    expected = _append(append_df, to=original_df, index=index)
+    expected = make_table(index, astype=astype)
+    original_df, append_df = split_table(expected, rows={'after': 20}, iloc=True)
+    append_df = shuffle_cols(append_df)
 
     partition_size = get_partition_size(original_df)
     index_name = get_index_name(original_df)
@@ -25,10 +26,8 @@ def test_append_table(store, index, astype):
 
 
 def test_store_append_table(store):
-    fixture = AppendFixture(index=default_index, astype='pandas')
-    original_df = fixture.original_df
-    append_df = fixture.appended_df
-    expected = _append(append_df, to=original_df, index=default_index)
+    expected = make_table(default_index, astype='pandas')
+    original_df, append_df = split_table(expected, rows={'after': 20}, iloc=True)
 
     store.write_table(TABLE_NAME, original_df)
     # Act
@@ -36,73 +35,6 @@ def test_store_append_table(store):
     # Assert
     df = store.read_pandas(TABLE_NAME)
     assert df.equals(expected)
-
-
-class AppendFixture:
-
-    def __init__(self, index, rows=30, astype="pandas"):
-        self._SLICE = round(rows * 0.5)
-        self._astype = astype
-        self._index = index
-        self._df = make_table(self._index, rows=rows, astype=self._astype)
-
-    @property
-    def original_df(self):
-        df = self._df[:self._SLICE]
-        return df
-
-    @property
-    def appended_df(self):
-        df = convert_table(self._df, to='pandas', as_series=False)
-
-        df = df[self._SLICE:]
-        df = self._shuffle_cols(df)
-        df = self._shuffle_rows(df)
-        if self._index is default_index:
-            df = self._make_default_index(df)
-        if 'Date' in df.columns:
-            df = df.set_index('Date')
-
-        df = convert_table(df, to=self._astype)
-        return df
-
-    def _shuffle_cols(self, df):
-        cols = df.columns
-        shuffled_cols = random.sample(tuple(cols), len(cols))
-        df = df[shuffled_cols]
-        return df
-
-    def _shuffle_rows(self, df):
-        if self._astype == "pandas" and self._index != default_index:
-            df = df.sample(frac=1)
-        return df
-
-    def _make_default_index(self, df):
-        """For testing append_data with a default index"""
-        df = df.reset_index(drop=True)
-        return df
-
-
-def _append(df, *, to, index):
-    astype = __get_astype(to)
-    index_name = get_index_name(to)
-    original_df = convert_table(to, to="pandas", index_name=index_name)
-    append_df = convert_table(df, to="pandas", index_name=index_name)
-    df = pd.concat([original_df, append_df])
-    if index == default_index:
-        df = df.reset_index(drop=True)
-    df = df.sort_index()
-    df = convert_table(df, to=astype, index_name=index_name)
-    return df
-
-
-def __get_astype(df):
-    if isinstance(df, (pd.DataFrame, pd.Series)):
-        return "pandas"
-    if isinstance(df, pl.DataFrame):
-        return "polars"
-    if isinstance(df, pa.Table):
-        return "arrow"
 
 
 def _assert_table_equals(table, expected):
@@ -118,6 +50,15 @@ def _assert_table_equals(table, expected):
     else:
         df = table.read_pandas()
         assert all(df.eq(expected))
+
+
+def __get_astype(df):
+    if isinstance(df, (pd.DataFrame, pd.Series)):
+        return "pandas"
+    if isinstance(df, pl.DataFrame):
+        return "polars"
+    if isinstance(df, pa.Table):
+        return "arrow"
 
 
 def __reorganize_cols(df, expected):
@@ -192,15 +133,15 @@ def _num_cols_doesnt_match():
 @pytest.mark.parametrize(
     ("append_df", "exception"),
     [
-        (_non_matching_index_dtype(), TypeError),
-        (_non_matching_column_dtypes(), TypeError),
-        (_index_not_ordered_after_stored_data(), ValueError),
-        (_index_value_already_in_stored_data(), ValueError),
-        (_column_name_not_in_stored_data(), ValueError),
-        (_index_name_not_the_same_as_stored_index(), ValueError),
-        (_duplicate_index_values(), IndexError),
-        (_duplicate_column_names(), IndexError),
-        (_num_cols_doesnt_match(), ValueError),
+        (_non_matching_index_dtype, TypeError),
+        (_non_matching_column_dtypes, TypeError),
+        (_index_not_ordered_after_stored_data, ValueError),
+        (_index_value_already_in_stored_data, ValueError),
+        (_column_name_not_in_stored_data, ValueError),
+        (_index_name_not_the_same_as_stored_index, ValueError),
+        (_duplicate_index_values, IndexError),
+        (_duplicate_column_names, IndexError),
+        (_num_cols_doesnt_match, ValueError),
     ],
     ids=[
         "_non_matching_index_dtype",
@@ -216,6 +157,7 @@ def _num_cols_doesnt_match():
 )
 def test_can_append_table(store, append_df, exception):
     # Arrange
+    append_df = append_df()
     original_df = make_table(rows=10, astype='pandas')
     table = store.select_table(TABLE_NAME)
     table.write(original_df)

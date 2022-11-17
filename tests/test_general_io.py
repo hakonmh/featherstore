@@ -3,6 +3,7 @@ import pytest
 from .fixtures import *
 
 import numpy as np
+import pandas as pd
 
 
 def _invalid_table_dtype():
@@ -83,15 +84,15 @@ def _invalid_partition_size_dtype():
 @pytest.mark.parametrize(
     ("arguments", "exception"),
     [
-        (_invalid_table_dtype(), TypeError),
-        (_invalid_index_dtype(), TypeError),
-        (_duplicate_index(), IndexError),
-        (_index_not_in_cols(), IndexError),
-        (_invalid_col_names_dtype(), TypeError),
-        (_duplicate_col_names(), IndexError),
-        (_invalid_warnings_arg(), ValueError),
-        (_invalid_errors_arg(), ValueError),
-        (_invalid_partition_size_dtype(), TypeError),
+        (_invalid_table_dtype, TypeError),
+        (_invalid_index_dtype, TypeError),
+        (_duplicate_index, IndexError),
+        (_index_not_in_cols, IndexError),
+        (_invalid_col_names_dtype, TypeError),
+        (_duplicate_col_names, IndexError),
+        (_invalid_warnings_arg, ValueError),
+        (_invalid_errors_arg, ValueError),
+        (_invalid_partition_size_dtype, TypeError),
     ],
     ids=[
         "_invalid_table_dtype",
@@ -107,7 +108,7 @@ def _invalid_partition_size_dtype():
 )
 def test_can_write(store, arguments, exception):
     # Arrange
-    arguments, kwargs = arguments
+    arguments, kwargs = arguments()
     # Act and Assert
     with pytest.raises(exception):
         store.write_table(*arguments, **kwargs)

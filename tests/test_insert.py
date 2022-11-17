@@ -20,10 +20,10 @@ DROPPED_ROWS_INDICES = [2, 5, 7, 10]
                          )
 def test_insert_table(store, index, row_indices, num_rows, num_cols, num_partitions):
     # Arrange
-    fixtures = InsertFixtures(index, num_rows, num_cols)
-    original_df = fixtures.original_df(row_indices)
-    insert_df = fixtures.insert_df(row_indices)
-    expected = fixtures.expected(original_df, insert_df)
+    expected = make_table(index, rows=num_rows, cols=num_cols,
+                          astype='pandas[series]')
+    original_df, insert_df = split_table(expected, rows=row_indices)
+    expected = sort_table(expected)
 
     partition_size = get_partition_size(original_df, num_partitions)
     table = store.select_table(TABLE_NAME)
@@ -38,12 +38,11 @@ def test_insert_table(store, index, row_indices, num_rows, num_cols, num_partiti
 @pytest.mark.parametrize("row_indices", ([-2, -1], [30, 33], [33, 30, 32, 31]))
 def test_default_index_behavior_when_inserting(store, row_indices):
     # Arrange
-    fixtures = InsertFixtures(default_index, 30, 5)
-    original_df = fixtures.original_df(row_indices)
-    insert_df = fixtures.insert_df(row_indices)
-    expected = fixtures.expected(original_df, insert_df)
-    expected = convert_table(expected, to='arrow')
-    expected = format_arrow_table(expected)
+    original_df = make_table(default_index, rows=30, astype='pandas')
+    insert_df = make_table(default_index, rows=len(row_indices), astype='pandas')
+    insert_df.index = row_indices
+
+    expected = _insert(original_df, insert_df)
 
     partition_size = get_partition_size(original_df, 5)
     table = store.select_table(TABLE_NAME)
@@ -55,44 +54,12 @@ def test_default_index_behavior_when_inserting(store, row_indices):
     assert df.equals(expected)
 
 
-class InsertFixtures:
-    def __init__(self, index, num_rows, num_cols):
-        self._index = index
-        self._num_rows = num_rows
-        self._num_cols = num_cols
-
-    def original_df(self, row_indices):
-        df = make_table(self._index, rows=self._num_rows, cols=self._num_cols,
-                        astype="pandas")
-
-        row_indices = pd.Index(row_indices)
-        if isinstance(df.index, pd.DatetimeIndex):
-            row_indices = pd.DatetimeIndex(row_indices)
-
-        if row_indices.isin(df.index).all():
-            df = df.drop(index=row_indices)
-
-        df = df.squeeze()
-        return df
-
-    def insert_df(self, row_indices):
-        df = make_table(self._index, rows=len(row_indices), cols=self._num_cols,
-                        astype="pandas")
-
-        row_indices = pd.Index(row_indices)
-        if isinstance(df.index, pd.DatetimeIndex):
-            row_indices = pd.DatetimeIndex(row_indices)
-
-        index_name = df.index.name
-        df.index = row_indices
-        df.index.name = index_name
-
-        df = df.squeeze()
-        return df
-
-    def expected(self, original_df, insert_df):
-        df = pd.concat([original_df, insert_df])
-        return df.sort_index()
+def _insert(df, other):
+    new_df = pd.concat([df, other])
+    new_df = sort_table(new_df)
+    new_df = convert_table(new_df, to='arrow')
+    new_df = format_arrow_table(new_df)
+    return new_df
 
 
 def _insert_table_not_pd_table():
@@ -147,14 +114,14 @@ def _duplicate_column_names():
 @pytest.mark.parametrize(
     ("insert_df", "exception"),
     [
-        (_insert_table_not_pd_table(), TypeError),
-        (_non_matching_index_dtype(), TypeError),
-        (_non_matching_column_dtypes(), TypeError),
-        (_index_values_already_in_stored_data(), ValueError),
-        (_column_name_not_in_stored_data(), ValueError),
-        (_index_name_not_the_same_as_stored_index(), ValueError),
-        (_duplicate_index_values(), IndexError),
-        (_duplicate_column_names(), IndexError),
+        (_insert_table_not_pd_table, TypeError),
+        (_non_matching_index_dtype, TypeError),
+        (_non_matching_column_dtypes, TypeError),
+        (_index_values_already_in_stored_data, ValueError),
+        (_column_name_not_in_stored_data, ValueError),
+        (_index_name_not_the_same_as_stored_index, ValueError),
+        (_duplicate_index_values, IndexError),
+        (_duplicate_column_names, IndexError),
     ],
     ids=[
         "_insert_table_not_pd_table",
@@ -169,6 +136,7 @@ def _duplicate_column_names():
 )
 def test_can_insert_table(store, insert_df, exception):
     # Arrange
+    insert_df = insert_df()
     original_df = make_table(cols=5, astype='pandas')
     original_df = original_df.drop(index=DROPPED_ROWS_INDICES)
     table = store.select_table(TABLE_NAME)

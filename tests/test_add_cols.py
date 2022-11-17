@@ -2,17 +2,20 @@ import pytest
 from .fixtures import *
 
 
-@pytest.mark.parametrize(["index", "num_cols", "col_names", "col_idx"],
-                         [[unsorted_int_index, 2, ['n0', 'n1'], 3],
-                          [continuous_datetime_index, 1, ['n0'], -1],
-                          [default_index, 1, ['n0'], 0]
+@pytest.mark.parametrize(["index", "col_names", "col_idx"],
+                         [[unsorted_int_index, ['n0', 'n1'], 3],
+                          [continuous_datetime_index, ['n0'], -1],
+                          [unsorted_string_index, ['n0', 'n1'], -1],
+                          [default_index, ['n0'], 0]
                           ]
                          )
-def test_add_cols(store, index, num_cols, col_names, col_idx):
+def test_add_cols(store, index, col_names, col_idx):
     # Arrange
-    original_df = _make_df(index)
-    new_cols = _make_df(index, cols=num_cols, col_names=col_names)
-    expected = _add_cols(new_cols, to=original_df, col_idx=col_idx)
+    num_cols = 5 + len(col_names)
+    df = make_table(index=index, cols=num_cols, astype="pandas")
+    expected = _change_cols(df, col_names, col_idx)
+    original_df, new_cols = split_table(expected, cols=col_names)
+    expected = sort_table(expected)
 
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
@@ -24,26 +27,16 @@ def test_add_cols(store, index, num_cols, col_names, col_idx):
     assert df.equals(expected)
 
 
-def _make_df(index, rows=30, cols=5, col_names=None):
-    df = make_table(index=index, rows=rows, cols=cols, astype="pandas")
-    if col_names:
-        df.columns = col_names
+def _change_cols(df, col_names, col_idx):
+    num_cols = len(col_names)
+    cols = df.columns.tolist()
+    end = col_idx + num_cols
+    if col_idx < 0:
+        col_idx = -len(col_names)
+        end = None
+    cols[col_idx:end] = col_names
+    df.columns = cols
     return df
-
-
-def _add_cols(df, *, to, col_idx):
-    full_df = to.join(df)
-
-    cols = to.columns.tolist()
-    if col_idx != -1:
-        for col in reversed(df.columns):
-            cols.insert(col_idx, col)
-    else:
-        cols = full_df.columns
-
-    full_df = full_df[cols]
-    full_df = full_df.sort_index()
-    return full_df
 
 
 def _wrong_table_type():
@@ -88,15 +81,15 @@ def _non_matching_index_values():
 
 
 @pytest.mark.parametrize(
-    ("df", "exception"),
+    ("add_cols_df", "exception"),
     [
-        (_wrong_table_type(), TypeError),
-        (_col_name_already_in_table(), IndexError),
-        (_add_col_named_same_as_index(), ValueError),
-        (_new_cols_contain_duplicate_names(), IndexError),
-        (_non_matching_index_dtype(), TypeError),
-        (_num_rows_doesnt_match(), IndexError),
-        (_non_matching_index_values(), ValueError),
+        (_wrong_table_type, TypeError),
+        (_col_name_already_in_table, IndexError),
+        (_add_col_named_same_as_index, ValueError),
+        (_new_cols_contain_duplicate_names, IndexError),
+        (_non_matching_index_dtype, TypeError),
+        (_num_rows_doesnt_match, IndexError),
+        (_non_matching_index_values, ValueError),
     ],
     ids=[
         "_wrong_table_type",
@@ -108,11 +101,12 @@ def _non_matching_index_values():
         "_non_matching_index_values"
     ]
 )
-def test_can_add_cols(store, df, exception):
+def test_can_add_cols(store, add_cols_df, exception):
     # Arrange
+    add_cols_df = add_cols_df()
     original_df = make_table(cols=5, astype='pandas')
     table = store.select_table(TABLE_NAME)
     table.write(original_df)
     # Act and Assert
     with pytest.raises(exception):
-        table.add_columns(df)
+        table.add_columns(add_cols_df)

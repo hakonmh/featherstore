@@ -1,5 +1,5 @@
-import re
 import pytest
+import pandas as pd
 from .fixtures import *
 
 ARGS = [
@@ -33,7 +33,7 @@ ARGS = [
 def test_drop(store, index, rows, cols):
     # Arrange
     original_df = make_table(index, cols=12, astype='pandas')
-    expected = _drop(original_df, rows, cols)
+    expected, _ = split_table(original_df, rows=rows, cols=cols)
 
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
@@ -61,10 +61,8 @@ def test_drop(store, index, rows, cols):
 )
 def test_default_index_behavior_when_dropping(store, rows):
     # Arrange
-    original_df = make_table(default_index, cols=5, astype='pandas')
-    expected = _drop(original_df, rows, None)
-    expected = convert_table(expected, to='arrow')
-    expected = format_arrow_table(expected)
+    original_df = make_table(fake_default_index, cols=5, astype='arrow')
+    expected, _ = split_table(original_df, rows=rows)
 
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
@@ -74,50 +72,6 @@ def test_default_index_behavior_when_dropping(store, rows):
     # Assert
     df = table.read_arrow()
     assert df.equals(expected)
-
-
-def _drop(df, rows, cols):
-    if rows is not None:
-        df = __drop_rows(df, rows)
-    if cols is not None:
-        df = __drop_cols(df, cols)
-    return df
-
-
-def __drop_rows(df, rows):
-    if isinstance(rows, dict):
-        keyword = tuple(rows.keys())[0]
-        rows = tuple(rows.values())
-        if isinstance(rows[0], (list, tuple, set)):
-            rows = rows[0]
-    else:
-        keyword = None
-
-    if keyword in ('before', 'after', 'between'):
-        index = df.index
-    if keyword == 'before':
-        end = rows[0]
-        rows = index[end >= index]
-    elif keyword == 'after':
-        start = rows[0]
-        rows = index[start <= index]
-    elif keyword == 'between':
-
-        start, end = rows
-        rows = index[start <= index]
-        rows = rows[end >= rows]
-    df = df.drop(rows, axis=0)
-    return df
-
-
-def __drop_cols(df, cols):
-    if isinstance(cols, dict):
-        pattern = cols['like']
-        pattern = pattern.replace('?', '.').replace('%', '.*') + '$'
-        pattern = re.compile(pattern)
-        cols = list(filter(pattern.search, df.columns))
-    df = df.drop(cols, axis=1)
-    return df
 
 
 INVALID_ROWS_DTYPE = 'c1, c2, c3'

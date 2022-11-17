@@ -1,6 +1,6 @@
 import pytest
+import pandas as pd
 from .fixtures import *
-from featherstore._utils import _sql_str_pattern_to_regexp
 
 
 @pytest.mark.parametrize("index",
@@ -11,8 +11,8 @@ from featherstore._utils import _sql_str_pattern_to_regexp
 @pytest.mark.parametrize("cols", [5, 1])
 def test_pandas_io(store, index, cols):
     # Arrange
-    original_df = make_table(index, cols=cols, astype='pandas').squeeze()
-    expected = original_df.sort_index()
+    original_df = make_table(index, cols=cols, astype='pandas[series]')
+    expected = sort_table(original_df)
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
     # Act
@@ -24,31 +24,61 @@ def test_pandas_io(store, index, cols):
 
 def test_that_rangeindex_is_converted_back(store):
     # Arrange
-    original_df = make_table(astype="pandas")
-    original_df = _convert_rangeindex_to_int64_index(original_df)
+    original_df = make_table(fake_default_index, astype="pandas")
+    original_df.index.name = 'index'
     store.write_table(TABLE_NAME, original_df)
     # Act
     df = store.read_pandas(TABLE_NAME)
     # Assert
+    assert not isinstance(original_df.index, pd.RangeIndex)
     assert isinstance(df.index, pd.RangeIndex)
     assert df.index.name == original_df.index.name
 
 
-def _convert_rangeindex_to_int64_index(df):
-    INDEX_NAME = "index"
-    int64index = list(df.index)
-    df.index = int64index
-    df.index.name = INDEX_NAME
-    return df
-
-
-@pytest.mark.parametrize("num_cols", [1, 15])
-@pytest.mark.parametrize("cols", [['c0'], {"like": "c?"}, {"like": ["%1"]},
-                                  {"like": "?1%"}])
-def test_filtering_cols(store, num_cols, cols):
+@pytest.mark.parametrize(
+    ["index", "rows", "cols"],
+    [
+        (default_index, None, ['c0', 'c5', 'c2']),
+        (default_index, None, {"like": "c?"}),
+        (default_index, None, {"like": ["%1"]}),
+        (default_index, None, {"like": "?1%"}),
+        (default_index, pd.Index([0, 1, 27]), ['c0', 'c5', 'c2']),
+        (default_index, {'before': 12}, None),
+        (default_index, {'after': [12]}, None),
+        (default_index, {'between': [12, 27]}, None),
+        (continuous_datetime_index, ["2021-01-07", "2021-01-20"], None),
+        (continuous_datetime_index, {'before': [pd.Timestamp("2022-02-02")]}, None),
+        (continuous_datetime_index, {'after': pd.Timestamp("2021-01-12")}, None),
+        (continuous_datetime_index, {'between': ["2021-01-12", "2021-01-20"]}, None),
+        (continuous_string_index, ['aa', 'ba'], None),
+        (continuous_string_index, {"before": ['aj']}, None),
+        (continuous_string_index, {"after": 'aj'}, None),
+        (continuous_string_index, {"between": ['a', 'b']}, ['c0']),
+        (continuous_string_index, {"between": ['aj', 'ba']}, None),
+        (sorted_string_index, {"between": ['a', 'f']}, {"like": "c?"})
+    ]
+)
+def test_pandas_filtering(store, index, rows, cols):
     # Arrange
-    original_df = make_table(cols=num_cols, astype='pandas')
-    expected = _make_expected(original_df, cols=cols)
+    original_df = make_table(index, cols=15, astype='pandas[series]')
+    _, expected = split_table(original_df, rows=rows, cols=cols)
+    expected = expected.squeeze()
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    # Act
+    table.write(original_df, partition_size=partition_size, warnings='ignore')
+    df = table.read_pandas(rows=rows, cols=cols)
+    # Assert
+    assert df.equals(expected)
+
+
+@pytest.mark.parametrize("cols", [['c0'], {"like": "c?"}, {"like": ["%0"]},
+                                  {"like": "?1%"}])
+def test_pandas_series_filtering_cols(store, cols):
+    # Arrange
+    original_df = make_table(cols=1, astype='pandas[series]')
+    _, expected = split_table(original_df, cols=cols)
 
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
@@ -57,119 +87,3 @@ def test_filtering_cols(store, num_cols, cols):
     df = table.read_pandas(cols=cols)
     # Assert
     assert df.equals(expected)
-
-
-@pytest.mark.parametrize(["index", "rows"],
-                         [(default_index, pd.Index([0, 1, 27])),
-                          (default_index, {'before': 12}),
-                          (default_index, {'after': [12]}),
-                          (default_index, {'between': [12, 27]}),
-                          (continuous_datetime_index, ["2021-01-07", "2021-01-20"]),
-                          (continuous_datetime_index, {'before': [pd.Timestamp("2022-02-02")]}),
-                          (continuous_datetime_index, {'after': pd.Timestamp("2021-01-12")}),
-                          (continuous_datetime_index, {'between': ["2021-01-12", "2021-01-20"]}),
-                          (continuous_string_index, ['aa', 'ba']),
-                          (continuous_string_index, {"before": ['aj']}),
-                          (continuous_string_index, {"after": 'aj'}),
-                          (continuous_string_index, {"between": ['a', 'b']}),
-                          (continuous_string_index, {"between": ['aj', 'ba']}),
-                          (sorted_string_index, {"between": ['a', 'f']}),
-                          ])
-def test_filtering_rows(store, index, rows):
-    # Arrange
-    original_df = make_table(index, astype='pandas')
-    expected = _make_expected(original_df, rows=rows)
-
-    partition_size = get_partition_size(original_df)
-    table = store.select_table(TABLE_NAME)
-    # Act
-    table.write(original_df, partition_size=partition_size, warnings='ignore')
-    df = table.read_pandas(rows=rows)
-    # Assert
-    assert df.equals(expected)
-
-
-def test_filtering_rows_and_cols(store):
-    # Arrange
-    ROWS = {"between": ["aj", "ba"]}
-    COLS = {"like": "c?"}
-    original_df = make_table(continuous_string_index, cols=13, astype='pandas')
-    expected = _make_expected(original_df, ROWS, COLS)
-
-    partition_size = get_partition_size(original_df)
-    table = store.select_table(TABLE_NAME)
-    # Act
-    table.write(original_df, partition_size=partition_size, warnings='ignore')
-    df = table.read_pandas(rows=ROWS, cols=COLS)
-    # Assert
-    assert df.equals(expected)
-
-
-def test_filtering_with_forbidden_indexer_values(store):
-    """
-    'before', 'after', and 'between' was once considered forbidden row values.
-    Likewise, 'like' was considered a forbidden col value. This is no longer true.
-    This function tests that the change works correctly
-    """
-    # Arrange
-    ROWS = {'before': 'ba'}
-    COLS = {'like': 'l%'}
-
-    original_df = make_table(continuous_string_index, rows=4, cols=3, astype='pandas')
-    original_df.columns = ['like', 'c1', 'l']
-    original_df.index = ['before', 'after', 'between', 'ba']
-
-    expected = _make_expected(original_df, ROWS, COLS)
-    table = store.select_table(TABLE_NAME)
-    # Act
-    table.write(original_df, warnings='ignore')
-    df = table.read_pandas(rows=ROWS, cols=COLS)
-    # Assert
-    assert df.equals(expected)
-
-
-def _make_expected(df, rows=None, cols=None):
-    df = df.sort_index()
-    df = _filter_cols(df, cols) if cols is not None else df
-    df = _filter_rows(df, rows) if rows is not None else df
-    return df
-
-
-def _filter_rows(df, rows):
-    if isinstance(rows, dict):
-        keyword = tuple(rows.keys())[0]
-        rows = tuple(rows.values())
-        if isinstance(rows[0], (list, tuple, set)):
-            rows = rows[0]
-    else:
-        keyword = None
-
-    if keyword == 'before':
-        high = rows[0]
-        df = df.loc[:high]
-    elif keyword == 'after':
-        low = rows[0]
-        df = df.loc[low:]
-    elif keyword == 'between':
-        low = rows[0]
-        high = rows[1]
-        df = df.loc[low:high]
-    else:
-        if isinstance(rows, pd.Index):
-            rows = rows.tolist()
-        df = df.loc[rows]
-    return df
-
-
-def _filter_cols(df, cols):
-    if isinstance(cols, dict):
-        pattern = cols['like']
-        if not isinstance(pattern, str):
-            pattern = pattern[0]
-
-        pattern = _sql_str_pattern_to_regexp(pattern)
-        cols_idx = df.columns.str.fullmatch(pattern)
-        cols = df.columns[cols_idx]
-
-    df = df[cols]
-    return df.squeeze()

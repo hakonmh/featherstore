@@ -1,7 +1,9 @@
 import pytest
 from .fixtures import *
 
+import numpy as np
 import pyarrow as pa
+import polars as pl
 from pandas.testing import assert_frame_equal
 
 
@@ -141,17 +143,8 @@ def _assert_polars(table, expected):
 
 def _assert_pandas(table, expected):
     df = table.read_pandas()
-    expected = expected.to_pandas(date_as_object=False)
-    expected = __convert_object_cols_to_string(expected)
+    expected = convert_table(expected, to='pandas')
     assert_frame_equal(df, expected, check_dtype=True)
-
-
-def __convert_object_cols_to_string(df):
-    for col in df.columns:
-        if df[col].dtype.name == 'object':
-            if isinstance(df[col][0], str):
-                df[col] = df[col].astype('string')
-    return df
 
 
 NEW_DTYPES_PROVIDED_TWICE = [{'c0': pa.int16()}, [pa.int16()]]
