@@ -29,7 +29,7 @@ setup(
     keywords='feather arrow pandas polars datastore',
     packages=find_packages(exclude=['tests', 'docs', 'benchmarks' 'dev']),
     install_requires=[
-        'pandas>=1.1.0',
+        'pandas>=1.4.0',
         'polars[timezone]>=0.14.11',
         'pyarrow>=8.0.0',
     ],
