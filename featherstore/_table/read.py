@@ -128,7 +128,7 @@ def _read_partitions(partition_names, table_path, cols):
 def __add_index_to_cols(cols, table_path):
     index_col = Metadata(table_path, "table")["index_name"]
     if index_col not in cols:
-        cols.append(index_col)
+        cols.insert(0, index_col)
     return cols
 
 

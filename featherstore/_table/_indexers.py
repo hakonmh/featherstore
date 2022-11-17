@@ -80,6 +80,9 @@ class Indexer:
     def items(self):
         return tuple(zip(self.keys(), self.values()))
 
+    def insert(self, index, value):
+        self.values().insert(index, value)
+
     def append(self, value):
         self.values().append(value)
 

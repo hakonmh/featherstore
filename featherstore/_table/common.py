@@ -48,7 +48,7 @@ def format_table(df, index_name, warnings):
 
 def _make_default_index(df, index_name):
     index = pa.array(pd.RangeIndex(len(df)))
-    df = df.append_column(index_name, index)
+    df = df.add_column(0, index_name, index)
     return df
 
 
