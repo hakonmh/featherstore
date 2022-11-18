@@ -1,6 +1,7 @@
 import pytest
-import pandas as pd
 from .fixtures import *
+
+import pandas as pd
 
 
 def test_that_rangeindex_is_converted_back(store):

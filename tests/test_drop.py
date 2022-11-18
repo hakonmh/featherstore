@@ -1,6 +1,7 @@
 import pytest
-import pandas as pd
 from .fixtures import *
+
+import pandas as pd
 
 ARGS = [
     (default_index, [10, 24, 0, 13], None),

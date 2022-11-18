@@ -4,8 +4,8 @@ import pandas as pd
 import pyarrow as pa
 import polars as pl
 
-from . import _utils
 from featherstore.table import DEFAULT_PARTITION_SIZE
+from . import _utils
 
 
 def shuffle_cols(df):

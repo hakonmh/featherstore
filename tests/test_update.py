@@ -1,7 +1,8 @@
 import pytest
 from .fixtures import *
-import pandas as pd
+
 import warnings
+import pandas as pd
 
 
 @pytest.mark.parametrize(

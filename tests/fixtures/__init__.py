@@ -1,4 +1,9 @@
 import os
+from featherstore._utils import (
+    DEFAULT_ARROW_INDEX_NAME,  # noqa: F401
+    DB_MARKER_NAME,  # noqa: F401
+)
+
 from .convert_table import convert_table
 from .make_table import (
     make_table,
@@ -22,10 +27,6 @@ from .split_table import split_table
 from ._utils import get_index_name
 from .update_values import update_values
 from .assertions import assert_table_equals, assert_df_equals
-from featherstore._utils import (
-    DEFAULT_ARROW_INDEX_NAME,  # noqa: F401
-    DB_MARKER_NAME,  # noqa: F401
-)
 
 DB_PATH = os.path.join('tests', '_db')
 STORE_NAME = "test_store"

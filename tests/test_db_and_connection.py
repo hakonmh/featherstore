@@ -1,6 +1,7 @@
-import shutil
-import os
 from .fixtures import *
+
+import os
+import shutil
 import featherstore as fs
 
 

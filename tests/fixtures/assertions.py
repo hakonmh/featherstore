@@ -2,6 +2,7 @@ import pandas as pd
 import polars as pl
 import pyarrow as pa
 from pandas.testing import assert_frame_equal, assert_series_equal
+
 from .convert_table import convert_table
 
 

@@ -3,6 +3,7 @@ from .fixtures import *
 
 import pandas as pd
 
+
 DROPPED_ROWS_INDICES = [2, 5, 7, 10]
 
 

@@ -1,13 +1,13 @@
 import itertools
 from string import ascii_lowercase
 
-import pyarrow as pa
-import polars as pl
 import pandas as pd
+import polars as pl
+import pyarrow as pa
 import numpy as np
 
-from . import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
+from . import _utils
 
 RANDS_CHARS = np.array(list(ascii_lowercase + ' '))
 

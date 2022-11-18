@@ -1,7 +1,8 @@
-import shutil
-import os
 import pytest
 from .fixtures import DB_PATH, STORE_NAME, MD_NAME
+
+import os
+import shutil
 import featherstore as fs
 from featherstore import _metadata
 

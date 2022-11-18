@@ -1,12 +1,11 @@
 import re
 from collections.abc import Iterable
 
-import pyarrow as pa
-import polars as pl
 import pandas as pd
+import polars as pl
+import pyarrow as pa
 
 from featherstore._table._table_utils import DEFAULT_ARROW_INDEX_NAME
-
 from . import _utils
 from .convert_table import convert_table
 

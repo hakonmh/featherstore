@@ -1,9 +1,9 @@
 import pytest
 from .fixtures import *
 
-import numpy as np
-import pyarrow as pa
 import polars as pl
+import pyarrow as pa
+import numpy as np
 
 
 TYPE_MAP = {

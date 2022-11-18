@@ -1,9 +1,9 @@
-from contextlib import nullcontext
 import pytest
 from .fixtures import *
 
-import numpy as np
+from contextlib import nullcontext
 import pandas as pd
+import numpy as np
 
 
 @pytest.mark.parametrize("astype", ["pandas[series]", "polars", "arrow"])

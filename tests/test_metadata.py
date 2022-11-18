@@ -1,7 +1,8 @@
 from .fixtures import *
-from featherstore._metadata import Metadata, METADATA_FOLDER_NAME
+
 import os
 import shutil
+from featherstore._metadata import Metadata, METADATA_FOLDER_NAME
 
 
 def test_create():

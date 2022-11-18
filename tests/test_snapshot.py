@@ -1,6 +1,7 @@
-import featherstore as fs
 import pytest
 from .fixtures import *
+
+import featherstore as fs
 
 SNAPSHOT_PATH = os.path.join(DB_PATH, 'table_snapshot.tar.xz')
 
