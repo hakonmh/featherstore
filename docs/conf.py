@@ -130,4 +130,5 @@ def linkcode_resolve(domain, info):
         lineno = f"#L{lineno}-L{lineno + len(source) - 1}"
     else:
         lineno = ""
-    return f"https://www.github.com/hakonmh/featherstore/tree/master/{filename}.py{lineno}"
+    base_url = "https://www.github.com/hakonmh/featherstore/tree/master"
+    return f"{base_url}/{filename}.py{lineno}"

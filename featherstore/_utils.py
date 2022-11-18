@@ -44,7 +44,8 @@ def __delete_folder_tree(path):
     except PermissionError as e:
         # Force delete stubborn open file on Windows
         cmd = ["del", "/f", "/a", f"{e.filename}"]
-        output = subprocess.run(cmd, shell=True, check=True, capture_output=True).stderr.decode()
+        output = subprocess.run(cmd, shell=True, check=True,
+                                capture_output=True).stderr.decode()
         if output.startswith('The process cannot access the file'):
             raise e
         else:

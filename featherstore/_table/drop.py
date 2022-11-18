@@ -82,15 +82,15 @@ def has_still_default_index(table, rows):
     if not has_default_index:
         return False
 
-    partition_metadata = table._partition_data
+    metadata = table._partition_data
     if rows.keyword == 'before':
-        is_still_def_idx = _idx_still_default_after_dropping_rows_before(rows, partition_metadata)
+        is_still_def_idx = _idx_still_default_after_dropping_rows_before(rows, metadata)
     elif rows.keyword == 'after':
         is_still_def_idx = True
     elif rows.keyword == 'between':
-        is_still_def_idx = _idx_still_default_after_dropping_rows_between(rows, partition_metadata)
+        is_still_def_idx = _idx_still_default_after_dropping_rows_between(rows, metadata)
     elif rows:
-        is_still_def_idx = _idx_still_default_after_dropping_rows_list(rows, partition_metadata)
+        is_still_def_idx = _idx_still_default_after_dropping_rows_list(rows, metadata)
     else:
         is_still_def_idx = True
 
@@ -186,7 +186,8 @@ class CheckDropCols:
     def all_rows_are_dropped(self):
         trying_to_drop_all_cols = not bool(self._stored_cols - self._dropped_cols)
         if trying_to_drop_all_cols:
-            raise IndexError("Can't drop all columns. To drop full table, use 'drop_table()'")
+            raise IndexError("Can't drop all columns. To drop full table, "
+                             "use 'drop_table()'")
 
     def items_not_str(self):
         _raise_if.cols_argument_items_is_not_str(self._cols.values())
@@ -220,7 +221,8 @@ def _delete_partition(table, partition):
         os.remove(partition_path)
     except PermissionError as e:
         cmd = ["del", "/f", "/a", f"{e.filename}"]
-        output = subprocess.run(cmd, shell=True, check=True, capture_output=True).stderr.decode()
+        output = subprocess.run(cmd, shell=True, check=True,
+                                capture_output=True).stderr.decode()
         if output.startswith('The process cannot access the file'):
             raise PermissionError('File still opened by memory-map')
 

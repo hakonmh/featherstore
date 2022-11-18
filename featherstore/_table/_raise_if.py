@@ -116,8 +116,9 @@ def to_is_provided_twice(cols, to):
     cols_is_dict = isinstance(cols, dict)
     to_is_provided = to is not None
     if cols_is_dict and to_is_provided:
-        raise AttributeError(r"'to' is provided twice, use either 'cols={<COL>: <TO>, ...}"
-                             "to=None' or 'cols=[<COL>, ...], to=[<TO>, ...]'")
+        raise AttributeError("'to' is provided twice, use either "
+                             "'cols={<COL>: <TO>, ...}, to=None' "
+                             "or 'cols=[<COL>, ...], to=[<TO>, ...]'")
 
 
 def to_not_provided(cols, to):

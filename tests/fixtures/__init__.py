@@ -1,8 +1,5 @@
 import os
-from featherstore._utils import (
-    DEFAULT_ARROW_INDEX_NAME,  # noqa: F401
-    DB_MARKER_NAME,  # noqa: F401
-)
+from featherstore._utils import DEFAULT_ARROW_INDEX_NAME, DB_MARKER_NAME
 
 from .convert_table import convert_table
 from .make_table import (

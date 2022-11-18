@@ -3,3 +3,5 @@ exclude = dev,benchmarks,build,dist
 ignore = F405,F403
 max_line_length = 100
 count = true
+per-file-ignores =
+    tests/fixtures/__init__.py:F401

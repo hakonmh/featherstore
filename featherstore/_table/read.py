@@ -112,7 +112,8 @@ def _row_after_candidate(target, candidate):
         return False
 
 
-def read_table(table, partition_names, cols=ColIndexer(None), rows=RowIndexer(None), mmap=None):
+def read_table(table, partition_names, cols=ColIndexer(None),
+               rows=RowIndexer(None), mmap=None):
     index_name = table._table_data["index_name"]
     if cols.values() is None:
         cols = ColIndexer(table._table_data["columns"])

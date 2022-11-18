@@ -15,7 +15,8 @@ def test_polars_arrow_filtering(store, index, rows, cols, astype):
     # Arrange
     original_df = make_table(index, astype=astype)
     index_name = get_index_name(original_df)
-    _, expected = split_table(original_df, rows=rows, cols=cols, index_name=index_name, keep_index=True)
+    _, expected = split_table(original_df, rows=rows, cols=cols,
+                              index_name=index_name, keep_index=True)
     if index == fake_default_index:
         original_df = original_df.drop([DEFAULT_ARROW_INDEX_NAME])
         index_name = None

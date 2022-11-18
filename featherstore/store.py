@@ -84,12 +84,12 @@ def list_stores(*, like=None):
     """
     _can_list(like)
 
-    database_content = os.listdir(current_db())
+    db_content = os.listdir(current_db())
     if like:
         pattern = like
-        database_content = _utils.filter_items_like_pattern(database_content, like=pattern)
+        db_content = _utils.filter_items_like_pattern(db_content, like=pattern)
     stores = []
-    for item in database_content:
+    for item in db_content:
         path = os.path.join(current_db(), item)
         if os.path.isdir(path):
             stores.append(item)
