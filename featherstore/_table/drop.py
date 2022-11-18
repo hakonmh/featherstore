@@ -1,5 +1,6 @@
 import os
 import bisect
+import subprocess
 
 import pyarrow as pa
 
@@ -209,20 +210,20 @@ def get_partitions_to_drop(df, partition_names):
 
 def drop_partitions(table, partitions):
     for partition in partitions:
-        _delete_partition(table._table_path, partition)
+        _delete_partition(table, partition)
         _delete_partition_metadata(table, partition)
 
 
-def _delete_partition(table_path, partition_name):
-    partition_path = os.path.join(table_path, f'{partition_name}.feather')
+def _delete_partition(table, partition):
+    partition_path = os.path.join(table._table_path, f'{partition}.feather')
     try:
         os.remove(partition_path)
     except PermissionError as e:
-        try:
-            os.system(f'cmd /k "del /f /q /a {e.filename}"')
-        except Exception:
+        cmd = ["del", "/f", "/a", f"{e.filename}"]
+        output = subprocess.run(cmd, shell=True, check=True, capture_output=True).stderr.decode()
+        if output.startswith('The process cannot access the file'):
             raise PermissionError('File still opened by memory-map')
 
 
-def _delete_partition_metadata(table, partition_name):
-    del table._partition_data[partition_name]
+def _delete_partition_metadata(table, partition):
+    del table._partition_data[partition]
