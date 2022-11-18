@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-import shutil
 import platform
 import subprocess
 import ctypes
@@ -39,7 +38,7 @@ def _is_in_database(path, db_path):
 
 def __delete_folder_tree(path):
     try:
-        shutil.rmtree(path)
+        rmtree(path)
     except FileNotFoundError:
         pass
     except PermissionError as e:
@@ -51,6 +50,20 @@ def __delete_folder_tree(path):
         else:
             # Try to delete folder with stubborn file deleted
             __delete_folder_tree(path)
+
+
+def rmtree(path):
+    if __isfile(path):
+        os.remove(path)
+    else:
+        for sub_path in os.listdir(path):
+            sub_path = f'{path}/{sub_path}'
+            rmtree(sub_path)
+        os.rmdir(path)
+
+
+def __isfile(path):
+    return os.stat(path).st_mode & 0o170000 == 0o100000
 
 
 def expand_home_dir_modifier(path):
