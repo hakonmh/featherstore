@@ -160,18 +160,32 @@ def drop_default_index(df, index_col_name):
     return df
 
 
-def can_be_converted_to_series(df):
+def convert_table_to_pandas(df):
+    df = df.to_pandas(date_as_object=False)
+
+    if _can_be_converted_to_series(df):
+        df = df.squeeze()
+
+    index = df.index
+    if _can_be_converted_to_rangeindex(index):
+        df.index = _make_rangeindex(df)
+    elif isinstance(index, pd.DatetimeIndex):
+        df.index.freq = index.inferred_freq
+    return df
+
+
+def _can_be_converted_to_series(df):
     num_cols = df.shape[1]
     return num_cols == 1
 
 
-def can_be_converted_to_rangeindex(df):
-    is_already_rangeindex = isinstance(df.index, pd.RangeIndex)
+def _can_be_converted_to_rangeindex(index):
+    is_already_rangeindex = isinstance(index, pd.RangeIndex)
     if is_already_rangeindex:
         can_be_converted = False
     else:
-        corresponding_rangeindex = pd.RangeIndex(start=0, stop=len(df))
-        is_equal_to_rangeindex = df.index.equals(corresponding_rangeindex)
+        corresponding_rangeindex = pd.RangeIndex(start=0, stop=len(index))
+        is_equal_to_rangeindex = index.equals(corresponding_rangeindex)
         if is_equal_to_rangeindex:
             can_be_converted = True
         else:
@@ -179,7 +193,7 @@ def can_be_converted_to_rangeindex(df):
     return can_be_converted
 
 
-def make_rangeindex(df):
+def _make_rangeindex(df):
     index = pd.RangeIndex(len(df))
     index.name = df.index.name
     return index

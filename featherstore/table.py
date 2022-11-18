@@ -101,13 +101,7 @@ class Table:
         pandas.DataFrame or pandas.Series
         """
         df = self.read_arrow(cols=cols, rows=rows)
-        df = df.to_pandas(date_as_object=False)
-
-        if read.can_be_converted_to_series(df):
-            df = df.squeeze()
-        if read.can_be_converted_to_rangeindex(df):
-            df.index = read.make_rangeindex(df)
-
+        df = read.convert_table_to_pandas(df)
         return df
 
     def read_polars(self, *, cols=None, rows=None):
