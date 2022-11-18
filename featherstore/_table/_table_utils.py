@@ -274,10 +274,10 @@ def filter_arrow_table(df, rows, index_col_name):
 
 def _fetch_rows_in_list(df, index, rows):
     if not rows:
-        rows = pa.array([], type=index.type)
+        return pa.table([[]] * len(df.column_names), schema=df.schema)
     row_indices = pa.compute.index_in(rows, value_set=index)
     _raise_if_rows_not_in_table(row_indices)
-    df = df.take(row_indices)
+    df = pa.compute.take(df, row_indices, boundscheck=False)
     return df
 
 
