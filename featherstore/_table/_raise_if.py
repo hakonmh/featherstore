@@ -43,8 +43,8 @@ def df_is_not_pandas_table(df):
 
 
 def rows_argument_is_not_collection(rows):
-    is_collection_or_none = _table_utils.is_collection(rows)
-    if not is_collection_or_none:
+    is_collection = _table_utils.is_collection(rows)
+    if not is_collection:
         raise TypeError(f"'rows' must be a collection (is type {type(rows)})")
 
 

@@ -29,17 +29,18 @@ def test_basic_io(store, index, cols, astype):
 
 
 @pytest.mark.parametrize("astype", ["pandas[series]", "polars", "arrow"])
-def test_store_io(store, astype):
+@pytest.mark.parametrize("mmap", [True, False])
+def test_store_io(store, astype, mmap):
     # Arrange
     original_df = make_table(astype=astype)
     # Act
     store.write_table(TABLE_NAME, original_df, warnings='ignore')
     if astype.startswith('pandas'):
-        df = store.read_pandas(TABLE_NAME)
+        df = store.read_pandas(TABLE_NAME, mmap=mmap)
     elif astype == 'polars':
-        df = store.read_polars(TABLE_NAME)
+        df = store.read_polars(TABLE_NAME, mmap=mmap)
     elif astype == 'arrow':
-        df = store.read_arrow(TABLE_NAME)
+        df = store.read_arrow(TABLE_NAME, mmap=mmap)
     # Assert
     assert_df_equals(df, original_df)
 

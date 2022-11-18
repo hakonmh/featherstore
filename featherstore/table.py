@@ -39,9 +39,9 @@ class Table:
         Parameters
         ----------
         table_name : str
-            The name of the table
+            The name of the table.
         store_name : str
-            The name of the store
+            The name of the store.
         """
         misc.can_init_table(table_name, store_name)
 
@@ -49,24 +49,27 @@ class Table:
         self._table_data = Metadata(self._table_path, "table")
         self._partition_data = Metadata(self._table_path, "partition")
 
-    def read_arrow(self, *, cols=None, rows=None):
+    def read_arrow(self, *, cols=None, rows=None, mmap=None):
         """Reads the data as a PyArrow Table
 
         Parameters
         ----------
         cols : Collection, optional
             List of column names or, filter-predicates in the form of
-            `{'like': pattern}`, by default `None`
+            `{'like': pattern}`. If not provided, all columns are read.
         rows : Collection, optional
             List of index values or filter-predicates in the form of
             `{keyword: value}`, where keyword can be either `before`, `after`,
-            or `between`, by default `None`
+            or `between`. If not provided, all rows are read.
+        mmap: bool, optional
+            Use memory mapping when opening table on disk, by default `False` on
+            Windows and `True` on other systems.
 
         Returns
         -------
         pyarrow.Table
         """
-        read.can_read_table(self, cols, rows)
+        read.can_read_table(self, cols, rows, mmap)
 
         index_name = self._table_data["index_name"]
         index_type = self._table_data["index_dtype"]
@@ -77,51 +80,57 @@ class Table:
         rows = common.format_rows_arg(rows, to_dtype=index_type)
 
         partition_names = read.get_partition_names(self, rows)
-        df = read.read_table(self, partition_names, cols, rows)
+        df = read.read_table(self, partition_names, cols, rows, mmap=mmap)
         if has_default_index and rows.values() is None:
             df = read.drop_default_index(df, index_name)
 
         return df
 
-    def read_pandas(self, *, cols=None, rows=None):
+    def read_pandas(self, *, cols=None, rows=None, mmap=None):
         """Reads the data as a Pandas DataFrame
 
         Parameters
         ----------
         cols : Collection, optional
-            List of column names or filter-predicates in the form of
-            `{'like': pattern}`, by default `None`
+            List of column names or, filter-predicates in the form of
+            `{'like': pattern}`. If not provided, all columns are read.
         rows : Collection, optional
-            List of index values or, filter-predicates in the form of
+            List of index values or filter-predicates in the form of
             `{keyword: value}`, where keyword can be either `before`, `after`,
-            or `between`, by default `None`
+            or `between`. If not provided, all rows are read.
+        mmap: bool, optional
+            Use memory mapping when opening table on disk, by default `False` on
+            Windows and `True` on other systems.
 
         Returns
         -------
         pandas.DataFrame or pandas.Series
         """
-        df = self.read_arrow(cols=cols, rows=rows)
+        df = self.read_arrow(cols=cols, rows=rows, mmap=mmap)
         df = read.convert_table_to_pandas(df)
         return df
 
-    def read_polars(self, *, cols=None, rows=None):
+    def read_polars(self, *, cols=None, rows=None, mmap=None):
         """Reads the data as a Polars DataFrame
 
         Parameters
         ----------
         cols : Collection, optional
-            List of column names or filter-predicates in the form of
-            `{'like': pattern}`, by default `None`
+            List of column names or, filter-predicates in the form of
+            `{'like': pattern}`. If not provided, all columns are read.
         rows : Collection, optional
-            List of index values or, filter-predicates in the form of
+            List of index values or filter-predicates in the form of
             `{keyword: value}`, where keyword can be either `before`, `after`,
-            or `between`, by default `None`
+            or `between`. If not provided, all rows are read.
+        mmap: bool, optional
+            Use memory mapping when opening table on disk, by default `False` on
+            Windows and `True` on other systems.
 
         Returns
         -------
         polars.DataFrame
         """
-        df = self.read_arrow(cols=cols, rows=rows)
+        df = self.read_arrow(cols=cols, rows=rows, mmap=mmap)
         df = read.convert_table_to_polars(df)
         return df
 
@@ -297,6 +306,8 @@ class Table:
     def drop(self, *, cols=None, rows=None):
         """Drop specified labels from rows or columns.
 
+        Parameters
+        ----------
         cols : Collection, optional
             list of column names or filter-predicates in the form of
             `{'like': pattern}`, by default `None`
@@ -322,6 +333,13 @@ class Table:
         """Drops specified rows from table
 
         Same as `Table.drop(rows=value)`
+
+        Parameters
+        ----------
+        rows : Collection, optional
+            list of index values or, filter-predicates in the form of
+            `{keyword: value}`, where keyword can be either `before`, `after`,
+            or `between`, by default `None`
         """
         drop.can_drop_rows_from_table(self, rows)
 
@@ -351,6 +369,12 @@ class Table:
         """Drops specified rows from table
 
         Same as `Table.drop(cols=value)`
+
+        Parameters
+        ----------
+        cols : Collection, optional
+            list of column names or filter-predicates in the form of
+            `{'like': pattern}`, by default `None`
         """
         drop.can_drop_cols_from_table(self, cols)
 

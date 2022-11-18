@@ -12,9 +12,9 @@ def test_windows_permission_error(store):
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size)
     # Act
-    df = table.read_arrow()
+    df = table.read_arrow(mmap=False)
     table.update(update_df)
-    df1 = table.read_arrow()
+    df1 = table.read_arrow(mmap=False)
     table.drop_table()
     # Assert
     assert_df_equals(df, original_df)
@@ -32,7 +32,7 @@ def test_linux_memory_mapping(store):
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size)
     # Act
-    df = table.read_arrow()
+    df = table.read_arrow(mmap=True)
     df1 = original_df.append_column('c4', insert_df['c4'])
     # Assert
     assert_df_equals(df, original_df)

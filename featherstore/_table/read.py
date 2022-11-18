@@ -13,9 +13,11 @@ from featherstore._table import _table_utils
 from featherstore._table._indexers import ColIndexer, RowIndexer
 
 
-def can_read_table(table, cols, rows):
+def can_read_table(table, cols, rows, mmap):
     Connection._raise_if_not_connected()
     _raise_if.table_not_exists(table)
+
+    _raise_if_mmap_is_not_bool_or_none(mmap)
 
     _raise_if.rows_argument_is_not_collection_or_none(rows)
     rows = RowIndexer(rows)
@@ -27,6 +29,12 @@ def can_read_table(table, cols, rows):
     if cols:
         _raise_if.cols_argument_items_is_not_str(cols.values())
         _raise_if.cols_not_in_table(cols, table._table_data)
+
+
+def _raise_if_mmap_is_not_bool_or_none(mmap):
+    is_bool_or_none = isinstance(mmap, bool) or mmap is None
+    if not is_bool_or_none:
+        raise ValueError(f"'mmap' must be a bool or None (is {type(mmap)})")
 
 
 def get_partition_names(table, rows):
@@ -104,23 +112,23 @@ def _row_after_candidate(target, candidate):
         return False
 
 
-def read_table(table, partition_names, cols=ColIndexer(None), rows=RowIndexer(None)):
+def read_table(table, partition_names, cols=ColIndexer(None), rows=RowIndexer(None), mmap=None):
     index_name = table._table_data["index_name"]
     if cols.values() is None:
         cols = ColIndexer(table._table_data["columns"])
-    dfs = _read_partitions(partition_names, table._table_path, cols)
+    dfs = _read_partitions(partition_names, table._table_path, cols, mmap)
     df = _combine_partitions(dfs)
     df = _filter_table_rows(df, rows, index_name)
     return df
 
 
-def _read_partitions(partition_names, table_path, cols):
+def _read_partitions(partition_names, table_path, cols, mmap):
     cols = __add_index_to_cols(cols, table_path)
 
     partitions = []
     for partition_name in partition_names:
         partition_path = os.path.join(table_path, f"{partition_name}.feather")
-        partition = __read_feather(partition_path, cols)
+        partition = __read_feather(partition_path, cols, mmap)
         partitions.append(partition)
     return partitions
 
@@ -132,14 +140,15 @@ def __add_index_to_cols(cols, table_path):
     return cols
 
 
-def __read_feather(path, cols):
-    is_windows = platform.system() == "Windows"
-    if is_windows:
-        # To prevent permission error when deleting/overwriting the file
+def __read_feather(path, cols, mmap):
+    if mmap is None:
+        mmap = platform.system() != "Windows"
+
+    if mmap:
+        df = feather.read_table(path, columns=None, memory_map=True)
+    else:
         with open(path, 'rb') as f:
             df = feather.read_table(f, columns=None, memory_map=True)
-    else:
-        df = feather.read_table(path, columns=None, memory_map=True)
     return df.select(cols.values())
 
 

@@ -12,7 +12,6 @@ def create_store(store_name, *, errors="raise"):
 
     Parameters
     ----------
-
     store_name : str
         The name of the store to be created
     errors : str, optional
@@ -180,68 +179,71 @@ class Store:
     def table_exists(self, table_name):
         return Table(table_name, self.name).exists()
 
-    def read_arrow(self, table_name, *, cols=None, rows=None):
+    def read_arrow(self, table_name, *, cols=None, rows=None, mmap=None):
         """Reads PyArrow Table from store
 
         Parameters
         ----------
-        table_name : str
-            The name of the table
-        cols : list, optional
-            list of column names or, filter-predicates in the form of
-            `[like, pattern]`, by default `None`
-        rows : list, optional
-            list of index values or, filter-predicates in the form of
-            `[keyword, value]`, where keyword can be either `before`, `after`,
-            or `between`, by default `None`
+        cols : Collection, optional
+            List of column names or, filter-predicates in the form of
+            `{'like': pattern}`. If not provided, all columns are read.
+        rows : Collection, optional
+            List of index values or filter-predicates in the form of
+            `{keyword: value}`, where keyword can be either `before`, `after`,
+            or `between`. If not provided, all rows are read.
+        mmap: bool, optional
+            Use memory mapping when opening table on disk, by default `False` on
+            Windows and `True` on other systems.
 
         Returns
         -------
         pyarrow.Table
         """
-        return Table(table_name, self.name).read_arrow(cols=cols, rows=rows)
+        return Table(table_name, self.name).read_arrow(cols=cols, rows=rows, mmap=mmap)
 
-    def read_pandas(self, table_name, *, cols=None, rows=None):
+    def read_pandas(self, table_name, *, cols=None, rows=None, mmap=None):
         """Reads Pandas DataFrame from store
 
         Parameters
         ----------
-        table_name : str
-            The name of the table
-        cols : list, optional
-            list of column names or, filter-predicates in the form of
-            `[like, pattern]`, by default `None`
-        rows : list, optional
-            list of index values or, filter-predicates in the form of
-            `[keyword, value]`, where keyword can be either `before`, `after`,
-            or `between`, by default `None`
+        cols : Collection, optional
+            List of column names or, filter-predicates in the form of
+            `{'like': pattern}`. If not provided, all columns are read.
+        rows : Collection, optional
+            List of index values or filter-predicates in the form of
+            `{keyword: value}`, where keyword can be either `before`, `after`,
+            or `between`. If not provided, all rows are read.
+        mmap: bool, optional
+            Use memory mapping when opening table on disk, by default `False` on
+            Windows and `True` on other systems.
 
         Returns
         -------
         pandas.DataFrame or pandas.Series
         """
-        return Table(table_name, self.name).read_pandas(cols=cols, rows=rows)
+        return Table(table_name, self.name).read_pandas(cols=cols, rows=rows, mmap=mmap)
 
-    def read_polars(self, table_name, *, cols=None, rows=None):
+    def read_polars(self, table_name, *, cols=None, rows=None, mmap=None):
         """Reads Polars DataFrame from store
 
         Parameters
         ----------
-        table_name : str
-            The name of the table
-        cols : list, optional
-            list of column names or, filter-predicates in the form of
-            `[like, pattern]`, by default `None`
-        rows : list, optional
-            list of index values or, filter-predicates in the form of
-            `[keyword, value]`, where keyword can be either `before`, `after`,
-            or `between`, by default `None`
+        cols : Collection, optional
+            List of column names or, filter-predicates in the form of
+            `{'like': pattern}`. If not provided, all columns are read.
+        rows : Collection, optional
+            List of index values or filter-predicates in the form of
+            `{keyword: value}`, where keyword can be either `before`, `after`,
+            or `between`. If not provided, all rows are read.
+        mmap: bool, optional
+            Use memory mapping when opening table on disk, by default `False` on
+            Windows and `True` on other systems.
 
         Returns
         -------
         polars.DataFrame
         """
-        return Table(table_name, self.name).read_polars(cols=cols, rows=rows)
+        return Table(table_name, self.name).read_polars(cols=cols, rows=rows, mmap=mmap)
 
     def write_table(
         self,
