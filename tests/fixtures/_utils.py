@@ -2,7 +2,6 @@ from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 import pyarrow as pa
 import pandas as pd
 import polars as pl
-import numpy as np
 
 
 def make_index_first_column(df):
