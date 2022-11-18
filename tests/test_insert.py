@@ -31,8 +31,7 @@ def test_insert_table(store, index, row_indices, num_rows, num_cols, num_partiti
     # Act
     table.insert(insert_df)
     # Assert
-    df = table.read_pandas()
-    assert df.equals(expected)
+    assert_table_equals(table, expected)
 
 
 @pytest.mark.parametrize("row_indices", ([-2, -1], [30, 33], [33, 30, 32, 31]))
@@ -50,8 +49,7 @@ def test_default_index_behavior_when_inserting(store, row_indices):
     # Act
     table.insert(insert_df)
     # Assert
-    df = table.read_arrow()
-    assert df.equals(expected)
+    assert_table_equals(table, expected)
 
 
 def _insert(df, other):

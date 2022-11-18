@@ -21,6 +21,7 @@ from .misc import (
 from .split_table import split_table
 from ._utils import get_index_name
 from .update_values import update_values
+from .assertions import assert_table_equals, assert_df_equals
 from featherstore._utils import (
     DEFAULT_ARROW_INDEX_NAME,  # noqa: F401
     DB_MARKER_NAME,  # noqa: F401

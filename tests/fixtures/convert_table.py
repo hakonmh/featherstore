@@ -17,21 +17,23 @@ def convert_table(df, *, to, index_name=None, as_series=True):
 
 
 def _convert_to_pandas(df, index_name=None, as_series=True):
-    if isinstance(df, (pa.Table, pl.DataFrame)):
-        df = df.to_pandas(date_as_object=False)
-        df = __convert_object_cols_to_string(df)
+    if isinstance(df, (pd.DataFrame, pd.Series)):
+        return df
 
-        if index_name and index_name in df.columns:
-            df = df.set_index(index_name)
-        elif DEFAULT_ARROW_INDEX_NAME in df.columns:
-            df = df.set_index(DEFAULT_ARROW_INDEX_NAME)
-        if df.index.name == DEFAULT_ARROW_INDEX_NAME:
-            df.index.name = None
+    df = df.to_pandas(date_as_object=False)
+    df = __convert_object_cols_to_string(df)
+    if isinstance(df.index, pd.DatetimeIndex):
+        df.index.freq = df.index.inferred_freq
 
-    if as_series and isinstance(df, pd.DataFrame):
+    if index_name and index_name in df.columns:
+        df = df.set_index(index_name)
+    elif DEFAULT_ARROW_INDEX_NAME in df.columns:
+        df = df.set_index(DEFAULT_ARROW_INDEX_NAME)
+    if df.index.name == DEFAULT_ARROW_INDEX_NAME:
+        df.index.name = None
+
+    if isinstance(df, pd.DataFrame) and as_series and __can_be_squeezed(df):
         df = df.squeeze()
-    if isinstance(df, pd.Series):
-        df = df.to_frame()
     return df
 
 
@@ -41,6 +43,11 @@ def __convert_object_cols_to_string(df):
             if isinstance(df[col][0], str):
                 df[col] = df[col].astype('string')
     return df
+
+
+def __can_be_squeezed(df):
+    num_cols = df.shape[1]
+    return num_cols == 1
 
 
 def _convert_to_arrow(df):

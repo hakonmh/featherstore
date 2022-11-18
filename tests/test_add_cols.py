@@ -23,8 +23,7 @@ def test_add_cols(store, index, col_names, col_idx):
     # Act
     table.add_columns(new_cols, idx=col_idx)
     # Assert
-    df = table.read_pandas()
-    assert df.equals(expected)
+    assert_table_equals(table, expected)
 
 
 def _change_cols(df, col_names, col_idx):

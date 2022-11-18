@@ -2,8 +2,6 @@ import featherstore as fs
 import pytest
 from .fixtures import *
 
-from pandas.testing import assert_frame_equal
-
 SNAPSHOT_PATH = os.path.join(DB_PATH, 'table_snapshot.tar.xz')
 
 
@@ -19,8 +17,7 @@ def test_table_snapshot(store):
     table_name = fs.snapshot.restore_table(STORE_NAME, SNAPSHOT_PATH)
     # Assert
     table = store.select_table(table_name)
-    df = table.read_pandas()
-    assert_frame_equal(df, original_df, check_dtype=True)
+    assert_table_equals(table, original_df)
     # Teardown
     os.remove(SNAPSHOT_PATH)
 
@@ -53,7 +50,7 @@ def _assert_store_equal(store_name1, store_name2):
     for table_name in store1.list_tables():
         df1 = store1.read_pandas(table_name)
         df2 = store2.read_pandas(table_name)
-        assert_frame_equal(df1, df2)
+        assert_df_equals(df1, df2)
 
 
 def test_that_restoring_snapshot_cannot_overwrite_existing_table(store):

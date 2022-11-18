@@ -4,7 +4,6 @@ from .fixtures import *
 import numpy as np
 import pyarrow as pa
 import polars as pl
-from pandas.testing import assert_frame_equal
 
 
 TYPE_MAP = {
@@ -63,10 +62,8 @@ kwargs_as_list = True
 def test_change_pa_dtype(store, from_dtype, to_dtype):
     # Arrange
     COLS = ['c1', 'c2']
-    from_dtype = _convert_to_pa_dtype(from_dtype)
-    dtype_string = TYPE_MAP[from_dtype]
-
-    original_df = make_table(rows=60, cols=3, astype="arrow", dtype=dtype_string)
+    original_df = make_table(rows=60, cols=3, astype="arrow",
+                             dtype=_get_dtype_str(from_dtype))
     original_df = _change_dtype(original_df, from_dtype)
     expected = _change_dtype(original_df, to_dtype, cols=COLS)
 
@@ -78,11 +75,16 @@ def test_change_pa_dtype(store, from_dtype, to_dtype):
     # Act
     table.astype(cols, to=dtype)
     # Assert
-    _assert_frame_equal(table, expected)
+    assert_table_equals(table, expected, astype='all')
+
+
+def _get_dtype_str(dtype):
+    dtype = __convert_to_arrow_dtype(dtype)
+    return TYPE_MAP[dtype]
 
 
 def _change_dtype(df, to, index_name='index', cols=None):
-    arrow_dtype = _convert_to_pa_dtype(to)
+    arrow_dtype = __convert_to_arrow_dtype(to)
     schema = df.schema
     cols = cols if cols else schema.names
     for idx, field in enumerate(schema):
@@ -93,18 +95,12 @@ def _change_dtype(df, to, index_name='index', cols=None):
     return df
 
 
-def _convert_to_pa_dtype(dtype):
-    if __is_valid_dtype(dtype):
-        dtype = pa.from_numpy_dtype(dtype)
-    return dtype
-
-
-def __is_valid_dtype(item):
+def __convert_to_arrow_dtype(dtype):
     try:
-        pa.from_numpy_dtype(item)
-        return True
+        dtype = pa.from_numpy_dtype(dtype)
     except Exception:
-        return False
+        pass
+    return dtype
 
 
 def _format_cols_and_to_key_args(cols, to):
@@ -122,29 +118,6 @@ def _format_cols_and_to_key_args(cols, to):
     elif kwarg_format == 'list':
         to = [to] * len(cols)
     return cols, to
-
-
-def _assert_frame_equal(table, expected):
-    _assert_arrow(table, expected)
-    _assert_polars(table, expected)
-    _assert_pandas(table, expected)
-
-
-def _assert_arrow(table, expected):
-    df = table.read_arrow()
-    assert df.equals(expected)
-
-
-def _assert_polars(table, expected):
-    df = table.read_polars()
-    expected = pl.from_arrow(expected)
-    assert df.frame_equal(expected)
-
-
-def _assert_pandas(table, expected):
-    df = table.read_pandas()
-    expected = convert_table(expected, to='pandas')
-    assert_frame_equal(df, expected, check_dtype=True)
 
 
 NEW_DTYPES_PROVIDED_TWICE = [{'c0': pa.int16()}, [pa.int16()]]

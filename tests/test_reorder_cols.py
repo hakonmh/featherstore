@@ -1,5 +1,4 @@
 import pytest
-
 from .fixtures import *
 
 
@@ -18,8 +17,7 @@ def test_reorder_columns(store, use_property):
     else:
         table.reorder_columns(COLS)
     # Assert
-    df = table.read_pandas()
-    assert df.equals(expected)
+    assert_table_equals(table, expected)
 
 
 COLS_NOT_IN_TABLE = ['c0', 'c2', 'd1']

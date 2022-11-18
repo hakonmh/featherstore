@@ -1,8 +1,6 @@
 import pytest
 from .fixtures import *
 
-from pandas.testing import assert_frame_equal
-
 
 @pytest.mark.parametrize(
     ("columns", "to", "result"),
@@ -24,8 +22,7 @@ def test_rename_cols(store, columns, to, result):
     # Act
     table.rename_columns(columns, to=to)
     # Assert
-    df = store.read_pandas(TABLE_NAME)
-    assert_frame_equal(df, expected, check_dtype=False)
+    assert_table_equals(table, expected)
 
 
 NEW_COL_NAMES_PROVIDED_TWICE = [{'c0': 'd0'}, ['d0']]

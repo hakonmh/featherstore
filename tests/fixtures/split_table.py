@@ -7,6 +7,7 @@ from featherstore._utils import filter_items_like_pattern
 from featherstore._table.common import format_rows_arg
 
 from . import _utils
+from .convert_table import convert_table
 
 
 def split_table(df, rows=None, cols=None, index_name=None, keep_index=False, iloc=False):
@@ -68,14 +69,8 @@ def _split_df_by_cols(df, df_cols, other_cols):
 
 
 def split_rows(df, rows, index_name, iloc):
-    if isinstance(df, pd.DataFrame):
+    if isinstance(df, (pd.DataFrame, pd.Series)):
         df, other = _split_pd_rows(df, rows, iloc)
-    elif isinstance(df, pd.Series):
-        df = df.to_frame()
-        df, other = _split_pd_rows(df, rows, iloc)
-        df = df.squeeze()
-        other = other.squeeze()
-
     elif isinstance(df, pa.Table):
         df, other = _split_pa_rows(df, rows, index_name, iloc)
     elif isinstance(df, (pl.DataFrame, pl.Series)):
@@ -84,12 +79,16 @@ def split_rows(df, rows, index_name, iloc):
 
 
 def _split_pd_rows(df, rows, iloc):
-    index_name = df.index.name
-    df = pa.Table.from_pandas(df, preserve_index=True)
-    df, other = _split_pa_rows(df, rows=rows, index_name=index_name, iloc=iloc)
+    as_series = False
+    if isinstance(df, pd.Series):
+        df = df.to_frame()
+        as_series = True
 
-    df = df.to_pandas()
-    other = other.to_pandas()
+    arrow_df = pa.Table.from_pandas(df, preserve_index=True)
+    df, other = _split_pa_rows(arrow_df, rows=rows, index_name=df.index.name, iloc=iloc)
+    df = convert_table(df, to='pandas', as_series=as_series)
+    other = convert_table(other, to='pandas', as_series=as_series)
+
     if isinstance(df.index, pd.RangeIndex) and isinstance(other.index, pd.RangeIndex):
         start_value = df.index[-1] + 1
         other.index = other.index + start_value

@@ -27,7 +27,7 @@ def test_update_table(store, index, rows, cols, num_cols):
     table.update(update_df)
     # Assert
     df = table.read_pandas()
-    assert df.equals(expected)
+    assert_df_equals(df, expected)
     assert not df.equals(original_df)
 
 
@@ -63,8 +63,7 @@ def test_partition_structure_after_update_table(store, num_partitions, rows):
     # Act
     table.update(update_df)
     # Assert
-    df = table.read_pandas()
-    assert df.equals(expected)
+    assert_table_equals(table, expected)
     _assert_that_partitions_are_the_same(table, partition_names, partition_data)
 
 

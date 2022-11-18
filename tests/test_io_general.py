@@ -6,6 +6,44 @@ import numpy as np
 import pandas as pd
 
 
+@pytest.mark.parametrize("astype", ["pandas[series]", "polars", "arrow"])
+@pytest.mark.parametrize("cols", [5, 1])
+@pytest.mark.parametrize("index",
+                         [default_index,
+                          unsorted_int_index,
+                          sorted_datetime_index,
+                          unsorted_string_index])
+def test_basic_io(store, index, cols, astype):
+    # Arrange
+    original_df = make_table(index, cols=cols, astype=astype)
+    index_name = get_index_name(original_df)
+    expected = sort_table(original_df, by=index_name)
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    # Act
+    table.write(original_df, index=index_name, partition_size=partition_size,
+                warnings='ignore')
+    # Assert
+    assert_table_equals(table, expected)
+
+
+@pytest.mark.parametrize("astype", ["pandas[series]", "polars", "arrow"])
+def test_store_io(store, astype):
+    # Arrange
+    original_df = make_table(astype=astype)
+    # Act
+    store.write_table(TABLE_NAME, original_df, warnings='ignore')
+    if astype.startswith('pandas'):
+        df = store.read_pandas(TABLE_NAME)
+    elif astype == 'polars':
+        df = store.read_polars(TABLE_NAME)
+    elif astype == 'arrow':
+        df = store.read_arrow(TABLE_NAME)
+    # Assert
+    assert_df_equals(df, original_df)
+
+
 def _invalid_table_dtype():
     df = make_table(astype='pandas')
     args = [TABLE_NAME, df.values]
@@ -126,8 +164,7 @@ def test_trying_to_overwrite_existing_table(store, errors, exception):
     # Act and Assert
     with exception:
         table.write(expected, errors=errors)
-        df = table.read_arrow()
-        assert df.equals(expected)
+        assert_table_equals(table, expected)
 
 
 INVALID_TABLE_NAME_DTYPE = [21, dict()]

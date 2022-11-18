@@ -1,4 +1,3 @@
-
 import pytest
 from .fixtures import *
 
@@ -18,7 +17,7 @@ def test_windows_permission_error(store):
     df1 = table.read_arrow()
     table.drop_table()
     # Assert
-    assert df == original_df
+    assert_df_equals(df, original_df)
     assert df != df1
 
 
@@ -34,7 +33,7 @@ def test_linux_memory_mapping(store):
     table.write(original_df, partition_size=partition_size)
     # Act
     df = table.read_arrow()
-    expected = original_df.append_column('c4', insert_df['c4'])
+    df1 = original_df.append_column('c4', insert_df['c4'])
     # Assert
-    assert df == original_df
-    assert df != expected
+    assert_df_equals(df, original_df)
+    assert df != df1

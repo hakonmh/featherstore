@@ -1,14 +1,10 @@
 import pytest
 from .fixtures import *
-import pandas as pd
-import polars as pl
-import pyarrow as pa
 
 
 @pytest.mark.parametrize("index",
                          [default_index, sorted_datetime_index, sorted_string_index])
-@pytest.mark.parametrize("astype",
-                         ["arrow", "polars", "pandas"])
+@pytest.mark.parametrize("astype", ["arrow", "polars", "pandas"])
 def test_append_table(store, index, astype):
     # Arrange
     expected = make_table(index, astype=astype)
@@ -22,53 +18,19 @@ def test_append_table(store, index, astype):
     # Act
     table.append(append_df, warnings='ignore')
     # Assert
-    _assert_table_equals(table, expected)
+    assert_table_equals(table, expected)
 
 
 def test_store_append_table(store):
     expected = make_table(default_index, astype='pandas')
-    original_df, append_df = split_table(expected, rows={'after': 20}, iloc=True)
+    original_df, append_df = split_table(expected, rows={'after': 20})
 
     store.write_table(TABLE_NAME, original_df)
     # Act
     store.append_table(TABLE_NAME, append_df, warnings='ignore')
     # Assert
     df = store.read_pandas(TABLE_NAME)
-    assert df.equals(expected)
-
-
-def _assert_table_equals(table, expected):
-    astype = __get_astype(expected)
-    if astype == "arrow":
-        df = table.read_arrow()
-        expected = __reorganize_cols(df, expected)
-        assert df.equals(expected)
-    elif astype == 'polars':
-        df = table.read_polars()
-        expected = __reorganize_cols(df, expected)
-        assert df.frame_equal(expected)
-    else:
-        df = table.read_pandas()
-        assert all(df.eq(expected))
-
-
-def __get_astype(df):
-    if isinstance(df, (pd.DataFrame, pd.Series)):
-        return "pandas"
-    if isinstance(df, pl.DataFrame):
-        return "polars"
-    if isinstance(df, pa.Table):
-        return "arrow"
-
-
-def __reorganize_cols(df, expected):
-    if isinstance(df, pa.Table):
-        if set(df.column_names) == set(expected.column_names):
-            expected = expected.select(df.column_names)
-    if isinstance(df, pl.DataFrame):
-        if set(df.columns) == set(expected.columns):
-            expected = expected[df.columns]
-    return expected
+    assert_df_equals(df, expected)
 
 
 def _non_matching_index_dtype():

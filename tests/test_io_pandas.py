@@ -3,25 +3,6 @@ import pandas as pd
 from .fixtures import *
 
 
-@pytest.mark.parametrize("index",
-                         [default_index,
-                          unsorted_int_index,
-                          sorted_datetime_index,
-                          unsorted_string_index])
-@pytest.mark.parametrize("cols", [5, 1])
-def test_pandas_io(store, index, cols):
-    # Arrange
-    original_df = make_table(index, cols=cols, astype='pandas[series]')
-    expected = sort_table(original_df)
-    partition_size = get_partition_size(original_df)
-    table = store.select_table(TABLE_NAME)
-    # Act
-    table.write(original_df, partition_size=partition_size, warnings='ignore')
-    df = table.read_pandas()
-    # Assert
-    assert df.equals(expected)
-
-
 def test_that_rangeindex_is_converted_back(store):
     # Arrange
     original_df = make_table(fake_default_index, astype="pandas")
@@ -30,6 +11,7 @@ def test_that_rangeindex_is_converted_back(store):
     # Act
     df = store.read_pandas(TABLE_NAME)
     # Assert
+    assert_df_equals(df, original_df)
     assert not isinstance(original_df.index, pd.RangeIndex)
     assert isinstance(df.index, pd.RangeIndex)
     assert df.index.name == original_df.index.name
@@ -43,7 +25,6 @@ def test_that_rangeindex_is_converted_back(store):
         (default_index, None, {"like": ["%1"]}),
         (default_index, None, {"like": "?1%"}),
         (default_index, pd.Index([0, 1, 27]), ['c0', 'c5', 'c2']),
-        (default_index, {'before': 12}, None),
         (default_index, {'after': [12]}, None),
         (default_index, {'between': [12, 27]}, None),
         (continuous_datetime_index, ["2021-01-07", "2021-01-20"], None),
@@ -70,7 +51,7 @@ def test_pandas_filtering(store, index, rows, cols):
     table.write(original_df, partition_size=partition_size, warnings='ignore')
     df = table.read_pandas(rows=rows, cols=cols)
     # Assert
-    assert df.equals(expected)
+    assert_df_equals(df, expected)
 
 
 @pytest.mark.parametrize("cols", [['c0'], {"like": "c?"}, {"like": ["%0"]},
@@ -86,4 +67,4 @@ def test_pandas_series_filtering_cols(store, cols):
     table.write(original_df, partition_size=partition_size, warnings='ignore')
     df = table.read_pandas(cols=cols)
     # Assert
-    assert df.equals(expected)
+    assert_df_equals(df, expected)

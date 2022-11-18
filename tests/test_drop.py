@@ -41,8 +41,7 @@ def test_drop(store, index, rows, cols):
     # Act
     table.drop(rows=rows, cols=cols)
     # Assert
-    df = table.read_pandas()
-    assert df.equals(expected)
+    assert_table_equals(table, expected)
 
 
 @pytest.mark.parametrize(
@@ -70,8 +69,7 @@ def test_default_index_behavior_when_dropping(store, rows):
     # Act
     table.drop(rows=rows)
     # Assert
-    df = table.read_arrow()
-    assert df.equals(expected)
+    assert_table_equals(table, expected)
 
 
 INVALID_ROWS_DTYPE = 'c1, c2, c3'
