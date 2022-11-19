@@ -12,15 +12,17 @@ def convert_table(df, *, to, index_name=None, as_series=True):
     elif to == 'arrow':
         df = _convert_to_arrow(df)
     elif to == "polars":
-        df = _convert_to_polars(df)
+        df = _convert_to_polars(df, as_series=as_series)
     return df
 
 
 def _convert_to_pandas(df, index_name=None, as_series=True):
     if isinstance(df, (pd.DataFrame, pd.Series)):
         return df
-
+    if isinstance(df, pl.Series):
+        df = df.to_frame()
     df = df.to_pandas(date_as_object=False)
+
     df = __convert_object_cols_to_string(df)
     if isinstance(df.index, pd.DatetimeIndex):
         df.index.freq = df.index.inferred_freq
@@ -67,9 +69,12 @@ def _convert_to_arrow(df):
     return df
 
 
-def _convert_to_polars(df):
+def _convert_to_polars(df, as_series):
     if isinstance(df, (pd.Series, pd.DataFrame)):
         df = _convert_to_arrow(df)
     if isinstance(df, pa.Table):
         df = pl.from_arrow(df)
+
+    if isinstance(df, pl.DataFrame) and as_series and __can_be_squeezed(df):
+        df = df.to_series()
     return df

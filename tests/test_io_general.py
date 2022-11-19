@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 
-@pytest.mark.parametrize("astype", ["pandas[series]", "polars", "arrow"])
+@pytest.mark.parametrize("astype", ["pandas[series]", "polars[series]", "arrow"])
 @pytest.mark.parametrize("cols", [5, 1])
 @pytest.mark.parametrize("index",
                          [default_index,
@@ -28,7 +28,7 @@ def test_basic_io(store, index, cols, astype):
     assert_table_equals(table, expected)
 
 
-@pytest.mark.parametrize("astype", ["pandas[series]", "polars", "arrow"])
+@pytest.mark.parametrize("astype", ["pandas[series]", "polars[series]", "arrow"])
 @pytest.mark.parametrize("mmap", [True, False])
 def test_store_io(store, astype, mmap):
     # Arrange
@@ -37,7 +37,7 @@ def test_store_io(store, astype, mmap):
     store.write_table(TABLE_NAME, original_df, warnings='ignore')
     if astype.startswith('pandas'):
         df = store.read_pandas(TABLE_NAME, mmap=mmap)
-    elif astype == 'polars':
+    elif astype.startswith('polars'):
         df = store.read_polars(TABLE_NAME, mmap=mmap)
     elif astype == 'arrow':
         df = store.read_arrow(TABLE_NAME, mmap=mmap)

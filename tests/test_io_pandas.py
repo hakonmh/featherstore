@@ -37,7 +37,7 @@ def test_that_rangeindex_is_converted_back(store):
         (continuous_string_index, {"after": 'aj'}, None),
         (continuous_string_index, {"between": ['a', 'b']}, ['c0']),
         (continuous_string_index, {"between": ['aj', 'ba']}, None),
-        (sorted_string_index, {"between": ['a', 'f']}, {"like": "c?"})
+        (sorted_string_index, {"between": ['b', 'u']}, {"like": "c?"})
     ]
 )
 def test_pandas_filtering(store, index, rows, cols):

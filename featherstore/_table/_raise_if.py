@@ -33,7 +33,7 @@ def table_name_is_forbidden(table_name):
 
 
 def df_is_not_supported_table_type(df):
-    if not isinstance(df, (pd.DataFrame, pd.Series, pl.DataFrame, pa.Table)):
+    if not isinstance(df, (pd.DataFrame, pd.Series, pl.DataFrame, pl.Series, pa.Table)):
         raise TypeError(f"'df' must be a supported DataFrame type (is type {type(df)})")
 
 

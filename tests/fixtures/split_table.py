@@ -12,13 +12,16 @@ from .convert_table import convert_table
 
 def split_table(df, rows=None, cols=None, index_name=None, keep_index=False, iloc=False):
     if cols is not None and rows is not None:
-        df, other = split_rows(df, rows, index_name, iloc)
-        df, _ = split_cols(df, cols, index_name, keep_index)
-        _, other = split_cols(other, cols, index_name, keep_index)
+        df, other = split_cols(df, cols, index_name, keep_index)
+        df, _ = split_rows(df, rows, index_name, iloc)
+        _, other = split_rows(other, rows, index_name, iloc)
     elif cols is not None:
         df, other = split_cols(df, cols, index_name, keep_index)
     elif rows is not None:
         df, other = split_rows(df, rows, index_name, iloc)
+    else:
+        other = df
+        df = None
     return df, other
 
 
@@ -82,6 +85,10 @@ def split_df_by_cols(df, df_cols, other_cols):
                 other, df = df, other
         except IndexError:
             pass
+    elif isinstance(df, pl.Series):
+        other = pl.Series()
+        if df.name == other_cols[0]:
+            other, df = df, other
     else:
         other = df[other_cols]
         df = df[df_cols]
@@ -116,11 +123,16 @@ def split_pd_rows(df, rows, iloc):
 
 
 def split_pl_rows(df, rows, index_name, iloc):
+    as_series = False
+    if isinstance(df, pl.Series):
+        df = df.to_frame()
+        as_series = True
+
     df = df.to_arrow()
     df, other = split_pa_rows(df, rows=rows, index_name=index_name, iloc=iloc)
 
-    df = pl.DataFrame(df)
-    other = pl.DataFrame(other)
+    df = convert_table(df, to='polars', as_series=as_series)
+    other = convert_table(other, to='polars', as_series=as_series)
     return df, other
 
 
@@ -129,8 +141,11 @@ def split_pa_rows(df, rows, index_name, iloc):
         index_name = _utils.get_index_name(df)
 
     if index_name is None or iloc:
-        index_name = '__rangeindex__'
-        df = df.append_column('__rangeindex__', [pd.RangeIndex(len(df))])
+        if DEFAULT_ARROW_INDEX_NAME in df.column_names:
+            index_name = '__rangeindex__'
+        else:
+            index_name = DEFAULT_ARROW_INDEX_NAME
+        df = df.add_column(0, index_name, [pd.RangeIndex(len(df))])
 
     rows = _format_rows_arg(rows, to_dtype=str(df[index_name].type))
     other = _filter_arrow_table(df, rows, index_name)
@@ -140,8 +155,7 @@ def split_pa_rows(df, rows, index_name, iloc):
     df = df.filter(mask)
 
     if index_name in (DEFAULT_ARROW_INDEX_NAME, '__rangeindex__'):
-        index = df[index_name]
-        if _utils.is_rangeindex(index):
+        if _utils.is_rangeindex(df[index_name]):
             df = df.drop([index_name])
             other = other.drop([index_name])
     return df, other

@@ -207,4 +207,7 @@ def _make_rangeindex(df):
 
 def convert_table_to_polars(df):
     full_table = pl.from_arrow(df, rechunk=False)
+    num_cols = full_table.shape[1]
+    if num_cols == 1:
+        full_table = full_table.to_series()
     return full_table

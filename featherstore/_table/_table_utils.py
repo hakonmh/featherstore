@@ -73,7 +73,9 @@ def convert_to_arrow(df):
         df = df.to_frame()
     if isinstance(df, pd.DataFrame):
         df = pa.Table.from_pandas(df, preserve_index=True)
-    elif isinstance(df, pl.DataFrame):
+    if isinstance(df, pl.Series):
+        df = df.to_frame()
+    if isinstance(df, pl.DataFrame):
         df = df.to_arrow()
     return df
 

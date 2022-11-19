@@ -85,13 +85,22 @@ def _make_bool_column(rows):
 
 def _convert_df_to(df, *, to):
     astype = to
-    if astype in ("arrow", "polars"):
+    if not astype.startswith('pandas'):
         df = pa.Table.from_pandas(df)
         if not __is_default_index(df):
             df = _utils.make_index_first_column(df)
-    if astype == "polars":
+    if astype.startswith("polars"):
         df = pl.from_arrow(df)
-    if astype == "pandas[series]":
+
+    if "[series]" in astype:
+        df = _squeeze_df(df)
+    return df
+
+
+def _squeeze_df(df):
+    if isinstance(df, pl.DataFrame):
+        df = df.to_series()
+    elif isinstance(df, pd.DataFrame):
         df = df.squeeze()
     return df
 

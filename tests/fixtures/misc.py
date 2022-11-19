@@ -28,7 +28,10 @@ def sort_table(df, *, by=None):
             df = df.take(sorted_index)
     elif isinstance(df, (pl.DataFrame, pl.Series)):
         if index_name:
-            df = df.sort(by=index_name)
+            if isinstance(df, pl.Series):
+                df = df.sort()
+            else:
+                df = df.sort(by=index_name)
     return df
 
 
@@ -43,7 +46,9 @@ def get_partition_size(df, num_partitions=5):
         byte_size += df.index.nbytes
     elif isinstance(df, pd.Series):
         byte_size = df.nbytes + df.index.nbytes
-    elif isinstance(df, pl.DataFrame):
+    elif isinstance(df, (pl.DataFrame, pl.Series)):
+        if isinstance(df, pl.Series):
+            df = df.to_frame()
         df = df.to_arrow()
     if isinstance(df, pa.Table):
         byte_size = df.nbytes
