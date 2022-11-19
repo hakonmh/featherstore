@@ -30,19 +30,23 @@ Installation
 
 Python version support
 ----------------------
+
 Officially Python 3.8, 3.9, and 3.10.
 
 Source Code
 +++++++++++
+
 | The source code is currently hosted on GitHub at:
 | https://github.com/Hakonmh/featherstore
 
 LICENSE
 +++++++
+
 `MIT <https://github.com/hakonmh/featherstore/blob/master/LICENSE>`_
 
 Contributions
 +++++++++++++
+
 All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome.
 
 | Issues are posted on:

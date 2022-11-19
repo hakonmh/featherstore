@@ -1,10 +1,12 @@
 Quickstart
 ==========
+
 This is a short introduction to FeatherStore basic functionality. For a complete guide to
 FeatherStores classes, functions, and methods please visit the `API reference <API%20Reference.html>`_.
 
 Installation
 ------------
+
 To install FeatherStore, simply use pip
 
 .. code-block::
@@ -13,6 +15,7 @@ To install FeatherStore, simply use pip
 
 Starting Up
 -----------
+
 .. code-block:: python
 
     import featherstore as fs
@@ -28,6 +31,7 @@ You can later disconnect from the database by using ``fs.disconnect()``
 
 Working with Stores
 -------------------
+
 A database consists of one or more stores. A store is the basic unit for organization
 and where you can store your tables.
 
@@ -48,8 +52,9 @@ and where you can store your tables.
 
 Reading and Writing Tables
 --------------------------
-FeatherStore supports reading and writing of Pandas DataFrames and Series, Polars DataFrames
-and PyArrow tables.
+
+FeatherStore supports reading and writing of Pandas DataFrames/Series, Polars
+DataFrames/Series and PyArrow tables.
 
 First lets create a DataFrame to store.
 
@@ -127,6 +132,7 @@ By using sorted indices, FeatherStore allows for range-queries on rows by using
 
 Inserting, Updating and Deleting Data
 -------------------------------------
+
 First, let's create a new table to work with:
 
 .. code-block:: python

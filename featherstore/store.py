@@ -202,7 +202,7 @@ class Store:
         return Table(table_name, self.name).read_arrow(cols=cols, rows=rows, mmap=mmap)
 
     def read_pandas(self, table_name, *, cols=None, rows=None, mmap=None):
-        """Reads Pandas DataFrame from store
+        """Reads Pandas DataFrame or Series from store
 
         Parameters
         ----------
@@ -224,7 +224,7 @@ class Store:
         return Table(table_name, self.name).read_pandas(cols=cols, rows=rows, mmap=mmap)
 
     def read_polars(self, table_name, *, cols=None, rows=None, mmap=None):
-        """Reads Polars DataFrame from store
+        """Reads Polars DataFrame or Series from store
 
         Parameters
         ----------
@@ -241,7 +241,7 @@ class Store:
 
         Returns
         -------
-        polars.DataFrame
+        polars.DataFrame or polars.Series
         """
         return Table(table_name, self.name).read_polars(cols=cols, rows=rows, mmap=mmap)
 
@@ -256,7 +256,7 @@ class Store:
         errors="raise",
         warnings="warn",
     ):
-        """Writes a DataFrame to the current store as a partitioned table.
+        """Writes a DataFrame to the current store as a partitioned table
 
         The DataFrame index column, if provided, must be either of type int, str,
         or datetime. FeatherStore sorts the DataFrame by the index before storage.
@@ -265,7 +265,7 @@ class Store:
         ----------
         table_name : str
             The name of the table the DataFrame will be stored as
-        df : Pandas DataFrame or Series, Pyarrow Table, or Polars DataFrame
+        df : pandas DataFrame or Series, polars DataFrame or Series, or pyarrow Table
             The DataFrame to be stored
         index : str, optional
             The name of the column to be used as index. Uses current index for
@@ -295,7 +295,7 @@ class Store:
         ----------
         table_name : str
             The name of the table you want to append to
-        df : Pandas DataFrame or Series, Pyarrow Table, or Polars DataFrame
+        df : Pandas DataFrame or Series, Polars DataFrame or Series, or Pyarrow Table
             The data to be appended
         warnings : str, optional
             Whether or not to warn if a unsorted index is about to get sorted.

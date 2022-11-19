@@ -87,7 +87,7 @@ class Table:
         return df
 
     def read_pandas(self, *, cols=None, rows=None, mmap=None):
-        """Reads the data as a Pandas DataFrame
+        """Reads the data as a Pandas DataFrame or Series
 
         Parameters
         ----------
@@ -111,7 +111,7 @@ class Table:
         return df
 
     def read_polars(self, *, cols=None, rows=None, mmap=None):
-        """Reads the data as a Polars DataFrame
+        """Reads the data as a Polars DataFrame or Series
 
         Parameters
         ----------
@@ -128,7 +128,7 @@ class Table:
 
         Returns
         -------
-        polars.DataFrame
+        polars.DataFrame or polars.Series
         """
         df = self.read_arrow(cols=cols, rows=rows, mmap=mmap)
         df = read.convert_table_to_polars(df)
@@ -144,7 +144,7 @@ class Table:
 
         Parameters
         ----------
-        df : Pandas DataFrame or Series, Pyarrow Table, or Polars DataFrame
+        df : pandas DataFrame or Series, polars DataFrame or Series, or pyarrow Table
             The DataFrame to be stored
         index : str, optional
             The name of the column to be used as index. Uses current index for
@@ -179,7 +179,7 @@ class Table:
 
         Parameters
         ----------
-        df : Pandas DataFrame or Series, Pyarrow Table, or Polars DataFrame
+        df : pandas DataFrame or Series, polars DataFrame or Series, or pyarrow Table
             The data to be appended
         warnings : str, optional
             Whether or not to warn if a unsorted index is about to get sorted.

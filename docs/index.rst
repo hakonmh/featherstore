@@ -3,6 +3,7 @@ Welcome to FeatherStore's documentation!
 
 Table of Contents
 -----------------
+
 .. toctree::
    :maxdepth: 2
 
