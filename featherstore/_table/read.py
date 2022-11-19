@@ -195,11 +195,7 @@ def _can_be_converted_to_rangeindex(index):
         can_be_converted = False
     else:
         corresponding_rangeindex = pd.RangeIndex(start=0, stop=len(index))
-        is_equal_to_rangeindex = index.equals(corresponding_rangeindex)
-        if is_equal_to_rangeindex:
-            can_be_converted = True
-        else:
-            can_be_converted = False
+        can_be_converted = index.equals(corresponding_rangeindex)
     return can_be_converted
 
 
@@ -210,10 +206,5 @@ def _make_rangeindex(df):
 
 
 def convert_table_to_polars(df):
-    partitions = df.to_batches()
-    for idx, partition in enumerate(partitions):
-        partition = pa.Table.from_batches([partition])
-        partitions[idx] = pl.from_arrow(partition, rechunk=False)
-    # Rechunking introduces a significant performance penalty
-    full_table = pl.concat(partitions, rechunk=False)
+    full_table = pl.from_arrow(df, rechunk=False)
     return full_table
