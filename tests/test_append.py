@@ -21,6 +21,20 @@ def test_append_table(store, index, astype):
     assert_table_equals(table, expected)
 
 
+@pytest.mark.parametrize("astype", ["polars[series]", "pandas[series]"])
+def test_append_series(store, astype):
+    expected = make_table(astype=astype, cols=1)
+    original_df, append_df = split_table(expected, rows={'after': 20})
+    partition_size = get_partition_size(original_df)
+
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+    # Act
+    table.append(append_df)
+    # Assert
+    assert_table_equals(table, expected)
+
+
 def test_store_append_table(store):
     expected = make_table(default_index, astype='pandas')
     original_df, append_df = split_table(expected, rows={'after': 20})
@@ -87,7 +101,7 @@ def _duplicate_column_names():
 
 
 def _num_cols_doesnt_match():
-    df = make_table(cols=3, astype="pandas")
+    df = make_table(cols=1, astype="polars[series]")
     df = df.tail(5)
     return df
 

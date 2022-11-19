@@ -18,14 +18,14 @@ def can_write_table(table, df, index_name, partition_size, errors, warnings):
     Connection._raise_if_not_connected()
     _utils.raise_if_errors_argument_is_not_valid(errors)
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
-    if errors == 'raise':
-        _raise_if.table_already_exists(table._table_path)
-
-    _raise_if.df_is_not_supported_table_type(df)
     _raise_if_partition_size_is_not_int(partition_size)
 
+    if errors == 'raise':
+        _raise_if.table_already_exists(table._table_path)
+    _raise_if.df_is_not_supported_table_type(df)
+
     cols = _table_utils.get_col_names(df, has_default_index=False)
-    _raise_if_index_argument_is_not_supported_dtype(index_name)
+    _raise_if_index_argument_is_not_str_or_None(index_name)
     _raise_if_provided_index_not_in_cols(index_name, cols)
     _raise_if.cols_argument_items_is_not_str(cols)
     _raise_if.col_names_contains_duplicates(cols)
@@ -36,13 +36,14 @@ def can_write_table(table, df, index_name, partition_size, errors, warnings):
 
 
 def _raise_if_partition_size_is_not_int(partition_size):
-    if not isinstance(partition_size, (Integral, type(None))):
+    if not isinstance(partition_size, Integral):
         dtype = type(partition_size)
-        raise TypeError(f"'partition_size' must be a int (is type {dtype})")
+        raise TypeError(f"'partition_size' must be a int or (is type {dtype})")
 
 
-def _raise_if_index_argument_is_not_supported_dtype(index):
-    if not isinstance(index, (str, type(None))):
+def _raise_if_index_argument_is_not_str_or_None(index):
+    is_str_or_none = isinstance(index, str) or index is None
+    if not is_str_or_none:
         raise TypeError(
             f"'index' must be a str or None (is type {type(index)})")
 

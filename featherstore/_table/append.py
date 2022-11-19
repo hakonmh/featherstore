@@ -1,5 +1,5 @@
 import pandas as pd
-from pyarrow.compute import add
+from pyarrow.compute import add as pa_add
 
 from featherstore.connection import Connection
 from featherstore import _utils
@@ -11,6 +11,7 @@ from featherstore._table import _table_utils
 def can_append_table(table, df, warnings):
     Connection._raise_if_not_connected()
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
+
     _raise_if.table_not_exists(table)
     _raise_if.df_is_not_supported_table_type(df)
 
@@ -87,19 +88,11 @@ def format_default_index(table, df):
     data's index stops
     """
     index_col = df[DEFAULT_ARROW_INDEX_NAME]
-    first_value = _get_default_index_start(table._partition_data)
+    stored_data_end = _get_last_stored_value(table._partition_data)
+    formatted_index_col = pa_add(index_col, stored_data_end + 1)
 
-    formatted_index_col = add(index_col, first_value)
-
-    df = df.drop([DEFAULT_ARROW_INDEX_NAME])
-    df = df.append_column(DEFAULT_ARROW_INDEX_NAME, formatted_index_col)
+    df = df.set_column(0, DEFAULT_ARROW_INDEX_NAME, formatted_index_col)
     return df
-
-
-def _get_default_index_start(partition_data):
-    stored_data_end = _get_last_stored_value(partition_data)
-    append_data_start = int(stored_data_end) + 1
-    return append_data_start
 
 
 def append_data(df, *, to):

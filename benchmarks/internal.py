@@ -173,7 +173,8 @@ if __name__ == '__main__':
     KWARGS = {
         'n': 3,
         'r': 5,
-        'sort': False
+        'sort': False,
+        'quiet': False
     }
     run_bmarks(
         run='all',
