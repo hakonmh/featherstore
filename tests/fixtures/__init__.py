@@ -1,4 +1,4 @@
-import os
+from os.path import join
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME, DB_MARKER_NAME
 
 from .convert_table import convert_table
@@ -25,8 +25,8 @@ from ._utils import get_index_name
 from .update_values import update_values
 from .assertions import assert_table_equals, assert_df_equals
 
-DB_PATH = os.path.join('tests', '_db')
+DB_PATH = join('tests', '_db')
 STORE_NAME = "test_store"
 TABLE_NAME = "table_name"
-TABLE_PATH = os.path.join(DB_PATH, STORE_NAME, TABLE_NAME)
+TABLE_PATH = join(DB_PATH, STORE_NAME, TABLE_NAME)
 MD_NAME = 'db'
