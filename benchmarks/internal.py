@@ -48,6 +48,15 @@ def write_bmark(shape, ratio=None, num_partitions=0, **kwargs):
     return result
 
 
+def write_unsorted_bmark(shape, ratio=None, num_partitions=0, **kwargs):
+    write.write_arrow(shape, sorted=False, num_partitions=num_partitions)
+    write.write_pandas(shape, sorted=False, num_partitions=num_partitions)
+    write.write_polars(shape, sorted=False, num_partitions=num_partitions)
+    header = f'Write unsorted benchmark (Table size: {shape[0]:,d}, {shape[1]:,d})'
+    result = write.write_bench.run(header=header, **kwargs)
+    return result
+
+
 def append_bmark(shape, ratio, num_partitions=0, **kwargs):
     num_rows_to_append = round(shape[0] * ratio)
 
@@ -148,7 +157,9 @@ def run_bmarks(shape, num_partitions, ratio=0.25, run='all', **kwargs):
         'read[full]': [read_bmark],
         'read[rows]': [read_rows_bmark],
         'read[cols]': [read_cols_bmark],
-        'write': [write_bmark],
+        'write': [write_bmark, write_unsorted_bmark],
+        'write[sorted]': [write_bmark],
+        'write[unsorted]': [write_unsorted_bmark],
         'append': [append_bmark],
         'insert': [insert_rows_bmark, insert_cols_bmark],
         'insert[rows]': [insert_rows_bmark],

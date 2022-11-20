@@ -7,18 +7,20 @@ write_bench = bmark.Benchmark()
 
 class WriteFS(bmark.Benched):
 
-    def __init__(self, shape, astype, num_partitions):
+    def __init__(self, shape, astype, num_partitions, sorted):
         self._shape = shape
         self._astype = astype
         self._num_partitions = num_partitions
+        self.sorted = sorted
         super().__init__()
 
     def run(self):
         self._store.write_table('table_name', self._df, index='index',
-                                partition_size=self._partition_size)
+                                partition_size=self._partition_size,
+                                warnings='ignore')
 
     def setup(self):
-        self._df = fx.make_table(self._shape, astype=self._astype)
+        self._df = fx.make_table(self._shape, sorted=self.sorted, astype=self._astype)
         self._partition_size = fx.get_partition_size(self._df, self._num_partitions)
         fs.create_database('db')
 
@@ -37,22 +39,25 @@ class WriteFS(bmark.Benched):
 @write_bench()
 class write_arrow(WriteFS):
 
-    def __init__(self, shape, num_partitions=0):
+    def __init__(self, shape, num_partitions=0, sorted=True):
         self.name = "FS write Arrow"
-        super().__init__(shape, astype='arrow', num_partitions=num_partitions)
+        super().__init__(shape, astype='arrow', num_partitions=num_partitions,
+                         sorted=sorted)
 
 
 @write_bench()
 class write_pandas(WriteFS):
 
-    def __init__(self, shape, num_partitions=0):
+    def __init__(self, shape, num_partitions=0, sorted=True):
         self.name = "FS write Pandas"
-        super().__init__(shape, astype='pandas', num_partitions=num_partitions)
+        super().__init__(shape, astype='pandas', num_partitions=num_partitions,
+                         sorted=sorted)
 
 
 @write_bench()
 class write_polars(WriteFS):
 
-    def __init__(self, shape, num_partitions=0):
+    def __init__(self, shape, num_partitions=0, sorted=True):
         self.name = "FS write Polars"
-        super().__init__(shape, astype='polars', num_partitions=num_partitions)
+        super().__init__(shape, astype='polars', num_partitions=num_partitions,
+                         sorted=sorted)
