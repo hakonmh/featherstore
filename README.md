@@ -2,7 +2,7 @@
 # FeatherStore
 
 [![Documentation Status](https://readthedocs.org/projects/featherstore/badge/?version=latest)](https://featherstore.readthedocs.io/en/latest/index.html)
-[![Test Status](https://img.shields.io/github/workflow/status/hakonmh/featherstore/Test%20Python%20package)](https://github.com/hakonmh/featherstore/actions)
+[![Test Status](https://img.shields.io/github/actions/workflow/status/hakonmh/featherstore/macos-windows-test.yml)](https://github.com/hakonmh/featherstore/actions)
 [![PyPI version](https://img.shields.io/pypi/v/FeatherStore?color=blue)](https://pypi.org/project/FeatherStore/)
 [![Dev Status](https://img.shields.io/pypi/status/featherstore?color=important)](https://pypi.org/project/FeatherStore/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/hakonmh/featherstore/blob/master/LICENSE)
