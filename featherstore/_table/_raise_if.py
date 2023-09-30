@@ -79,10 +79,8 @@ def cols_argument_is_not_collection_or_none(cols):
 
 
 def cols_argument_items_is_not_str(cols):
-    if isinstance(cols, dict):
-        col_elements_are_str = all(isinstance(item, str) for item in cols.keys())
-    else:
-        col_elements_are_str = all(isinstance(item, str) for item in cols)
+    col_types = set(map(type, cols))
+    col_elements_are_str = col_types == {str} or col_types == set()
     if not col_elements_are_str:
         raise TypeError("Elements in 'cols' must be of type str")
 
@@ -146,6 +144,7 @@ def rows_argument_items_type_not_same_as_index(rows, table_data):
 
 def _rows_type_matches_index(rows, index_dtype):
     row = rows[0]
+
     matches_dtime_idx = _check_if_row_and_index_is_temporal(row, index_dtype)
     matches_str_idx = _check_if_row_and_index_is_str(row, index_dtype)
     matches_int_idx = _check_if_row_and_index_is_int(row, index_dtype)
@@ -174,7 +173,12 @@ def _check_if_row_and_index_is_int(row, index_dtype):
 
 def _isinstance_temporal(obj):
     try:
-        _ = pd.to_datetime(obj)
+        if isinstance(obj, str):
+            _ = pd.Timestamp(obj)
+        elif isinstance(obj, pd.Timestamp):
+            pass
+        else:
+            _ = pd.to_datetime(obj)
         is_temporal = True
     except Exception:
         is_temporal = False
@@ -220,12 +224,14 @@ def index_in_cols(cols, table_data):
 
 
 def col_names_contains_duplicates(cols):
-    cols = pd.Index(cols)
-    if cols.has_duplicates:
+    contains_duplicates = len(set(cols)) < len(cols)
+    if contains_duplicates:
         raise IndexError("Column names must be unique")
 
 
 def index_values_contains_duplicates(index):
     if index is not None:
-        if index.has_duplicates:
+        index = _table_utils.convert_to_polars(index, as_array=True)
+        contains_duplicates = index.n_unique() < index.shape[0]
+        if contains_duplicates:
             raise IndexError("Index values must be unique")

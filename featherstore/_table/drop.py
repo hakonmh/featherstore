@@ -84,17 +84,16 @@ def has_still_default_index(table, rows):
 
     metadata = table._partition_data
     if rows.keyword == 'before':
-        is_still_def_idx = _idx_still_default_after_dropping_rows_before(rows, metadata)
+        is_still_default = _idx_still_default_after_dropping_rows_before(rows, metadata)
     elif rows.keyword == 'after':
-        is_still_def_idx = True
+        is_still_default = True
     elif rows.keyword == 'between':
-        is_still_def_idx = _idx_still_default_after_dropping_rows_between(rows, metadata)
+        is_still_default = _idx_still_default_after_dropping_rows_between(rows, metadata)
     elif rows:
-        is_still_def_idx = _idx_still_default_after_dropping_rows_list(rows, metadata)
+        is_still_default = _idx_still_default_after_dropping_rows_list(rows, metadata)
     else:
-        is_still_def_idx = True
-
-    return is_still_def_idx
+        is_still_default = True
+    return is_still_default
 
 
 def _idx_still_default_after_dropping_rows_before(rows, partition_metadata):

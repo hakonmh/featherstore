@@ -1,6 +1,7 @@
 from collections.abc import Iterable, Set
 
 import pyarrow as pa
+from pyarrow import compute
 import pandas as pd
 import polars as pl
 
@@ -39,20 +40,32 @@ def _coerce_arrow_col_types(dfs, schema):
     return coerced_dfs
 
 
+def is_sorted(df, index_name=None):
+    if index_name:
+        index = df[index_name]
+    else:
+        index = df
+
+    is_unordered = compute.any(compute.greater(index[:-1], index[1:]))
+    return not is_unordered.as_py()
+
+
 def sort_arrow_table(df, *, by):
     schema = df.schema
+    df = convert_to_polars(df)
 
-    df = pl.from_arrow(df, rechunk=False)
     df = df.sort(by)
-    df = df.to_arrow()
 
+    df = convert_to_arrow(df)
     df = df.cast(schema)
     return df
 
 
 def get_col_names(df, has_default_index):
-    if isinstance(df, (pd.DataFrame, pl.DataFrame)):
-        cols = list(df.columns)
+    if isinstance(df, pd.DataFrame):
+        cols = df.columns.tolist()
+    elif isinstance(df, pl.DataFrame):
+        cols = df.columns
     elif isinstance(df, pa.Table):
         cols = df.column_names
     else:
@@ -68,23 +81,25 @@ def get_col_names(df, has_default_index):
     return cols
 
 
-def convert_to_arrow(df):
-    if isinstance(df, pd.Series):
-        df = df.to_frame()
+def convert_to_arrow(df, as_array=False):
+    if isinstance(df, (pl.Series, pd.Series, pd.Index)):
+        if as_array:
+            df = pa.array(df)
+        else:
+            df = df.to_frame()
+
     if isinstance(df, pd.DataFrame):
         df = pa.Table.from_pandas(df, preserve_index=True)
-    if isinstance(df, pl.Series):
-        df = df.to_frame()
-    if isinstance(df, pl.DataFrame):
+    elif isinstance(df, pl.DataFrame):
         df = df.to_arrow()
     return df
 
 
-def convert_to_polars(df):
-    if isinstance(df, (pd.Series, pd.DataFrame)):
-        df = convert_to_arrow(df)
-    if isinstance(df, pa.Table):
-        df = pl.from_arrow(df)
+def convert_to_polars(df, as_array=False):
+    if isinstance(df, (pd.Series, pd.DataFrame, pd.Index)):
+        df = convert_to_arrow(df, as_array=as_array)
+    if isinstance(df, (pa.Table, pa.Array, pa.ChunkedArray)):
+        df = pl.from_arrow(df, rechunk=False)
     return df
 
 
@@ -238,27 +253,15 @@ def typestring_is_int(index_dtype):
     return "int" in index_dtype
 
 
-def get_pd_index_if_exists(df, index_name):
+def get_index_if_exists(df, index_name):
     if isinstance(df, (pd.DataFrame, pd.Series)):
-        index = df.index
+        index = convert_to_arrow(df.index, as_array=True)
     else:
-        index = _get_index_if_index_in_table(df, index_name)
-    return index
-
-
-def _get_index_if_index_in_table(df, index_name):
-    try:
-        pd_index = _get_index_as_pd_index(df, index_name)
-    except Exception:
-        pd_index = None
-    return pd_index
-
-
-def _get_index_as_pd_index(df, index_name):
-    index = df[index_name]
-    if isinstance(index, pl.Series):
-        index = index.to_arrow()
-    return pd.Index(index)
+        try:
+            index = df[index_name]
+        except Exception:
+            index = None
+    return convert_to_arrow(index, as_array=True)
 
 
 def filter_arrow_table(df, rows, index_col_name):

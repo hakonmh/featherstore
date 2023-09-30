@@ -1,5 +1,5 @@
 import itertools
-from string import ascii_lowercase
+from string import ascii_letters, ascii_lowercase
 
 import pandas as pd
 import polars as pl
@@ -9,7 +9,7 @@ import numpy as np
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from . import _utils
 
-RANDS_CHARS = np.array(list(ascii_lowercase + ' '))
+RANDS_CHARS = np.array(list(ascii_letters + ' '))
 
 
 def make_table(index=None, rows=30, cols=5, *, astype="arrow", dtype=None, **kwargs):
@@ -68,7 +68,7 @@ def _make_datetime_col(rows):
     start = -852076800  # 1943-01-01 in seconds relative to epoch
     end = 1640995200  # 2022-01-01 in seconds relative to epoch
     times_since_epoch = np.random.randint(start, end, size=rows, dtype=np.int32)
-    dtime = times_since_epoch.astype('datetime64[s]')
+    dtime = times_since_epoch.astype('datetime64[ns]')
     return dtime
 
 
@@ -101,7 +101,7 @@ def _squeeze_df(df):
     if isinstance(df, pl.DataFrame):
         df = df.to_series()
     elif isinstance(df, pd.DataFrame):
-        df = df.squeeze()
+        df = df.squeeze(axis=1)
     return df
 
 

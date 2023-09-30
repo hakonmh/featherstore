@@ -3,8 +3,9 @@ import json
 from numbers import Integral
 
 import pyarrow as pa
-import pandas as pd
+import numpy as np
 from pyarrow import feather
+from pandas._libs.lib import infer_dtype
 
 from featherstore.connection import Connection
 from featherstore import _utils
@@ -30,9 +31,9 @@ def can_write_table(table, df, index_name, partition_size, errors, warnings):
     _raise_if.cols_argument_items_is_not_str(cols)
     _raise_if.col_names_contains_duplicates(cols)
 
-    pd_index = _table_utils.get_pd_index_if_exists(df, index_name)
-    _raise_if_index_is_not_supported_type(pd_index)
-    _raise_if.index_values_contains_duplicates(pd_index)
+    index = _table_utils.get_index_if_exists(df, index_name)
+    _raise_if_index_is_not_supported_type(index)
+    _raise_if.index_values_contains_duplicates(index)
 
 
 def _raise_if_partition_size_is_not_int(partition_size):
@@ -55,8 +56,8 @@ def _raise_if_provided_index_not_in_cols(index, cols):
 
 def _raise_if_index_is_not_supported_type(index):
     if index is not None:
-        index_type = index.inferred_type
-        if index_type not in {"integer", "datetime64", "string"}:
+        index_type = infer_dtype((index[0].as_py(),))
+        if index_type not in {"integer", "datetime", "datetime64", "string"}:
             raise TypeError(f"Table.index type must be either int, str or datetime "
                             f"(is type {index_type})")
 
@@ -124,7 +125,7 @@ def _has_default_index(df):
     if has_index_name or __index_was_sorted(df):
         has_default_index = False
     else:
-        index = [batch[index_name] for batch in df]
+        index = (batch[index_name] for batch in df)
         index = pa.concat_arrays(index)
         if __is_rangeindex(index):
             has_default_index = True
@@ -143,20 +144,18 @@ def __index_was_sorted(df):
 
 def __is_rangeindex(index):
     """Compares the index against a equivalent range index"""
-    rangeindex = __make_rangeindex(index)
-    TYPES_NOT_MATCHING = pa.lib.ArrowNotImplementedError
-    try:
-        is_rangeindex = pa.compute.equal(index, rangeindex)
-        is_rangeindex = pa.compute.all(is_rangeindex).as_py()
-    except TYPES_NOT_MATCHING:
+    if pa.types.is_integer(index.type):
+        rangeindex = __make_rangeindex(index)
+        is_rangeindex = index.equals(rangeindex)
+    else:
         is_rangeindex = False
-
     return is_rangeindex
 
 
 def __make_rangeindex(index):
     """Makes a rangeindex with equal length to 'index'"""
-    return pa.array(pd.RangeIndex(len(index)))
+    np_type = index.type.to_pandas_dtype()
+    return pa.array(np.arange(len(index), dtype=np_type))
 
 
 def write_metadata(table, metadata):

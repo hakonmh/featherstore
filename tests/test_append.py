@@ -1,6 +1,8 @@
 import pytest
 from .fixtures import *
 
+import pandas as pd
+
 
 @pytest.mark.parametrize("index",
                          [default_index, sorted_datetime_index, sorted_string_index])
@@ -21,7 +23,7 @@ def test_append_table(store, index, astype):
     assert_table_equals(table, expected)
 
 
-@pytest.mark.parametrize("astype", ["polars[series]", "pandas[series]"])
+@pytest.mark.parametrize("astype", ["polars[series]", "pandas[series]", "arrow"])
 def test_append_series(store, astype):
     expected = make_table(astype=astype, cols=1)
     original_df, append_df = split_table(expected, rows={'after': 20})
@@ -45,6 +47,26 @@ def test_store_append_table(store):
     # Assert
     df = store.read_pandas(TABLE_NAME)
     assert_df_equals(df, expected)
+
+
+def test_append_custom_values_to_default_index(store):
+    df = make_table(default_index, astype='pandas')
+    original_df, extra_df = split_table(df, rows={'after': 20})
+    append_df1, append_df2 = split_table(extra_df, rows={'after': 25})
+    append_df2.index = [29, 27, 37, 33, 31]
+
+    expected = pd.concat([original_df, append_df1, append_df2])
+    expected = sort_table(expected)
+    expected = convert_table(expected, to='arrow')
+    expected = format_arrow_table(expected)
+
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df)
+    # Act
+    table.append(append_df1, warnings='ignore')
+    table.append(append_df2, warnings='ignore')
+    # Assert
+    assert_table_equals(table, expected)
 
 
 def _non_matching_index_dtype():

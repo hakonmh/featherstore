@@ -174,7 +174,7 @@ def convert_table_to_pandas(df):
     df = df.to_pandas(date_as_object=False)
 
     if _can_be_converted_to_series(df):
-        df = df.squeeze()
+        df = df.squeeze(axis=1)
 
     index = df.index
     if _can_be_converted_to_rangeindex(index):

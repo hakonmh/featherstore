@@ -44,7 +44,7 @@ def test_pandas_filtering(store, index, rows, cols):
     # Arrange
     original_df = make_table(index, cols=15, astype='pandas[series]')
     _, expected = split_table(original_df, rows=rows, cols=cols)
-    expected = expected.squeeze()
+    expected = expected.squeeze(axis=1)
 
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)

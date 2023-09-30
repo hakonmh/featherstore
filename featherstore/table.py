@@ -194,14 +194,18 @@ class Table:
 
         df = common.format_table(df, index_name, warnings)
         if has_default_index:
-            df = append.format_default_index(self, df)
+            if append.index_is_default(df[index_name]):
+                df = append.format_default_index(self, df)
+            else:
+                has_default_index = insert.has_still_default_index(self, df)
         last_partition = read.read_table(self, [last_partition_name])
 
         df = append.append_data(df, to=last_partition)
         partitions = append.create_partitions(df, rows_per_partition,
                                               last_partition_name)
 
-        metadata = common.update_metadata(self, partitions, [last_partition_name])
+        metadata = common.update_metadata(self, partitions, [last_partition_name],
+                                          has_default_index=has_default_index)
 
         write.write_metadata(self, metadata)
         write.write_partitions(partitions, self._table_path)

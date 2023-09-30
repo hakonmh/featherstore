@@ -35,7 +35,7 @@ def _convert_to_pandas(df, index_name=None, as_series=True):
         df.index.name = None
 
     if isinstance(df, pd.DataFrame) and as_series and __can_be_squeezed(df):
-        df = df.squeeze()
+        df = df.squeeze(axis=1)
     return df
 
 

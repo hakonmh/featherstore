@@ -1,5 +1,4 @@
-import pandas as pd
-from pyarrow.compute import add as pa_add
+import pyarrow as pa
 
 from featherstore.connection import Connection
 from featherstore import _utils
@@ -25,49 +24,45 @@ def can_append_table(table, df, warnings):
     has_default_index = table_data['has_default_index']
     index_name = table_data['index_name']
 
-    pd_index = _table_utils.get_pd_index_if_exists(df, index_name)
-    index_is_provided = pd_index is not None
+    index = _table_utils.get_index_if_exists(df, index_name)
+    index_is_provided = index is not None
     if not has_default_index or index_is_provided:
-        if not _index_provided_is_default(pd_index):
-            _raise_if_append_data_not_ordered_after_stored_data(df, table_data,
-                                                                table._partition_data)
+        index = _sort_index_if_unsorted(index)
+        if not index_is_default(index):
+            _raise_if_append_data_not_ordered_after_stored_data(
+                index, table._partition_data
+            )
 
-    raise_if_index_not_exist(pd_index, has_default_index)
-    _raise_if.index_values_contains_duplicates(pd_index)
-
-
-def _index_provided_is_default(pd_index):
-    default_rangeindex = pd.RangeIndex(len(pd_index))
-    return pd_index.equals(default_rangeindex)
+    raise_if_index_not_exist(index, has_default_index)
+    _raise_if.index_values_contains_duplicates(index)
 
 
-def _raise_if_append_data_not_ordered_after_stored_data(df, table_data, partition_data):
-    append_data_start = _get_first_append_value(df, table_data)
+def _sort_index_if_unsorted(index):
+    if _table_utils.is_sorted(index):
+        index = _table_utils.convert_to_polars(index, as_array=True)
+        index = index.sort()
+        index = _table_utils.convert_to_arrow(index, as_array=True)
+    return index
+
+
+def index_is_default(index):
+    if not pa.types.is_integer(index.type):
+        return False
+    default_rangeindex = pa.array(range(len(index)))
+    try:
+        return index.equals(default_rangeindex)
+    except TypeError:  # index is chunked array
+        default_rangeindex = pa.chunked_array([default_rangeindex])
+        return index.equals(default_rangeindex)
+
+
+def _raise_if_append_data_not_ordered_after_stored_data(index, partition_data):
+    append_data_start = index[0].as_py()
     stored_data_end = _get_last_stored_value(partition_data)
     if append_data_start <= stored_data_end:
         raise ValueError(
             f"New_data.index can't be <= old_data.index[-1] ({append_data_start}"
             f" <= {stored_data_end})")
-
-
-def _get_first_append_value(df, table_data):
-    append_data_start = _get_non_default_index_start(df, table_data)
-    return append_data_start
-
-
-def _get_non_default_index_start(df, table_data):
-    index_col = table_data["index_name"]
-    first_row = _get_first_row(df)
-    first_row = _table_utils.convert_to_arrow(first_row)
-    append_data_start = first_row[index_col][0].as_py()
-    return append_data_start
-
-
-def _get_first_row(df):
-    if isinstance(df, pd.DataFrame):
-        return df.iloc[:1]
-    else:
-        return df[:1]
 
 
 def _get_last_stored_value(partition_data):
@@ -89,7 +84,10 @@ def format_default_index(table, df):
     """
     index_col = df[DEFAULT_ARROW_INDEX_NAME]
     stored_data_end = _get_last_stored_value(table._partition_data)
-    formatted_index_col = pa_add(index_col, stored_data_end + 1)
+
+    append_data_start = stored_data_end + 1
+    append_data_end = append_data_start + len(index_col)
+    formatted_index_col = pa.array(range(append_data_start, append_data_end))
 
     df = df.set_column(0, DEFAULT_ARROW_INDEX_NAME, formatted_index_col)
     return df

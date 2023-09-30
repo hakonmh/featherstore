@@ -38,16 +38,14 @@ class Metadata():
             for key in self.keys():
                 byte_offset = self.index[key]
                 f.seek(byte_offset)
-                value = pickle.load(f)
-                items[key] = value
+                items[key] = pickle.load(f)
         return items
 
     def __getitem__(self, key: str):
         with open(self._db_path, "rb") as f:
             byte_offset = self.index[key]
             f.seek(byte_offset)
-            value = pickle.load(f)
-            return value
+            return pickle.load(f)
 
     def __setitem__(self, key: str, value):
         with open(self._db_path, "ab") as f:

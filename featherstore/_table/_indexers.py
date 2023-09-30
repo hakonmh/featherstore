@@ -62,14 +62,14 @@ class Indexer:
         return _table_utils.is_collection(item)
 
     def set_keyword(self, keywords):
-        keyword = None
         if self.keys():
             key = self.keys()[0]
             if isinstance(key, str):
                 is_keyword = key.lower() in keywords
                 if is_keyword:
-                    keyword = key.lower()
-        self.keyword = keyword
+                    self.keyword = key.lower()
+        else:
+            self.keyword = None
 
     def keys(self):
         return self._keys

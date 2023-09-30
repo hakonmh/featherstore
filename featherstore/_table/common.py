@@ -53,14 +53,12 @@ def _make_default_index(df, index_name):
 
 
 def _sort_table_if_unsorted(df, index_name, warnings):
-    pd_index = pd.Index(df[index_name])
-    index_is_unordered = not pd_index.is_monotonic_increasing
-
-    if index_is_unordered:
+    is_unsorted = not _table_utils.is_sorted(df, index_name)
+    if is_unsorted:
         if warnings == "warn":
             _warnings.warn("Index is unsorted and will be sorted before storage")
         df = _table_utils.sort_arrow_table(df, by=index_name)
-    new_metadata = json.dumps({"sorted": index_is_unordered})
+    new_metadata = json.dumps({"sorted": is_unsorted})
     df = _add_featherstore_metadata(df, new_metadata)
     return df
 
@@ -111,13 +109,14 @@ def __get_numpy_dtype_info(dtype):
             'scale': dtype.scale,
         }
     elif pd_dtype in ('date', 'time'):  # Numpy doesn't support date types
-        resolution = str(dtype).split('[')[-1][:-1]
+        resolution = str(dtype).split('[')[-1].split(']')[0]
         if resolution == 'day':
             resolution = 'D'
         numpy_dtype = f'datetime64[{resolution}]'
         extra_metadata = None
     elif hasattr(dtype, 'tz'):  # Store timezone info if exists for dtime types
-        numpy_dtype = 'datetime64[ns]'
+        resolution = str(dtype).split('[')[-1].split(']')[0]
+        numpy_dtype = f'datetime64[{resolution}]'
         try:
             extra_metadata = {'timezone': pa.lib.tzinfo_to_string(pd_dtype.tz)}
         except Exception:
