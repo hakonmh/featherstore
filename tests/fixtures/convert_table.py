@@ -42,7 +42,10 @@ def _convert_to_pandas(df, index_name=None, as_series=True):
 def __convert_object_cols_to_string(df):
     for col in df.columns:
         if df[col].dtype.name == 'object':
-            if isinstance(df[col][0], str):
+            try:
+                if isinstance(df[col][0], str):
+                    df[col] = df[col].astype('string')
+            except KeyError:
                 df[col] = df[col].astype('string')
     return df
 
