@@ -163,7 +163,7 @@ def _add_featherstore_metadata(df, new_metadata):
 
 def compute_rows_per_partition(df, target_size):
     num_rows = df.shape[0]
-    table_size_in_bytes = df.nbytes
+    table_size_in_bytes = max(df.nbytes, 1)
     if target_size == -1:
         rows_per_partition = -1
     else:
@@ -197,12 +197,18 @@ def _make_partition_metadata(df):
 
 
 def _get_index_min(df, index_name):
-    first_index_value = df[index_name][0].as_py()
+    try:
+        first_index_value = df[index_name][0].as_py()
+    except IndexError:
+        first_index_value = None
     return first_index_value
 
 
 def _get_index_max(df, index_name):
-    last_index_value = df[index_name][-1].as_py()
+    try:
+        last_index_value = df[index_name][-1].as_py()
+    except IndexError:
+        last_index_value = None
     return last_index_value
 
 
