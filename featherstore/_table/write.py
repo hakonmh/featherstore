@@ -56,8 +56,12 @@ def _raise_if_provided_index_not_in_cols(index, cols):
 
 def _raise_if_index_is_not_supported_type(index):
     if index is not None:
-        index_type = infer_dtype((index[0].as_py(),))
-        if index_type not in {"integer", "datetime", "datetime64", "string"}:
+        index_type = str(index.type)
+        is_string = _table_utils.typestring_is_string(index_type)
+        is_temporal = _table_utils.typestring_is_temporal(index_type)
+        is_int = _table_utils.typestring_is_int(index_type)
+
+        if not (is_string or is_temporal or is_int):
             raise TypeError(f"Table.index type must be either int, str or datetime "
                             f"(is type {index_type})")
 
@@ -115,7 +119,10 @@ def _get_num_rows(df):
 
 
 def _get_num_cols(df):
-    num_cols = df[0].num_columns
+    try:
+        num_cols = df[0].num_columns
+    except IndexError:
+        num_cols = 0
     return num_cols
 
 

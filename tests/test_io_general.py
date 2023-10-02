@@ -45,6 +45,18 @@ def test_store_io(store, astype, mmap):
     assert_df_equals(df, original_df)
 
 
+@pytest.mark.parametrize("astype", ["pandas", "polars", "arrow"])
+def test_empty_df_io(store, astype):
+    # Arrange
+    expected = make_table(rows=0, cols=2, astype=astype)
+    partition_size = get_partition_size(expected)
+    table = store.select_table(TABLE_NAME)
+    # Act
+    table.write(expected, partition_size=partition_size)
+    # Assert
+    assert_table_equals(table, expected)
+
+
 def _invalid_table_dtype():
     df = make_table(astype='pandas')
     args = [TABLE_NAME, df.values]

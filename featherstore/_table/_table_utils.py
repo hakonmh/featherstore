@@ -139,6 +139,8 @@ def make_partitions(df, rows_per_partition):
     else:
         partitions = df.to_batches(rows_per_partition)
         partitions = _combine_small_partitions(partitions, rows_per_partition)
+        if len(partitions) == 0:
+            partitions = [pa.RecordBatch.from_pylist(df.to_pylist(), df.schema)]
     return partitions
 
 
@@ -148,7 +150,10 @@ def _make_single_partition(df):
 
 def _combine_small_partitions(partitions, partition_size):
     has_multiple_partitions = len(partitions) > 1
-    size_of_last_partition = partitions[-1].num_rows
+    try:
+        size_of_last_partition = partitions[-1].num_rows
+    except IndexError:
+        size_of_last_partition = 0
     min_partition_size = partition_size * 0.5
 
     if has_multiple_partitions and size_of_last_partition < min_partition_size:
