@@ -177,7 +177,7 @@ def _make_continuous_alphabetic_str(size):
 
 def unsorted_int_index(rows):
     index = np.random.default_rng().permutation(rows)
-    index = pd.Index(index)
+    index = pd.Index(index, dtype=np.int64)
     return index
 
 

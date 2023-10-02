@@ -35,7 +35,6 @@ def format_cols_and_to_args(cols, to):
 
 def format_table(df, index_name, warnings):
     df = _table_utils.convert_to_arrow(df)
-
     if index_name is None:
         index_name = _table_utils.get_index_name(df)
     if index_name not in df.column_names:

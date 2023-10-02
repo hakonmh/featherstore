@@ -79,7 +79,7 @@ def split_df_by_cols(df, df_cols, other_cols):
         other = df.select(other_cols)
         df = df.select(df_cols)
     elif isinstance(df, pd.Series):
-        other = pd.DataFrame(index=df.index)
+        other = pd.DataFrame(index=df.index, columns=[])
         try:
             if df.name == other_cols[0]:
                 other, df = df, other

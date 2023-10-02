@@ -87,7 +87,6 @@ def convert_to_arrow(df, as_array=False):
             df = pa.array(df)
         else:
             df = df.to_frame()
-
     if isinstance(df, pd.DataFrame):
         df = pa.Table.from_pandas(df, preserve_index=True)
     elif isinstance(df, pl.DataFrame):
