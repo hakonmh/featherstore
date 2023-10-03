@@ -1,7 +1,7 @@
 # Dependencies
-pandas>=1.4.0
-polars[timezone]>=0.14.11
-pyarrow>=8.0.0
+pandas>=1.4.0,<=2.1.1
+polars[timezone]>=0.14.11,<=0.19.6
+pyarrow>=8.0.0,<=13.0.0
 numpy>=1.21.0
 
 # Tools

@@ -24,14 +24,15 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ],
     python_requires='>=3.8',
     keywords='feather arrow pandas polars datastore',
     packages=find_packages(exclude=['tests', 'docs', 'benchmarks' 'dev']),
     install_requires=[
-        'pandas>=1.4.0',
-        'polars[timezone]>=0.14.11',
-        'pyarrow>=8.0.0',
+        'pandas>=1.4.0,<=2.1.1',
+        'polars[timezone]>=0.14.11,<=0.19.6',
+        'pyarrow>=8.0.0,<=13.0.0',
     ],
     project_urls={
         'Documentation': r'https://featherstore.readthedocs.io/en/stable/'
