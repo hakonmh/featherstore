@@ -194,7 +194,7 @@ class Table:
 
         df = common.format_table(df, index_name, warnings)
         if has_default_index:
-            if append.index_is_default(df[index_name]):
+            if common.index_is_default(df[index_name]):
                 df = append.format_default_index(self, df)
             else:
                 has_default_index = insert.has_still_default_index(self, df)

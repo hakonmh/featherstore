@@ -5,6 +5,7 @@ from featherstore import _utils
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
+from featherstore._table import common
 
 
 def can_append_table(table, df, warnings):
@@ -28,7 +29,7 @@ def can_append_table(table, df, warnings):
     index_is_provided = index is not None
     if not has_default_index or index_is_provided:
         index = _sort_index_if_unsorted(index)
-        if not index_is_default(index):
+        if not common.index_is_default(index):
             _raise_if_append_data_not_ordered_after_stored_data(
                 index, table._partition_data
             )
@@ -43,17 +44,6 @@ def _sort_index_if_unsorted(index):
         index = index.sort()
         index = _table_utils.convert_to_arrow(index, as_array=True)
     return index
-
-
-def index_is_default(index):
-    if not pa.types.is_integer(index.type):
-        return False
-    default_rangeindex = pa.array(range(len(index)))
-    try:
-        return index.equals(default_rangeindex)
-    except TypeError:  # index is chunked array
-        default_rangeindex = pa.chunked_array([default_rangeindex])
-        return index.equals(default_rangeindex)
 
 
 def _raise_if_append_data_not_ordered_after_stored_data(index, partition_data):

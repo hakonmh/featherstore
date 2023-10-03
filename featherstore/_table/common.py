@@ -245,3 +245,17 @@ def _update_num_partitions(dropped_partitions_data, new_partitions_data):
     dropped = len(dropped_partitions_data)
     added = len(new_partitions_data)
     return added - dropped
+
+
+def index_is_default(index):
+    if not pa.types.is_integer(index.type):
+        return False
+    if len(index) == 0:
+        return True
+
+    default_rangeindex = pa.array(range(len(index)))
+    try:
+        return index.equals(default_rangeindex)
+    except TypeError:  # index is chunked array
+        default_rangeindex = pa.chunked_array([default_rangeindex])
+        return index.equals(default_rangeindex)

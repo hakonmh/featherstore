@@ -3,9 +3,7 @@ import json
 from numbers import Integral
 
 import pyarrow as pa
-import numpy as np
 from pyarrow import feather
-from pandas._libs.lib import infer_dtype
 
 from featherstore.connection import Connection
 from featherstore import _utils
@@ -134,7 +132,7 @@ def _has_default_index(df):
     else:
         index = (batch[index_name] for batch in df)
         index = pa.concat_arrays(index)
-        if __is_rangeindex(index):
+        if common.index_is_default(index):
             has_default_index = True
         else:
             has_default_index = False
@@ -147,22 +145,6 @@ def __index_was_sorted(df):
     metadata_dict = json.loads(featherstore_metadata)
     was_sorted = metadata_dict["sorted"]
     return was_sorted
-
-
-def __is_rangeindex(index):
-    """Compares the index against a equivalent range index"""
-    if pa.types.is_integer(index.type):
-        rangeindex = __make_rangeindex(index)
-        is_rangeindex = index.equals(rangeindex)
-    else:
-        is_rangeindex = False
-    return is_rangeindex
-
-
-def __make_rangeindex(index):
-    """Makes a rangeindex with equal length to 'index'"""
-    np_type = index.type.to_pandas_dtype()
-    return pa.array(np.arange(len(index), dtype=np_type))
 
 
 def write_metadata(table, metadata):
