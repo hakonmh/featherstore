@@ -52,7 +52,7 @@ def _make_default_index(df, index_name):
 
 
 def _sort_table_if_unsorted(df, index_name, warnings):
-    is_unsorted = not _table_utils.is_sorted(df, index_name)
+    is_unsorted = not _is_sorted(df, index_name)
     if is_unsorted:
         if warnings == "warn":
             _warnings.warn("Index is unsorted and will be sorted before storage")
@@ -60,6 +60,16 @@ def _sort_table_if_unsorted(df, index_name, warnings):
     new_metadata = json.dumps({"sorted": is_unsorted})
     df = _add_featherstore_metadata(df, new_metadata)
     return df
+
+
+def _is_sorted(df, index_name=None):
+    if index_name:
+        index = df[index_name]
+    else:
+        index = df
+
+    is_unordered = pa.compute.any(pa.compute.greater(index[:-1], index[1:]))
+    return not is_unordered.as_py()
 
 
 def _format_pd_metadata(df, index_name):

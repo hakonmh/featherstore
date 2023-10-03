@@ -40,16 +40,6 @@ def _coerce_arrow_col_types(dfs, schema):
     return coerced_dfs
 
 
-def is_sorted(df, index_name=None):
-    if index_name:
-        index = df[index_name]
-    else:
-        index = df
-
-    is_unordered = compute.any(compute.greater(index[:-1], index[1:]))
-    return not is_unordered.as_py()
-
-
 def sort_arrow_table(df, *, by):
     schema = df.schema
     df = convert_to_polars(df)
