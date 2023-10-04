@@ -16,7 +16,7 @@ def can_rename_columns(table, cols, new_col_names):
         _raise_if.length_of_cols_and_to_doesnt_match(cols, new_col_names)
     cols = common.format_cols_and_to_args(cols, new_col_names)
 
-    _raise_if.cols_argument_items_is_not_str(cols.keys())
+    _raise_if.cols_argument_items_is_not_str_or_none(cols.keys())
     _raise_if_new_cols_items_is_not_str(cols.values())
 
     _raise_if.col_names_contains_duplicates(cols.keys())
@@ -27,7 +27,7 @@ def can_rename_columns(table, cols, new_col_names):
 
 def _raise_if_new_cols_items_is_not_str(new_cols):
     try:
-        _raise_if.cols_argument_items_is_not_str(new_cols)
+        _raise_if.cols_argument_items_is_not_str_or_none(new_cols)
     except TypeError:
         raise TypeError("Elements in 'to' must be of type str")
 

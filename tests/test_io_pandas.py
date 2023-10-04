@@ -69,3 +69,17 @@ def test_pandas_series_filtering_cols(store, cols):
     df = table.read_pandas(cols=cols)
     # Assert
     assert_df_equals(df, expected)
+
+
+def test_pandas_series_without_name_io(store):
+    # Arrange
+    original_df = make_table(cols=1, astype='pandas[series]')
+    original_df.name = None
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    # Act
+    table.write(original_df, partition_size=partition_size, warnings='ignore')
+    df = table.read_pandas()
+    # Assert
+    assert_df_equals(df, original_df)

@@ -27,7 +27,7 @@ def can_read_table(table, cols, rows, mmap):
     _raise_if.cols_argument_is_not_collection_or_none(cols)
     cols = ColIndexer(cols)
     if cols:
-        _raise_if.cols_argument_items_is_not_str(cols.values())
+        _raise_if.cols_argument_items_is_not_str_or_none(cols.values())
         _raise_if.cols_not_in_table(cols, table._table_data)
 
 
@@ -175,6 +175,8 @@ def convert_table_to_pandas(df):
 
     if _can_be_converted_to_series(df):
         df = df.squeeze(axis=1)
+        if df.name == '0':
+            df.name = None
 
     index = df.index
     if _can_be_converted_to_rangeindex(index):
@@ -210,4 +212,7 @@ def convert_table_to_polars(df):
     num_cols = full_table.shape[1]
     if num_cols == 1:
         full_table = full_table.to_series()
+        series_name = full_table.name
+        if series_name == '0':
+            full_table = pl.Series('', full_table)
     return full_table

@@ -25,7 +25,7 @@ def can_reorder_columns(table, cols):
     _raise_if.table_not_exists(table)
 
     _raise_if.cols_argument_is_not_list_like(cols)
-    _raise_if.cols_argument_items_is_not_str(cols)
+    _raise_if.cols_argument_items_is_not_str_or_none(cols)
     _raise_if.index_in_cols(cols, table._table_data)
     _raise_if.col_names_contains_duplicates(cols)
     _raise_if_cols_doesnt_match(cols, table._table_data)

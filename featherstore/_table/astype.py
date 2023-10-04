@@ -19,7 +19,7 @@ def can_change_type(table, cols, astype):
         _raise_if.length_of_cols_and_to_doesnt_match(cols, astype)
     cols = common.format_cols_and_to_args(cols, astype)
 
-    _raise_if.cols_argument_items_is_not_str(cols.keys())
+    _raise_if.cols_argument_items_is_not_str_or_none(cols.keys())
     _raise_if_astype_items_are_not_pa_or_np_types(cols.values())
 
     _raise_if.col_names_contains_duplicates(cols.keys())

@@ -9,6 +9,8 @@ from featherstore._metadata import METADATA_FOLDER_NAME
 from featherstore._table import _table_utils
 from featherstore._table._indexers import ColIndexer
 
+NoneType = type(None)
+
 
 def table_not_exists(table):
     if not table.exists():
@@ -78,9 +80,12 @@ def cols_argument_is_not_collection_or_none(cols):
         raise TypeError(f"'cols' must be a collection or None (is type {type(cols)})")
 
 
-def cols_argument_items_is_not_str(cols):
+def cols_argument_items_is_not_str_or_none(cols):
     col_types = set(map(type, cols))
-    col_elements_are_str = col_types == {str} or col_types == set()
+    col_elements_are_str = True
+    for col_type in col_types:
+        if col_type not in {str, NoneType}:
+            col_elements_are_str = False
     if not col_elements_are_str:
         raise TypeError("Elements in 'cols' must be of type str")
 
