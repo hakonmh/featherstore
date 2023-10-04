@@ -19,6 +19,8 @@ from .misc import (
     sort_table,
     get_partition_size,
     format_arrow_table,
+    df_has_default_index,
+    drop_default_index_if_exists,
 )
 from .split_table import split_table
 from ._utils import get_index_name

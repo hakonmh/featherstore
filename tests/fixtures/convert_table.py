@@ -55,8 +55,8 @@ def __can_be_squeezed(df):
     return num_cols == 1
 
 
-def _convert_to_arrow(df):
-    if isinstance(df, pd.Series):
+def _convert_to_arrow(df, keep_index=False):
+    if isinstance(df, (pd.Series, pl.Series)):
         df = df.to_frame()
     if isinstance(df, pd.DataFrame):
         df = pa.Table.from_pandas(df, preserve_index=True)
@@ -64,7 +64,7 @@ def _convert_to_arrow(df):
         df = df.to_arrow()
     cols = df.column_names
 
-    if DEFAULT_ARROW_INDEX_NAME in cols:
+    if DEFAULT_ARROW_INDEX_NAME in cols and not keep_index:
         index = df[DEFAULT_ARROW_INDEX_NAME]
         if _utils.is_rangeindex(index):
             cols.remove(DEFAULT_ARROW_INDEX_NAME)

@@ -6,6 +6,7 @@ import polars as pl
 
 from featherstore.table import DEFAULT_PARTITION_SIZE
 from . import _utils
+from .convert_table import _convert_to_arrow
 
 
 def shuffle_cols(df):
@@ -75,3 +76,24 @@ def format_arrow_table(df):
 def __index_in_columns(df):
     index_name = df.schema.pandas_metadata["index_columns"][0]
     return index_name in df.column_names
+
+
+def drop_default_index_if_exists(df):
+    if not df_has_default_index(df):
+        return df
+
+    df = df.drop(_utils.DEFAULT_ARROW_INDEX_NAME)
+    if isinstance(df, pl.DataFrame):
+        if df.shape[1] == 1:
+            df = df.to_series()
+    return df
+
+
+def df_has_default_index(df):
+    # convert to arrow table
+    df = _convert_to_arrow(df, keep_index=True)
+    if _utils.DEFAULT_ARROW_INDEX_NAME not in df.column_names:
+        return False
+
+    index = df[_utils.DEFAULT_ARROW_INDEX_NAME]
+    return _utils.is_rangeindex(index)

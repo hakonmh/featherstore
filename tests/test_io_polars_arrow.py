@@ -20,6 +20,7 @@ def test_polars_arrow_filtering(store, index, rows, cols, astype):
     if index == fake_default_index:
         original_df = original_df.drop([DEFAULT_ARROW_INDEX_NAME])
         index_name = None
+        expected = drop_default_index_if_exists(expected)
 
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
@@ -55,7 +56,9 @@ def test_polars_and_arrow_to_pandas(store, astype, cols):
 def test_polars_series_io(store, rows, cols):
     # Arrange
     original_df = make_table(cols=1, astype='polars[series]')
-    _, expected = split_table(original_df, rows=rows, cols=cols, index_name=None)
+    _, expected = split_table(original_df, rows=rows)
+    expected = drop_default_index_if_exists(expected)
+
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
     # Act

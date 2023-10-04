@@ -81,7 +81,7 @@ class Table:
 
         partition_names = read.get_partition_names(self, rows)
         df = read.read_table(self, partition_names, cols, rows, mmap=mmap)
-        if has_default_index and rows.values() is None:
+        if has_default_index and (rows.values() is None or common.index_is_default(df[index_name])):
             df = read.drop_default_index(df, index_name)
 
         return df
