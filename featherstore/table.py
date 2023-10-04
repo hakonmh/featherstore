@@ -81,6 +81,7 @@ class Table:
 
         partition_names = read.get_partition_names(self, rows)
         df = read.read_table(self, partition_names, cols, rows, mmap=mmap)
+
         if has_default_index and (rows.values() is None or common.index_is_default(df[index_name])):
             df = read.drop_default_index(df, index_name)
 
@@ -165,7 +166,6 @@ class Table:
         df = common.format_table(df, index, warnings)
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
         partitions = write.create_partitions(df, rows_per_partition)
-
         metadata = write.generate_metadata(partitions, partition_size,
                                            rows_per_partition)
 
@@ -385,6 +385,7 @@ class Table:
         index_name = self._table_data["index_name"]
         partition_size = self._table_data["partition_size"]
         stored_cols = self._table_data["columns"]
+        old_rows_per_partition = self._table_data["rows_per_partition"]
 
         cols = common.format_cols_arg(cols, like=stored_cols)
 
@@ -395,9 +396,11 @@ class Table:
         df = common.format_table(df, index_name=index_name, warnings=False)
 
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
-        columns = df.column_names
+        if old_rows_per_partition > rows_per_partition:
+            rows_per_partition = old_rows_per_partition
         partitions = drop.create_partitions(df, rows_per_partition, partition_names)
 
+        columns = df.column_names
         metadata = common.update_metadata(self, partitions, partition_names,
                                           rows_per_partition=rows_per_partition,
                                           columns=columns)

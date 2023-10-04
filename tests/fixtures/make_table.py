@@ -48,6 +48,7 @@ def get_col_dtypes():
         'datetime': _make_datetime_col,
         'bool': _make_bool_column,
         'uint': _make_uint_col,
+        'categorical': _make_categorical_cols,
     }
     return COL_DTYPES
 
@@ -62,6 +63,10 @@ def _make_uint_col(rows):
 
 def _make_int_col(rows):
     return np.random.randint(-100000, 100000, size=rows)
+
+
+def _make_categorical_cols(rows):
+    return pd.cut(np.random.random(size=rows), (-np.inf, -0.5, 0.5, np.inf), labels=['low', 'med', 'high'])
 
 
 def _make_datetime_col(rows):

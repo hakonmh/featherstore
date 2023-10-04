@@ -2,6 +2,7 @@ import pytest
 from .fixtures import *
 
 import pandas as pd
+import numpy as np
 
 
 def test_that_rangeindex_is_converted_back(store):
@@ -75,6 +76,21 @@ def test_pandas_series_without_name_io(store):
     # Arrange
     original_df = make_table(cols=1, astype='pandas[series]')
     original_df.name = None
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    # Act
+    table.write(original_df, partition_size=partition_size, warnings='ignore')
+    df = table.read_pandas()
+    # Assert
+    assert_df_equals(df, original_df)
+
+
+def test_pandas_categorical_col_io(store):
+    # Arrange
+    original_df = make_table(cols=5, astype='pandas')
+    original_df['c1'] = pd.cut(original_df['c1'], bins=[-np.inf, -0.5, 0.5, np.inf], labels=['low', 'medium', 'high'])
+    original_df['c2'] = pd.cut(original_df['c2'], bins=[-np.inf, 0, np.inf], labels=[0, 1])
 
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
