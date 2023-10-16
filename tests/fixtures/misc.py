@@ -82,7 +82,7 @@ def drop_default_index_if_exists(df):
     if not df_has_default_index(df):
         return df
 
-    df = df.drop(_utils.DEFAULT_ARROW_INDEX_NAME)
+    df = df.drop([_utils.DEFAULT_ARROW_INDEX_NAME])
     if isinstance(df, pl.DataFrame):
         if df.shape[1] == 1:
             df = df.to_series()

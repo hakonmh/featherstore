@@ -8,6 +8,8 @@ from pyarrow import pandas_compat as pc
 from featherstore._table import _table_utils
 from featherstore._table._indexers import ColIndexer, RowIndexer
 
+HAS_MULTI_TYPE_COLUMN = (pa.lib.ArrowTypeError, pa.lib.ArrowInvalid)
+
 
 def format_cols_arg(cols, *, like=None):
     cols = ColIndexer(cols)
@@ -34,7 +36,13 @@ def format_cols_and_to_args(cols, to):
 
 
 def format_table(df, index_name, warnings):
-    df = _table_utils.convert_to_arrow(df)
+    try:
+        df = _table_utils.convert_to_arrow(df)
+        new_metadata = json.dumps({"transposed": False})
+        df = _add_featherstore_metadata(df, new_metadata)
+    except HAS_MULTI_TYPE_COLUMN:
+        df = _transpose_table_and_convert_to_arrow(df)
+
     if index_name is None:
         index_name = _table_utils.get_index_name(df)
     if index_name not in df.column_names:
@@ -45,6 +53,20 @@ def format_table(df, index_name, warnings):
     return df
 
 
+def _transpose_table_and_convert_to_arrow(df):
+    if isinstance(df, pd.Series):
+        df = df.to_frame()
+    df = df.T
+    df = df.infer_objects()
+    try:
+        df = _table_utils.convert_to_arrow(df)
+    except HAS_MULTI_TYPE_COLUMN:
+        raise ValueError("Cannot convert table with multiple dtypes in same column to arrow.")
+    new_metadata = json.dumps({"transposed": True})
+    df = _add_featherstore_metadata(df, new_metadata)
+    return df
+
+
 def _make_default_index(df, index_name):
     index = pa.array(pd.RangeIndex(len(df)))
     df = df.add_column(0, index_name, index)
@@ -52,13 +74,28 @@ def _make_default_index(df, index_name):
 
 
 def _sort_table_if_unsorted(df, index_name, warnings):
-    is_unsorted = not _is_sorted(df, index_name)
-    if is_unsorted:
+    was_unsorted = not _is_sorted(df, index_name)
+    if was_unsorted:
         if warnings == "warn":
             _warnings.warn("Index is unsorted and will be sorted before storage")
         df = _table_utils.sort_arrow_table(df, by=index_name)
-    new_metadata = json.dumps({"sorted": is_unsorted})
+    new_metadata = json.dumps({"sorted": was_unsorted})
     df = _add_featherstore_metadata(df, new_metadata)
+    return df
+
+
+def _add_featherstore_metadata(df, new_metadata):
+    old_metadata = df.schema.metadata
+    if old_metadata:
+        if b"featherstore" in old_metadata:
+            fs_data = json.loads(old_metadata[b"featherstore"])
+            fs_data.update(json.loads(new_metadata))
+            new_metadata = json.dumps(fs_data)
+
+        combined_metadata = {**old_metadata, b"featherstore": new_metadata}
+    else:
+        combined_metadata = {b"featherstore": new_metadata}
+    df = df.replace_schema_metadata(combined_metadata)
     return df
 
 
@@ -68,8 +105,9 @@ def _is_sorted(df, index_name=None):
     else:
         index = df
 
-    is_unordered = pa.compute.any(pa.compute.greater(index[:-1], index[1:]))
-    return not is_unordered.as_py()
+    is_transposed = _table_utils.is_transposed(df)
+    is_unordered = pa.compute.any(pa.compute.greater(index[:-1], index[1:])).as_py()
+    return not is_unordered or is_transposed
 
 
 def _format_pd_metadata(df, index_name):
@@ -163,16 +201,6 @@ def _make_index_first_column(df):
     return df
 
 
-def _add_featherstore_metadata(df, new_metadata):
-    old_metadata = df.schema.metadata
-    if old_metadata:
-        combined_metadata = {**old_metadata, b"featherstore": new_metadata}
-    else:
-        combined_metadata = {b"featherstore": new_metadata}
-    df = df.replace_schema_metadata(combined_metadata)
-    return df
-
-
 def compute_rows_per_partition(df, target_size):
     num_rows = df.shape[0]
     table_size_in_bytes = max(df.nbytes, 1)
@@ -181,6 +209,7 @@ def compute_rows_per_partition(df, target_size):
     else:
         rows_per_partition = num_rows * target_size / table_size_in_bytes
         rows_per_partition = int(round(rows_per_partition, 0))
+        rows_per_partition = max(rows_per_partition, 1)
     return rows_per_partition
 
 

@@ -1,7 +1,7 @@
 from collections.abc import Iterable, Set
+import json
 
 import pyarrow as pa
-from pyarrow import compute
 import pandas as pd
 import polars as pl
 
@@ -360,3 +360,9 @@ def is_list_like(obj):
     is_not_string = not isinstance(obj, (str, bytes))
     is_not_set = not isinstance(obj, Set)
     return is_iterable and is_not_string and is_not_set
+
+
+def is_transposed(df):
+    fs_metadata = df.schema.metadata[b'featherstore']
+    fs_metadata = json.loads(fs_metadata)
+    return fs_metadata['transposed']

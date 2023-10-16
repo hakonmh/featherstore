@@ -165,10 +165,10 @@ class Table:
 
         df = common.format_table(df, index, warnings)
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
+
         partitions = write.create_partitions(df, rows_per_partition)
         metadata = write.generate_metadata(partitions, partition_size,
                                            rows_per_partition)
-
         self.drop_table()
         self._create_table()
         write.write_metadata(self, metadata)

@@ -99,3 +99,46 @@ def test_pandas_categorical_col_io(store):
     df = table.read_pandas()
     # Assert
     assert_df_equals(df, original_df)
+
+
+@pytest.mark.parametrize(["num_cols", "astype"],
+                         [(1, 'series'), (1, 'dataframe'), (4, 'dataframe')])
+def test_pandas_multitype_col_io(store, num_cols, astype):
+    # Arrange
+    original_df = _create_multitype_col_df(num_cols, astype)
+    expected = original_df.squeeze()
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    # Act
+    table.write(original_df, partition_size=partition_size, warnings='ignore')
+    df = table.read_pandas()
+    # Assert
+    assert_df_equals(df, expected)
+
+
+def _create_multitype_col_df(num_cols, astype):
+    df = make_table(cols=5, rows=num_cols, astype='pandas').T  # Transpose
+    df.columns = reversed([f'c{i}' for i in range(num_cols)])
+    df = df.sample(5, random_state=42)
+    if astype == 'series':
+        df = df.squeeze()
+    return df
+
+
+def test_multitype_col_and_row_io(store):
+    # Arrange
+    original_df = make_table(cols=5, rows=2, astype='pandas').T  # Transpose
+    original_df.columns = ['c0', 'c1']
+    original_df['c0'] = _shuffle_col(original_df['c0'], seed=42)
+    original_df['c1'] = _shuffle_col(original_df['c1'], seed=43)
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    # Act & Assert
+    with pytest.raises(ValueError):
+        table.write(original_df, partition_size=partition_size, warnings='ignore')
+
+
+def _shuffle_col(df, seed=42):
+    np.random.seed(seed)
+    return np.random.permutation(df.values)

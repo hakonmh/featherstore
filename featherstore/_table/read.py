@@ -171,7 +171,10 @@ def drop_default_index(df, index_col_name):
 
 
 def convert_table_to_pandas(df):
+    was_transposed = _table_utils.is_transposed(df)
     df = df.to_pandas(date_as_object=False)
+    if was_transposed:
+        df = df.T
 
     if _can_be_converted_to_series(df):
         df = df.squeeze(axis=1)
