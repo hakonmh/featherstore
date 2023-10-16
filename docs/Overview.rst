@@ -1,21 +1,22 @@
-Introduction
-============
-FeatherStore is a fast datastore for storing Pandas DataFrames, Pandas Series, Polars
-DataFrames and PyArrow Tables as partitioned `Feather Files <https://arrow.apache.org/docs/python/feather.html>`_.
+Overview
+========
 
-FeatherStore supports several operations on stored tables that can be done without loading
-in the full data:
+FeatherStore is high performance datastore for storing Pandas DataFrames, Polars DataFrames,
+and PyArrow Tables. By saving data in the form of partitioned
+`Feather Files <https://arrow.apache.org/docs/python/feather.html>`_, FeatherStore enables
+several operations on the stored tables, optimizing performance by selectively loading only
+the necessary segments of data:
 
 * Partial reading of data
 * Append data
 * Insert data
 * Update data
 * Drop data
-* Read metadata (column names, index, table shape, etc)
+* Read metadata (including column names, indices, table dimensions, etc.)
 * Changing column types
 
-To learn more, go to the `Quickstart <Quickstart.html>`_ page.
-
+For more information on using FeatherStore, please refer to the
+`user guide <Quickstart.html>`_.
 
 Installation
 ++++++++++++
@@ -28,21 +29,33 @@ Installation
 
     pip install featherstore
 
+| or
+
+.. code-block::
+
+    pip install git+https://github.com/hakonmh/featherstore.git
+
+| to install the latest version from GitHub.
+
 Python version support
 ----------------------
-Officially Python 3.8, 3.9, and 3.10.
+
+Officially Python 3.8 and up is supported.
 
 Source Code
 +++++++++++
+
 | The source code is currently hosted on GitHub at:
 | https://github.com/Hakonmh/featherstore
 
 LICENSE
 +++++++
+
 `MIT <https://github.com/hakonmh/featherstore/blob/master/LICENSE>`_
 
 Contributions
 +++++++++++++
+
 All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome.
 
 | Issues are posted on:

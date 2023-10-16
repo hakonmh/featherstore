@@ -1,17 +1,29 @@
 Quickstart
 ==========
 
-This is a short introduction to FeatherStore basic functionality. For a complete guide to
-FeatherStores classes, functions, and methods please visit the `API reference <API%20Reference.html>`_.
+This is a short introduction to using FeatherStore and an overview of its basic functionality.
+For a complete guide to FeatherStores classes, functions, and methods please visit the
+`API reference <API%20Reference.html>`_.
+
+| The project is hosted on PyPI at:
+| https://pypi.org/project/FeatherStore/
 
 Installation
-------------
+++++++++++++
 
-To install FeatherStore, simply use pip
+| To install FeatherStore, simply use pip
 
 .. code-block::
 
     pip install featherstore
+
+| or
+
+.. code-block::
+
+    pip install git+https://github.com/hakonmh/featherstore.git
+
+| to install the latest version from GitHub.
 
 Starting Up
 -----------

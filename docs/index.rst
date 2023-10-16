@@ -1,5 +1,7 @@
-Welcome to FeatherStore's documentation!
-========================================
+Documentation
+=============
+
+Welcome to the FeatherStore documentation!
 
 Table of Contents
 -----------------
@@ -7,7 +9,7 @@ Table of Contents
 .. toctree::
    :maxdepth: 2
 
-   Introduction
+   Overview
    Quickstart
    API Reference
    Benchmarks

@@ -6,8 +6,9 @@
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Python Module Index &#8212; FeatherStore 0.2.1 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Overview &#8212; FeatherStore 0.2.1 documentation</title>
   
   
   
@@ -37,15 +38,14 @@
     <script src="_static/documentation_options.js?v=3ca669d2"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'py-modindex';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'Overview';</script>
     <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-
+    <link rel="next" title="Quickstart" href="Quickstart.html" />
+    <link rel="prev" title="Documentation" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-
-
   </head>
   
   
@@ -140,8 +140,8 @@
   </p>
   <ul class="bd-navbar-elements navbar-nav">
     
-                    <li class="nav-item">
-                      <a class="nav-link nav-internal" href="Overview.html">
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
                         Overview
                       </a>
                     </li>
@@ -235,6 +235,10 @@ document.write(`
   
 
   
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
 </div>
 
     </nav>
@@ -260,8 +264,8 @@ document.write(`
   </p>
   <ul class="bd-navbar-elements navbar-nav">
     
-                    <li class="nav-item">
-                      <a class="nav-link nav-internal" href="Overview.html">
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
                         Overview
                       </a>
                     </li>
@@ -342,7 +346,33 @@ document.write(`
           <div class="bd-content">
             <div class="bd-article-container">
               
-              <div class="bd-header-article"></div>
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Overview</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
               
               
               
@@ -350,44 +380,70 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-
-   <h1>Python Module Index</h1>
-
-   <div class="modindex-jumpbox">
-   <a href="#cap-f"><strong>f</strong></a>
-   </div>
-
-   <table class="indextable modindextable">
-     <tr class="pcap"><td></td><td>&#160;</td><td></td></tr>
-     <tr class="cap" id="cap-f"><td></td><td>
-       <strong>f</strong></td><td></td></tr>
-     <tr>
-       <td><img src="_static/minus.png" class="toggler"
-              id="toggle-1" style="display: none" alt="-" /></td>
-       <td>
-       <code class="xref">featherstore</code></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="API/Connection.html#module-featherstore.connection"><code class="xref">featherstore.connection</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="API/Snapshot.html#module-featherstore.snapshot"><code class="xref">featherstore.snapshot</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="API/Store.html#module-featherstore.store"><code class="xref">featherstore.store</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="API/Table.html#module-featherstore.table"><code class="xref">featherstore.table</code></a></td><td>
-       <em></em></td></tr>
-   </table>
+  <section id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h1>
+<p>FeatherStore is high performance datastore for storing Pandas DataFrames, Polars DataFrames,
+and PyArrow Tables. By saving data in the form of partitioned
+<a class="reference external" href="https://arrow.apache.org/docs/python/feather.html">Feather Files</a>, FeatherStore enables
+several operations on the stored tables, optimizing performance by selectively loading only
+the necessary segments of data:</p>
+<ul class="simple">
+<li><p>Partial reading of data</p></li>
+<li><p>Append data</p></li>
+<li><p>Insert data</p></li>
+<li><p>Update data</p></li>
+<li><p>Drop data</p></li>
+<li><p>Read metadata (including column names, indices, table dimensions, etc.)</p></li>
+<li><p>Changing column types</p></li>
+</ul>
+<p>For more information on using FeatherStore, please refer to the
+<a class="reference external" href="Quickstart.html">user guide</a>.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
+<div class="line-block">
+<div class="line">The project is hosted on PyPI at:</div>
+<div class="line"><a class="reference external" href="https://pypi.org/project/FeatherStore/">https://pypi.org/project/FeatherStore/</a></div>
+</div>
+<div class="line-block">
+<div class="line">To install FeatherStore, simply use pip</div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">featherstore</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">or</div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">hakonmh</span><span class="o">/</span><span class="n">featherstore</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">to install the latest version from GitHub.</div>
+</div>
+<section id="python-version-support">
+<h3>Python version support<a class="headerlink" href="#python-version-support" title="Link to this heading">#</a></h3>
+<p>Officially Python 3.8 and up is supported.</p>
+</section>
+</section>
+<section id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Link to this heading">#</a></h2>
+<div class="line-block">
+<div class="line">The source code is currently hosted on GitHub at:</div>
+<div class="line"><a class="github reference external" href="https://github.com/Hakonmh/featherstore">Hakonmh/featherstore</a></div>
+</div>
+</section>
+<section id="license">
+<h2>LICENSE<a class="headerlink" href="#license" title="Link to this heading">#</a></h2>
+<p><a class="reference external" href="https://github.com/hakonmh/featherstore/blob/master/LICENSE">MIT</a></p>
+</section>
+<section id="contributions">
+<h2>Contributions<a class="headerlink" href="#contributions" title="Link to this heading">#</a></h2>
+<p>All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome.</p>
+<div class="line-block">
+<div class="line">Issues are posted on:</div>
+<div class="line"><a class="github reference external" href="https://github.com/hakonmh/featherstore/issues">hakonmh/featherstore#issues</a></div>
+</div>
+</section>
+</section>
 
 
                 </article>
@@ -399,12 +455,50 @@ document.write(`
                 <footer class="prev-next-footer">
                   <!-- Previous / next buttons -->
 <div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Documentation</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="Quickstart.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Quickstart</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
 </div>
                 </footer>
               
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python-version-support">Python version support</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-code">Source Code</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">LICENSE</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributions">Contributions</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
