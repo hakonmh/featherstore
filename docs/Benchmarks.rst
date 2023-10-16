@@ -56,7 +56,7 @@ Feather on write speed.
 Internal Benchmarks
 +++++++++++++++++++
 
-The code used for these benchmarks (and more) can be found `here <https://github.com/hakonmh/featherstore/blob/master/benchmarks/internal.py>`_.
+The code used for these (and other) benchmarks can be found `here <https://github.com/hakonmh/featherstore/blob/master/benchmarks/internal.py>`_.
 
 Pandas vs Polars and Arrow
 --------------------------

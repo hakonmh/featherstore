@@ -94,7 +94,8 @@ See the performance benchmark [here](https://featherstore.readthedocs.io/en/stab
 
 ## Installation
 
-FeatherStore can be installed by using `$ pip install featherstore`
+FeatherStore can be installed by using `$ pip install featherstore` or directly from
+source by using `$ pip install git+https://github.com/hakonmh/featherstore.git`
 
 ## Requirements
 

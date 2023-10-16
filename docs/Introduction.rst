@@ -28,6 +28,14 @@ Installation
 
     pip install featherstore
 
+| or
+
+.. code-block::
+
+    pip install git+https://github.com/hakonmh/featherstore.git
+
+| to install the latest version from GitHub.
+
 Python version support
 ----------------------
 
