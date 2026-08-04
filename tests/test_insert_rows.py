@@ -30,7 +30,7 @@ def test_insert_table(store, index, row_indices, num_rows, num_cols, num_partiti
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size, warnings='ignore')
     # Act
-    table.insert(insert_df)
+    table.insert_rows(insert_df)
     # Assert
     assert_table_equals(table, expected)
 
@@ -48,7 +48,7 @@ def test_default_index_behavior_when_inserting(store, row_indices):
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size, warnings='ignore')
     # Act
-    table.insert(insert_df)
+    table.insert_rows(insert_df)
     # Assert
     assert_table_equals(table, expected)
 
@@ -133,7 +133,7 @@ def _duplicate_column_names():
         "_duplicate_column_names",
     ],
 )
-def test_can_insert_table(store, insert_df, exception):
+def test_can_insert_rows(store, insert_df, exception):
     # Arrange
     insert_df = insert_df()
     original_df = make_table(cols=5, astype='pandas')
@@ -142,4 +142,4 @@ def test_can_insert_table(store, insert_df, exception):
     table.write(original_df)
     # Act and Assert
     with pytest.raises(exception):
-        table.insert(insert_df)
+        table.insert_rows(insert_df)

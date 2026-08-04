@@ -9,10 +9,11 @@ from featherstore._table import read
 from featherstore._table import write
 from featherstore._table import append
 from featherstore._table import update
-from featherstore._table import insert
+from featherstore._table import insert_rows
 from featherstore._table import drop
-from featherstore._table import add_cols
+from featherstore._table import insert_cols
 from featherstore._table import rename_cols
+
 from featherstore._table import astype
 from featherstore._table import misc
 from featherstore._table import common
@@ -29,7 +30,7 @@ class Table:
 
         - Partial reading of data
         - Append data
-        - Insert data
+        - Insert rows and columns
         - Update data
         - Drop data
         - Read metadata (column names, index, table shape, etc)
@@ -196,7 +197,7 @@ class Table:
             if common.index_is_default(df[index_name]):
                 df = append.format_default_index(self, df)
             else:
-                has_default_index = insert.has_still_default_index(self, df)
+                has_default_index = insert_rows.has_still_default_index(self, df)
         last_partition = read.read_table(self, [last_partition_name])
 
         df = append.append_data(df, to=last_partition)
@@ -239,7 +240,7 @@ class Table:
 
         write.write_partitions(partitions, self._table_path)
 
-    def insert(self, df):
+    def insert_rows(self, df):
         """Insert one or more rows into the current table.
 
         Parameters
@@ -248,7 +249,7 @@ class Table:
             The data to be inserted. `df` must have the same index and column
             types as the stored data.
         """
-        insert.can_insert_table(self, df)
+        insert_rows.can_insert_rows(self, df)
 
         index_name = self._table_data["index_name"]
         index_type = self._table_data["index_dtype"]
@@ -258,14 +259,15 @@ class Table:
         rows = common.format_rows_arg(df.index, to_dtype=index_type)
 
         df = common.format_table(df, index_name=index_name, warnings='ignore')
-        has_default_index = insert.has_still_default_index(self, df)
+        has_default_index = insert_rows.has_still_default_index(self, df)
 
         partition_names = read.get_partition_names(self, rows)
         stored_df = read.read_table(self, partition_names)
 
-        df = insert.insert_data(df, to=stored_df)
-        partitions = insert.create_partitions(df, rows_per_partition, partition_names,
-                                              all_partition_names)
+        df = insert_rows.insert_data(df, to=stored_df)
+        partitions = insert_rows.create_partitions(df, rows_per_partition,
+                                                   partition_names,
+                                                   all_partition_names)
 
         metadata = common.update_metadata(self, partitions, partition_names,
                                           has_default_index=has_default_index)
@@ -273,7 +275,7 @@ class Table:
         write.write_metadata(self, metadata)
         write.write_partitions(partitions, self._table_path)
 
-    def add_columns(self, df, idx=-1):
+    def insert_columns(self, df, idx=-1):
         """Insert one or more columns into the current table.
 
         Parameters
@@ -284,7 +286,7 @@ class Table:
             The position to insert the new column(s). Default is to add columns to
             the end.
         """
-        add_cols.can_add_columns(self, df)
+        insert_cols.can_insert_columns(self, df)
 
         index_name = self._table_data["index_name"]
         partition_size = self._table_data["partition_size"]
@@ -292,12 +294,13 @@ class Table:
         partition_names = read.get_partition_names(self, None)
         stored_df = read.read_table(self, partition_names)
 
-        df = add_cols.add_columns(stored_df, df, index=idx)
+        df = insert_cols.insert_columns(stored_df, df, index=idx)
         df = common.format_table(df, index_name=index_name, warnings=False)
 
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
         columns = df.column_names
-        partitions = add_cols.create_partitions(df, rows_per_partition, partition_names)
+        partitions = insert_cols.create_partitions(df, rows_per_partition,
+                                                   partition_names)
 
         metadata = common.update_metadata(self, partitions, partition_names,
                                           rows_per_partition=rows_per_partition,

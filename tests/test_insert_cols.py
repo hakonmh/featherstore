@@ -9,7 +9,7 @@ from .fixtures import *
                           [default_index, ['n0'], 0]
                           ]
                          )
-def test_add_cols(store, index, col_names, col_idx):
+def test_insert_cols(store, index, col_names, col_idx):
     # Arrange
     num_cols = 5 + len(col_names)
     df = make_table(index=index, cols=num_cols, astype="pandas")
@@ -21,7 +21,7 @@ def test_add_cols(store, index, col_names, col_idx):
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size, warnings='ignore')
     # Act
-    table.add_columns(new_cols, idx=col_idx)
+    table.insert_columns(new_cols, idx=col_idx)
     # Assert
     assert_table_equals(table, expected)
 
@@ -80,7 +80,7 @@ def _non_matching_index_values():
 
 
 @pytest.mark.parametrize(
-    ("add_cols_df", "exception"),
+    ("insert_cols_df", "exception"),
     [
         (_wrong_table_type, TypeError),
         (_col_name_already_in_table, IndexError),
@@ -100,12 +100,12 @@ def _non_matching_index_values():
         "_non_matching_index_values"
     ]
 )
-def test_can_add_cols(store, add_cols_df, exception):
+def test_can_insert_cols(store, insert_cols_df, exception):
     # Arrange
-    add_cols_df = add_cols_df()
+    insert_cols_df = insert_cols_df()
     original_df = make_table(cols=5, astype='pandas')
     table = store.select_table(TABLE_NAME)
     table.write(original_df)
     # Act and Assert
     with pytest.raises(exception):
-        table.add_columns(add_cols_df)
+        table.insert_columns(insert_cols_df)

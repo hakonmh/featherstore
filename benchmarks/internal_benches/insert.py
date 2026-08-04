@@ -28,9 +28,9 @@ class insert(bmark.Benched):
         self._table = store.select_table('table_name')
 
         if self._rows is not None:
-            self._insert = self._table.insert
+            self._insert = self._table.insert_rows
         elif self._cols is not None:
-            self._insert = self._table.add_columns
+            self._insert = self._table.insert_columns
 
     def teardown(self):
         fs.drop_store('store_name')

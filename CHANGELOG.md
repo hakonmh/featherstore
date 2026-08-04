@@ -10,6 +10,7 @@ Changelog
 * Raised dependency floors to `pandas>=2.2.0`, `polars[timezone]>=1.0.0`,
   and `pyarrow>=14.0.0` (upper bounds removed)
 * Export `database_exists()` from the top-level `featherstore` package
+* Renamed `Table.insert()` to `Table.insert_rows()` and `Table.add_columns()` to `Table.insert_columns()`
 
 Enhancements:
 
