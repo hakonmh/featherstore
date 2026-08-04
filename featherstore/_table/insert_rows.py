@@ -1,27 +1,40 @@
 import pandas as pd
 import pyarrow as pa
+import pyarrow.compute as pc
 
 from featherstore.connection import Connection
+from featherstore import _utils
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
 
 
-def can_insert_rows(table, df):
+def can_insert_rows(table, df, warnings):
     Connection._raise_if_not_connected()
+    _utils.raise_if_warnings_argument_is_not_valid(warnings)
 
     _raise_if.table_not_exists(table)
-    _raise_if.df_is_not_pandas_table(df)
+    _raise_if.df_is_not_edit_table_type(df)
 
-    if isinstance(df, pd.Series):
-        cols = [df.name]
-    else:
-        cols = df.columns.tolist()
+    table_data = table._table_data
+    cols = _get_col_names(df, table_data)
+    index_name = table_data["index_name"]
+    index = _table_utils.get_index_if_exists(df, index_name)
 
-    _raise_if.index_name_not_same_as_stored_index(df, table._table_data)
+    _raise_if.index_name_not_same_as_stored_index(df, table_data)
     _raise_if.col_names_contains_duplicates(cols)
-    _raise_if.index_values_contains_duplicates(df.index)
-    _raise_if.index_type_not_same_as_stored_index(df, table._table_data)
-    _raise_if.cols_does_not_match(df, table._table_data)
+    _raise_if.index_values_contains_duplicates(index)
+    _raise_if.index_type_not_same_as_stored_index(df, table_data)
+    _raise_if.cols_does_not_match(df, table_data)
+
+
+def _get_col_names(df, table_data):
+    if isinstance(df, pd.Series):
+        return [df.name]
+    if isinstance(df, pd.DataFrame):
+        return df.columns.tolist()
+    index_name = table_data["index_name"]
+    cols = _table_utils.get_col_names(df, has_default_index=False)
+    return [c for c in cols if c != index_name]
 
 
 def insert_data(df, *, to):
@@ -33,13 +46,12 @@ def insert_data(df, *, to):
     return df
 
 
-
 def _raise_if_rows_in_old_data(old_df, df, index_name):
     index = df[index_name]
     old_index = old_df[index_name]
 
-    is_in = pa.compute.is_in(index, value_set=old_index)
-    rows_in_old_df = pa.compute.any(is_in).as_py()
+    is_in = pc.is_in(index, value_set=old_index)
+    rows_in_old_df = pc.any(is_in).as_py()
     if rows_in_old_df:
         raise ValueError("Some rows already in stored table")
 

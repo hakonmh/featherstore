@@ -219,9 +219,9 @@ class Table:
 
         Parameters
         ----------
-        df : Pandas DataFrame or Pandas Series
+        df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
             The updated data. The index of `df` is the rows to be updated, while
-            the columns of `df` are the new values.
+            the columns of `df` are the new values. Polars Series is not accepted.
         """
         update.can_update_table(self, df)
 
@@ -229,38 +229,40 @@ class Table:
         index_type = self._table_data["index_dtype"]
         rows_per_partition = self._table_data["rows_per_partition"]
 
-        rows = common.format_rows_arg(df.index, to_dtype=index_type)
+        df = common.format_table(df, index_name=index_name, warnings=False)
+        rows = common.format_rows_arg(df[index_name].to_pylist(), to_dtype=index_type)
 
         partition_names = read.get_partition_names(self, rows)
         stored_df = read.read_table(self, partition_names)
 
         df = update.update_data(stored_df, to=df)
-        df = common.format_table(df, index_name=index_name, warnings=False)
         partitions = write.create_partitions(df, rows_per_partition, partition_names)
 
         write.write_partitions(partitions, self._table_path)
 
-    def insert_rows(self, df):
+    def insert_rows(self, df, *, warnings="warn"):
         """Insert one or more rows into the current table.
 
         Parameters
         ----------
-        df : Pandas DataFrame or Pandas Series
+        df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
             The data to be inserted. `df` must have the same index and column
-            types as the stored data.
+            types as the stored data. Polars Series is not accepted.
+        warnings : str, optional
+            Whether or not to warn if a unsorted index is about to get sorted.
+            Can be either `warn` or `ignore`, by default `warn`
         """
-        insert_rows.can_insert_rows(self, df)
+        insert_rows.can_insert_rows(self, df, warnings)
 
         index_name = self._table_data["index_name"]
         index_type = self._table_data["index_dtype"]
         rows_per_partition = self._table_data["rows_per_partition"]
         all_partition_names = self._partition_data.keys()
 
-        rows = common.format_rows_arg(df.index, to_dtype=index_type)
-
-        df = common.format_table(df, index_name=index_name, warnings='ignore')
+        df = common.format_table(df, index_name=index_name, warnings=warnings)
         has_default_index = insert_rows.has_still_default_index(self, df)
 
+        rows = common.format_rows_arg(df[index_name].to_pylist(), to_dtype=index_type)
         partition_names = read.get_partition_names(self, rows)
         stored_df = read.read_table(self, partition_names)
 
@@ -275,27 +277,32 @@ class Table:
         write.write_metadata(self, metadata)
         write.write_partitions(partitions, self._table_path)
 
-    def insert_columns(self, df, idx=-1):
+    def insert_columns(self, df, idx=-1, *, warnings="warn"):
         """Insert one or more columns into the current table.
 
         Parameters
         ----------
-        df : Pandas DataFrame or Pandas Series
-            The data to be inserted. `df` must have the same index as the stored data.
+        df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
+            The data to be inserted. `df` must have the same index as the stored
+            data. Polars Series is not accepted.
         idx : int
             The position to insert the new column(s). Default is to add columns to
             the end.
+        warnings : str, optional
+            Whether or not to warn if a unsorted index is about to get sorted.
+            Can be either `warn` or `ignore`, by default `warn`
         """
-        insert_cols.can_insert_columns(self, df)
+        insert_cols.can_insert_columns(self, df, warnings)
 
         index_name = self._table_data["index_name"]
         partition_size = self._table_data["partition_size"]
+
+        df = common.format_table(df, index_name=index_name, warnings=warnings)
 
         partition_names = read.get_partition_names(self, None)
         stored_df = read.read_table(self, partition_names)
 
         df = insert_cols.insert_columns(stored_df, df, index=idx)
-        df = common.format_table(df, index_name=index_name, warnings=False)
 
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
         columns = df.column_names

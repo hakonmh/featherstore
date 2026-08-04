@@ -182,7 +182,7 @@ into the table.
 .. code-block:: python
 
     df2 = pd.DataFrame(randn(2, 2), index=[4, 2], columns=list("AB"))
-    table.insert_rows(df2)  # Must have the same index and col dtypes as the stored df
+    table.insert_rows(df2, warnings="ignore")  # Same index/col dtypes as stored df
     table.read_pandas()
 
     # The data will inserted into its sorted index position

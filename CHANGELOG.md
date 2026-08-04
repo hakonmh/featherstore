@@ -14,6 +14,11 @@ Changelog
 
 Enhancements:
 
+* `Table.update()`, `Table.insert_rows()`, and `Table.insert_columns()` accept
+  Pandas DataFrame/Series, Polars DataFrame, and PyArrow Table (not Polars Series)
+* `insert_columns` inserts columns with Arrow primitives (no Pandas round-trip)
+* `update` applies cell updates on Arrow tables
+* `insert_rows` and `insert_columns` accept `warnings=` like `append`/`write`
 * Partition writes use Arrow IPC with atomic replace (avoids corrupting
   memory-mapped files on overwrite)
 * Pandas metadata generation updated for pandas 2.2 / 3.x string and float

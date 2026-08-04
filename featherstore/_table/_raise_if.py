@@ -39,6 +39,16 @@ def df_is_not_supported_table_type(df):
         raise TypeError(f"'df' must be a supported DataFrame type (is type {type(df)})")
 
 
+def df_is_not_edit_table_type(df):
+    """Reject types not allowed for update / insert_rows / insert_columns.
+
+    Accepts Pandas DataFrame/Series, Polars DataFrame, and Arrow Table.
+    Polars Series is not accepted.
+    """
+    if not isinstance(df, (pd.DataFrame, pd.Series, pl.DataFrame, pa.Table)):
+        raise TypeError(f"'df' must be a supported DataFrame type (is type {type(df)})")
+
+
 def df_is_not_pandas_table(df):
     if not isinstance(df, (pd.DataFrame, pd.Series)):
         raise TypeError(f"'df' must be a pd.DataFrame or pd.Series (is type {type(df)})")
@@ -207,11 +217,25 @@ def _isinstance_int(obj):
 
 
 def index_type_not_same_as_stored_index(df, table_data):
-    if isinstance(df, (pd.DataFrame, pd.Series)):
-        index_type = str(pa.Array.from_pandas(df.index).type)
-        stored_index_type = table_data["index_dtype"]
+    index_name = table_data["index_name"]
+    index = _table_utils.get_index_if_exists(df, index_name)
+    if index is not None:
+        index_type = _normalize_index_dtype(index.type)
+        stored_index_type = _normalize_index_dtype(table_data["index_dtype"])
         if index_type != stored_index_type:
             raise TypeError("New and old index types do not match")
+
+
+def _normalize_index_dtype(dtype):
+    dtype = str(dtype)
+    if dtype in _STRING_ARROW_TYPES:
+        return "string"
+    if dtype.startswith("timestamp"):
+        return "timestamp"
+    return dtype
+
+
+_STRING_ARROW_TYPES = {'string', 'utf8', 'large_string', 'large_utf8'}
 
 
 def index_name_not_same_as_stored_index(df, table_data):

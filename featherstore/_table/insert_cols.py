@@ -1,28 +1,43 @@
 import pandas as pd
+import pyarrow as pa
+import pyarrow.compute as pc
 
 from featherstore.connection import Connection
+from featherstore import _utils
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
 from featherstore._table._indexers import ColIndexer
 
 
-def can_insert_columns(table, df):
+def can_insert_columns(table, df, warnings):
     Connection._raise_if_not_connected()
+    _utils.raise_if_warnings_argument_is_not_valid(warnings)
 
     _raise_if.table_not_exists(table)
-    _raise_if.df_is_not_pandas_table(df)
+    _raise_if.df_is_not_edit_table_type(df)
 
-    if isinstance(df, pd.Series):
-        cols = [df.name]
-    else:
-        cols = df.columns.tolist()
+    table_data = table._table_data
+    cols = _get_new_col_names(df, table_data)
     _raise_if.col_names_contains_duplicates(cols)
-    _raise_if.index_in_cols(cols, table._table_data)
-    _raise_if_col_name_already_in_table(cols, table._table_data)
+    _raise_if.index_in_cols(cols, table_data)
+    _raise_if_col_name_already_in_table(cols, table_data)
 
-    _raise_if_num_rows_does_not_match(df, table._table_data)
-    _raise_if.index_values_contains_duplicates(df.index)
-    _raise_if.index_type_not_same_as_stored_index(df, table._table_data)
+    _raise_if_num_rows_does_not_match(df, table_data)
+
+    index_name = table_data["index_name"]
+    index = _table_utils.get_index_if_exists(df, index_name)
+    _raise_if.index_values_contains_duplicates(index)
+    _raise_if.index_type_not_same_as_stored_index(df, table_data)
+
+
+def _get_new_col_names(df, table_data):
+    index_name = table_data["index_name"]
+    if isinstance(df, pd.Series):
+        return [df.name]
+    if isinstance(df, pd.DataFrame):
+        return df.columns.tolist()
+    cols = _table_utils.get_col_names(df, has_default_index=False)
+    return [c for c in cols if c != index_name]
 
 
 def _raise_if_col_name_already_in_table(cols, table_data):
@@ -37,57 +52,42 @@ def _raise_if_col_name_already_in_table(cols, table_data):
 
 def _raise_if_num_rows_does_not_match(df, table_data):
     stored_table_length = table_data["num_rows"]
-
     new_cols_length = len(df)
-
     if new_cols_length != stored_table_length:
         raise IndexError(f"Length of new cols ({new_cols_length}) doesn't match "
                          f"length of stored data ({stored_table_length})")
 
 
 def insert_columns(old_df, df, index):
-    # TODO: Use arrow instead
-    old_df, df = _format_tables(old_df, df)
-    _raise_if_rows_not_in_old_data(old_df, df)
-    df = _insert_cols(old_df, df, index)
-    return df
+    """Insert columns into an Arrow table without converting to Pandas."""
+    index_name = _table_utils.get_index_name(old_df)
+    _raise_if_indices_do_not_match(old_df, df, index_name)
+    return _insert_cols(old_df, df, index, index_name)
 
 
-def _format_tables(old_df, df):
-    if isinstance(df, pd.Series):
-        df = df.to_frame()
-    else:
-        df = df
-
-    index_not_sorted = not df.index.is_monotonic_increasing
-    if index_not_sorted:
-        df = df.sort_index()
-
-    old_df = old_df.to_pandas()
-    return old_df, df
-
-
-def _raise_if_rows_not_in_old_data(old_df, df):
-    index = df.index
-    old_index = old_df.index
-    if not index.equals(old_index):
+def _raise_if_indices_do_not_match(old_df, df, index_name):
+    old_index = old_df[index_name]
+    new_index = df[index_name]
+    if len(old_index) != len(new_index):
+        raise ValueError("New and old indices doesn't match")
+    indices_equal = pc.all(pc.equal(old_index, new_index))
+    if not indices_equal.as_py():
         raise ValueError("New and old indices doesn't match")
 
 
-def _insert_cols(old_df, df, index):
-    new_cols = df.columns.tolist()
-    cols = old_df.columns.tolist()
-    df = old_df.join(df)
-
+def _insert_cols(old_df, df, index, index_name):
+    new_cols = [c for c in df.column_names if c != index_name]
+    result = old_df
     if index == -1:
-        cols.extend(new_cols)
-    else:
         for col in new_cols:
-            cols.insert(index, col)
-            index += 1
-    df = df[cols]
-    return df
-
+            result = result.append_column(col, df[col])
+    else:
+        # Index column is stored at position 0; idx is among data columns.
+        insert_at = index + 1
+        for col in new_cols:
+            result = result.add_column(insert_at, col, df[col])
+            insert_at += 1
+    return result
 
 
 def create_partitions(df, rows_per_partition, partition_names):

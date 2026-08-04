@@ -1,8 +1,10 @@
-import pytest
-from .fixtures import *
-
 import warnings
+
 import pandas as pd
+import pyarrow as pa
+import pytest
+
+from .fixtures import *
 
 
 @pytest.mark.parametrize(
@@ -15,21 +17,78 @@ import pandas as pd
         (continuous_datetime_index, ["2021-01-01", "2021-01-16", "2021-01-07"], ['c0'], 1)
     ]
 )
-def test_update_table(store, index, rows, cols, num_cols):
-    # Arrange
-    original_df = make_table(index, cols=num_cols, astype="pandas[series]")
-    _, update_df = split_table(original_df, rows=rows, cols=cols)
-    update_df = update_values(update_df)
-    expected = update_table(original_df, update_df)
+@pytest.mark.parametrize("astype", ["pandas", "pandas[series]", "polars", "arrow"])
+def test_update_table(store, index, rows, cols, num_cols, astype):
+    if astype == "pandas[series]" and num_cols != 1:
+        pytest.skip("Series tables require a single column")
+
+    original_pd = make_table(index, cols=num_cols, astype="pandas")
+    if astype == "pandas[series]":
+        original_pd = original_pd.squeeze(axis=1)
+
+    _, update_pd = split_table(original_pd, rows=rows, cols=cols)
+    update_pd = update_values(update_pd)
+    expected_pd = update_table(original_pd, update_pd)
+
+    original_df, update_df, expected = _to_backend(
+        original_pd, update_pd, expected_pd, astype=astype
+    )
 
     table = store.select_table(TABLE_NAME)
-    table.write(original_df)
-    # Act
+    write_index = None if astype.startswith('pandas') else (
+        (original_pd.index.name if not isinstance(original_pd, pd.Series)
+         else original_pd.index.name) or DEFAULT_ARROW_INDEX_NAME
+    )
+    table.write(original_df, index=write_index)
     table.update(update_df)
-    # Assert
-    df = table.read_pandas()
-    assert_df_equals(df, expected)
-    assert not df.equals(original_df)
+    assert_table_equals(table, expected)
+
+
+def _to_backend(original_pd, update_pd, expected_pd, *, astype):
+    backend = astype.split('[')[0]
+    as_series = '[series]' in astype
+    squeeze = as_series or (
+        isinstance(expected_pd, pd.Series) or getattr(expected_pd, 'shape', (0, 2))[1] == 1
+    )
+
+    if backend == 'pandas':
+        if isinstance(update_pd, pd.DataFrame) and (
+            isinstance(update_pd, pd.Series) or update_pd.shape[1] == 1
+        ):
+            update_df = update_pd.squeeze(axis=1)
+        else:
+            update_df = update_pd
+        if isinstance(original_pd, pd.DataFrame) and squeeze:
+            original_df = original_pd.squeeze(axis=1)
+        else:
+            original_df = original_pd
+        if isinstance(expected_pd, pd.DataFrame) and squeeze:
+            expected = expected_pd.squeeze(axis=1)
+        else:
+            expected = expected_pd
+        return original_df, update_df, expected
+
+    index_name = (
+        expected_pd.index.name if hasattr(expected_pd, 'index') else None
+    ) or DEFAULT_ARROW_INDEX_NAME
+
+    def _with_index(pdf):
+        arrow = convert_table(pdf, to='arrow')
+        if index_name not in arrow.column_names:
+            arrow = arrow.add_column(0, index_name, pa.array(pdf.index))
+        return format_arrow_table(arrow)
+
+    original = _with_index(original_pd if not isinstance(original_pd, pd.Series) else original_pd.to_frame())
+    update = _with_index(update_pd if not isinstance(update_pd, pd.Series) else update_pd.to_frame())
+    expected = _with_index(expected_pd if not isinstance(expected_pd, pd.Series) else expected_pd.to_frame())
+    if df_has_default_index(expected):
+        expected = drop_default_index_if_exists(expected)
+
+    if backend == 'polars':
+        original = convert_table(original, to='polars', as_series=False)
+        update = convert_table(update, to='polars', as_series=False)
+        expected = convert_table(expected, to='polars', as_series=False)
+    return original, update, expected
 
 
 def update_table(df, update_df):
@@ -39,7 +98,6 @@ def update_table(df, update_df):
         expected.loc[rows] = update_df
     else:
         cols = update_df.columns
-
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             expected.loc[rows, cols] = update_df
@@ -84,9 +142,8 @@ def _assert_that_partitions_are_the_same(table, partition_names, partition_data)
         assert num_rows == metadata['num_rows']
 
 
-def _update_table_not_pd_table():
-    df = make_table(astype="polars")
-    return df
+def _update_table_not_supported_type():
+    return make_table(astype="polars[series]")
 
 
 def _non_matching_index_dtype():
@@ -140,7 +197,7 @@ def _duplicate_column_names():
 @pytest.mark.parametrize(
     ("update_df", "exception"),
     [
-        (_update_table_not_pd_table, TypeError),
+        (_update_table_not_supported_type, TypeError),
         (_non_matching_index_dtype, TypeError),
         (_non_matching_column_dtypes, TypeError),
         (_index_not_in_table, ValueError),
@@ -150,7 +207,7 @@ def _duplicate_column_names():
         (_duplicate_column_names, IndexError),
     ],
     ids=[
-        "_update_table_not_pd_table",
+        "_update_table_not_supported_type",
         "_non_matching_index_dtype",
         "_non_matching_column_dtypes",
         "_index_not_in_table",
