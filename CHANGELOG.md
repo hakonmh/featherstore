@@ -9,6 +9,7 @@ Changelog
 * Raised minimum Python version from 3.8 to 3.11
 * Raised dependency floors to `pandas>=2.2.0`, `polars[timezone]>=1.0.0`,
   and `pyarrow>=14.0.0` (upper bounds removed)
+* Export `database_exists()` from the top-level `featherstore` package
 
 Enhancements:
 
@@ -18,6 +19,7 @@ Enhancements:
   dtypes (version-gated string metadata constants); sorting uses Arrow
   `sort_indices` so categoricals keep unused categories
 * Snapshot extraction passes `filter='data'` on Python 3.12+
+* Quickstart docs updated for `rename_store(..., to=...)` and `table.exists()`
 
 0.2.1
 -----
