@@ -109,9 +109,8 @@ class Indexer:
 
     def __len__(self):
         if self.values() is None:
-            raise 0
-        else:
-            return len(self.values())
+            return 0
+        return len(self.values())
 
     def __contains__(self, item):
         if self.values() is None:

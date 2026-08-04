@@ -3,7 +3,7 @@ import json
 from numbers import Integral
 
 import pyarrow as pa
-from pyarrow import feather
+from pyarrow import ipc
 
 from featherstore.connection import Connection
 from featherstore import _utils
@@ -126,18 +126,11 @@ def _get_num_cols(df):
 
 def _has_default_index(df):
     index_name = _table_utils.get_index_name(df[0])
-    has_index_name = index_name != DEFAULT_ARROW_INDEX_NAME
-    if has_index_name or __index_was_sorted(df):
-        has_default_index = False
-    else:
-        index = (batch[index_name] for batch in df)
-        index = pa.concat_arrays(index)
-        if common.index_is_default(index):
-            has_default_index = True
-        else:
-            has_default_index = False
+    if index_name != DEFAULT_ARROW_INDEX_NAME or __index_was_sorted(df):
+        return False
 
-    return has_default_index
+    index = pa.concat_arrays(batch[index_name] for batch in df)
+    return common.index_is_default(index)
 
 
 def __index_was_sorted(df):
@@ -161,5 +154,10 @@ def write_partitions(partitions, table_path):
 
 
 def _write_feather(df, file_path):
-    CHUNKSIZE = 128 * 1024**2  # bytes
-    feather.write_feather(df, file_path, compression="uncompressed", chunksize=CHUNKSIZE)
+    # Feather V2 is the Arrow IPC file format. Write to a temp file first so we
+    # never truncate an inode that may still be memory-mapped from a prior read.
+    tmp_path = f"{file_path}.tmp"
+    with pa.OSFile(tmp_path, 'wb') as sink:
+        with ipc.new_file(sink, df.schema) as writer:
+            writer.write_table(df)
+    os.replace(tmp_path, file_path)

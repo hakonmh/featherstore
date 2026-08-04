@@ -41,14 +41,8 @@ def _coerce_arrow_col_types(dfs, schema):
 
 
 def sort_arrow_table(df, *, by):
-    schema = df.schema
-    df = convert_to_polars(df)
-
-    df = df.sort(by)
-
-    df = convert_to_arrow(df)
-    df = df.cast(schema)
-    return df
+    indices = pa.compute.sort_indices(df, sort_keys=[(by, "ascending")])
+    return df.take(indices)
 
 
 def get_col_names(df, has_default_index):

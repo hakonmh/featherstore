@@ -10,6 +10,12 @@ from featherstore._table._indexers import ColIndexer, RowIndexer
 
 HAS_MULTI_TYPE_COLUMN = (pa.lib.ArrowTypeError, pa.lib.ArrowInvalid)
 
+_STRING_ARROW_TYPES = {'string', 'utf8', 'large_string', 'large_utf8'}
+_PANDAS_MAJOR = int(pd.__version__.split('.', 1)[0])
+_STRING_PANDAS_TYPE, _STRING_NUMPY_TYPE = (
+    ('object', 'str') if _PANDAS_MAJOR >= 3 else ('unicode', 'string')
+)
+
 
 def format_cols_arg(cols, *, like=None):
     cols = ColIndexer(cols)
@@ -133,9 +139,11 @@ def _make_pd_metadata(df, index_name):
 
 
 def __make_column_metadata(df, col):
-    dtype = df[col].type
+    column = df[col]
+    dtype = column.type
     pd_dtype = pc.get_logical_type(dtype)
-    np_dtype, extra_data = __get_numpy_dtype_info(dtype)
+    np_dtype, extra_data = __get_numpy_dtype_info(dtype, column)
+    pd_dtype, np_dtype = _adjust_string_metadata(dtype, pd_dtype, np_dtype)
 
     metadata = {"name": col,
                 "field_name": col,
@@ -146,7 +154,13 @@ def __make_column_metadata(df, col):
     return metadata
 
 
-def __get_numpy_dtype_info(dtype):
+def _adjust_string_metadata(dtype, pd_dtype, np_dtype):
+    if str(dtype) not in _STRING_ARROW_TYPES:
+        return pd_dtype, np_dtype
+    return _STRING_PANDAS_TYPE, _STRING_NUMPY_TYPE
+
+
+def __get_numpy_dtype_info(dtype, column=None):
     pd_dtype = pc.get_logical_type(dtype)
 
     if pd_dtype == 'decimal':
@@ -155,31 +169,55 @@ def __get_numpy_dtype_info(dtype):
             'precision': dtype.precision,
             'scale': dtype.scale,
         }
-    elif pd_dtype in ('date', 'time'):  # Numpy doesn't support date types
-        resolution = str(dtype).split('[')[-1].split(']')[0]
-        if resolution == 'day':
-            resolution = 'D'
-        numpy_dtype = f'datetime64[{resolution}]'
+    elif pd_dtype in ('date', 'time'):
+        numpy_dtype = f'datetime64[{_arrow_temporal_resolution(dtype)}]'
         extra_metadata = None
-    elif hasattr(dtype, 'tz'):  # Store timezone info if exists for dtime types
-        resolution = str(dtype).split('[')[-1].split(']')[0]
+    elif pd_dtype == 'datetime' or str(dtype).startswith('timestamp'):
+        resolution = _arrow_temporal_resolution(dtype)
         numpy_dtype = f'datetime64[{resolution}]'
-        try:
-            extra_metadata = {'timezone': pa.lib.tzinfo_to_string(pd_dtype.tz)}
-        except Exception:
-            extra_metadata = {'timezone': None}
+        tz = getattr(dtype, 'tz', None)
+        if tz is not None:
+            extra_metadata = {'timezone': pa.lib.tzinfo_to_string(tz)}
+        else:
+            extra_metadata = None
     elif pd_dtype[:4] == 'list':
         numpy_dtype = 'object'
         extra_metadata = None
     elif pd_dtype == 'categorical':
         numpy_dtype = str(dtype.index_type)
-        extra_metadata = {'ordered': dtype.ordered}
+        extra_metadata = {
+            'num_categories': __categorical_num_categories(column),
+            'ordered': dtype.ordered,
+        }
     else:
-        numpy_dtype = str(dtype)
+        numpy_dtype = _arrow_type_to_numpy_type(dtype)
         extra_metadata = None
-        if numpy_dtype in ('large_string', 'binary', 'large_binary'):
-            numpy_dtype = 'string'
     return numpy_dtype, extra_metadata
+
+
+def __categorical_num_categories(column):
+    if column is None:
+        return 0
+    dictionary = column.combine_chunks().dictionary
+    if dictionary is None:
+        return 0
+    return len(dictionary)
+
+
+def _arrow_type_to_numpy_type(dtype):
+    arrow_type = str(dtype)
+    mapping = {
+        'double': 'float64',
+        'float': 'float32',
+        'halffloat': 'float16',
+        'string': 'str',
+        'utf8': 'str',
+        'large_string': 'str',
+        'large_utf8': 'str',
+        'binary': 'object',
+        'large_binary': 'object',
+    }
+    return mapping.get(arrow_type, arrow_type)
 
 
 def _add_pd_metadata(df, metadata):
@@ -215,8 +253,8 @@ def compute_rows_per_partition(df, target_size):
 
 def update_metadata(table, df, old_partition_names, **kwargs):
     new_partition_metadata = _make_partition_metadata(df)
-    table_metadata = _update_table_metadata(table, new_partition_metadata,
-                                            old_partition_names)
+    table_metadata = _compute_table_metadata_update(
+        table, new_partition_metadata, old_partition_names)
     for key, value in kwargs.items():
         table_metadata[key] = value
     return table_metadata, new_partition_metadata
@@ -253,23 +291,25 @@ def _get_index_max(df, index_name):
     return last_index_value
 
 
-def _update_table_metadata(table, new_partitions_data,
-                           dropped_partitions):
-    # TODO: Clean up, new name, generalize(?)
-    dropped_partitions_data = _get_dropped_partitions_data(table._partition_data,
-                                                           dropped_partitions)
+def _compute_table_metadata_update(table, new_partitions_data, dropped_partitions):
+    dropped_partitions_data = _get_dropped_partitions_data(
+        table._partition_data, dropped_partitions)
     num_rows = table._table_data['num_rows']
-    num_rows += _update_num_rows(dropped_partitions_data,
-                                 new_partitions_data)
+    num_rows += _update_num_rows(dropped_partitions_data, new_partitions_data)
     num_partitions = table._table_data['num_partitions']
-    num_partitions += _update_num_partitions(dropped_partitions_data,
-                                             new_partitions_data)
+    num_partitions += _update_num_partitions(dropped_partitions_data, new_partitions_data)
 
-    table_metadata = {
+    return {
         "num_partitions": num_partitions,
-        "num_rows": num_rows
+        "num_rows": num_rows,
     }
-    return table_metadata
+
+
+def _arrow_temporal_resolution(dtype):
+    resolution = str(dtype).split('[')[-1].split(']')[0]
+    if resolution == 'day':
+        resolution = 'D'
+    return resolution
 
 
 def _get_dropped_partitions_data(partition_data, partition_names):

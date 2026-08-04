@@ -101,7 +101,7 @@ source by using `$ pip install git+https://github.com/hakonmh/featherstore.git`
 
 ## Requirements
 
-* Python >= 3.8
+* Python >= 3.11
 * Arrow
 * Pandas
 * Polars
