@@ -11,7 +11,7 @@ def can_update_table(table, df):
     Connection._raise_if_not_connected()
 
     _raise_if.table_not_exists(table)
-    _raise_if.df_is_not_edit_table_type(df)
+    _raise_if.df_is_not_table_type(df, _table_utils.EDIT_TABLE_TYPES)
 
     table_data = table._table_data
     cols = _get_col_names(df, table_data)

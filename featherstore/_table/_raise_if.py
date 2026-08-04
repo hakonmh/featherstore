@@ -34,18 +34,8 @@ def table_name_is_forbidden(table_name):
         raise ValueError(f"Table name '{METADATA_FOLDER_NAME}' is forbidden")
 
 
-def df_is_not_supported_table_type(df):
-    if not isinstance(df, (pd.DataFrame, pd.Series, pl.DataFrame, pl.Series, pa.Table)):
-        raise TypeError(f"'df' must be a supported DataFrame type (is type {type(df)})")
-
-
-def df_is_not_edit_table_type(df):
-    """Reject types not allowed for update / insert_rows / insert_columns.
-
-    Accepts Pandas DataFrame/Series, Polars DataFrame, and Arrow Table.
-    Polars Series is not accepted.
-    """
-    if not isinstance(df, (pd.DataFrame, pd.Series, pl.DataFrame, pa.Table)):
+def df_is_not_table_type(df, allowed_types):
+    if not isinstance(df, allowed_types):
         raise TypeError(f"'df' must be a supported DataFrame type (is type {type(df)})")
 
 

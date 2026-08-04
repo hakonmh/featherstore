@@ -12,7 +12,7 @@ def can_insert_rows(table, df, warnings):
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
 
     _raise_if.table_not_exists(table)
-    _raise_if.df_is_not_edit_table_type(df)
+    _raise_if.df_is_not_table_type(df, _table_utils.EDIT_TABLE_TYPES)
 
     table_data = table._table_data
     cols = _get_col_names(df, table_data)
