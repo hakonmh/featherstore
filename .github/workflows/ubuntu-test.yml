@@ -1,4 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint on Python 3.8
+# This workflow will install Python dependencies, run tests and lint on Python 3.11
 # with the minimum versions of the dependencies on Ubuntu.
 
 name: Ubuntu Tests
@@ -17,19 +17,19 @@ jobs:
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v4
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.8'
+        python-version: '3.11'
         cache: 'pip'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install pytest flake8
-        python -m pip install pyarrow==8.0.0
-        python -m pip install pandas==1.4.0
-        python -m pip install polars[timezone]==0.14.11
+        python -m pip install pyarrow==14.0.0
+        python -m pip install pandas==2.2.0
+        python -m pip install 'polars[timezone]==1.0.0'
     - name: Test with pytest
       run: |
         pytest

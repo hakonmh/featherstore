@@ -1,8 +1,8 @@
 # Dependencies
-pandas>=1.4.0,<=2.1.1
-polars[timezone]>=0.14.11,<=0.19.6
-pyarrow>=8.0.0,<=13.0.0
-numpy>=1.21.0
+pandas>=2.2.0
+polars[timezone]>=1.0.0
+pyarrow>=14.0.0
+numpy>=1.26.0
 
 # Tools
 pytest>=7.0.0

@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.3.0
+-----
+
+**Warning**: This update causes some API-breaking changes:
+
+* Raised minimum Python version from 3.8 to 3.11
+* Raised dependency floors to `pandas>=2.2.0`, `polars[timezone]>=1.0.0`,
+  and `pyarrow>=14.0.0` (upper bounds removed)
+
 0.2.1
 -----
 

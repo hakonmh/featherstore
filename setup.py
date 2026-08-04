@@ -1,14 +1,17 @@
 from setuptools import setup, find_packages
 import os
-from featherstore import __version__
+import re
 
 current_folder = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(current_folder, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+with open(os.path.join(current_folder, 'featherstore', '__init__.py'), encoding='utf-8') as f:
+    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.M).group(1)
+
 setup(
     name='FeatherStore',
-    version=__version__,
+    version=version,
     description='High performance datastore built upon Apache Arrow & Feather',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -21,18 +24,18 @@ setup(
         'Topic :: Database',
         'Topic :: Database :: Database Engines/Servers',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
+        'Programming Language :: Python :: 3.14',
     ],
-    python_requires='>=3.8',
+    python_requires='>=3.11',
     keywords='feather arrow pandas polars datastore',
     packages=find_packages(exclude=['tests', 'docs', 'benchmarks' 'dev']),
     install_requires=[
-        'pandas>=1.4.0,<=2.1.1',
-        'polars[timezone]>=0.14.11,<=0.19.6',
-        'pyarrow>=8.0.0,<=13.0.0',
+        'pandas>=2.2.0',
+        'polars[timezone]>=1.0.0',
+        'pyarrow>=14.0.0',
     ],
     project_urls={
         'Documentation': r'https://featherstore.readthedocs.io/en/stable/'
