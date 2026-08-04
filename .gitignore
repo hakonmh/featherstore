@@ -1,4 +1,5 @@
 dev/
+plan/
 tests/_db
 /build/
 build/lib
