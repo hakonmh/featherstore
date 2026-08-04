@@ -5,7 +5,6 @@ from featherstore import _utils
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
 from featherstore._table import common
-from featherstore._table._indexers import ColIndexer
 
 
 def can_insert_columns(table, df, warnings):
@@ -21,21 +20,11 @@ def can_insert_columns(table, df, warnings):
     common.validate_incoming_table_schema(df, table_data, cols)
 
     _raise_if.index_in_cols(cols, table_data)
-    _raise_if_col_name_already_in_table(cols, table_data)
+    _raise_if.cols_already_in_table(cols, table_data)
     _raise_if_num_rows_does_not_match(df, table_data)
 
     index = _table_utils.get_index_if_exists(df, index_name)
     _raise_if.index_values_contains_duplicates(index)
-
-
-def _raise_if_col_name_already_in_table(cols, table_data):
-    stored_cols = table_data["columns"]
-    cols = ColIndexer(cols)
-
-    cols = cols.like(stored_cols)
-    some_cols_in_stored_cols = set(stored_cols) - (set(stored_cols) - set(cols))
-    if some_cols_in_stored_cols:
-        raise IndexError("Column name already exists in table")
 
 
 def _raise_if_num_rows_does_not_match(df, table_data):

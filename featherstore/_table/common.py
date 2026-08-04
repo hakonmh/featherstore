@@ -348,3 +348,21 @@ def index_is_default(index):
     except TypeError:  # index is chunked array
         default_rangeindex = pa.chunked_array([default_rangeindex])
         return index.equals(default_rangeindex)
+
+
+def has_still_default_index(table, df):
+    has_default_index = table._table_data["has_default_index"]
+    if not has_default_index:
+        return False
+
+    index_name = table._table_data["index_name"]
+    rows = df[index_name]
+    last_stored_value = _table_utils.get_last_stored_index_value(table._partition_data)
+    first_row_value = rows[0].as_py()
+
+    rows_are_continuous = all(a.as_py() + 1 == b.as_py() for a, b in zip(rows, rows[1:]))
+    if first_row_value > last_stored_value and rows_are_continuous:
+        return True
+    if len(rows) == 0:
+        return True
+    return False

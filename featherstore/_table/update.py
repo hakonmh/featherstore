@@ -26,7 +26,7 @@ def can_update_table(table, df):
 def update_data(old_df, *, to):
     """Apply updates to an Arrow table without converting to Pandas."""
     index_name = _table_utils.get_index_name(old_df)
-    _raise_if_rows_is_not_in_old_data(old_df, to, index_name)
+    _raise_if.index_values_in_stored_data(old_df, to, index_name, all_must_be_in=True)
 
     old_index = old_df[index_name]
     new_index = to[index_name]
@@ -50,11 +50,3 @@ def update_data(old_df, *, to):
         col_idx = result.column_names.index(col_name)
         result = result.set_column(col_idx, col_name, updated)
     return result
-
-
-def _raise_if_rows_is_not_in_old_data(old_df, df, index_name):
-    index = df[index_name]
-    old_index = old_df[index_name]
-    is_in = pc.is_in(index, value_set=old_index)
-    if not pc.all(is_in).as_py():
-        raise ValueError("Some rows not in stored table")

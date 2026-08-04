@@ -1,5 +1,3 @@
-import pyarrow.compute as pc
-
 from featherstore.connection import Connection
 from featherstore import _utils
 from featherstore._table import _raise_if
@@ -26,21 +24,11 @@ def can_insert_rows(table, df, warnings):
 
 def insert_data(df, *, to):
     index_name = _table_utils.get_index_name(df)
-    _raise_if_rows_in_old_data(to, df, index_name)
+    _raise_if.index_values_in_stored_data(to, df, index_name, all_must_be_in=False)
 
     df = _table_utils.concat_arrow_tables(to, df)
     df = _table_utils.sort_arrow_table(df, by=index_name)
     return df
-
-
-def _raise_if_rows_in_old_data(old_df, df, index_name):
-    index = df[index_name]
-    old_index = old_df[index_name]
-
-    is_in = pc.is_in(index, value_set=old_index)
-    rows_in_old_df = pc.any(is_in).as_py()
-    if rows_in_old_df:
-        raise ValueError("Some rows already in stored table")
 
 
 def create_partitions(df, rows_per_partition, partition_names, all_partition_names):
@@ -79,23 +67,3 @@ def _make_partition_names(num_names, partition_names, subsequent_partition):
         new_partition_names.append(new_partition_id)
 
     return sorted(new_partition_names)
-
-
-def has_still_default_index(table, df):
-    has_default_index = table._table_data["has_default_index"]
-    if not has_default_index:
-        return False
-
-    index_name = table._table_data["index_name"]
-    rows = df[index_name]
-    last_stored_value = _table_utils.get_last_stored_index_value(table._partition_data)
-    first_row_value = rows[0].as_py()
-
-    rows_are_continuous = all(a.as_py() + 1 == b.as_py() for a, b in zip(rows, rows[1:]))
-    if first_row_value > last_stored_value and rows_are_continuous:
-        _has_still_default_index = True
-    elif len(rows) == 0:
-        _has_still_default_index = True
-    else:
-        _has_still_default_index = False
-    return _has_still_default_index

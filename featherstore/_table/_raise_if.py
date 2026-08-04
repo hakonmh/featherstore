@@ -4,6 +4,7 @@ from numbers import Integral
 import pandas as pd
 import polars as pl
 import pyarrow as pa
+import pyarrow.compute as pc
 
 from featherstore._metadata import METADATA_FOLDER_NAME
 from featherstore._table import _table_utils
@@ -113,6 +114,27 @@ def cols_not_in_table(cols, table_data):
     some_cols_not_in_stored_cols = set(cols) - set(stored_cols)
     if some_cols_not_in_stored_cols:
         raise IndexError("Trying to access a column not found in table")
+
+
+def cols_already_in_table(cols, table_data):
+    stored_cols = table_data["columns"]
+    if not isinstance(cols, ColIndexer):
+        cols = ColIndexer(cols)
+
+    cols = cols.like(stored_cols)
+    if set(cols) & set(stored_cols):
+        raise IndexError("Column name already exists in table")
+
+
+def index_values_in_stored_data(old_df, df, index_name, *, all_must_be_in):
+    index = df[index_name]
+    old_index = old_df[index_name]
+    is_in = pc.is_in(index, value_set=old_index)
+    if all_must_be_in:
+        if not pc.all(is_in).as_py():
+            raise ValueError("Some rows not in stored table")
+    elif pc.any(is_in).as_py():
+        raise ValueError("Some rows already in stored table")
 
 
 def to_is_provided_twice(cols, to):

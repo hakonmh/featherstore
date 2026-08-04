@@ -197,7 +197,7 @@ class Table:
             if common.index_is_default(df[index_name]):
                 df = append.format_default_index(self, df)
             else:
-                has_default_index = insert_rows.has_still_default_index(self, df)
+                has_default_index = common.has_still_default_index(self, df)
         last_partition = read.read_table(self, [last_partition_name])
 
         df = append.append_data(df, to=last_partition)
@@ -260,7 +260,7 @@ class Table:
         all_partition_names = self._partition_data.keys()
 
         df = common.format_table(df, index_name=index_name, warnings=warnings)
-        has_default_index = insert_rows.has_still_default_index(self, df)
+        has_default_index = common.has_still_default_index(self, df)
 
         rows = common.format_rows_arg(df[index_name].to_pylist(), to_dtype=index_type)
         partition_names = read.get_partition_names(self, rows)
