@@ -221,7 +221,7 @@ class Table:
         ----------
         df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
             The updated data. The index of `df` is the rows to be updated, while
-            the columns of `df` are the new values. Polars Series is not accepted.
+            the columns of `df` are the new values.
         """
         update.can_update_table(self, df)
 
@@ -247,7 +247,7 @@ class Table:
         ----------
         df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
             The data to be inserted. `df` must have the same index and column
-            types as the stored data. Polars Series is not accepted.
+            types as the stored data.
         warnings : str, optional
             Whether or not to warn if a unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
@@ -284,7 +284,7 @@ class Table:
         ----------
         df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
             The data to be inserted. `df` must have the same index as the stored
-            data. Polars Series is not accepted.
+            data.
         idx : int
             The position to insert the new column(s). Default is to add columns to
             the end.
