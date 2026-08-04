@@ -30,7 +30,7 @@ class Table:
 
         - Partial reading of data
         - Append data
-        - Insert data
+        - Insert rows and columns
         - Update data
         - Drop data
         - Read metadata (column names, index, table shape, etc)

@@ -527,14 +527,14 @@ more features for working with tables.</p>
 <span class="o">&gt;&gt;</span> <span class="kc">True</span>
 </pre></div>
 </div>
-<p>One of those features is <code class="docutils literal notranslate"><span class="pre">Table.insert()</span></code>, which allows for adding extra rows
+<p>One of those features is <code class="docutils literal notranslate"><span class="pre">Table.insert_rows()</span></code>, which allows for adding extra rows
 into the table.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>You can use <code class="docutils literal notranslate"><span class="pre">Table.add_columns()</span></code> to add extra columns.</p>
+<p>You can use <code class="docutils literal notranslate"><span class="pre">Table.insert_columns()</span></code> to add extra columns.</p>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="s2">&quot;AB&quot;</span><span class="p">))</span>
-<span class="n">table</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">df2</span><span class="p">)</span>  <span class="c1"># Must have the same index and col dtypes as the stored df</span>
+<span class="n">table</span><span class="o">.</span><span class="n">insert_rows</span><span class="p">(</span><span class="n">df2</span><span class="p">)</span>  <span class="c1"># Must have the same index and col dtypes as the stored df</span>
 <span class="n">table</span><span class="o">.</span><span class="n">read_pandas</span><span class="p">()</span>
 
 <span class="c1"># The data will inserted into its sorted index position</span>
