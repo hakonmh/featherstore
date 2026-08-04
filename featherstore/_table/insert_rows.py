@@ -4,6 +4,7 @@ from featherstore.connection import Connection
 from featherstore import _utils
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
+from featherstore._table import common
 
 
 def can_insert_rows(table, df, warnings):
@@ -14,15 +15,13 @@ def can_insert_rows(table, df, warnings):
     _raise_if.df_is_not_table_type(df, _table_utils.EDIT_TABLE_TYPES)
 
     table_data = table._table_data
-    cols = _table_utils.get_data_col_names(df, index_name=table_data["index_name"])
+    cols = _table_utils.get_col_names(df, has_default_index=False)
+    common.validate_incoming_table_schema(df, table_data, cols)
+    _raise_if.cols_does_not_match(df, table_data)
+
     index_name = table_data["index_name"]
     index = _table_utils.get_index_if_exists(df, index_name)
-
-    _raise_if.index_name_not_same_as_stored_index(df, table_data)
-    _raise_if.col_names_contains_duplicates(cols)
     _raise_if.index_values_contains_duplicates(index)
-    _raise_if.index_type_not_same_as_stored_index(df, table_data)
-    _raise_if.cols_does_not_match(df, table_data)
 
 
 def insert_data(df, *, to):

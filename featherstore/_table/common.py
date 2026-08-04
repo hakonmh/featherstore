@@ -5,6 +5,7 @@ import pandas as pd
 import pyarrow as pa
 from pyarrow import pandas_compat as pc
 
+from featherstore._table import _raise_if
 from featherstore._table import _table_utils
 from featherstore._table._indexers import ColIndexer, RowIndexer
 
@@ -15,6 +16,12 @@ _PANDAS_MAJOR = int(pd.__version__.split('.', 1)[0])
 _STRING_PANDAS_TYPE, _STRING_NUMPY_TYPE = (
     ('object', 'str') if _PANDAS_MAJOR >= 3 else ('unicode', 'string')
 )
+
+
+def validate_incoming_table_schema(df, table_data, cols):
+    _raise_if.index_name_not_same_as_stored_index(df, table_data)
+    _raise_if.col_names_contains_duplicates(cols)
+    _raise_if.index_type_not_same_as_stored_index(df, table_data)
 
 
 def format_cols_arg(cols, *, like=None):

@@ -17,9 +17,7 @@ def can_append_table(table, df, warnings):
 
     table_data = table._table_data
     cols = _table_utils.get_col_names(df, has_default_index=False)
-    _raise_if.index_name_not_same_as_stored_index(df, table_data)
-    _raise_if.col_names_contains_duplicates(cols)
-    _raise_if.index_type_not_same_as_stored_index(df, table_data)
+    common.validate_incoming_table_schema(df, table_data, cols)
     _raise_if.cols_does_not_match(df, table_data)
 
     has_default_index = table_data['has_default_index']
