@@ -409,7 +409,7 @@ full data:</p>
 <ul class="simple">
 <li><p>Partial reading of data</p></li>
 <li><p>Append data</p></li>
-<li><p>Insert data</p></li>
+<li><p>Insert rows and columns</p></li>
 <li><p>Update data</p></li>
 <li><p>Drop data</p></li>
 <li><p>Read metadata (column names, index, table shape, etc)</p></li>
@@ -545,8 +545,8 @@ the columns of <cite>df</cite> are the new values.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="featherstore.table.Table.insert">
-<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L243-L275"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.insert" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="featherstore.table.Table.insert_rows">
+<span class="sig-name descname"><span class="pre">insert_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L243-L276"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.insert_rows" title="Link to this definition">#</a></dt>
 <dd><p>Insert one or more rows into the current table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -557,8 +557,8 @@ types as the stored data.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="featherstore.table.Table.add_columns">
-<span class="sig-name descname"><span class="pre">add_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L277-L308"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.add_columns" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="featherstore.table.Table.insert_columns">
+<span class="sig-name descname"><span class="pre">insert_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L278-L310"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.insert_columns" title="Link to this definition">#</a></dt>
 <dd><p>Insert one or more columns into the current table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -828,8 +828,8 @@ disables partitioning</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.write"><code class="docutils literal notranslate"><span class="pre">Table.write()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.append"><code class="docutils literal notranslate"><span class="pre">Table.append()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.update"><code class="docutils literal notranslate"><span class="pre">Table.update()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.insert"><code class="docutils literal notranslate"><span class="pre">Table.insert()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.add_columns"><code class="docutils literal notranslate"><span class="pre">Table.add_columns()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.insert_rows"><code class="docutils literal notranslate"><span class="pre">Table.insert_rows()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.insert_columns"><code class="docutils literal notranslate"><span class="pre">Table.insert_columns()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.drop"><code class="docutils literal notranslate"><span class="pre">Table.drop()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.drop_rows"><code class="docutils literal notranslate"><span class="pre">Table.drop_rows()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.drop_columns"><code class="docutils literal notranslate"><span class="pre">Table.drop_columns()</span></code></a></li>

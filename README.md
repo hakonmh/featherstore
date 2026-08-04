@@ -17,7 +17,7 @@ the necessary segments of data:
 
 * Partial reading of data
 * Append data
-* Insert data
+* Insert rows and columns
 * Update data
 * Drop data
 * Read metadata (including column names, index, table dimensions, etc.)
