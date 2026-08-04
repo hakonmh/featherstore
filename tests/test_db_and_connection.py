@@ -12,11 +12,16 @@ def test_create_database():
     fs.create_database(DB_PATH, connect=False)
     # Assert
     db_exists_after_create_db = os.path.exists(DB_PATH)
-    db_folder_is_db = DB_MARKER_NAME in os.listdir(DB_PATH)
+    db_folder_is_db = fs.database_exists(DB_PATH)
     assert db_exists_after_create_db and not before_create_db
     assert db_folder_is_db
     # Teardown
     shutil.rmtree(DB_PATH)
+
+
+def test_database_exists(create_db):
+    assert fs.database_exists(DB_PATH)
+    assert not fs.database_exists(os.path.join(DB_PATH, "missing"))
 
 
 def test_connect(create_db):

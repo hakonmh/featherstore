@@ -66,11 +66,20 @@ def is_connected():
 
 
 def database_exists(path):
+    """Checks whether a directory is a FeatherStore database.
+
+    Parameters
+    ----------
+    path : str
+        Path to the directory to check.
+
+    Returns
+    -------
+    bool
+        ``True`` if the directory contains a FeatherStore database marker.
+    """
     db_marker_path = os.path.join(path, DB_MARKER_NAME)
-    if os.path.exists(db_marker_path):
-        return True
-    else:
-        return False
+    return os.path.exists(db_marker_path)
 
 
 class Connection:
