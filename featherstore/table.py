@@ -34,7 +34,6 @@ class Table:
         - Drop data
         - Read metadata (column names, index, table shape, etc)
         - Changing column types
-        - Changing types
 
         Parameters
         ----------

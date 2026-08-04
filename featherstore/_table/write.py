@@ -126,18 +126,11 @@ def _get_num_cols(df):
 
 def _has_default_index(df):
     index_name = _table_utils.get_index_name(df[0])
-    has_index_name = index_name != DEFAULT_ARROW_INDEX_NAME
-    if has_index_name or __index_was_sorted(df):
-        has_default_index = False
-    else:
-        index = (batch[index_name] for batch in df)
-        index = pa.concat_arrays(index)
-        if common.index_is_default(index):
-            has_default_index = True
-        else:
-            has_default_index = False
+    if index_name != DEFAULT_ARROW_INDEX_NAME or __index_was_sorted(df):
+        return False
 
-    return has_default_index
+    index = pa.concat_arrays(batch[index_name] for batch in df)
+    return common.index_is_default(index)
 
 
 def __index_was_sorted(df):

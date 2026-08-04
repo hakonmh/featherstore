@@ -67,8 +67,6 @@ def _extract_snapshot(output_path, source):
 
 
 def _extract_tar_member(tar, member, output_path):
-    # Python 3.12+ supports/requires an extraction filter; 3.14 defaults to
-    # filtering and warns when the argument is omitted.
     try:
         tar.extract(member, output_path, filter='data')
     except TypeError:

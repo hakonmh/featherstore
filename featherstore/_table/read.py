@@ -38,49 +38,49 @@ def _raise_if_mmap_is_not_bool_or_none(mmap):
 
 
 def get_partition_names(table, rows):
-    partititon_data = table._partition_data
+    partition_data = table._partition_data
     if rows is None:
         rows = RowIndexer(None)
 
-    partition_names = partititon_data.keys()
+    partition_names = partition_data.keys()
     if rows.values():
-        partition_names = _predicate_filtering(rows, partition_names, partititon_data)
+        partition_names = _predicate_filtering(rows, partition_names, partition_data)
     return partition_names
 
 
-def _predicate_filtering(rows, partition_names, partititon_data):
+def _predicate_filtering(rows, partition_names, partition_data):
     if rows.keyword == "before":
         start = 0
         target = rows[0]
-        end = _binary_search(target, partition_names, partititon_data)
+        end = _binary_search(target, partition_names, partition_data)
     elif rows.keyword == "after":
         target = rows[0]
-        start = _binary_search(target, partition_names, partititon_data)
+        start = _binary_search(target, partition_names, partition_data)
         end = len(partition_names)
     elif rows.keyword == "between":
         target_start = rows[0]
         target_end = rows[1]
-        start = _binary_search(target_start, partition_names, partititon_data)
-        end = _binary_search(target_end, partition_names, partititon_data)
+        start = _binary_search(target_start, partition_names, partition_data)
+        end = _binary_search(target_end, partition_names, partition_data)
     else:  # When a list of rows is provided
-        start = _binary_search(min(rows.values()), partition_names, partititon_data)
-        end = _binary_search(max(rows.values()), partition_names, partititon_data)
+        start = _binary_search(min(rows.values()), partition_names, partition_data)
+        end = _binary_search(max(rows.values()), partition_names, partition_data)
 
     partition_names = partition_names[start:end + 1]
     return partition_names
 
 
-def _binary_search(target, partition_names, partititon_data):
+def _binary_search(target, partition_names, partition_data):
     possible_partition_names = partition_names
 
     while len(possible_partition_names) > 1:
         mid = len(possible_partition_names) // 2
         candidate_name = possible_partition_names[mid]
-        candidate = partititon_data[candidate_name]
+        candidate = partition_data[candidate_name]
 
         if _row_inside_candidate(target, candidate):
-            break  # return candidate_name
-        elif _row_before_candidate(target, candidate):
+            break
+        if _row_before_candidate(target, candidate):
             possible_partition_names = possible_partition_names[mid:]
         elif _row_after_candidate(target, candidate):
             possible_partition_names = possible_partition_names[:mid]
@@ -97,19 +97,11 @@ def _row_inside_candidate(target, candidate):
 
 
 def _row_before_candidate(target, candidate):
-    candidate_max = candidate['max']
-    if target >= candidate_max:
-        return True
-    else:
-        return False
+    return target >= candidate['max']
 
 
 def _row_after_candidate(target, candidate):
-    candidate_min = candidate['min']
-    if target <= candidate_min:
-        return True
-    else:
-        return False
+    return target <= candidate['min']
 
 
 def read_table(table, partition_names, cols=ColIndexer(None),
@@ -142,18 +134,20 @@ def __add_index_to_cols(cols, table_path):
 
 
 def __read_feather(path, cols, mmap):
-    if mmap is None:
-        mmap = platform.system() != "Windows"
+    use_mmap = mmap if mmap is not None else platform.system() != "Windows"
+    table = _read_ipc_table(path, use_mmap)
+    return table.select(cols.values())
 
-    if mmap:
+
+def _read_ipc_table(path, use_mmap):
+    if use_mmap:
         source = pa.memory_map(path, 'r')
     else:
         source = pa.OSFile(path, 'r')
     try:
-        df = ipc.open_file(source).read_all()
+        return ipc.open_file(source).read_all()
     finally:
         source.close()
-    return df.select(cols.values())
 
 
 def _combine_partitions(partitions):
@@ -198,13 +192,10 @@ def _can_be_converted_to_series(df):
 
 
 def _can_be_converted_to_rangeindex(index):
-    is_already_rangeindex = isinstance(index, pd.RangeIndex)
-    if is_already_rangeindex:
-        can_be_converted = False
-    else:
-        corresponding_rangeindex = pd.RangeIndex(start=0, stop=len(index))
-        can_be_converted = index.equals(corresponding_rangeindex)
-    return can_be_converted
+    if isinstance(index, pd.RangeIndex):
+        return False
+    corresponding_rangeindex = pd.RangeIndex(start=0, stop=len(index))
+    return index.equals(corresponding_rangeindex)
 
 
 def _make_rangeindex(df):

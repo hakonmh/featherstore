@@ -169,14 +169,11 @@ def __get_numpy_dtype_info(dtype, column=None):
             'precision': dtype.precision,
             'scale': dtype.scale,
         }
-    elif pd_dtype in ('date', 'time'):  # Numpy doesn't support date types
-        resolution = str(dtype).split('[')[-1].split(']')[0]
-        if resolution == 'day':
-            resolution = 'D'
-        numpy_dtype = f'datetime64[{resolution}]'
+    elif pd_dtype in ('date', 'time'):
+        numpy_dtype = f'datetime64[{_arrow_temporal_resolution(dtype)}]'
         extra_metadata = None
     elif pd_dtype == 'datetime' or str(dtype).startswith('timestamp'):
-        resolution = str(dtype).split('[')[-1].split(']')[0]
+        resolution = _arrow_temporal_resolution(dtype)
         numpy_dtype = f'datetime64[{resolution}]'
         tz = getattr(dtype, 'tz', None)
         if tz is not None:
@@ -256,8 +253,8 @@ def compute_rows_per_partition(df, target_size):
 
 def update_metadata(table, df, old_partition_names, **kwargs):
     new_partition_metadata = _make_partition_metadata(df)
-    table_metadata = _update_table_metadata(table, new_partition_metadata,
-                                            old_partition_names)
+    table_metadata = _compute_table_metadata_update(
+        table, new_partition_metadata, old_partition_names)
     for key, value in kwargs.items():
         table_metadata[key] = value
     return table_metadata, new_partition_metadata
@@ -294,23 +291,25 @@ def _get_index_max(df, index_name):
     return last_index_value
 
 
-def _update_table_metadata(table, new_partitions_data,
-                           dropped_partitions):
-    # TODO: Clean up, new name, generalize(?)
-    dropped_partitions_data = _get_dropped_partitions_data(table._partition_data,
-                                                           dropped_partitions)
+def _compute_table_metadata_update(table, new_partitions_data, dropped_partitions):
+    dropped_partitions_data = _get_dropped_partitions_data(
+        table._partition_data, dropped_partitions)
     num_rows = table._table_data['num_rows']
-    num_rows += _update_num_rows(dropped_partitions_data,
-                                 new_partitions_data)
+    num_rows += _update_num_rows(dropped_partitions_data, new_partitions_data)
     num_partitions = table._table_data['num_partitions']
-    num_partitions += _update_num_partitions(dropped_partitions_data,
-                                             new_partitions_data)
+    num_partitions += _update_num_partitions(dropped_partitions_data, new_partitions_data)
 
-    table_metadata = {
+    return {
         "num_partitions": num_partitions,
-        "num_rows": num_rows
+        "num_rows": num_rows,
     }
-    return table_metadata
+
+
+def _arrow_temporal_resolution(dtype):
+    resolution = str(dtype).split('[')[-1].split(']')[0]
+    if resolution == 'day':
+        resolution = 'D'
+    return resolution
 
 
 def _get_dropped_partitions_data(partition_data, partition_names):
