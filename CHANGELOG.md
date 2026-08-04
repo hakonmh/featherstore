@@ -10,6 +10,15 @@ Changelog
 * Raised dependency floors to `pandas>=2.2.0`, `polars[timezone]>=1.0.0`,
   and `pyarrow>=14.0.0` (upper bounds removed)
 
+Enhancements:
+
+* Partition writes use Arrow IPC with atomic replace (avoids corrupting
+  memory-mapped files on overwrite)
+* Pandas metadata generation updated for pandas 2.2 / 3.x string and float
+  dtypes; sorting uses Arrow `sort_indices` so categoricals keep unused
+  categories
+* Snapshot extraction passes `filter='data'` on Python 3.12+
+
 0.2.1
 -----
 

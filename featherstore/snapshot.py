@@ -62,8 +62,17 @@ def _extract_snapshot(output_path, source):
         members.remove(METADATA_FILE_NAME)
         name = members[0]
         for member in members:
-            tar.extract(member, output_path)
+            _extract_tar_member(tar, member, output_path)
     return name
+
+
+def _extract_tar_member(tar, member, output_path):
+    # Python 3.12+ supports/requires an extraction filter; 3.14 defaults to
+    # filtering and warns when the argument is omitted.
+    try:
+        tar.extract(member, output_path, filter='data')
+    except TypeError:
+        tar.extract(member, output_path)
 
 
 def _can_restore_table(store, source, errors):

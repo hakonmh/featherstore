@@ -89,6 +89,12 @@ def _change_dtype(df, to, index_name='index', cols=None):
             field = field.with_type(arrow_dtype)
             schema = schema.set(idx, field)
     df = df.cast(schema)
+    # Casting does not refresh pandas metadata; drop it so conversions follow
+    # the Arrow types (needed for binary/string roundtrips on pandas 2.2+/3).
+    metadata = df.schema.metadata
+    if metadata and b'pandas' in metadata:
+        metadata = {key: value for key, value in metadata.items() if key != b'pandas'}
+        df = df.replace_schema_metadata(metadata or None)
     return df
 
 

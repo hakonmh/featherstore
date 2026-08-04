@@ -22,9 +22,10 @@ Support current Python and dependency versions while following existing project 
 
 ## Todo
 
-- [ ] Update `setup.py`, `requirements.txt`, README, Overview, CHANGELOG, ReadTheDocs
-- [ ] Update GitHub Actions matrices
-- [ ] Install stack and run existing tests (red)
-- [ ] Fix compatibility issues until green
-- [ ] Run flake8 with project settings
+- [x] Update `setup.py`, `requirements.txt`, README, Overview, CHANGELOG, ReadTheDocs
+- [x] Update GitHub Actions matrices
+- [x] Install stack and run existing tests (red)
+- [x] Fix compatibility issues until green
+- [x] Run flake8 with project settings
+- [x] Verify minimum deps (`pandas==2.2.0`, `polars==1.0.0`, `pyarrow==14.0.0`)
 - [ ] Commit, push, open PR

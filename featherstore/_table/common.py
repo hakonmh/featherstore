@@ -1,5 +1,6 @@
 import json
 import warnings as _warnings
+from functools import lru_cache
 
 import pandas as pd
 import pyarrow as pa
@@ -133,9 +134,11 @@ def _make_pd_metadata(df, index_name):
 
 
 def __make_column_metadata(df, col):
-    dtype = df[col].type
+    column = df[col]
+    dtype = column.type
     pd_dtype = pc.get_logical_type(dtype)
-    np_dtype, extra_data = __get_numpy_dtype_info(dtype)
+    np_dtype, extra_data = __get_numpy_dtype_info(dtype, column)
+    pd_dtype, np_dtype = _adjust_string_metadata(dtype, pd_dtype, np_dtype)
 
     metadata = {"name": col,
                 "field_name": col,
@@ -146,7 +149,27 @@ def __make_column_metadata(df, col):
     return metadata
 
 
-def __get_numpy_dtype_info(dtype):
+def _adjust_string_metadata(dtype, pd_dtype, np_dtype):
+    if str(dtype) not in {'string', 'utf8', 'large_string', 'large_utf8'}:
+        return pd_dtype, np_dtype
+    return _pandas_string_metadata()
+
+
+@lru_cache(maxsize=1)
+def _pandas_string_metadata():
+    # Match fixture/table string dtypes for the installed pandas:
+    # pandas 3 defaults to StringDtype(na_value=nan); pandas 2.2 uses dtype="string".
+    df = pd.DataFrame({"s": ["a"]})
+    if df["s"].dtype == object:
+        df["s"] = pd.array(df["s"], dtype="string")
+    sample = pa.Table.from_pandas(df)
+    for column in json.loads(sample.schema.metadata[b"pandas"])["columns"]:
+        if column["name"] == "s":
+            return column["pandas_type"], column["numpy_type"]
+    return "unicode", "string"
+
+
+def __get_numpy_dtype_info(dtype, column=None):
     pd_dtype = pc.get_logical_type(dtype)
 
     if pd_dtype == 'decimal':
@@ -161,25 +184,52 @@ def __get_numpy_dtype_info(dtype):
             resolution = 'D'
         numpy_dtype = f'datetime64[{resolution}]'
         extra_metadata = None
-    elif hasattr(dtype, 'tz'):  # Store timezone info if exists for dtime types
+    elif pd_dtype == 'datetime' or str(dtype).startswith('timestamp'):
         resolution = str(dtype).split('[')[-1].split(']')[0]
         numpy_dtype = f'datetime64[{resolution}]'
-        try:
-            extra_metadata = {'timezone': pa.lib.tzinfo_to_string(pd_dtype.tz)}
-        except Exception:
-            extra_metadata = {'timezone': None}
+        tz = getattr(dtype, 'tz', None)
+        if tz is not None:
+            extra_metadata = {'timezone': pa.lib.tzinfo_to_string(tz)}
+        else:
+            extra_metadata = None
     elif pd_dtype[:4] == 'list':
         numpy_dtype = 'object'
         extra_metadata = None
     elif pd_dtype == 'categorical':
         numpy_dtype = str(dtype.index_type)
-        extra_metadata = {'ordered': dtype.ordered}
+        extra_metadata = {
+            'num_categories': __categorical_num_categories(column),
+            'ordered': dtype.ordered,
+        }
     else:
-        numpy_dtype = str(dtype)
+        numpy_dtype = _arrow_type_to_numpy_type(dtype)
         extra_metadata = None
-        if numpy_dtype in ('large_string', 'binary', 'large_binary'):
-            numpy_dtype = 'string'
     return numpy_dtype, extra_metadata
+
+
+def __categorical_num_categories(column):
+    if column is None:
+        return 0
+    dictionary = column.combine_chunks().dictionary
+    if dictionary is None:
+        return 0
+    return len(dictionary)
+
+
+def _arrow_type_to_numpy_type(dtype):
+    arrow_type = str(dtype)
+    mapping = {
+        'double': 'float64',
+        'float': 'float32',
+        'halffloat': 'float16',
+        'string': 'str',
+        'utf8': 'str',
+        'large_string': 'str',
+        'large_utf8': 'str',
+        'binary': 'object',
+        'large_binary': 'object',
+    }
+    return mapping.get(arrow_type, arrow_type)
 
 
 def _add_pd_metadata(df, metadata):

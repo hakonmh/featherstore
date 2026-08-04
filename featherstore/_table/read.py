@@ -2,7 +2,7 @@ import os
 import platform
 
 import pyarrow as pa
-from pyarrow import feather
+from pyarrow import ipc
 import pandas as pd
 import polars as pl
 
@@ -146,10 +146,13 @@ def __read_feather(path, cols, mmap):
         mmap = platform.system() != "Windows"
 
     if mmap:
-        df = feather.read_table(path, columns=None, memory_map=True)
+        source = pa.memory_map(path, 'r')
     else:
-        with open(path, 'rb') as f:
-            df = feather.read_table(f, columns=None, memory_map=True)
+        source = pa.OSFile(path, 'r')
+    try:
+        df = ipc.open_file(source).read_all()
+    finally:
+        source.close()
     return df.select(cols.values())
 
 

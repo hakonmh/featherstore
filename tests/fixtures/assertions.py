@@ -53,10 +53,7 @@ def assert_df_equals(df, expected, astype=None):
 
 
 def _assert_polars(df, expected):
-    if isinstance(df, pl.DataFrame):
-        assert df.frame_equal(expected)
-    else:
-        assert df.series_equal(expected)
+    assert df.equals(expected)
 
 
 def _assert_pandas(df, expected):
