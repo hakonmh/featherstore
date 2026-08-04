@@ -1,6 +1,5 @@
 import json
 import warnings as _warnings
-from functools import lru_cache
 
 import pandas as pd
 import pyarrow as pa
@@ -10,6 +9,12 @@ from featherstore._table import _table_utils
 from featherstore._table._indexers import ColIndexer, RowIndexer
 
 HAS_MULTI_TYPE_COLUMN = (pa.lib.ArrowTypeError, pa.lib.ArrowInvalid)
+
+_STRING_ARROW_TYPES = {'string', 'utf8', 'large_string', 'large_utf8'}
+_PANDAS_MAJOR = int(pd.__version__.split('.', 1)[0])
+_STRING_PANDAS_TYPE, _STRING_NUMPY_TYPE = (
+    ('object', 'str') if _PANDAS_MAJOR >= 3 else ('unicode', 'string')
+)
 
 
 def format_cols_arg(cols, *, like=None):
@@ -150,23 +155,9 @@ def __make_column_metadata(df, col):
 
 
 def _adjust_string_metadata(dtype, pd_dtype, np_dtype):
-    if str(dtype) not in {'string', 'utf8', 'large_string', 'large_utf8'}:
+    if str(dtype) not in _STRING_ARROW_TYPES:
         return pd_dtype, np_dtype
-    return _pandas_string_metadata()
-
-
-@lru_cache(maxsize=1)
-def _pandas_string_metadata():
-    # Match fixture/table string dtypes for the installed pandas:
-    # pandas 3 defaults to StringDtype(na_value=nan); pandas 2.2 uses dtype="string".
-    df = pd.DataFrame({"s": ["a"]})
-    if df["s"].dtype == object:
-        df["s"] = pd.array(df["s"], dtype="string")
-    sample = pa.Table.from_pandas(df)
-    for column in json.loads(sample.schema.metadata[b"pandas"])["columns"]:
-        if column["name"] == "s":
-            return column["pandas_type"], column["numpy_type"]
-    return "unicode", "string"
+    return _STRING_PANDAS_TYPE, _STRING_NUMPY_TYPE
 
 
 def __get_numpy_dtype_info(dtype, column=None):
