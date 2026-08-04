@@ -65,10 +65,3 @@ def _insert_cols(old_df, df, index, index_name):
             result = result.add_column(insert_at, col, df[col])
             insert_at += 1
     return result
-
-
-def create_partitions(df, rows_per_partition, partition_names):
-    partitions = _table_utils.make_partitions(df, rows_per_partition)
-    new_partition_names = _table_utils.add_new_partition_ids(partitions, partition_names)
-    partitions = _table_utils.assign_ids_to_partitions(partitions, new_partition_names)
-    return partitions

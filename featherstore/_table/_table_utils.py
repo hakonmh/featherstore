@@ -209,6 +209,76 @@ def assign_ids_to_partitions(df, ids):
     return id_mapping
 
 
+def create_partitions(df, rows_per_partition, partition_names=None, *,
+                      strategy="reuse", all_partition_names=None):
+    partitions = make_partitions(df, rows_per_partition)
+    names = resolve_partition_names(
+        partitions, partition_names, strategy=strategy,
+        all_partition_names=all_partition_names)
+    return assign_ids_to_partitions(partitions, names)
+
+
+def resolve_partition_names(partitions, partition_names, *, strategy,
+                            all_partition_names=None):
+    if strategy == "new":
+        return _make_new_partition_ids(partitions)
+    if strategy == "reuse":
+        return partition_names
+    if strategy == "grow":
+        return _grow_partition_names(partitions, partition_names)
+    if strategy == "shrink":
+        return partition_names[:len(partitions)]
+    if strategy == "append":
+        last_partition_name = _as_last_partition_name(partition_names)
+        return append_new_partition_ids(len(partitions), [last_partition_name])
+    if strategy == "insert":
+        return _insert_partition_ids(partitions, partition_names, all_partition_names)
+    raise ValueError(f"Unknown partition naming strategy: {strategy!r}")
+
+
+def _make_new_partition_ids(partitions):
+    partition_ids = []
+    for partition_num in range(1, len(partitions) + 1):
+        partition_ids.append(convert_int_to_partition_id(partition_num))
+    return partition_ids
+
+
+def _grow_partition_names(partitions, partition_ids):
+    if len(partitions) < len(partition_ids):
+        return partition_ids[:len(partitions)]
+    return add_new_partition_ids(partitions, partition_ids)
+
+
+def _as_last_partition_name(partition_names):
+    if isinstance(partition_names, str):
+        return partition_names
+    return partition_names[-1]
+
+
+def _insert_partition_ids(partitions, partition_names, all_partition_names):
+    num_names_to_make = len(partitions) - len(partition_names)
+    subsequent_partition = get_next_item(item=partition_names[-1],
+                                         sequence=all_partition_names)
+    return _make_insert_partition_names(num_names_to_make,
+                                        partition_names,
+                                        subsequent_partition)
+
+
+def _make_insert_partition_names(num_names, partition_names, subsequent_partition):
+    last_id = convert_partition_id_to_int(partition_names[-1])
+    if subsequent_partition is not None:
+        subsequent_id = convert_partition_id_to_int(subsequent_partition)
+        increment = (subsequent_id - last_id) / (num_names + 1)
+    else:
+        increment = 1
+
+    new_partition_names = partition_names.copy()
+    for partition_num in range(1, num_names + 1):
+        new_partition_id = last_id + increment * partition_num
+        new_partition_names.append(convert_int_to_partition_id(new_partition_id))
+    return sorted(new_partition_names)
+
+
 def get_first_stored_index_value(partition_metadata):
     first_partition = partition_metadata.keys()[0]
     first_stored_value = partition_metadata[first_partition]['min']

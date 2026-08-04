@@ -64,23 +64,6 @@ def _raise_if_index_is_not_supported_type(index):
                             f"(is type {index_type})")
 
 
-def create_partitions(df, rows_per_partition, partition_names=None):
-    partitions = _table_utils.make_partitions(df, rows_per_partition)
-    if partition_names is None:
-        partition_names = _make_partition_ids(partitions)
-    partitions = _table_utils.assign_ids_to_partitions(partitions, partition_names)
-    return partitions
-
-
-def _make_partition_ids(partitioned_df):
-    num_partitions = len(partitioned_df)
-    partition_ids = list()
-    for partition_num in range(1, num_partitions + 1):
-        partition_id = _table_utils.convert_int_to_partition_id(partition_num)
-        partition_ids.append(partition_id)
-    return partition_ids
-
-
 def generate_metadata(df, partition_size, rows_per_partition):
     table_metadata = _make_table_metadata(df, partition_size, rows_per_partition)
     partition_metadata = common._make_partition_metadata(df)

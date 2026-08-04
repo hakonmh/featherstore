@@ -17,6 +17,7 @@ from featherstore._table import rename_cols
 from featherstore._table import astype
 from featherstore._table import misc
 from featherstore._table import common
+from featherstore._table import _table_utils
 
 DEFAULT_PARTITION_SIZE = 128 * 1024**2
 
@@ -166,7 +167,8 @@ class Table:
         df = common.format_table(df, index, warnings)
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
 
-        partitions = write.create_partitions(df, rows_per_partition)
+        partitions = _table_utils.create_partitions(
+            df, rows_per_partition, strategy="new")
         metadata = write.generate_metadata(partitions, partition_size,
                                            rows_per_partition)
         self.drop_table()
@@ -201,8 +203,8 @@ class Table:
         last_partition = read.read_table(self, [last_partition_name])
 
         df = append.append_data(df, to=last_partition)
-        partitions = append.create_partitions(df, rows_per_partition,
-                                              last_partition_name)
+        partitions = _table_utils.create_partitions(
+            df, rows_per_partition, last_partition_name, strategy="append")
 
         metadata = common.update_metadata(self, partitions, [last_partition_name],
                                           has_default_index=has_default_index)
@@ -236,7 +238,8 @@ class Table:
         stored_df = read.read_table(self, partition_names)
 
         df = update.update_data(stored_df, to=df)
-        partitions = write.create_partitions(df, rows_per_partition, partition_names)
+        partitions = _table_utils.create_partitions(
+            df, rows_per_partition, partition_names, strategy="reuse")
 
         write.write_partitions(partitions, self._table_path)
 
@@ -267,9 +270,9 @@ class Table:
         stored_df = read.read_table(self, partition_names)
 
         df = insert_rows.insert_data(df, to=stored_df)
-        partitions = insert_rows.create_partitions(df, rows_per_partition,
-                                                   partition_names,
-                                                   all_partition_names)
+        partitions = _table_utils.create_partitions(
+            df, rows_per_partition, partition_names, strategy="insert",
+            all_partition_names=all_partition_names)
 
         metadata = common.update_metadata(self, partitions, partition_names,
                                           has_default_index=has_default_index)
@@ -306,8 +309,8 @@ class Table:
 
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
         columns = df.column_names
-        partitions = insert_cols.create_partitions(df, rows_per_partition,
-                                                   partition_names)
+        partitions = _table_utils.create_partitions(
+            df, rows_per_partition, partition_names, strategy="grow")
 
         metadata = common.update_metadata(self, partitions, partition_names,
                                           rows_per_partition=rows_per_partition,
@@ -367,7 +370,8 @@ class Table:
 
         df = drop.drop_rows_from_data(stored_df, rows, index_name)
         df = common.format_table(df, index_name=index_name, warnings=False)
-        partitions = drop.create_partitions(df, rows_per_partition, partition_names)
+        partitions = _table_utils.create_partitions(
+            df, rows_per_partition, partition_names, strategy="shrink")
 
         has_default_index = drop.has_still_default_index(self, rows)
         metadata = common.update_metadata(self, partitions, partition_names,
@@ -407,7 +411,8 @@ class Table:
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
         if old_rows_per_partition > rows_per_partition:
             rows_per_partition = old_rows_per_partition
-        partitions = drop.create_partitions(df, rows_per_partition, partition_names)
+        partitions = _table_utils.create_partitions(
+            df, rows_per_partition, partition_names, strategy="shrink")
 
         columns = df.column_names
         metadata = common.update_metadata(self, partitions, partition_names,
@@ -447,7 +452,8 @@ class Table:
 
         df = rename_cols.rename_columns(df, cols_mapping)
         df = common.format_table(df, index_name=index_name, warnings=False)
-        partitions = write.create_partitions(df, rows_per_partition, partition_names)
+        partitions = _table_utils.create_partitions(
+            df, rows_per_partition, partition_names, strategy="reuse")
 
         rename_cols.write_metadata(self, partitions)
         write.write_partitions(partitions, self._table_path)
@@ -531,7 +537,8 @@ class Table:
         df = common.format_table(df, index_name=index_name, warnings=False)
 
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
-        partitions = astype.create_partitions(df, rows_per_partition, partition_names)
+        partitions = _table_utils.create_partitions(
+            df, rows_per_partition, partition_names, strategy="grow")
 
         metadata = common.update_metadata(self, partitions, partition_names,
                                           rows_per_partition=rows_per_partition)
