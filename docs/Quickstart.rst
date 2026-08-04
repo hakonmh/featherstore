@@ -25,6 +25,15 @@ Installation
 
 | to install the latest version from GitHub.
 
+Requirements
+------------
+
+FeatherStore 0.3.0 requires Python 3.11 or newer and the following packages:
+
+* pandas >= 2.2.0
+* polars[timezone] >= 1.0.0
+* pyarrow >= 14.0.0
+
 Starting Up
 -----------
 

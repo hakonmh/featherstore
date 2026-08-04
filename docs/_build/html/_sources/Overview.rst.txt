@@ -40,7 +40,7 @@ Installation
 Python version support
 ----------------------
 
-Officially Python 3.8 and up is supported.
+Officially Python 3.11 and up is supported.
 
 Source Code
 +++++++++++

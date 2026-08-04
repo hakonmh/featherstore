@@ -39,6 +39,7 @@ To create and connect to a new database simply use:
     fs.create_database('/path/to/database_folder')
     fs.connect('/path/to/database_folder')
 
+You can check whether a path is already a database with ``fs.database_exists()``.
 You can later disconnect from the database by using ``fs.disconnect()``
 
 Working with Stores
@@ -58,7 +59,7 @@ and where you can store your tables.
 .. code-block:: python
 
     fs.drop_store('store_2')
-    fs.rename_store('store_1', 'example_store')
+    fs.rename_store('store_1', to='example_store')
     # Connect to store
     store = fs.Store('example_store')
 
@@ -165,9 +166,9 @@ more features for working with tables.
 .. code-block:: python
 
     table = store.select_table('example_table2')
-    table.exists  # False
+    table.exists()  # False
     table.write(df)
-    table.exists
+    table.exists()
 
     >> True
 
