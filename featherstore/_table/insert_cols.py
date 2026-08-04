@@ -1,4 +1,3 @@
-import pandas as pd
 import pyarrow.compute as pc
 
 from featherstore.connection import Connection
@@ -16,7 +15,7 @@ def can_insert_columns(table, df, warnings):
     _raise_if.df_is_not_table_type(df, _table_utils.EDIT_TABLE_TYPES)
 
     table_data = table._table_data
-    cols = _get_new_col_names(df, table_data)
+    cols = _table_utils.get_data_col_names(df, index_name=table_data["index_name"])
     _raise_if.col_names_contains_duplicates(cols)
     _raise_if.index_in_cols(cols, table_data)
     _raise_if_col_name_already_in_table(cols, table_data)
@@ -27,16 +26,6 @@ def can_insert_columns(table, df, warnings):
     index = _table_utils.get_index_if_exists(df, index_name)
     _raise_if.index_values_contains_duplicates(index)
     _raise_if.index_type_not_same_as_stored_index(df, table_data)
-
-
-def _get_new_col_names(df, table_data):
-    index_name = table_data["index_name"]
-    if isinstance(df, pd.Series):
-        return [df.name]
-    if isinstance(df, pd.DataFrame):
-        return df.columns.tolist()
-    cols = _table_utils.get_col_names(df, has_default_index=False)
-    return [c for c in cols if c != index_name]
 
 
 def _raise_if_col_name_already_in_table(cols, table_data):

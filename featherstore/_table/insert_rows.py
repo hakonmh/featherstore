@@ -1,4 +1,3 @@
-import pandas as pd
 import pyarrow.compute as pc
 
 from featherstore.connection import Connection
@@ -15,7 +14,7 @@ def can_insert_rows(table, df, warnings):
     _raise_if.df_is_not_table_type(df, _table_utils.EDIT_TABLE_TYPES)
 
     table_data = table._table_data
-    cols = _get_col_names(df, table_data)
+    cols = _table_utils.get_data_col_names(df, index_name=table_data["index_name"])
     index_name = table_data["index_name"]
     index = _table_utils.get_index_if_exists(df, index_name)
 
@@ -24,16 +23,6 @@ def can_insert_rows(table, df, warnings):
     _raise_if.index_values_contains_duplicates(index)
     _raise_if.index_type_not_same_as_stored_index(df, table_data)
     _raise_if.cols_does_not_match(df, table_data)
-
-
-def _get_col_names(df, table_data):
-    if isinstance(df, pd.Series):
-        return [df.name]
-    if isinstance(df, pd.DataFrame):
-        return df.columns.tolist()
-    index_name = table_data["index_name"]
-    cols = _table_utils.get_col_names(df, has_default_index=False)
-    return [c for c in cols if c != index_name]
 
 
 def insert_data(df, *, to):

@@ -68,6 +68,15 @@ def get_col_names(df, has_default_index):
     return cols
 
 
+def get_data_col_names(df, *, index_name):
+    if isinstance(df, pd.Series):
+        return [df.name]
+    if isinstance(df, pd.DataFrame):
+        return df.columns.tolist()
+    cols = get_col_names(df, has_default_index=False)
+    return [c for c in cols if c != index_name]
+
+
 def convert_to_arrow(df, as_array=False):
     if isinstance(df, (pl.Series, pd.Series, pd.Index)):
         if as_array:
