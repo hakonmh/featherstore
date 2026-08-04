@@ -9,18 +9,21 @@ Changelog
 * Raised minimum Python version from 3.8 to 3.11
 * Raised dependency floors to `pandas>=2.2.0`, `polars[timezone]>=1.0.0`,
   and `pyarrow>=14.0.0` (upper bounds removed)
-* Export `database_exists()` from the top-level `featherstore` package
-* Renamed `Table.insert()` to `Table.insert_rows()` and `Table.add_columns()` to `Table.insert_columns()`
+* Renamed `Table.insert()` to `Table.insert_rows()` and
+  `Table.add_columns()` to `Table.insert_columns()`
 
 Enhancements:
 
+* Export `database_exists()` from the top-level `featherstore` package
 * Partition writes use Arrow IPC with atomic replace (avoids corrupting
   memory-mapped files on overwrite)
 * Pandas metadata generation updated for pandas 2.2 / 3.x string and float
   dtypes (version-gated string metadata constants); sorting uses Arrow
   `sort_indices` so categoricals keep unused categories
 * Snapshot extraction passes `filter='data'` on Python 3.12+
-* Quickstart docs updated for `rename_store(..., to=...)` and `table.exists()`
+* Documentation updated for 0.3.0 (`rename_store(..., to=...)`,
+  `table.exists()`, `insert_rows()`, `insert_columns()`, and dependency
+  requirements)
 
 0.2.1
 -----

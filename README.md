@@ -47,6 +47,7 @@ df = pd.DataFrame(randn(5, 4), index=dates, columns=list("ABCD"))
 >>> # Create a database folder at the given path
 fs.create_database('path/to/db')
 fs.connect('path/to/db')
+fs.database_exists('path/to/db')  # True
 # Creates a data store
 fs.create_store('example_store')
 # List existing stores in current database
@@ -101,11 +102,14 @@ source by using `$ pip install git+https://github.com/hakonmh/featherstore.git`
 
 ## Requirements
 
+FeatherStore 0.3.0 requires:
+
 * Python >= 3.11
-* Arrow
-* Pandas
-* Polars
-* Numpy
+* pandas >= 2.2.0
+* polars[timezone] >= 1.0.0
+* pyarrow >= 14.0.0
+
+These are installed automatically with `pip install featherstore`.
 
 ## Documentation
 
