@@ -6,7 +6,7 @@ from featherstore._table import _raise_if
 from featherstore._table import _table_utils
 
 
-def can_insert_table(table, df):
+def can_insert_rows(table, df):
     Connection._raise_if_not_connected()
 
     _raise_if.table_not_exists(table)
@@ -31,6 +31,7 @@ def insert_data(df, *, to):
     df = _table_utils.concat_arrow_tables(to, df)
     df = _table_utils.sort_arrow_table(df, by=index_name)
     return df
+
 
 
 def _raise_if_rows_in_old_data(old_df, df, index_name):

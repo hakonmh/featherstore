@@ -6,7 +6,7 @@ from featherstore._table import _table_utils
 from featherstore._table._indexers import ColIndexer
 
 
-def can_add_columns(table, df):
+def can_insert_columns(table, df):
     Connection._raise_if_not_connected()
 
     _raise_if.table_not_exists(table)
@@ -45,11 +45,11 @@ def _raise_if_num_rows_does_not_match(df, table_data):
                          f"length of stored data ({stored_table_length})")
 
 
-def add_columns(old_df, df, index):
+def insert_columns(old_df, df, index):
     # TODO: Use arrow instead
     old_df, df = _format_tables(old_df, df)
     _raise_if_rows_not_in_old_data(old_df, df)
-    df = _add_cols(old_df, df, index)
+    df = _insert_cols(old_df, df, index)
     return df
 
 
@@ -74,7 +74,7 @@ def _raise_if_rows_not_in_old_data(old_df, df):
         raise ValueError("New and old indices doesn't match")
 
 
-def _add_cols(old_df, df, index):
+def _insert_cols(old_df, df, index):
     new_cols = df.columns.tolist()
     cols = old_df.columns.tolist()
     df = old_df.join(df)
@@ -87,6 +87,7 @@ def _add_cols(old_df, df, index):
             index += 1
     df = df[cols]
     return df
+
 
 
 def create_partitions(df, rows_per_partition, partition_names):

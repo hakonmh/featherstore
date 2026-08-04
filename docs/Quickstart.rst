@@ -172,17 +172,17 @@ more features for working with tables.
 
     >> True
 
-One of those features is ``Table.insert()``, which allows for adding extra rows
+One of those features is ``Table.insert_rows()``, which allows for adding extra rows
 into the table.
 
 .. note::
-    You can use ``Table.add_columns()`` to add extra columns.
+    You can use ``Table.insert_columns()`` to add extra columns.
 
 
 .. code-block:: python
 
     df2 = pd.DataFrame(randn(2, 2), index=[4, 2], columns=list("AB"))
-    table.insert(df2)  # Must have the same index and col dtypes as the stored df
+    table.insert_rows(df2)  # Must have the same index and col dtypes as the stored df
     table.read_pandas()
 
     # The data will inserted into its sorted index position
