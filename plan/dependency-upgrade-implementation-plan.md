@@ -28,4 +28,4 @@ Support current Python and dependency versions while following existing project 
 - [x] Fix compatibility issues until green
 - [x] Run flake8 with project settings
 - [x] Verify minimum deps (`pandas==2.2.0`, `polars==1.0.0`, `pyarrow==14.0.0`)
-- [ ] Commit, push, open PR
+- [x] Commit, push, open PR
