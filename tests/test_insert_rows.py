@@ -1,7 +1,8 @@
+import warnings
+
 import pytest
 from .fixtures import *
 
-import warnings
 import pandas as pd
 
 
@@ -26,56 +27,21 @@ def test_insert_table(store, index, row_indices, num_rows, num_cols, num_partiti
     if astype == "pandas[series]" and num_cols != 1:
         pytest.skip("Series input requires a single column")
 
+    # Arrange
     expected_pd = make_table(index, rows=num_rows, cols=num_cols, astype='pandas')
     original_pd, insert_pd = split_table(expected_pd, rows=row_indices)
     expected_pd = sort_table(expected_pd)
-
-    original_df, insert_df, expected = _rows_to_backend(
-        original_pd, insert_pd, expected_pd, astype=astype
-    )
+    original_df, insert_df, expected = convert_row_edit_tables(
+        original_pd, insert_pd, expected_pd, astype=astype)
 
     partition_size = get_partition_size(original_df, num_partitions)
     table = store.select_table(TABLE_NAME)
-    write_index = None if astype.startswith('pandas') else (
-        expected_pd.index.name or DEFAULT_ARROW_INDEX_NAME
-    )
     table.write(original_df, partition_size=partition_size, warnings='ignore',
-                index=write_index)
+                index=write_index_for_astype(expected_pd, astype, original_df=original_df))
+    # Act
     table.insert_rows(insert_df, warnings='ignore')
+    # Assert
     assert_table_equals(table, expected)
-
-
-def _rows_to_backend(original_pd, insert_pd, expected_pd, *, astype):
-    import pyarrow as pa
-
-    backend = astype.split('[')[0]
-    as_series = '[series]' in astype
-    squeeze = as_series or expected_pd.shape[1] == 1
-
-    if backend == 'pandas':
-        original_df = original_pd.squeeze(axis=1) if squeeze else original_pd
-        insert_df = insert_pd.squeeze(axis=1) if (
-            as_series or insert_pd.shape[1] == 1
-        ) else insert_pd
-        expected = expected_pd.squeeze(axis=1) if squeeze else expected_pd
-        return original_df, insert_df, expected
-
-    index_name = expected_pd.index.name or DEFAULT_ARROW_INDEX_NAME
-
-    def _with_index(pdf):
-        arrow = convert_table(pdf, to='arrow')
-        if index_name not in arrow.column_names:
-            arrow = arrow.add_column(0, index_name, pa.array(pdf.index))
-        return format_arrow_table(arrow)
-
-    original_df = _with_index(original_pd)
-    insert_df = _with_index(insert_pd)
-    expected = _with_index(expected_pd)
-    if backend == 'polars':
-        original_df = convert_table(original_df, to='polars', as_series=False)
-        insert_df = convert_table(insert_df, to='polars', as_series=False)
-        expected = convert_table(expected, to='polars', as_series=False)
-    return original_df, insert_df, expected
 
 
 @pytest.mark.parametrize("row_indices", ([-2, -1], [30, 33], [33, 30, 32, 31]))
@@ -84,8 +50,7 @@ def test_default_index_behavior_when_inserting(store, row_indices):
     original_df = make_table(default_index, rows=30, astype='pandas')
     insert_df = make_table(default_index, rows=len(row_indices), astype='pandas')
     insert_df.index = row_indices
-
-    expected = _insert(original_df, insert_df)
+    expected = _expected_after_insert(original_df, insert_df)
 
     partition_size = get_partition_size(original_df, 5)
     table = store.select_table(TABLE_NAME)
@@ -96,12 +61,11 @@ def test_default_index_behavior_when_inserting(store, row_indices):
     assert_table_equals(table, expected)
 
 
-def _insert(df, other):
+def _expected_after_insert(df, other):
     new_df = pd.concat([df, other])
     new_df = sort_table(new_df)
     new_df = convert_table(new_df, to='arrow')
-    new_df = format_arrow_table(new_df)
-    return new_df
+    return format_arrow_table(new_df)
 
 
 def _insert_table_not_supported_type():
@@ -187,12 +151,20 @@ def test_can_insert_rows(store, insert_df, exception):
         table.insert_rows(insert_df)
 
 
-def test_insert_rows_warns_on_unsorted_index(store):
+@pytest.mark.parametrize("warnings_arg", ["warn", "ignore"])
+def test_insert_rows_unsorted_index_warning(store, warnings_arg):
+    # Arrange
     expected = make_table(rows=30, cols=3, astype='pandas')
     original_df, insert_df = split_table(expected, rows=[4, 1, 7])
     insert_df = insert_df.iloc[::-1]
 
     table = store.select_table(TABLE_NAME)
     table.write(original_df, warnings='ignore')
-    with pytest.warns(UserWarning, match="unsorted"):
-        table.insert_rows(insert_df, warnings='warn')
+    # Act and Assert
+    if warnings_arg == "warn":
+        with pytest.warns(UserWarning, match="unsorted"):
+            table.insert_rows(insert_df, warnings=warnings_arg)
+    else:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            table.insert_rows(insert_df, warnings=warnings_arg)

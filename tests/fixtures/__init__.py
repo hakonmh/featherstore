@@ -26,6 +26,12 @@ from .split_table import split_table
 from ._utils import get_index_name
 from .update_values import update_values
 from .assertions import assert_table_equals, assert_df_equals
+from .multi_backend import (
+    convert_col_edit_tables,
+    convert_row_edit_tables,
+    expected_after_update,
+    write_index_for_astype,
+)
 
 DB_PATH = join('tests', '_db')
 STORE_NAME = "test_store"
