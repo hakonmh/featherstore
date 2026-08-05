@@ -413,7 +413,7 @@
 <span id="table"></span><h1>Table<a class="headerlink" href="#module-featherstore.table" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="featherstore.table.Table">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">featherstore.table.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L24-L627"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">featherstore.table.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L24-L652"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A class for saving and loading DataFrames as partitioned Feather files.</p>
 <p>Tables supports several operations that can be done without loading in the
@@ -556,8 +556,26 @@ the columns of <cite>df</cite> are the new values.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="featherstore.table.Table.insert">
+<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L243-L265"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.insert" title="Link to this definition">#</a></dt>
+<dd><p>Insert one or more rows or columns into the current table.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">df</span></code> has the same number of columns as the table, rows are inserted.
+Otherwise, columns are inserted at position <code class="docutils literal notranslate"><span class="pre">idx</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Pandas Series</em>) – The data to be inserted.</p></li>
+<li><p><strong>idx</strong> (<em>int</em><em> or </em><em>Sequence</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – The position(s) to insert new column(s). Only used when inserting columns.
+If a sequence is provided, it must have one position per new column.
+Default is to add columns to the end.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.insert_rows">
-<span class="sig-name descname"><span class="pre">insert_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L243-L276"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.insert_rows" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">insert_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L267-L300"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.insert_rows" title="Link to this definition">#</a></dt>
 <dd><p>Insert one or more rows into the current table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -569,13 +587,14 @@ types as the stored data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.insert_columns">
-<span class="sig-name descname"><span class="pre">insert_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L278-L310"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.insert_columns" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">insert_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L302-L335"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.insert_columns" title="Link to this definition">#</a></dt>
 <dd><p>Insert one or more columns into the current table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Pandas Series</em>) – The data to be inserted. <cite>df</cite> must have the same index as the stored data.</p></li>
-<li><p><strong>idx</strong> (<em>int</em>) – The position to insert the new column(s). Default is to add columns to
+<li><p><strong>idx</strong> (<em>int</em><em> or </em><em>Sequence</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – The position(s) to insert the new column(s). If a sequence is provided,
+it must have one position per new column. Default is to add columns to
 the end.</p></li>
 </ul>
 </dd>
@@ -584,7 +603,7 @@ the end.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.drop">
-<span class="sig-name descname"><span class="pre">drop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L312-L336"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">drop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L337-L361"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop" title="Link to this definition">#</a></dt>
 <dd><p>Drop specified labels from rows or columns.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -604,7 +623,7 @@ or <cite>between</cite>, by default <cite>None</cite></p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.drop_rows">
-<span class="sig-name descname"><span class="pre">drop_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rows</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L338-L372"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop_rows" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">drop_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rows</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L363-L397"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop_rows" title="Link to this definition">#</a></dt>
 <dd><p>Drops specified rows from table</p>
 <p>Same as <cite>Table.drop(rows=value)</cite></p>
 <dl class="field-list simple">
@@ -618,7 +637,7 @@ or <cite>between</cite>, by default <cite>None</cite></p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.drop_columns">
-<span class="sig-name descname"><span class="pre">drop_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L374-L413"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop_columns" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">drop_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L399-L438"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop_columns" title="Link to this definition">#</a></dt>
 <dd><p>Drops specified rows from table</p>
 <p>Same as <cite>Table.drop(cols=value)</cite></p>
 <dl class="field-list simple">
@@ -631,7 +650,7 @@ or <cite>between</cite>, by default <cite>None</cite></p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.rename_columns">
-<span class="sig-name descname"><span class="pre">rename_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L415-L446"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.rename_columns" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">rename_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L440-L471"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.rename_columns" title="Link to this definition">#</a></dt>
 <dd><p>Rename one or more columns.</p>
 <p><cite>rename_columns</cite> supports two different call-syntaxes:</p>
 <ul class="simple">
@@ -651,7 +670,7 @@ to be renamed to new column names</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.columns">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">columns</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L448-L457"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.columns" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">columns</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L473-L482"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.columns" title="Link to this definition">#</a></dt>
 <dd><p>Fetches the names of the table columns</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -665,7 +684,7 @@ to be renamed to new column names</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.reorder_columns">
-<span class="sig-name descname"><span class="pre">reorder_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L475-L484"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.reorder_columns" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">reorder_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L500-L509"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.reorder_columns" title="Link to this definition">#</a></dt>
 <dd><p>Reorder the current columns</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -677,7 +696,7 @@ same as the column names used in the table.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.index">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">index</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L486-L496"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.index" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">index</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L511-L521"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.index" title="Link to this definition">#</a></dt>
 <dd><p>Fetches the table index</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -688,7 +707,7 @@ same as the column names used in the table.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.astype">
-<span class="sig-name descname"><span class="pre">astype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L498-L536"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.astype" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">astype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L523-L561"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.astype" title="Link to this definition">#</a></dt>
 <dd><p>Change data type of one or more columns.</p>
 <p><cite>astype</cite> supports two different call-syntaxes:</p>
 <ul class="simple">
@@ -708,7 +727,7 @@ dict mapping columns to new column data types.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.rename_table">
-<span class="sig-name descname"><span class="pre">rename_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L538-L552"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.rename_table" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">rename_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L563-L577"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.rename_table" title="Link to this definition">#</a></dt>
 <dd><p>Renames the current table</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -719,13 +738,13 @@ dict mapping columns to new column data types.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.drop_table">
-<span class="sig-name descname"><span class="pre">drop_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L554-L560"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop_table" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">drop_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L579-L585"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop_table" title="Link to this definition">#</a></dt>
 <dd><p>Deletes the current table</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.create_snapshot">
-<span class="sig-name descname"><span class="pre">create_snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L562-L572"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.create_snapshot" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">create_snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L587-L597"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.create_snapshot" title="Link to this definition">#</a></dt>
 <dd><p>Creates a compressed backup of the table.</p>
 <p>The table can later be restored by using <cite>snapshot.restore_table()</cite>.</p>
 <dl class="field-list simple">
@@ -737,7 +756,7 @@ dict mapping columns to new column data types.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.repartition">
-<span class="sig-name descname"><span class="pre">repartition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_partition_size</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L574-L590"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.repartition" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">repartition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_partition_size</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L599-L615"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.repartition" title="Link to this definition">#</a></dt>
 <dd><p>Repartitions a table so that each partition is <cite>new_partition_size</cite> big.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -749,7 +768,7 @@ disables partitioning</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.shape">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">shape</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L592-L603"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.shape" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">shape</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L617-L628"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.shape" title="Link to this definition">#</a></dt>
 <dd><p>Fetches the shape of the stored table as <cite>(rows, columns)</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -763,7 +782,7 @@ disables partitioning</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.partition_size">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">partition_size</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L605-L614"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.partition_size" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">partition_size</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L630-L639"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.partition_size" title="Link to this definition">#</a></dt>
 <dd><p>Fetches the table partition size in bytes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -777,12 +796,12 @@ disables partitioning</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.exists">
-<span class="sig-name descname"><span class="pre">exists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L616-L617"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.exists" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">exists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L641-L642"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.exists" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.name">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L619-L622"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.name" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L644-L647"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.name" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -843,6 +862,7 @@ disables partitioning</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.write"><code class="docutils literal notranslate"><span class="pre">Table.write()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.append"><code class="docutils literal notranslate"><span class="pre">Table.append()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.update"><code class="docutils literal notranslate"><span class="pre">Table.update()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.insert"><code class="docutils literal notranslate"><span class="pre">Table.insert()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.insert_rows"><code class="docutils literal notranslate"><span class="pre">Table.insert_rows()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.insert_columns"><code class="docutils literal notranslate"><span class="pre">Table.insert_columns()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.table.Table.drop"><code class="docutils literal notranslate"><span class="pre">Table.drop()</span></code></a></li>

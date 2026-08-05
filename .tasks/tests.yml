@@ -1,5 +1,8 @@
 version: '3'
 
+vars:
+  UNIT_MARKER: not integration and not e2e
+
 tasks:
   all:
     desc: Run all tests
@@ -11,7 +14,7 @@ tasks:
   unit:
     desc: Run unit tests
     cmds:
-      - cmd /c uv run pytest -m unit tests/
+      - cmd /c uv run pytest -m "{{.UNIT_MARKER}}" tests/
   integration:
     desc: Run integration tests
     cmds:

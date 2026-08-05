@@ -181,20 +181,21 @@ more features for working with tables.
 
     >> True
 
-One of those features is ``Table.insert_rows()``, which allows for adding extra rows
-into the table.
+One of those features is ``Table.insert()``, which inserts rows or columns
+depending on the shape of the input data. If the input has the same number of
+columns as the table, rows are inserted; otherwise columns are inserted.
 
-.. note::
-    You can use ``Table.insert_columns()`` to add extra columns.
+You can also call ``Table.insert_rows()`` or ``Table.insert_columns()`` directly
+when you want to be explicit about the operation.
 
 
 .. code-block:: python
 
     df2 = pd.DataFrame(randn(2, 2), index=[4, 2], columns=list("AB"))
-    table.insert_rows(df2)  # Must have the same index and col dtypes as the stored df
+    table.insert(df2)  # same number of columns -> inserts rows
     table.read_pandas()
 
-    # The data will inserted into its sorted index position
+    # The data will be inserted into its sorted index position
     >>        A         B
     1 -0.041727  0.957139
     2  2.163615 -0.708871
@@ -202,6 +203,19 @@ into the table.
     4 -1.263981 -0.961670
     5 -0.353684  1.550073
     6  1.275938  1.054702
+
+To add columns, pass data with fewer columns than the table. Use ``idx`` to
+control where the new column(s) are placed. A single integer inserts a block
+of columns at that position; a sequence places each column individually.
+
+.. code-block:: python
+
+    index = table.read_pandas().index
+    new_cols = pd.DataFrame(randn(6, 2), index=index, columns=['C', 'D'])
+    table.insert(new_cols, idx=[1, 3])
+
+    # Append a single column to the end
+    table.insert_columns(pd.DataFrame({'E': randn(6)}, index=index), idx=-1)
 
 Other features include ``Table.update()`` and ``Table.drop()`` which updates and deletes data.
 

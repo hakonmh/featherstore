@@ -14,7 +14,12 @@ Changelog
 
 Enhancements:
 
+* Re-added `Table.insert()` as a convenience method that dispatches to
+  `insert_rows()` or `insert_columns()` based on the number of columns in
+  the input data
 * Export `database_exists()` from the top-level `featherstore` package
+* `Table.insert_columns()` and `Table.insert()` accept a sequence of column
+  positions for `idx` (one position per new column)
 * Partition writes use Arrow IPC with atomic replace (avoids corrupting
   memory-mapped files on overwrite)
 * Pandas metadata generation updated for pandas 2.2 / 3.x string and float
@@ -22,8 +27,8 @@ Enhancements:
   `sort_indices` so categoricals keep unused categories
 * Snapshot extraction passes `filter='data'` on Python 3.12+
 * Documentation updated for 0.3.0 (`rename_store(..., to=...)`,
-  `table.exists()`, `insert_rows()`, `insert_columns()`, and dependency
-  requirements)
+  `table.exists()`, `insert()`, `insert_rows()`, `insert_columns()`, and
+  dependency requirements)
 * Migrated packaging to `pyproject.toml`; removed `setup.py`,
   `requirements.txt`, `pytest.ini`, and `.flake8` (pytest and flake8 config
   now live in `pyproject.toml`)

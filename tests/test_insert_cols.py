@@ -26,6 +26,41 @@ def test_insert_cols(store, index, col_names, col_idx):
     assert_table_equals(table, expected)
 
 
+@pytest.mark.parametrize(["index", "col_names", "col_indices"],
+                         [[unsorted_int_index, ['n0', 'n1'], [1, 3]],
+                          [continuous_datetime_index, ['n0'], [2]],
+                          [unsorted_string_index, ['n0', 'n1', 'n2'], [0, 2, 4]],
+                          [default_index, ['n0'], [0]]
+                          ]
+                         )
+def test_insert_cols_with_idx_sequence(store, index, col_names, col_indices):
+    # Arrange
+    num_cols = 5 + len(col_names)
+    df = make_table(index=index, cols=num_cols, astype="pandas")
+    expected = _build_expected_with_col_positions(df, col_names, col_indices)
+    original_df, new_cols = split_table(expected, cols=col_names)
+    expected = sort_table(expected)
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size, warnings='ignore')
+    # Act
+    table.insert_columns(new_cols, idx=col_indices)
+    # Assert
+    assert_table_equals(table, expected)
+
+
+def _build_expected_with_col_positions(df, col_names, col_indices):
+    cols = df.columns.tolist()
+    new_col_source = cols[-len(col_names):]
+    base_cols = cols[:-len(col_names)]
+    df = df.rename(columns=dict(zip(new_col_source, col_names)))
+    expected = df[base_cols].copy()
+    for col_name, col_idx in zip(col_names, col_indices):
+        expected.insert(col_idx, col_name, df[col_name])
+    return expected
+
+
 def _change_cols(df, col_names, col_idx):
     num_cols = len(col_names)
     cols = df.columns.tolist()
@@ -79,6 +114,18 @@ def _non_matching_index_values():
     return df
 
 
+def _two_new_cols():
+    df = make_table(cols=2, astype='pandas')
+    df.columns = ['new_c0', 'new_c1']
+    return df
+
+
+def _one_new_col():
+    df = make_table(cols=1, astype='pandas')
+    df.columns = ['new_c1']
+    return df
+
+
 @pytest.mark.parametrize(
     ("insert_cols_df", "exception"),
     [
@@ -109,3 +156,31 @@ def test_can_insert_cols(store, insert_cols_df, exception):
     # Act and Assert
     with pytest.raises(exception):
         table.insert_columns(insert_cols_df)
+
+
+@pytest.mark.parametrize(
+    ("insert_cols_df", "idx", "exception"),
+    [
+        (_two_new_cols, [0], ValueError),
+        (_two_new_cols, [0, 1, 2], ValueError),
+        (_one_new_col, ['a'], TypeError),
+        (_one_new_col, [1.5], TypeError),
+        (_one_new_col, 1.5, TypeError),
+    ],
+    ids=[
+        "_idx_too_short",
+        "_idx_too_long",
+        "_idx_non_int_element",
+        "_idx_non_int_in_sequence",
+        "_idx_non_int_scalar",
+    ]
+)
+def test_can_insert_cols_with_invalid_idx(store, insert_cols_df, idx, exception):
+    # Arrange
+    insert_cols_df = insert_cols_df()
+    original_df = make_table(cols=5, astype='pandas')
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df)
+    # Act and Assert
+    with pytest.raises(exception):
+        table.insert_columns(insert_cols_df, idx=idx)

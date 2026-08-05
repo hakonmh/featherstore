@@ -81,7 +81,16 @@ store.read_pandas('example_table')
 new_dates = pd.date_range("2021-01-06", periods=1)
 df1 = pd.DataFrame(randn(1, 4), index=new_dates, columns=list("ABCD"))
 store.append_table('example_table', df1)
-# It also supports querying parts of the data
+
+>>> # Insert rows or columns via Table.insert() (dispatches on column count)
+table = store.select_table('example_table')
+new_rows = pd.DataFrame(randn(1, 4), index=[pd.Timestamp("2021-01-07")], columns=list("ABCD"))
+table.insert(new_rows)  # same number of columns -> inserts rows
+
+new_col = pd.DataFrame({'E': randn(7)}, index=table.read_pandas().index)
+table.insert(new_col, idx=4)  # fewer columns -> inserts column at position 4
+
+>>> # It also supports querying parts of the data
 store.read_pandas('example_table', rows={'after': '2021-01-05'}, cols=['D', 'A'])
 
                    D         A

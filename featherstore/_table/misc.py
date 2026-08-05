@@ -39,3 +39,11 @@ def _raise_if_cols_doesnt_match(cols, table_data):
     cols_doesnt_match = set(stored_cols) != set(cols)
     if cols_doesnt_match:
         raise ValueError("The columns provided doesn't match the columns stored")
+
+
+def num_cols_matches_table_cols(data, table_data):
+    num_cols = data.shape[1] if data.ndim == 2 else 1
+    index_name = table_data["index_name"]
+    stored_cols = table_data["columns"]
+    num_table_cols = sum(col != index_name for col in stored_cols)
+    return num_cols == num_table_cols
