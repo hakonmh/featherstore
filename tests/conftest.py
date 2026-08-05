@@ -29,7 +29,7 @@ class SetupDB:
             store = fs.Store(store_name)
             for table in store.list_tables():
                 store.drop_table(table)
-            fs.drop_store(store_name, errors='ignore')
+            fs.drop_store(store_name, errors="ignore")
         fs.disconnect()
         shutil.rmtree(DB_PATH, ignore_errors=False)
 

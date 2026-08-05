@@ -1,4 +1,4 @@
-from .fixtures import *
+from .fixtures import DB_PATH
 
 import os
 import shutil
@@ -115,4 +115,4 @@ def test_list_stores(create_db, connect_to_db):
     # Act
     stores = fs.list_stores(like="sto%")
     # Assert
-    assert stores == ["stocks", 'store']
+    assert stores == ["stocks", "store"]

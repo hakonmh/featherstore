@@ -5,19 +5,18 @@ from featherstore import _utils
 METADATA_FOLDER_NAME = ".metadata"
 
 
-class Metadata():
-
+class Metadata:
     def __init__(self, path, file_name):
         _can_init_metadata(path, file_name)
         self._metadata_folder = os.path.join(path, METADATA_FOLDER_NAME)
-        self._db_path = os.path.join(self._metadata_folder, file_name) + '.db'
+        self._db_path = os.path.join(self._metadata_folder, file_name) + ".db"
         self.index = KeyIndex(self._metadata_folder, file_name)
 
     def create(self):
         if not os.path.exists(self._metadata_folder):
             os.makedirs(self._metadata_folder)
             _utils.mark_as_hidden(self._metadata_folder)
-            _utils.touch(self._db_path, flag='ab')
+            _utils.touch(self._db_path, flag="ab")
 
     def write(self, new_data: dict):
         _can_write_metadata(new_data)
@@ -74,9 +73,8 @@ class Metadata():
 
 
 class KeyIndex:
-
     def __init__(self, metadata_folder, file_name):
-        self._path = os.path.join(metadata_folder, file_name) + '.index'
+        self._path = os.path.join(metadata_folder, file_name) + ".index"
         if os.path.exists(self._path):
             self._data, self._db_size = self._read_data()
         else:
@@ -107,12 +105,12 @@ class KeyIndex:
         return len(self._data)
 
     def _write_data(self):
-        with open(self._path, 'wb') as f:
+        with open(self._path, "wb") as f:
             pickle.dump(self._data, f)
             pickle.dump(self._db_size, f)
 
     def _read_data(self):
-        with open(self._path, 'rb') as f:
+        with open(self._path, "rb") as f:
             data = pickle.load(f)
             size = pickle.load(f)
         return data, size

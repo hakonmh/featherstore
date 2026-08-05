@@ -1,6 +1,8 @@
 import itertools
 from string import ascii_letters, ascii_lowercase
 
+from decimal import Decimal
+
 import pandas as pd
 import polars as pl
 import pyarrow as pa
@@ -9,11 +11,15 @@ import numpy as np
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from . import _utils
 
-RANDS_CHARS = np.array(list(ascii_letters + ' '))
+RANDS_CHARS = np.array(list(ascii_letters + " "))
+TIME32_INDEX_NAME = "Time"
 
 
-def make_table(index=None, rows=30, cols=5, *, astype="arrow", dtype=None, **kwargs):
-    df = _make_df(rows, cols, dtype=dtype)
+def make_table(
+    index=None, rows=30, cols=5, *, astype="arrow", dtype=None, seed=None, **kwargs
+):
+    rng = np.random.default_rng(seed)
+    df = _make_df(rows, cols, dtype=dtype, rng=rng)
     df = pd.DataFrame.from_dict(df)
     df = _utils.convert_object_cols_to_string(df)
     if index == default_index:
@@ -24,7 +30,7 @@ def make_table(index=None, rows=30, cols=5, *, astype="arrow", dtype=None, **kwa
     return df
 
 
-def _make_df(rows, cols, dtype=None):
+def _make_df(rows, cols, dtype=None, rng=None):
     col_dtypes = get_col_dtypes()
 
     if dtype:
@@ -35,65 +41,80 @@ def _make_df(rows, cols, dtype=None):
     data = dict()
     for col in range(cols):
         col_dtype = next(col_dtypes)
-        data[f"c{col}"] = col_dtype(rows)
+        data[f"c{col}"] = col_dtype(rows, rng)
 
     return data
 
 
 def get_col_dtypes():
     COL_DTYPES = {
-        'string': _make_string_col,
-        'float': _make_float_col,
-        'int': _make_int_col,
-        'datetime': _make_datetime_col,
-        'bool': _make_bool_column,
-        'uint': _make_uint_col,
-        'categorical': _make_categorical_cols,
+        "string": _make_string_col,
+        "float": _make_float_col,
+        "int": _make_int_col,
+        "datetime": _make_datetime_col,
+        "bool": _make_bool_column,
+        "uint": _make_uint_col,
+        "categorical": _make_categorical_cols,
     }
     return COL_DTYPES
 
 
-def _make_float_col(rows):
-    return np.random.random(size=rows)
+def _make_float_col(rows, rng=None):
+    rng = np.random.default_rng() if rng is None else rng
+    return rng.random(size=rows)
 
 
-def _make_uint_col(rows):
-    return np.random.randint(0, 200000, size=rows)
+def _make_uint_col(rows, rng=None):
+    rng = np.random.default_rng() if rng is None else rng
+    return rng.integers(0, 200000, size=rows)
 
 
-def _make_int_col(rows):
-    return np.random.randint(-100000, 100000, size=rows)
+def _make_int_col(rows, rng=None):
+    rng = np.random.default_rng() if rng is None else rng
+    return rng.integers(-100000, 100000, size=rows)
 
 
-def _make_categorical_cols(rows):
-    return pd.cut(np.random.random(size=rows), (-np.inf, -0.5, 0.5, np.inf), labels=['low', 'med', 'high'])
+def _make_categorical_cols(rows, rng=None):
+    rng = np.random.default_rng() if rng is None else rng
+    return pd.cut(
+        rng.random(size=rows),
+        (-np.inf, -0.5, 0.5, np.inf),
+        labels=["low", "med", "high"],
+    )
 
 
-def _make_datetime_col(rows):
+def _make_datetime_col(rows, rng=None):
+    rng = np.random.default_rng() if rng is None else rng
     start = -852076800  # 1943-01-01 in seconds relative to epoch
     end = 1640995200  # 2022-01-01 in seconds relative to epoch
-    times_since_epoch = np.random.randint(start, end, size=rows, dtype=np.int32)
-    dtime = times_since_epoch.astype('datetime64[ns]')
+    times_since_epoch = rng.integers(start, end, size=rows, dtype=np.int32)
+    dtime = times_since_epoch.astype("datetime64[ns]")
     return dtime
 
 
-def _make_string_col(rows):
+def _make_string_col(rows, rng=None):
+    rng = np.random.default_rng() if rng is None else rng
     STR_LENGTH = 5
-    df = (np.random.choice(RANDS_CHARS, size=STR_LENGTH * rows)
-          .view((np.str_, STR_LENGTH)).reshape(rows))
+    df = (
+        rng.choice(RANDS_CHARS, size=STR_LENGTH * rows)
+        .view((np.str_, STR_LENGTH))
+        .reshape(rows)
+    )
     return df
 
 
-def _make_bool_column(rows):
-    return np.random.randint(0, 2, size=rows, dtype=bool)
+def _make_bool_column(rows, rng=None):
+    rng = np.random.default_rng() if rng is None else rng
+    return rng.integers(0, 2, size=rows, dtype=bool)
 
 
 def _convert_df_to(df, *, to):
     astype = to
-    if not astype.startswith('pandas'):
+    if not astype.startswith("pandas"):
         df = pa.Table.from_pandas(df)
         if not __is_default_index(df):
             df = _utils.make_index_first_column(df)
+        df = _cast_time32_index_if_needed(df)
     if astype.startswith("polars"):
         df = pl.from_arrow(df)
 
@@ -140,7 +161,7 @@ def sorted_string_index(rows):
 def sorted_datetime_index(rows):
     index = __make_unique_datetime_col(rows)
     index = pd.Index(index)
-    index.name = 'Date'
+    index.name = "Date"
     return index.sort_values()
 
 
@@ -148,7 +169,7 @@ def __make_unique_datetime_col(rows):
     start = -852076800  # 1943-01-01 in seconds relative to epoch
     end = 1640995200  # 2022-01-01 in seconds relative to epoch
     times_since_epoch = __random_unique_numbers(start, end, rows)
-    dtime = times_since_epoch.astype('datetime64[s]')
+    dtime = times_since_epoch.astype("datetime64[s]")
     return dtime
 
 
@@ -161,7 +182,7 @@ def __random_unique_numbers(start, end, rows):
 def continuous_datetime_index(rows):
     index = pd.date_range(start="2021-01-01", periods=rows, freq="D")
     index = pd.Index(index)
-    index.name = 'Date'
+    index.name = "Date"
     return index
 
 
@@ -200,5 +221,66 @@ def unsorted_string_index(rows):
 def unsorted_datetime_index(rows):
     index = __make_unique_datetime_col(rows)
     index = pd.Index(index)
-    index.name = 'Date'
+    index.name = "Date"
     return index
+
+
+def sorted_timedelta_index(rows):
+    index = pd.timedelta_range("1 day", periods=rows, freq="D")
+    index = pd.Index(index, name="Timedelta")
+    return index.sort_values()
+
+
+def sorted_time32_index(rows):
+    milliseconds = [(idx + 1) * 3_600_000 for idx in range(rows)]
+    index = pd.Index(
+        [pd.to_datetime(ms, unit="ms").time() for ms in milliseconds],
+        name=TIME32_INDEX_NAME,
+    )
+    return index.sort_values()
+
+
+def sorted_date32_index(rows):
+    index = pd.date_range("2021-01-01", periods=rows, freq="D").date
+    index = pd.Index(index, name="Date")
+    return index.sort_values()
+
+
+def sorted_float_index(rows):
+    index = pd.Index(np.arange(rows, dtype=float) + 0.5, name="Float")
+    return index.sort_values()
+
+
+def sorted_uint_index(rows):
+    index = pd.Index(np.arange(rows, dtype=np.uint32) + 100, name="UInt")
+    return index.sort_values()
+
+
+def sorted_decimal_index(rows):
+    index = pd.Index([Decimal(f"{idx + 1}.1") for idx in range(rows)], name="Decimal")
+    return index.sort_values()
+
+
+def sorted_binary_index(rows):
+    index = pd.Index(
+        [bytes(f"{idx:02d}", "ascii") for idx in range(rows)], name="Binary"
+    )
+    return index.sort_values()
+
+
+def sorted_large_string_index(rows):
+    index = pd.Index(
+        pd.array([f"idx_{idx:04d}" for idx in range(rows)], dtype="string"),
+        name="LargeString",
+    )
+    return index.sort_values()
+
+
+def _cast_time32_index_if_needed(df):
+    index_name = df.schema.pandas_metadata["index_columns"][0]
+    if index_name != TIME32_INDEX_NAME:
+        return df
+
+    col_idx = df.column_names.index(index_name)
+    index_col = df[index_name].cast(pa.time32("ms"))
+    return df.set_column(col_idx, index_name, index_col)

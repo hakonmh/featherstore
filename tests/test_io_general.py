@@ -1,18 +1,37 @@
 import pytest
-from .fixtures import *
+from .fixtures import (
+    TABLE_NAME,
+    assert_df_equals,
+    assert_table_equals,
+    default_index,
+    get_index_name,
+    get_partition_size,
+    make_table,
+    sort_table,
+    sorted_binary_index,
+    sorted_date32_index,
+    sorted_datetime_index,
+    sorted_decimal_index,
+    sorted_float_index,
+    sorted_large_string_index,
+    sorted_time32_index,
+    sorted_timedelta_index,
+    sorted_uint_index,
+    unsorted_int_index,
+    unsorted_string_index,
+)
 
 from contextlib import nullcontext
 import pandas as pd
-import numpy as np
+import pyarrow as pa
 
 
 @pytest.mark.parametrize("astype", ["pandas[series]", "polars[series]", "arrow"])
 @pytest.mark.parametrize("cols", [5, 1])
-@pytest.mark.parametrize("index",
-                         [default_index,
-                          unsorted_int_index,
-                          sorted_datetime_index,
-                          unsorted_string_index])
+@pytest.mark.parametrize(
+    "index",
+    [default_index, unsorted_int_index, sorted_datetime_index, unsorted_string_index],
+)
 def test_basic_io(store, index, cols, astype):
     # Arrange
     original_df = make_table(index, cols=cols, astype=astype)
@@ -22,8 +41,38 @@ def test_basic_io(store, index, cols, astype):
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
     # Act
-    table.write(original_df, index=index_name, partition_size=partition_size,
-                warnings='ignore')
+    table.write(
+        original_df, index=index_name, partition_size=partition_size, warnings="ignore"
+    )
+    # Assert
+    assert_table_equals(table, expected)
+
+
+EXOTIC_INDEX_ASTYPES = [
+    (sorted_timedelta_index, "arrow"),
+    (sorted_time32_index, "arrow"),
+    (sorted_date32_index, "pandas[series]"),
+    (sorted_float_index, "pandas[series]"),
+    (sorted_uint_index, "pandas[series]"),
+    (sorted_decimal_index, "pandas[series]"),
+    (sorted_binary_index, "pandas[series]"),
+    (sorted_large_string_index, "arrow"),
+]
+
+
+@pytest.mark.parametrize(["index", "astype"], EXOTIC_INDEX_ASTYPES)
+def test_basic_io_with_exotic_indices(store, index, astype):
+    # Arrange
+    original_df = make_table(index, cols=5, astype=astype)
+    index_name = get_index_name(original_df)
+    expected = sort_table(original_df, by=index_name)
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    # Act
+    table.write(
+        original_df, index=index_name, partition_size=partition_size, warnings="ignore"
+    )
     # Assert
     assert_table_equals(table, expected)
 
@@ -34,12 +83,12 @@ def test_store_io(store, astype, mmap):
     # Arrange
     original_df = make_table(astype=astype)
     # Act
-    store.write_table(TABLE_NAME, original_df, warnings='ignore')
-    if astype.startswith('pandas'):
+    store.write_table(TABLE_NAME, original_df, warnings="ignore")
+    if astype.startswith("pandas"):
         df = store.read_pandas(TABLE_NAME, mmap=mmap)
-    elif astype.startswith('polars'):
+    elif astype.startswith("polars"):
         df = store.read_polars(TABLE_NAME, mmap=mmap)
-    elif astype == 'arrow':
+    elif astype == "arrow":
         df = store.read_arrow(TABLE_NAME, mmap=mmap)
     # Assert
     assert_df_equals(df, original_df)
@@ -58,25 +107,28 @@ def test_empty_df_io(store, astype):
 
 
 def _invalid_table_dtype():
-    df = make_table(astype='pandas')
+    df = make_table(astype="pandas")
     args = [TABLE_NAME, df.values]
     kwargs = dict()
     return args, kwargs
 
 
 def _invalid_index_dtype():
-    df = make_table(astype='pandas')
-    index = np.random.random(size=30)
-    df = df.set_index(index)
+    df = make_table(astype="arrow", rows=15)
+    index = pa.array(
+        [{"a": idx} for idx in range(len(df))],
+        type=pa.struct([("a", pa.int64())]),
+    )
+    df = df.add_column(0, "idx", index)
 
     args = [TABLE_NAME, df]
-    kwargs = dict()
+    kwargs = dict(index="idx")
     return args, kwargs
 
 
 def _duplicate_index():
-    df = make_table(astype='pandas', rows=15)
-    df1 = make_table(astype='pandas', rows=15)
+    df = make_table(astype="pandas", rows=15)
+    df1 = make_table(astype="pandas", rows=15)
     df = pd.concat([df, df1])
 
     args = [TABLE_NAME, df]
@@ -85,17 +137,17 @@ def _duplicate_index():
 
 
 def _index_not_in_cols():
-    df = make_table(cols=2, astype='polars')
-    df.column_names = ['c0', 'c1']
+    df = make_table(cols=2, astype="polars")
+    df.column_names = ["c0", "c1"]
 
     args = [TABLE_NAME, df]
-    kwargs = dict(index='c2')
+    kwargs = dict(index="c2")
     return args, kwargs
 
 
 def _invalid_col_names_dtype():
-    df = make_table(astype='pandas')
-    df.columns = ['c0', 'c1', 'c2', 3, 'c4']
+    df = make_table(astype="pandas")
+    df.columns = ["c0", "c1", "c2", 3, "c4"]
 
     args = [TABLE_NAME, df]
     kwargs = dict()
@@ -103,8 +155,8 @@ def _invalid_col_names_dtype():
 
 
 def _duplicate_col_names():
-    df = make_table(cols=2, astype='pandas')
-    df.columns = ['c0', 'c0']
+    df = make_table(cols=2, astype="pandas")
+    df.columns = ["c0", "c0"]
 
     args = [TABLE_NAME, df]
     kwargs = dict()
@@ -114,14 +166,14 @@ def _duplicate_col_names():
 def _invalid_warnings_arg():
     df = make_table()
     args = [TABLE_NAME, df]
-    kwargs = dict(warnings='abcd')
+    kwargs = dict(warnings="abcd")
     return args, kwargs
 
 
 def _invalid_errors_arg():
     df = make_table()
     args = [TABLE_NAME, df]
-    kwargs = dict(errors='abcd')
+    kwargs = dict(errors="abcd")
     return args, kwargs
 
 
@@ -165,10 +217,10 @@ def test_can_write(store, arguments, exception):
         store.write_table(*arguments, **kwargs)
 
 
-@pytest.mark.parametrize(("errors", "exception"),
-                         [('raise', pytest.raises(FileExistsError)),
-                          ('ignore', nullcontext())]
-                         )
+@pytest.mark.parametrize(
+    ("errors", "exception"),
+    [("raise", pytest.raises(FileExistsError)), ("ignore", nullcontext())],
+)
 def test_trying_to_overwrite_existing_table(store, errors, exception):
     # Arrange
     table = store.select_table(TABLE_NAME)
@@ -181,13 +233,13 @@ def test_trying_to_overwrite_existing_table(store, errors, exception):
 
 
 INVALID_TABLE_NAME_DTYPE = [21, dict()]
-INVALID_ROW_DTYPE = [TABLE_NAME, {'rows': 14}]
-ROW_ELEMENTS_NOT_ALL_SAME_DTYPE = [TABLE_NAME, {'rows': [5, 'ab', 7.13]}]
-ROWS_NOT_SAME_DTYPE_AS_INDEX = [TABLE_NAME, {'rows': ['index', 'not', 'string']}]
-ROWS_NOT_IN_TABLE = [TABLE_NAME, {'rows': [0, 1, 3334]}]
-INVALID_COL_DTYPE = [TABLE_NAME, {'cols': 14}]
-INVALID_COL_ELEMENTS_DTYPE = [TABLE_NAME, {'cols': ['c1', 'C2', 12]}]
-COLS_NOT_IN_TABLE = [TABLE_NAME, {'cols': ['c0', 'c1', 'c3334']}]
+INVALID_ROW_DTYPE = [TABLE_NAME, {"rows": 14}]
+ROW_ELEMENTS_NOT_ALL_SAME_DTYPE = [TABLE_NAME, {"rows": [5, "ab", 7.13]}]
+ROWS_NOT_SAME_DTYPE_AS_INDEX = [TABLE_NAME, {"rows": ["index", "not", "string"]}]
+ROWS_NOT_IN_TABLE = [TABLE_NAME, {"rows": [0, 1, 3334]}]
+INVALID_COL_DTYPE = [TABLE_NAME, {"cols": 14}]
+INVALID_COL_ELEMENTS_DTYPE = [TABLE_NAME, {"cols": ["c1", "C2", 12]}]
+COLS_NOT_IN_TABLE = [TABLE_NAME, {"cols": ["c0", "c1", "c3334"]}]
 
 
 @pytest.mark.parametrize(

@@ -82,7 +82,9 @@ class Table:
         partition_names = read.get_partition_names(self, rows)
         df = read.read_table(self, partition_names, cols, rows, mmap=mmap)
 
-        if has_default_index and (rows.values() is None or common.index_is_default(df[index_name])):
+        if has_default_index and (
+            rows.values() is None or common.index_is_default(df[index_name])
+        ):
             df = read.drop_default_index(df, index_name)
 
         return df
@@ -135,9 +137,16 @@ class Table:
         df = read.convert_table_to_polars(df)
         return df
 
-    def write(self, df, /, index=None, *,
-              partition_size=DEFAULT_PARTITION_SIZE,
-              errors="raise", warnings="warn"):
+    def write(
+        self,
+        df,
+        /,
+        index=None,
+        *,
+        partition_size=DEFAULT_PARTITION_SIZE,
+        errors="raise",
+        warnings="warn",
+    ):
         """Writes a DataFrame to the current table.
 
         The DataFrame index column, if provided, must be either of type int, str,
@@ -167,8 +176,9 @@ class Table:
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
 
         partitions = write.create_partitions(df, rows_per_partition)
-        metadata = write.generate_metadata(partitions, partition_size,
-                                           rows_per_partition)
+        metadata = write.generate_metadata(
+            partitions, partition_size, rows_per_partition
+        )
         self.drop_table()
         self._create_table()
         write.write_metadata(self, metadata)
@@ -201,11 +211,13 @@ class Table:
         last_partition = read.read_table(self, [last_partition_name])
 
         df = append.append_data(df, to=last_partition)
-        partitions = append.create_partitions(df, rows_per_partition,
-                                              last_partition_name)
+        partitions = append.create_partitions(
+            df, rows_per_partition, last_partition_name
+        )
 
-        metadata = common.update_metadata(self, partitions, [last_partition_name],
-                                          has_default_index=has_default_index)
+        metadata = common.update_metadata(
+            self, partitions, [last_partition_name], has_default_index=has_default_index
+        )
 
         write.write_metadata(self, metadata)
         write.write_partitions(partitions, self._table_path)
@@ -278,19 +290,20 @@ class Table:
 
         rows = common.format_rows_arg(df.index, to_dtype=index_type)
 
-        df = common.format_table(df, index_name=index_name, warnings='ignore')
+        df = common.format_table(df, index_name=index_name, warnings="ignore")
         has_default_index = insert_rows.has_still_default_index(self, df)
 
         partition_names = read.get_partition_names(self, rows)
         stored_df = read.read_table(self, partition_names)
 
         df = insert_rows.insert_data(df, to=stored_df)
-        partitions = insert_rows.create_partitions(df, rows_per_partition,
-                                                   partition_names,
-                                                   all_partition_names)
+        partitions = insert_rows.create_partitions(
+            df, rows_per_partition, partition_names, all_partition_names
+        )
 
-        metadata = common.update_metadata(self, partitions, partition_names,
-                                          has_default_index=has_default_index)
+        metadata = common.update_metadata(
+            self, partitions, partition_names, has_default_index=has_default_index
+        )
 
         write.write_metadata(self, metadata)
         write.write_partitions(partitions, self._table_path)
@@ -320,12 +333,17 @@ class Table:
 
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
         columns = df.column_names
-        partitions = insert_cols.create_partitions(df, rows_per_partition,
-                                                   partition_names)
+        partitions = insert_cols.create_partitions(
+            df, rows_per_partition, partition_names
+        )
 
-        metadata = common.update_metadata(self, partitions, partition_names,
-                                          rows_per_partition=rows_per_partition,
-                                          columns=columns)
+        metadata = common.update_metadata(
+            self,
+            partitions,
+            partition_names,
+            rows_per_partition=rows_per_partition,
+            columns=columns,
+        )
 
         write.write_metadata(self, metadata)
         write.write_partitions(partitions, self._table_path)
@@ -384,8 +402,9 @@ class Table:
         partitions = drop.create_partitions(df, rows_per_partition, partition_names)
 
         has_default_index = drop.has_still_default_index(self, rows)
-        metadata = common.update_metadata(self, partitions, partition_names,
-                                          has_default_index=has_default_index)
+        metadata = common.update_metadata(
+            self, partitions, partition_names, has_default_index=has_default_index
+        )
 
         partitions_to_drop = drop.get_partitions_to_drop(partitions, partition_names)
         drop.drop_partitions(self, partitions_to_drop)
@@ -424,9 +443,13 @@ class Table:
         partitions = drop.create_partitions(df, rows_per_partition, partition_names)
 
         columns = df.column_names
-        metadata = common.update_metadata(self, partitions, partition_names,
-                                          rows_per_partition=rows_per_partition,
-                                          columns=columns)
+        metadata = common.update_metadata(
+            self,
+            partitions,
+            partition_names,
+            rows_per_partition=rows_per_partition,
+            columns=columns,
+        )
 
         partitions_to_drop = drop.get_partitions_to_drop(partitions, partition_names)
         drop.drop_partitions(self, partitions_to_drop)
@@ -547,8 +570,9 @@ class Table:
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
         partitions = astype.create_partitions(df, rows_per_partition, partition_names)
 
-        metadata = common.update_metadata(self, partitions, partition_names,
-                                          rows_per_partition=rows_per_partition)
+        metadata = common.update_metadata(
+            self, partitions, partition_names, rows_per_partition=rows_per_partition
+        )
 
         partitions_to_drop = astype.get_partitions_to_drop(partitions, partition_names)
         drop.drop_partitions(self, partitions_to_drop)
@@ -590,7 +614,7 @@ class Table:
         path : str
             The path to the snapshot archive.
         """
-        _create_snapshot(path, self._table_path, 'table')
+        _create_snapshot(path, self._table_path, "table")
 
     def repartition(self, new_partition_size):
         """Repartitions a table so that each partition is `new_partition_size` big.
@@ -607,8 +631,9 @@ class Table:
             index_name = None
         else:
             index_name = self._table_data["index_name"]
-        self.write(df, index=index_name, partition_size=new_partition_size,
-                   errors='ignore')
+        self.write(
+            df, index=index_name, partition_size=new_partition_size, errors="ignore"
+        )
 
     @property
     def shape(self):

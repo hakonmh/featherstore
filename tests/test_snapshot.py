@@ -1,15 +1,23 @@
 import pytest
-from .fixtures import *
+from .fixtures import (
+    DB_PATH,
+    STORE_NAME,
+    TABLE_NAME,
+    assert_df_equals,
+    assert_table_equals,
+    get_partition_size,
+    make_table,
+)
 
 import os
 import featherstore as fs
 
-SNAPSHOT_PATH = os.path.join(DB_PATH, 'table_snapshot.tar.xz')
+SNAPSHOT_PATH = os.path.join(DB_PATH, "table_snapshot.tar.xz")
 
 
 def test_table_snapshot(store):
     # Arrange
-    original_df = make_table(astype='pandas')
+    original_df = make_table(astype="pandas")
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size)
@@ -27,18 +35,18 @@ def test_table_snapshot(store):
 def test_store_snapshot(store):
     # Arrange
     store_name = store.name
-    original_df1 = make_table(astype='pandas')
-    original_df2 = make_table(astype='pandas')
+    original_df1 = make_table(astype="pandas")
+    original_df2 = make_table(astype="pandas")
 
     partition_size = get_partition_size(original_df1)
-    store.write_table('df1', original_df1, partition_size=partition_size)
-    store.write_table('df2', original_df2, partition_size=partition_size)
+    store.write_table("df1", original_df1, partition_size=partition_size)
+    store.write_table("df2", original_df2, partition_size=partition_size)
     # Act
     store.create_snapshot(SNAPSHOT_PATH)
-    store.rename(to=f'{store_name}2')
+    store.rename(to=f"{store_name}2")
     fs.snapshot.restore_store(SNAPSHOT_PATH)
     # Assert
-    _assert_store_equal(store_name, f'{store_name}2')
+    _assert_store_equal(store_name, f"{store_name}2")
     # Teardown
     os.remove(SNAPSHOT_PATH)
 
@@ -57,7 +65,7 @@ def _assert_store_equal(store_name1, store_name2):
 
 def test_that_restoring_snapshot_cannot_overwrite_existing_table(store):
     # Arrange
-    original_df = make_table(astype='pandas')
+    original_df = make_table(astype="pandas")
 
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
@@ -70,7 +78,7 @@ def test_that_restoring_snapshot_cannot_overwrite_existing_table(store):
 
 
 def test_that_restoring_snapshot_cannot_overwrite_existing_store(store):
-    original_df = make_table(astype='pandas')
+    original_df = make_table(astype="pandas")
 
     partition_size = get_partition_size(original_df)
     store.write_table(TABLE_NAME, original_df, partition_size=partition_size)

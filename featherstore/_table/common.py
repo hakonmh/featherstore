@@ -10,10 +10,10 @@ from featherstore._table._indexers import ColIndexer, RowIndexer
 
 HAS_MULTI_TYPE_COLUMN = (pa.lib.ArrowTypeError, pa.lib.ArrowInvalid)
 
-_STRING_ARROW_TYPES = {'string', 'utf8', 'large_string', 'large_utf8'}
-_PANDAS_MAJOR = int(pd.__version__.split('.', 1)[0])
+_STRING_ARROW_TYPES = {"string", "utf8", "large_string", "large_utf8"}
+_PANDAS_MAJOR = int(pd.__version__.split(".", 1)[0])
 _STRING_PANDAS_TYPE, _STRING_NUMPY_TYPE = (
-    ('object', 'str') if _PANDAS_MAJOR >= 3 else ('unicode', 'string')
+    ("object", "str") if _PANDAS_MAJOR >= 3 else ("unicode", "string")
 )
 
 
@@ -67,7 +67,9 @@ def _transpose_table_and_convert_to_arrow(df):
     try:
         df = _table_utils.convert_to_arrow(df)
     except HAS_MULTI_TYPE_COLUMN:
-        raise ValueError("Cannot convert table with multiple dtypes in same column to arrow.")
+        raise ValueError(
+            "Cannot convert table with multiple dtypes in same column to arrow."
+        )
     new_metadata = json.dumps({"transposed": True})
     df = _add_featherstore_metadata(df, new_metadata)
     return df
@@ -126,15 +128,19 @@ def _format_pd_metadata(df, index_name):
 def _make_pd_metadata(df, index_name):
     metadata = dict()
 
-    metadata['index_columns'] = [index_name]
-    metadata['column_indexes'] = [{'name': None, 'field_name': None,
-                                   'pandas_type': 'unicode',
-                                   'numpy_type': 'object',
-                                   'metadata': {'encoding': 'UTF-8'}}
-                                  ]
-    metadata['columns'] = [__make_column_metadata(df, col) for col in df.column_names]
+    metadata["index_columns"] = [index_name]
+    metadata["column_indexes"] = [
+        {
+            "name": None,
+            "field_name": None,
+            "pandas_type": "unicode",
+            "numpy_type": "object",
+            "metadata": {"encoding": "UTF-8"},
+        }
+    ]
+    metadata["columns"] = [__make_column_metadata(df, col) for col in df.column_names]
     metadata = json.dumps(metadata)
-    metadata = {b'pandas': metadata}
+    metadata = {b"pandas": metadata}
     return metadata
 
 
@@ -145,12 +151,13 @@ def __make_column_metadata(df, col):
     np_dtype, extra_data = __get_numpy_dtype_info(dtype, column)
     pd_dtype, np_dtype = _adjust_string_metadata(dtype, pd_dtype, np_dtype)
 
-    metadata = {"name": col,
-                "field_name": col,
-                "pandas_type": pd_dtype,
-                "numpy_type": np_dtype,
-                "metadata": extra_data,
-                }
+    metadata = {
+        "name": col,
+        "field_name": col,
+        "pandas_type": pd_dtype,
+        "numpy_type": np_dtype,
+        "metadata": extra_data,
+    }
     return metadata
 
 
@@ -163,31 +170,31 @@ def _adjust_string_metadata(dtype, pd_dtype, np_dtype):
 def __get_numpy_dtype_info(dtype, column=None):
     pd_dtype = pc.get_logical_type(dtype)
 
-    if pd_dtype == 'decimal':
-        numpy_dtype = 'object'
+    if pd_dtype == "decimal":
+        numpy_dtype = "object"
         extra_metadata = {
-            'precision': dtype.precision,
-            'scale': dtype.scale,
+            "precision": dtype.precision,
+            "scale": dtype.scale,
         }
-    elif pd_dtype in ('date', 'time'):
-        numpy_dtype = f'datetime64[{_arrow_temporal_resolution(dtype)}]'
+    elif pd_dtype in ("date", "time"):
+        numpy_dtype = f"datetime64[{_arrow_temporal_resolution(dtype)}]"
         extra_metadata = None
-    elif pd_dtype == 'datetime' or str(dtype).startswith('timestamp'):
+    elif pd_dtype == "datetime" or str(dtype).startswith("timestamp"):
         resolution = _arrow_temporal_resolution(dtype)
-        numpy_dtype = f'datetime64[{resolution}]'
-        tz = getattr(dtype, 'tz', None)
+        numpy_dtype = f"datetime64[{resolution}]"
+        tz = getattr(dtype, "tz", None)
         if tz is not None:
-            extra_metadata = {'timezone': pa.lib.tzinfo_to_string(tz)}
+            extra_metadata = {"timezone": pa.lib.tzinfo_to_string(tz)}
         else:
             extra_metadata = None
-    elif pd_dtype[:4] == 'list':
-        numpy_dtype = 'object'
+    elif pd_dtype[:4] == "list":
+        numpy_dtype = "object"
         extra_metadata = None
-    elif pd_dtype == 'categorical':
+    elif pd_dtype == "categorical":
         numpy_dtype = str(dtype.index_type)
         extra_metadata = {
-            'num_categories': __categorical_num_categories(column),
-            'ordered': dtype.ordered,
+            "num_categories": __categorical_num_categories(column),
+            "ordered": dtype.ordered,
         }
     else:
         numpy_dtype = _arrow_type_to_numpy_type(dtype)
@@ -207,15 +214,15 @@ def __categorical_num_categories(column):
 def _arrow_type_to_numpy_type(dtype):
     arrow_type = str(dtype)
     mapping = {
-        'double': 'float64',
-        'float': 'float32',
-        'halffloat': 'float16',
-        'string': 'str',
-        'utf8': 'str',
-        'large_string': 'str',
-        'large_utf8': 'str',
-        'binary': 'object',
-        'large_binary': 'object',
+        "double": "float64",
+        "float": "float32",
+        "halffloat": "float16",
+        "string": "str",
+        "utf8": "str",
+        "large_string": "str",
+        "large_utf8": "str",
+        "binary": "object",
+        "large_binary": "object",
     }
     return mapping.get(arrow_type, arrow_type)
 
@@ -223,9 +230,9 @@ def _arrow_type_to_numpy_type(dtype):
 def _add_pd_metadata(df, metadata):
     old_metadata = df.schema.metadata
     if old_metadata:
-        old_metadata[b'pandas'] = metadata[b'pandas']
+        old_metadata[b"pandas"] = metadata[b"pandas"]
     else:
-        old_metadata = {b'pandas': metadata[b'pandas']}
+        old_metadata = {b"pandas": metadata[b"pandas"]}
     df = df.replace_schema_metadata(old_metadata)
     return df
 
@@ -254,7 +261,8 @@ def compute_rows_per_partition(df, target_size):
 def update_metadata(table, df, old_partition_names, **kwargs):
     new_partition_metadata = _make_partition_metadata(df)
     table_metadata = _compute_table_metadata_update(
-        table, new_partition_metadata, old_partition_names)
+        table, new_partition_metadata, old_partition_names
+    )
     for key, value in kwargs.items():
         table_metadata[key] = value
     return table_metadata, new_partition_metadata
@@ -267,9 +275,9 @@ def _make_partition_metadata(df):
     index_col_name = _table_utils.get_index_name(first_partition)
     for name, partition in df.items():
         data = {
-            'min': _get_index_min(partition, index_col_name),
-            'max': _get_index_max(partition, index_col_name),
-            'num_rows': partition.num_rows
+            "min": _get_index_min(partition, index_col_name),
+            "max": _get_index_max(partition, index_col_name),
+            "num_rows": partition.num_rows,
         }
         metadata[name] = data
     return metadata
@@ -293,11 +301,14 @@ def _get_index_max(df, index_name):
 
 def _compute_table_metadata_update(table, new_partitions_data, dropped_partitions):
     dropped_partitions_data = _get_dropped_partitions_data(
-        table._partition_data, dropped_partitions)
-    num_rows = table._table_data['num_rows']
+        table._partition_data, dropped_partitions
+    )
+    num_rows = table._table_data["num_rows"]
     num_rows += _update_num_rows(dropped_partitions_data, new_partitions_data)
-    num_partitions = table._table_data['num_partitions']
-    num_partitions += _update_num_partitions(dropped_partitions_data, new_partitions_data)
+    num_partitions = table._table_data["num_partitions"]
+    num_partitions += _update_num_partitions(
+        dropped_partitions_data, new_partitions_data
+    )
 
     return {
         "num_partitions": num_partitions,
@@ -306,9 +317,9 @@ def _compute_table_metadata_update(table, new_partitions_data, dropped_partition
 
 
 def _arrow_temporal_resolution(dtype):
-    resolution = str(dtype).split('[')[-1].split(']')[0]
-    if resolution == 'day':
-        resolution = 'D'
+    resolution = str(dtype).split("[")[-1].split("]")[0]
+    if resolution == "day":
+        resolution = "D"
     return resolution
 
 
@@ -318,8 +329,8 @@ def _get_dropped_partitions_data(partition_data, partition_names):
 
 
 def _update_num_rows(dropped_partitions_data, new_partitions_data):
-    dropped = (item['num_rows'] for item in dropped_partitions_data.values())
-    added = (item['num_rows'] for item in new_partitions_data.values())
+    dropped = (item["num_rows"] for item in dropped_partitions_data.values())
+    added = (item["num_rows"] for item in new_partitions_data.values())
     return sum(added) - sum(dropped)
 
 

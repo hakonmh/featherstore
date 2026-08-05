@@ -12,7 +12,7 @@ _WINDOWS_DELETE_RETRIES = 10
 _WINDOWS_DELETE_BACKOFF_S = 0.001
 
 
-def touch(path, flag='ab'):
+def touch(path, flag="ab"):
     with open(path, flag):
         pass
 
@@ -65,7 +65,7 @@ def rmtree(path):
         _remove_path(path)
     else:
         for sub_path in os.listdir(path):
-            sub_path = f'{path}/{sub_path}'
+            sub_path = f"{path}/{sub_path}"
             rmtree(sub_path)
         os.rmdir(path)
 

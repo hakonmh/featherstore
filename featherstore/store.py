@@ -351,13 +351,13 @@ class Store:
         path : str
             The path to the snapshot archive.
         """
-        _create_snapshot(path, self._store_path, 'store')
+        _create_snapshot(path, self._store_path, "store")
 
 
 def _can_create_store(store_name, errors):
     Connection._raise_if_not_connected()
     _utils.raise_if_errors_argument_is_not_valid(errors)
-    if errors == 'raise':
+    if errors == "raise":
         _raise_if_store_already_exists(store_name)
     _raise_if_store_name_is_forbidden(store_name)
 
@@ -423,5 +423,4 @@ def _can_list(like):
 
 def _raise_if_like_is_not_str(like):
     if not isinstance(like, (str, type(None))):
-        raise TypeError(
-            f"'like' must be either of type str or None, is {type(like)}")
+        raise TypeError(f"'like' must be either of type str or None, is {type(like)}")

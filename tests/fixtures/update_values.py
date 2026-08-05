@@ -49,10 +49,9 @@ def _update_col(df):
 
 def __get_dtype(df):
     dtype = df.dtype.kind
-    DTYPES = {'i': 'int', 'f': 'float', 'b': 'bool',
-              'O': 'string', 'M': 'datetime'}
+    DTYPES = {"i": "int", "f": "float", "b": "bool", "O": "string", "M": "datetime"}
     dtype = DTYPES[dtype]
-    if dtype == 'int':
+    if dtype == "int":
         if df.min() >= 0:
-            dtype = 'uint'
+            dtype = "uint"
     return dtype

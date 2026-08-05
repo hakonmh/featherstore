@@ -141,8 +141,7 @@ def _combine_small_partitions(partitions, partition_size):
 
     if has_multiple_partitions and size_of_last_partition < min_partition_size:
         new_last_partition = _combine_last_two_partitions(partitions)
-        partitions = _replace_last_two_partitions(new_last_partition,
-                                                  partitions)
+        partitions = _replace_last_two_partitions(new_last_partition, partitions)
     return partitions
 
 
@@ -160,7 +159,7 @@ def _replace_last_two_partitions(new_last_partition, partitions):
 
 def convert_int_to_partition_id(partition_id):
     partition_id = int(partition_id * INSERTION_BUFFER_LENGTH)
-    format_string = f'0{PARTITION_NAME_LENGTH}d'
+    format_string = f"0{PARTITION_NAME_LENGTH}d"
     partition_id = format(partition_id, format_string)
     return partition_id
 
@@ -199,13 +198,13 @@ def assign_ids_to_partitions(df, ids):
 
 def get_first_stored_index_value(partition_metadata):
     first_partition = partition_metadata.keys()[0]
-    first_stored_value = partition_metadata[first_partition]['min']
+    first_stored_value = partition_metadata[first_partition]["min"]
     return first_stored_value
 
 
 def get_last_stored_index_value(partition_metadata):
     last_partition = partition_metadata.keys()[-1]
-    last_stored_value = partition_metadata[last_partition]['max']
+    last_stored_value = partition_metadata[last_partition]["max"]
     return last_stored_value
 
 
@@ -214,7 +213,7 @@ def get_index_name(df):
     if pd_metadata is None:
         no_index_name = True
     else:
-        index_name, = pd_metadata["index_columns"]
+        (index_name,) = pd_metadata["index_columns"]
         no_index_name = not isinstance(index_name, str)
 
     if no_index_name:
@@ -233,12 +232,66 @@ def typestring_is_temporal(index_dtype):
     return "time" in index_dtype or "date" in index_dtype
 
 
+def typestring_is_duration(index_dtype):
+    return "duration" in index_dtype
+
+
 def typestring_is_string(index_dtype):
     return "string" in index_dtype
 
 
 def typestring_is_int(index_dtype):
-    return "int" in index_dtype
+    return index_dtype.startswith(("int", "uint"))
+
+
+def typestring_is_float(index_dtype):
+    return (
+        "float" in index_dtype or "double" in index_dtype or "halffloat" in index_dtype
+    )
+
+
+def typestring_is_decimal(index_dtype):
+    return "decimal" in index_dtype
+
+
+def typestring_is_binary(index_dtype):
+    return "binary" in index_dtype
+
+
+def index_type_is_supported(index_type):
+    if isinstance(index_type, pa.DataType):
+        return _pa_index_type_is_supported(index_type)
+    return _index_typestring_is_supported(str(index_type))
+
+
+def _pa_index_type_is_supported(dtype):
+    return any(
+        check(dtype)
+        for check in (
+            pa.types.is_integer,
+            pa.types.is_floating,
+            pa.types.is_decimal,
+            pa.types.is_binary,
+            pa.types.is_string,
+            pa.types.is_large_string,
+            pa.types.is_temporal,
+        )
+    )
+
+
+def _index_typestring_is_supported(index_dtype):
+    return any(
+        check(index_dtype)
+        for check in (
+            typestring_is_string,
+            typestring_is_temporal,
+            typestring_is_duration,
+            typestring_is_int,
+            typestring_is_float,
+            typestring_is_decimal,
+            typestring_is_binary,
+        )
+    )
 
 
 def get_index_if_exists(df, index_name):
@@ -256,11 +309,11 @@ def filter_arrow_table(df, rows, index_col_name):
     index = df[index_col_name]
     if not rows.keyword:
         df = _fetch_rows_in_list(df, index, rows.values())
-    elif rows.keyword == 'before':
+    elif rows.keyword == "before":
         df = _fetch_rows_before(df, index, rows[0])
-    elif rows.keyword == 'after':
+    elif rows.keyword == "after":
         df = _fetch_rows_after(df, index, rows[0])
-    elif rows.keyword == 'between':
+    elif rows.keyword == "between":
         df = _fetch_rows_between(df, index, low=rows[0], high=rows[1])
     return df
 
@@ -277,7 +330,7 @@ def _fetch_rows_in_list(df, index, rows):
 def _raise_if_rows_not_in_table(row_indices):
     contains_null = row_indices.null_count > 0
     if contains_null:
-        raise IndexError('Trying to access a row not found in table')
+        raise IndexError("Trying to access a row not found in table")
 
 
 def _fetch_rows_before(df, index, row):
@@ -357,6 +410,6 @@ def is_list_like(obj):
 
 
 def is_transposed(df):
-    fs_metadata = df.schema.metadata[b'featherstore']
+    fs_metadata = df.schema.metadata[b"featherstore"]
     fs_metadata = json.loads(fs_metadata)
-    return fs_metadata['transposed']
+    return fs_metadata["transposed"]

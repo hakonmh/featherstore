@@ -3,15 +3,23 @@ import polars as pl
 import pyarrow as pa
 from pandas.testing import assert_frame_equal, assert_series_equal
 
+import featherstore as fs
+
 from .convert_table import convert_table
+
+
+def assert_store_table_equal(store_name, table_name, expected, **kwargs):
+    store = fs.Store(store_name)
+    table = store.select_table(table_name)
+    assert_table_equals(table, expected, **kwargs)
 
 
 def assert_table_equals(table, expected, *, rows=None, cols=None, astype=None):
     if not astype:
         astype = _get_astype(expected)
 
-    if astype == 'all':
-        for astype in ('arrow', 'polars', 'pandas'):
+    if astype == "all":
+        for astype in ("arrow", "polars", "pandas"):
             expected_ = convert_table(expected, to=astype)
             assert_table_equals(table, expected_, rows=rows, cols=cols, astype=astype)
     else:
@@ -31,9 +39,9 @@ def _get_astype(df):
 def _read_df(table, astype, rows, cols):
     if astype == "arrow":
         df = table.read_arrow(rows=rows, cols=cols)
-    elif astype == 'polars':
+    elif astype == "polars":
         df = table.read_polars(rows=rows, cols=cols)
-    elif astype.startswith('pandas'):
+    elif astype.startswith("pandas"):
         df = table.read_pandas(rows=rows, cols=cols)
     return df
 
@@ -44,9 +52,9 @@ def assert_df_equals(df, expected, astype=None):
 
     if astype == "arrow":
         assert df.equals(expected)
-    elif astype.startswith('polars'):
+    elif astype.startswith("polars"):
         _assert_polars(df, expected)
-    elif astype.startswith('pandas'):
+    elif astype.startswith("pandas"):
         _assert_pandas(df, expected)
 
 

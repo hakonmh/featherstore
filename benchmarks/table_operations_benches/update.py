@@ -8,8 +8,7 @@ update_bench = bmark.Benchmark()
 
 @update_bench()
 class Update(bmark.Benched):
-
-    def __init__(self, shape, rows=None, cols=None, name='values', num_partitions=0):
+    def __init__(self, shape, rows=None, cols=None, name="values", num_partitions=0):
         self._shape = shape
         self._rows = rows
         self._cols = cols
@@ -20,7 +19,7 @@ class Update(bmark.Benched):
         self._table.update(self._update_df)
 
     def setup(self):
-        self._df = fx.make_table(self._shape, astype='pandas')
+        self._df = fx.make_table(self._shape, astype="pandas")
         _, update_df = fx.split_table(self._df, rows=self._rows, cols=self._cols)
         self._update_df = fx.update_values(update_df)
         self._partition_size = partition_size(self._df, self._num_partitions)

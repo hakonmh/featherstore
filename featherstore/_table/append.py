@@ -22,8 +22,8 @@ def can_append_table(table, df, warnings):
     _raise_if.index_type_not_same_as_stored_index(df, table_data)
     _raise_if.cols_does_not_match(df, table_data)
 
-    has_default_index = table_data['has_default_index']
-    index_name = table_data['index_name']
+    has_default_index = table_data["has_default_index"]
+    index_name = table_data["index_name"]
 
     index = _table_utils.get_index_if_exists(df, index_name)
     index_is_provided = index is not None
@@ -43,13 +43,14 @@ def _raise_if_append_data_not_ordered_after_stored_data(index, partition_data):
     if append_data_start <= stored_data_end:
         raise ValueError(
             f"New_data.index can't be <= old_data.index[-1] ({append_data_start}"
-            f" <= {stored_data_end})")
+            f" <= {stored_data_end})"
+        )
 
 
 def _get_last_stored_value(partition_data):
     df = partition_data
     last_partition_name = df.keys()[-1]
-    stored_data_end = df[last_partition_name]['max']
+    stored_data_end = df[last_partition_name]["max"]
     return stored_data_end
 
 
@@ -81,7 +82,8 @@ def append_data(df, *, to):
 
 def create_partitions(df, rows_per_partition, last_partition_name):
     partitions = _table_utils.make_partitions(df, rows_per_partition)
-    new_partition_names = _table_utils.append_new_partition_ids(len(partitions),
-                                                                [last_partition_name])
+    new_partition_names = _table_utils.append_new_partition_ids(
+        len(partitions), [last_partition_name]
+    )
     partitions = _table_utils.assign_ids_to_partitions(partitions, new_partition_names)
     return partitions

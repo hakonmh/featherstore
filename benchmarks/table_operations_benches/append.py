@@ -8,10 +8,9 @@ append_bench = bmark.Benchmark()
 
 
 class AppendFS(bmark.Benched):
-
     def __init__(self, shape, rows, astype, num_partitions):
         self._shape = shape
-        self._rows = {'after': self._shape[0] - rows}
+        self._rows = {"after": self._shape[0] - rows}
         self._astype = astype
         self._num_partitions = num_partitions
 
@@ -23,10 +22,10 @@ class AppendFS(bmark.Benched):
         df, self._append_df = fx.split_table(df, rows=self._rows)
         self._partition_size = partition_size(df, self._num_partitions)
 
-        fs.create_database('db')
-        store = fs.create_store('store_name')
-        self._table = store.select_table('table_name')
-        self._table.write(df, index='index', partition_size=self._partition_size)
+        fs.create_database("db")
+        store = fs.create_store("store_name")
+        self._table = store.select_table("table_name")
+        self._table.write(df, index="index", partition_size=self._partition_size)
 
     def teardown(self):
         close_table()
@@ -37,23 +36,20 @@ class AppendFS(bmark.Benched):
 
 @append_bench()
 class AppendPandas(AppendFS):
-
     def __init__(self, shape, rows=None, num_partitions=0):
         self.name = f"FS append Pandas (list of {rows:,d} rows)"
-        super().__init__(shape, rows, astype='pandas', num_partitions=num_partitions)
+        super().__init__(shape, rows, astype="pandas", num_partitions=num_partitions)
 
 
 @append_bench()
 class AppendArrow(AppendFS):
-
     def __init__(self, shape, rows=None, num_partitions=0):
         self.name = f"FS append Arrow (list of {rows:,d} rows)"
-        super().__init__(shape, rows, astype='arrow', num_partitions=num_partitions)
+        super().__init__(shape, rows, astype="arrow", num_partitions=num_partitions)
 
 
 @append_bench()
 class AppendPolars(AppendFS):
-
     def __init__(self, shape, rows=None, num_partitions=0):
         self.name = f"FS append Polars (list of {rows:,d} rows)"
-        super().__init__(shape, rows, astype='polars', num_partitions=num_partitions)
+        super().__init__(shape, rows, astype="polars", num_partitions=num_partitions)

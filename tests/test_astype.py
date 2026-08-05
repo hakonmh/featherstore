@@ -1,5 +1,13 @@
 import pytest
-from .fixtures import *
+from .fixtures import (
+    DEFAULT_ARROW_INDEX_NAME,
+    TABLE_NAME,
+    assert_table_equals,
+    change_dtype,
+    get_partition_size,
+    make_table,
+    to_arrow_dtype,
+)
 
 import polars as pl
 import pyarrow as pa
@@ -7,23 +15,23 @@ import numpy as np
 
 
 TYPE_MAP = {
-    pa.float16(): 'float',
-    pa.float32(): 'float',
-    pa.float64(): 'float',
-    pa.int16(): 'int',
-    pa.int32(): 'int',
-    pa.int64(): 'int',
-    pa.uint32(): 'uint',
-    pa.bool_(): 'bool',
-    pa.date32(): 'datetime',
-    pa.date64(): 'datetime',
-    pa.time32('ms'): 'datetime',
-    pa.time64('us'): 'datetime',
-    pa.timestamp('us'): 'datetime',
-    pa.string(): 'string',
-    pa.large_string(): 'string',
-    pa.binary(): 'string',
-    pa.large_binary(): 'string',
+    pa.float16(): "float",
+    pa.float32(): "float",
+    pa.float64(): "float",
+    pa.int16(): "int",
+    pa.int32(): "int",
+    pa.int64(): "int",
+    pa.uint32(): "uint",
+    pa.bool_(): "bool",
+    pa.date32(): "datetime",
+    pa.date64(): "datetime",
+    pa.time32("ms"): "datetime",
+    pa.time64("us"): "datetime",
+    pa.timestamp("us"): "datetime",
+    pa.string(): "string",
+    pa.large_string(): "string",
+    pa.binary(): "string",
+    pa.large_binary(): "string",
 }
 kwargs_as_list = True
 
@@ -41,7 +49,7 @@ kwargs_as_list = True
         (pa.bool_(), pa.string()),
         (pa.int64(), pa.bool_()),
         (pa.date32(), pa.date64()),
-        (pa.date32(), pa.timestamp('us')),
+        (pa.date32(), pa.timestamp("us")),
         (pa.date64(), pa.date32()),
         (pa.binary(), pa.large_binary()),
         (pa.binary(), pa.string()),
@@ -54,15 +62,16 @@ kwargs_as_list = True
         (np.uint32, np.int32),
         (bool, np.int16),
         (np.int64, bool),
-    ]
+    ],
 )
 def test_change_pa_dtype(store, from_dtype, to_dtype):
     # Arrange
-    COLS = ['c1', 'c2']
-    original_df = make_table(rows=60, cols=3, astype="arrow",
-                             dtype=_get_dtype_str(from_dtype))
-    original_df = _change_dtype(original_df, from_dtype)
-    expected = _change_dtype(original_df, to_dtype, cols=COLS)
+    COLS = ["c1", "c2"]
+    original_df = make_table(
+        rows=60, cols=3, astype="arrow", dtype=_get_dtype_str(from_dtype)
+    )
+    original_df = change_dtype(original_df, from_dtype)
+    expected = change_dtype(original_df, to_dtype, cols=COLS)
 
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
@@ -72,69 +81,43 @@ def test_change_pa_dtype(store, from_dtype, to_dtype):
     # Act
     table.astype(cols, to=dtype)
     # Assert
-    assert_table_equals(table, expected, astype='all')
+    assert_table_equals(table, expected, astype="all")
 
 
 def _get_dtype_str(dtype):
-    dtype = __convert_to_arrow_dtype(dtype)
+    dtype = to_arrow_dtype(dtype)
     return TYPE_MAP[dtype]
-
-
-def _change_dtype(df, to, index_name='index', cols=None):
-    arrow_dtype = __convert_to_arrow_dtype(to)
-    schema = df.schema
-    cols = cols if cols else schema.names
-    for idx, field in enumerate(schema):
-        if field.name in cols and field.name != index_name:
-            field = field.with_type(arrow_dtype)
-            schema = schema.set(idx, field)
-    df = df.cast(schema)
-    # Casting does not refresh pandas metadata; drop it so conversions follow
-    # the Arrow types (needed for binary/string roundtrips on pandas 2.2+/3).
-    metadata = df.schema.metadata
-    if metadata and b'pandas' in metadata:
-        metadata = {key: value for key, value in metadata.items() if key != b'pandas'}
-        df = df.replace_schema_metadata(metadata or None)
-    return df
-
-
-def __convert_to_arrow_dtype(dtype):
-    try:
-        dtype = pa.from_numpy_dtype(dtype)
-    except Exception:
-        pass
-    return dtype
 
 
 def _format_cols_and_to_key_args(cols, to):
     """Selects every other test to format arguments as one of either:
-        * cols=['c1', 'c2'], to=[dtype1, dtype2]
-        * cols = {'c1': dtype1, 'c2': dtype2}
+    * cols=['c1', 'c2'], to=[dtype1, dtype2]
+    * cols = {'c1': dtype1, 'c2': dtype2}
     """
     global kwargs_as_list
     kwargs_as_list = not kwargs_as_list
-    kwarg_format = 'list' if kwargs_as_list else 'dict'
+    kwarg_format = "list" if kwargs_as_list else "dict"
 
-    if kwarg_format == 'dict':
+    if kwarg_format == "dict":
         cols = {col: to for col in cols}
         to = None
-    elif kwarg_format == 'list':
+    elif kwarg_format == "list":
         to = [to] * len(cols)
     return cols, to
 
 
-NEW_DTYPES_PROVIDED_TWICE = [{'c0': pa.int16()}, [pa.int16()]]
-NEW_DTYPES_NOT_PROVIDED = [['c0', 'c1'], None]
-INVALID_COLS_ARGUMENT_DTYPE = ['c0', [pa.int16()]]
+NEW_DTYPES_PROVIDED_TWICE = [{"c0": pa.int16()}, [pa.int16()]]
+NEW_DTYPES_NOT_PROVIDED = [["c0", "c1"], None]
+INVALID_COLS_ARGUMENT_DTYPE = ["c0", [pa.int16()]]
 INVALID_COLS_KEYS_ARGUMENT_DTYPE = [{1: pa.int32}, None]
-INVALID_COLS_VALUES_ARGUMENT_DTYPE = [{'c0': 123}, None]
-INVALID_TO_ARGUMENT_DTYPE = [['c0'], pa.int16()]
-INVALID_TO_ITEMS_DTYPE = [['c0'], [123]]
-NUMBER_OF_COLS_AND_DTYPES_DONT_MATCH = [['c0', 'c1'], [pa.int16()]]
-FORBIDDEN_INDEX_DTYPE = [[DEFAULT_ARROW_INDEX_NAME], [pa.float32()]]
-NON_ARROW_DTYPE = [['c0'], [pl.Float32()]]
-INVALID_NEW_DTYPE = [['c0'], [pa.float32()]]
-DUPLICATE_COL_NAMES = [['c0', 'c0'], [pa.int16(), pa.int32()]]
+INVALID_COLS_VALUES_ARGUMENT_DTYPE = [{"c0": 123}, None]
+INVALID_TO_ARGUMENT_DTYPE = [["c0"], pa.int16()]
+INVALID_TO_ITEMS_DTYPE = [["c0"], [123]]
+NUMBER_OF_COLS_AND_DTYPES_DONT_MATCH = [["c0", "c1"], [pa.int16()]]
+FORBIDDEN_INDEX_DTYPE = [[DEFAULT_ARROW_INDEX_NAME], [pa.list_(pa.int64())]]
+NON_ARROW_DTYPE = [["c0"], [pl.Float32()]]
+INVALID_NEW_DTYPE = [["c0"], [pa.float32()]]
+DUPLICATE_COL_NAMES = [["c0", "c0"], [pa.int16(), pa.int32()]]
 
 
 @pytest.mark.parametrize(
@@ -165,12 +148,12 @@ DUPLICATE_COL_NAMES = [['c0', 'c0'], [pa.int16(), pa.int32()]]
         "FORBIDDEN_INDEX_DTYPE",
         "NON_ARROW_DTYPE",
         "INVALID_NEW_DTYPE",
-        "DUPLICATE_COL_NAMES"
-    ]
+        "DUPLICATE_COL_NAMES",
+    ],
 )
 def test_can_change_dtype(store, args, exception):
     # Arrange
-    original_df = make_table(cols=5, astype='pandas')
+    original_df = make_table(cols=5, astype="pandas")
     table = store.select_table(TABLE_NAME)
     table.write(original_df)
     col_names = args[0]

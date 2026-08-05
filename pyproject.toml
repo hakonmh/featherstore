@@ -62,7 +62,7 @@ markers = [
 
 [tool.flake8]
 exclude = [".dev", "benchmarks", "build", "dist"]
-ignore = ["F405", "F403"]
+ignore = ["F405", "F403", "E203"]
 max-line-length = 100
 count = true
 per-file-ignores = [

@@ -33,17 +33,21 @@ def _get_adjacent_partition_name(table, partitions_selected):
     """
     all_partition_names = table._partition_data.keys()
 
-    partition_before_first = _table_utils.get_previous_item(item=partitions_selected[0],
-                                                            sequence=all_partition_names)
-    partition_after_last = _table_utils.get_next_item(item=partitions_selected[-1],
-                                                      sequence=all_partition_names)
+    partition_before_first = _table_utils.get_previous_item(
+        item=partitions_selected[0], sequence=all_partition_names
+    )
+    partition_after_last = _table_utils.get_next_item(
+        item=partitions_selected[-1], sequence=all_partition_names
+    )
 
     if partition_before_first:
-        partition_names = _insert_adjacent_partition(partition_before_first,
-                                                     to=partitions_selected)
+        partition_names = _insert_adjacent_partition(
+            partition_before_first, to=partitions_selected
+        )
     elif partition_after_last:
-        partition_names = _insert_adjacent_partition(partition_after_last,
-                                                     to=partitions_selected)
+        partition_names = _insert_adjacent_partition(
+            partition_after_last, to=partitions_selected
+        )
     else:
         partition_names = partitions_selected
 
@@ -83,12 +87,14 @@ def has_still_default_index(table, rows):
         return False
 
     metadata = table._partition_data
-    if rows.keyword == 'before':
+    if rows.keyword == "before":
         is_still_default = _idx_still_default_after_dropping_rows_before(rows, metadata)
-    elif rows.keyword == 'after':
+    elif rows.keyword == "after":
         is_still_default = True
-    elif rows.keyword == 'between':
-        is_still_default = _idx_still_default_after_dropping_rows_between(rows, metadata)
+    elif rows.keyword == "between":
+        is_still_default = _idx_still_default_after_dropping_rows_between(
+            rows, metadata
+        )
     elif rows:
         is_still_default = _idx_still_default_after_dropping_rows_list(rows, metadata)
     else:
@@ -155,7 +161,6 @@ def can_drop_cols_from_table(table, cols):
 
 
 class CheckDropCols:
-
     def __init__(self, cols, table):
         self._table_path = table._table_path
         self._table_data = table._table_data
@@ -185,8 +190,9 @@ class CheckDropCols:
     def all_rows_are_dropped(self):
         trying_to_drop_all_cols = not bool(self._stored_cols - self._dropped_cols)
         if trying_to_drop_all_cols:
-            raise IndexError("Can't drop all columns. To drop full table, "
-                             "use 'drop_table()'")
+            raise IndexError(
+                "Can't drop all columns. To drop full table, use 'drop_table()'"
+            )
 
     def items_not_str(self):
         _raise_if.cols_argument_items_is_not_str_or_none(self._cols.values())
@@ -198,7 +204,7 @@ def drop_cols_from_data(df, cols):
 
 def create_partitions(df, rows_per_partition, partition_names):
     partitions = _table_utils.make_partitions(df, rows_per_partition)
-    partition_names = partition_names[:len(partitions)]
+    partition_names = partition_names[: len(partitions)]
     partitions = _table_utils.assign_ids_to_partitions(partitions, partition_names)
     return partitions
 
@@ -215,7 +221,7 @@ def drop_partitions(table, partitions):
 
 
 def _delete_partition(table, partition):
-    partition_path = os.path.join(table._table_path, f'{partition}.feather')
+    partition_path = os.path.join(table._table_path, f"{partition}.feather")
     _utils._remove_path(partition_path)
 
 

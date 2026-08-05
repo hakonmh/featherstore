@@ -33,7 +33,7 @@ def _raise_if_new_cols_items_is_not_str(new_cols):
 
 
 def _raise_if_renaming_causes_duplicates(cols, table_data):
-    stored_cols = table_data['columns']
+    stored_cols = table_data["columns"]
     renamed_cols = _replace_col_names(stored_cols, cols)
     _raise_if.col_names_contains_duplicates(renamed_cols)
 
@@ -56,4 +56,4 @@ def _replace_col_names(stored_cols, cols):
 def write_metadata(table, df):
     first_partition = tuple(df.values())[0]
     col_names = first_partition.schema.names
-    table._table_data['columns'] = col_names
+    table._table_data["columns"] = col_names

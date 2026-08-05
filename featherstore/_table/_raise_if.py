@@ -1,5 +1,6 @@
 import os
-from numbers import Integral
+from decimal import Decimal
+from numbers import Integral, Real
 
 import pandas as pd
 import polars as pl
@@ -18,15 +19,14 @@ def table_not_exists(table):
 
 
 def table_already_exists(table_path):
-    table_name = table_path.rsplit('/')[-1]
+    table_name = table_path.rsplit("/")[-1]
     if os.path.exists(table_path):
         raise FileExistsError(f"A table with name '{table_name}' already exists")
 
 
 def table_name_is_not_str(table_name):
     if not isinstance(table_name, str):
-        raise TypeError(
-            f"'table_name' must be a str (is type {type(table_name)})")
+        raise TypeError(f"'table_name' must be a str (is type {type(table_name)})")
 
 
 def table_name_is_forbidden(table_name):
@@ -41,7 +41,9 @@ def df_is_not_supported_table_type(df):
 
 def df_is_not_pandas_table(df):
     if not isinstance(df, (pd.DataFrame, pd.Series)):
-        raise TypeError(f"'df' must be a pd.DataFrame or pd.Series (is type {type(df)})")
+        raise TypeError(
+            f"'df' must be a pd.DataFrame or pd.Series (is type {type(df)})"
+        )
 
 
 def rows_argument_is_not_collection(rows):
@@ -92,7 +94,9 @@ def cols_argument_items_is_not_str_or_none(cols):
 
 def length_of_cols_and_to_doesnt_match(cols, to):
     if len(cols) != len(to):
-        raise ValueError(f"Length of 'cols' != length of 'to' ({len(cols)} != {len(to)})")
+        raise ValueError(
+            f"Length of 'cols' != length of 'to' ({len(cols)} != {len(to)})"
+        )
 
 
 def cols_does_not_match(df, table_data):
@@ -119,9 +123,11 @@ def to_is_provided_twice(cols, to):
     cols_is_dict = isinstance(cols, dict)
     to_is_provided = to is not None
     if cols_is_dict and to_is_provided:
-        raise AttributeError("'to' is provided twice, use either "
-                             "'cols={<COL>: <TO>, ...}, to=None' "
-                             "or 'cols=[<COL>, ...], to=[<TO>, ...]'")
+        raise AttributeError(
+            "'to' is provided twice, use either "
+            "'cols={<COL>: <TO>, ...}, to=None' "
+            "or 'cols=[<COL>, ...], to=[<TO>, ...]'"
+        )
 
 
 def to_not_provided(cols, to):
@@ -149,18 +155,27 @@ def rows_argument_items_type_not_same_as_index(rows, table_data):
 
 def _rows_type_matches_index(rows, index_dtype):
     row = rows[0]
-
-    matches_dtime_idx = _check_if_row_and_index_is_temporal(row, index_dtype)
-    matches_str_idx = _check_if_row_and_index_is_str(row, index_dtype)
-    matches_int_idx = _check_if_row_and_index_is_int(row, index_dtype)
-
-    row_type_matches_idx = matches_dtime_idx or matches_str_idx or matches_int_idx
-    return row_type_matches_idx
+    checks = (
+        _check_if_row_and_index_is_temporal,
+        _check_if_row_and_index_is_duration,
+        _check_if_row_and_index_is_str,
+        _check_if_row_and_index_is_binary,
+        _check_if_row_and_index_is_int,
+        _check_if_row_and_index_is_float,
+        _check_if_row_and_index_is_decimal,
+    )
+    return any(check(row, index_dtype) for check in checks)
 
 
 def _check_if_row_and_index_is_temporal(row, index_dtype):
     if _table_utils.typestring_is_temporal(index_dtype):
         return _isinstance_temporal(row)
+    return False
+
+
+def _check_if_row_and_index_is_duration(row, index_dtype):
+    if _table_utils.typestring_is_duration(index_dtype):
+        return _isinstance_duration(row)
     return False
 
 
@@ -170,9 +185,27 @@ def _check_if_row_and_index_is_str(row, index_dtype):
     return False
 
 
+def _check_if_row_and_index_is_binary(row, index_dtype):
+    if _table_utils.typestring_is_binary(index_dtype):
+        return _isinstance_binary(row)
+    return False
+
+
 def _check_if_row_and_index_is_int(row, index_dtype):
     if _table_utils.typestring_is_int(index_dtype):
         return _isinstance_int(row)
+    return False
+
+
+def _check_if_row_and_index_is_float(row, index_dtype):
+    if _table_utils.typestring_is_float(index_dtype):
+        return _isinstance_float(row)
+    return False
+
+
+def _check_if_row_and_index_is_decimal(row, index_dtype):
+    if _table_utils.typestring_is_decimal(index_dtype):
+        return _isinstance_decimal(row)
     return False
 
 
@@ -198,12 +231,41 @@ def _isinstance_str(obj):
     return is_str
 
 
+def _isinstance_duration(obj):
+    return isinstance(obj, pd.Timedelta)
+
+
 def _isinstance_int(obj):
     try:
         is_int = pa.types.is_integer(obj)
     except AttributeError:
         is_int = isinstance(obj, Integral)
     return is_int
+
+
+def _isinstance_float(obj):
+    return isinstance(obj, Real) and not isinstance(obj, (Integral, bool))
+
+
+def _isinstance_decimal(obj):
+    return isinstance(obj, Decimal)
+
+
+def _isinstance_binary(obj):
+    return isinstance(obj, (bytes, bytearray))
+
+
+def index_type_not_supported(index_or_dtype):
+    if index_or_dtype is None:
+        return
+    if isinstance(index_or_dtype, pa.DataType):
+        index_type = index_or_dtype
+    elif hasattr(index_or_dtype, "type"):
+        index_type = index_or_dtype.type
+    else:
+        index_type = index_or_dtype
+    if not _table_utils.index_type_is_supported(index_type):
+        raise TypeError(f"Table.index type is not supported (is type {index_type})")
 
 
 def index_type_not_same_as_stored_index(df, table_data):
@@ -215,7 +277,7 @@ def index_type_not_same_as_stored_index(df, table_data):
 
 
 def index_name_not_same_as_stored_index(df, table_data):
-    stored_index_name = table_data['index_name']
+    stored_index_name = table_data["index_name"]
     has_default_index = table_data["has_default_index"]
     cols = _table_utils.get_col_names(df, has_default_index=has_default_index)
     if stored_index_name not in cols:

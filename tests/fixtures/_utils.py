@@ -31,12 +31,12 @@ def get_index_name(df):
         index_name = None
     else:
         cols = get_col_names(df)
-        if 'Date' in cols:
-            index_name = 'Date'
-        elif 'index' in cols:
-            index_name = 'index'
-        elif 'Index' in cols:
-            index_name = 'index'
+        if "Date" in cols:
+            index_name = "Date"
+        elif "index" in cols:
+            index_name = "index"
+        elif "Index" in cols:
+            index_name = "index"
         elif DEFAULT_ARROW_INDEX_NAME in cols:
             index_name = DEFAULT_ARROW_INDEX_NAME
         else:
@@ -65,6 +65,6 @@ def convert_object_cols_to_string(df):
     else:
         dtypes = df.dtypes
     for col, dtype in dtypes.items():
-        if dtype in ('O', 'U'):
+        if dtype in ("O", "U"):
             df[col] = pd.array(df[col], dtype="string")
     return df
