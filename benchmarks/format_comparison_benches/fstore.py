@@ -1,11 +1,10 @@
 import bmark
 import featherstore as fs
-import sys
-sys.path.insert(0, '')
-from internal_benches import _fixtures as fx  # noqa: E402
+
+from table_operations_benches import _fixtures as fx
 
 
-class fs_write_pd(bmark.Benched):
+class FeatherStoreWritePandas(bmark.Benched):
 
     def __init__(self, shape, num_partitions=0):
         self.name = "Pandas write FeatherStore"
@@ -14,8 +13,10 @@ class fs_write_pd(bmark.Benched):
         super().__init__()
 
     def run(self):
-        self._store.write_table('table_name', self._df, index='index',
-                                partition_size=self._partition_size)
+        self._store.write_table(
+            'table_name', self._df, index='index',
+            partition_size=self._partition_size,
+        )
 
     def setup(self):
         self._df = fx.make_table(self._shape, astype='pandas')
@@ -34,7 +35,7 @@ class fs_write_pd(bmark.Benched):
         fs.drop_store('store_name')
 
 
-class fs_read_pd(bmark.Benched):
+class FeatherStoreReadPandas(bmark.Benched):
 
     def __init__(self, shape, rows=None, cols=None, name='', num_partitions=0):
         self.name = "Pandas read FeatherStore"
@@ -42,6 +43,7 @@ class fs_read_pd(bmark.Benched):
         self._rows = rows
         self._cols = cols
         self._num_partitions = num_partitions
+        super().__init__()
 
     def run(self):
         self._store.read_pandas('table_name', cols=self._cols, rows=self._rows)

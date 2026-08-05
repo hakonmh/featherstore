@@ -37,7 +37,7 @@ class WriteFS(bmark.Benched):
 
 
 @write_bench()
-class write_arrow(WriteFS):
+class WriteArrow(WriteFS):
 
     def __init__(self, shape, num_partitions=0, sorted=True):
         self.name = "FS write Arrow"
@@ -46,7 +46,7 @@ class write_arrow(WriteFS):
 
 
 @write_bench()
-class write_pandas(WriteFS):
+class WritePandas(WriteFS):
 
     def __init__(self, shape, num_partitions=0, sorted=True):
         self.name = "FS write Pandas"
@@ -55,7 +55,7 @@ class write_pandas(WriteFS):
 
 
 @write_bench()
-class write_polars(WriteFS):
+class WritePolars(WriteFS):
 
     def __init__(self, shape, num_partitions=0, sorted=True):
         self.name = "FS write Polars"

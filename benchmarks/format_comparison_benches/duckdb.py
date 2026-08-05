@@ -3,7 +3,7 @@ import duckdb
 import os
 
 
-class duckdb_write_pd(OtherIO):
+class DuckdbWritePandas(OtherIO):
 
     def __init__(self, shape):
         super().__init__(shape, astype='pandas')
@@ -27,7 +27,7 @@ class duckdb_write_pd(OtherIO):
         super().__exit__(exception_type, exception_value, traceback)
 
 
-class duckdb_read_pd(OtherIO):
+class DuckdbReadPandas(OtherIO):
 
     def __init__(self, shape):
         self.name = "Pandas read DuckDB"

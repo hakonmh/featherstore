@@ -1,0 +1,20 @@
+version: '3'
+
+tasks:
+  format-comparison:
+    desc: Compare FeatherStore read/write against CSV, Feather, Parquet, Pickle, and DuckDB
+    dir: benchmarks
+    cmds:
+      - uv run python format_comparison.py
+
+  table-operations:
+    desc: Benchmark FeatherStore table operations (read, write, append, insert, update, drop, astype)
+    dir: benchmarks
+    cmds:
+      - uv run python table_operations.py
+
+  log:
+    desc: Run table-operation benchmarks and log results to .dev/bmarks
+    dir: benchmarks
+    cmds:
+      - uv run python log_benchmarks.py

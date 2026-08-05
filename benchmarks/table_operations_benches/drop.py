@@ -1,12 +1,13 @@
 import bmark
+
 from . import _fixtures as fx
-import featherstore as fs
+from ._helpers import close_table, open_table, partition_size
 
 drop_bench = bmark.Benchmark()
 
 
 @drop_bench()
-class drop(bmark.Benched):
+class Drop(bmark.Benched):
 
     def __init__(self, shape, rows=None, cols=None, name='values', num_partitions=0):
         self._shape = shape
@@ -20,15 +21,11 @@ class drop(bmark.Benched):
 
     def setup(self):
         self._df = fx.make_table(self._shape, astype='arrow')
-        self._partition_size = fx.get_partition_size(self._df, self._num_partitions)
-
-        fs.create_database('db')
-        store = fs.create_store('store_name')
-        self._table = store.select_table('table_name')
+        self._partition_size = partition_size(self._df, self._num_partitions)
+        self._table = open_table()
 
     def teardown(self):
-        fs.drop_store('store_name')
-        fx.delete_db()
+        close_table()
 
     def __enter__(self):
         self._table.write(self._df, index='index', partition_size=self._partition_size)

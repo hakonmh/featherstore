@@ -1,0 +1,30 @@
+version: '3'
+
+vars:
+  DOCS_DIR: './docs'
+  DOCS_INDEX: '{{.DOCS_DIR}}/_build/html/index.html'
+
+tasks:
+  build:
+    desc: Clean build documentation
+    dir: '{{.DOCS_DIR}}'
+    cmds:
+      - cmd /c uv run sphinx-build -a -q -b html -E . _build/html
+    silent: false
+  clear:
+    desc: Clear documentation build
+    dir: '{{.DOCS_DIR}}'
+    cmds:
+      - cmd /c rmdir /s /q _build
+    silent: false
+  open:
+    desc: Open documentation in browser
+    cmds:
+      - cmd /c start "{{.DOCS_INDEX}}"
+    silent: true
+  lint:
+    desc: Lint documentation RST files
+    dir: '{{.DOCS_DIR}}'
+    cmds:
+      - cmd /c uvx doc8 --ignore-path _build/html --ignore D000,D004,D005 --max-line-length 120
+    silent: true

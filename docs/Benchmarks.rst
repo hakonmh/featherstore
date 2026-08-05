@@ -14,7 +14,7 @@ The benchmark ran on the following computer:
 VS Other Libraries
 ++++++++++++++++++
 
-The code used for these benchmarks can be found `here <https://github.com/hakonmh/featherstore/blob/master/benchmarks/external.py>`_.
+The code used for these benchmarks can be found `here <https://github.com/hakonmh/featherstore/blob/master/benchmarks/format_comparison.py>`_.
 
 First Dataset
 --------------
@@ -53,10 +53,10 @@ The data consists of strings, ints, uints, bools, floats, and datetimes, with
 Here's where FeatherStore really shines, matching Pickle on read speed and
 Feather on write speed.
 
-Internal Benchmarks
-+++++++++++++++++++
+Table Operation Benchmarks
+++++++++++++++++++++++++++
 
-The code used for these (and other) benchmarks can be found `here <https://github.com/hakonmh/featherstore/blob/master/benchmarks/internal.py>`_.
+The code used for these (and other) benchmarks can be found `here <https://github.com/hakonmh/featherstore/blob/master/benchmarks/table_operations.py>`_.
 
 Pandas vs Polars and Arrow
 --------------------------

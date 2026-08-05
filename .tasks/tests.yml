@@ -1,0 +1,22 @@
+version: '3'
+
+tasks:
+  all:
+    desc: Run all tests
+    cmds:
+      - cmd: bash .scripts/tests/run_all_tests.sh
+        platforms: [linux, darwin]
+      - cmd: powershell -NoProfile -File .scripts/tests/run_all_tests.ps1
+        platforms: [windows]
+  unit:
+    desc: Run unit tests
+    cmds:
+      - cmd /c uv run pytest -m unit tests/
+  integration:
+    desc: Run integration tests
+    cmds:
+      - cmd /c uv run pytest -m integration tests/
+  e2e:
+    desc: Run end-to-end tests
+    cmds:
+      - cmd /c uv run pytest -m e2e tests/

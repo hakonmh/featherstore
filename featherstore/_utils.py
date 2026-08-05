@@ -1,12 +1,15 @@
 import os
 from pathlib import Path
 import platform
-import subprocess
 import ctypes
 import re
+import time
 
 DB_MARKER_NAME = ".featherstore"
 DEFAULT_ARROW_INDEX_NAME = "__index_level_0__"
+
+_WINDOWS_DELETE_RETRIES = 10
+_WINDOWS_DELETE_BACKOFF_S = 0.001
 
 
 def touch(path, flag='ab'):
@@ -41,21 +44,25 @@ def __delete_folder_tree(path):
         rmtree(path)
     except FileNotFoundError:
         pass
-    except PermissionError as e:
-        # Force delete stubborn open file on Windows
-        cmd = ["del", "/f", "/a", f"{e.filename}"]
-        output = subprocess.run(cmd, shell=True, check=True,
-                                capture_output=True).stderr.decode()
-        if output.startswith('The process cannot access the file'):
-            raise e
-        else:
-            # Try to delete folder with stubborn file deleted
-            __delete_folder_tree(path)
+
+
+def _remove_path(path):
+    for attempt in range(_WINDOWS_DELETE_RETRIES):
+        try:
+            os.remove(path)
+            return
+        except FileNotFoundError:
+            return
+        except PermissionError:
+            is_last_attempt = attempt == _WINDOWS_DELETE_RETRIES - 1
+            if platform.system() != "Windows" or is_last_attempt:
+                raise
+            time.sleep(_WINDOWS_DELETE_BACKOFF_S * (attempt + 1))
 
 
 def rmtree(path):
     if __isfile(path):
-        os.remove(path)
+        _remove_path(path)
     else:
         for sub_path in os.listdir(path):
             sub_path = f'{path}/{sub_path}'

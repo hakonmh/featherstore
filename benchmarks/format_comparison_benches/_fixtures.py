@@ -1,9 +1,9 @@
 import os
 import shutil
-import sys
+
 import bmark
-sys.path.insert(0, '')
-from internal_benches import _fixtures as fx  # noqa: E402
+
+from table_operations_benches import _fixtures as fx
 
 BENCH_DIR = 'db'
 BENCH_MARKER = '.bmark'
@@ -27,6 +27,33 @@ class OtherIO(bmark.Benched):
     def __exit__(self, exception_type, exception_value, traceback):
         if os.path.exists(self._path):
             os.remove(self._path)
+
+
+class ReadFileIO(OtherIO):
+
+    def __init__(self, shape, extension, name):
+        self.name = name
+        super().__init__(shape, astype='pandas')
+        self._path += extension
+
+    def setup(self):
+        super().setup()
+        self._write_file()
+        del self._df
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        pass
+
+    def teardown(self):
+        if os.path.exists(self._path):
+            os.remove(self._path)
+        return super().teardown()
+
+    def _write_file(self):
+        raise NotImplementedError
 
 
 def _setup():

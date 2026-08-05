@@ -1,0 +1,18 @@
+version: '3'
+
+tasks:
+  all:
+    desc: Run ruff lint and format checks
+    cmds:
+      - task: ruff
+      - task: format
+  ruff:
+    desc: Lint Python sources with ruff
+    cmds:
+      - cmd /c uv run ruff check lash main.py tests
+    silent: false
+  format:
+    desc: Check Python formatting with ruff
+    cmds:
+      - cmd /c uv run ruff format --check lash main.py tests
+    silent: false

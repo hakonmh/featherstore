@@ -1,9 +1,10 @@
 import bmark
-from . import _fixtures as fx
-import featherstore as fs
 import pyarrow as pa
 
-TYPE_MAP = {
+from . import _fixtures as fx
+from ._helpers import close_table, open_table, partition_size
+
+SOURCE_DTYPE_MAP = {
     pa.float16(): 'float',
     pa.float32(): 'float',
     pa.float64(): 'float',
@@ -27,32 +28,28 @@ astype_bench = bmark.Benchmark()
 
 
 @astype_bench()
-class astype(bmark.Benched):
+class Astype(bmark.Benched):
 
     def __init__(self, shape, cols, dtype=None, to=None, num_partitions=0):
         self._shape = shape
-        self._dtype = _convert_to_pa_dtype(dtype)
+        self._dtype = fx.to_pa_dtype(dtype)
         self._to = {col: to for col in cols}
         self._num_partitions = num_partitions
-        to = _convert_to_pa_dtype(to)
-        self.name = f"FS astype {self._dtype} to {to}"
+        to_dtype = fx.to_pa_dtype(to)
+        self.name = f"FS astype {self._dtype} to {to_dtype}"
 
     def run(self):
         self._table.astype(self._to)
 
     def setup(self):
-        dtype = TYPE_MAP[self._dtype]
-        df = fx.make_table(self._shape, astype='arrow', dtype=dtype)
+        source_dtype = SOURCE_DTYPE_MAP[self._dtype]
+        df = fx.make_table(self._shape, astype='arrow', dtype=source_dtype)
         self._df = fx.change_dtype(df, to=self._dtype)
-        self._partition_size = fx.get_partition_size(self._df, self._num_partitions)
-
-        fs.create_database('db')
-        store = fs.create_store('store_name')
-        self._table = store.select_table('table_name')
+        self._partition_size = partition_size(self._df, self._num_partitions)
+        self._table = open_table()
 
     def teardown(self):
-        fs.drop_store('store_name')
-        fx.delete_db()
+        close_table()
 
     def __enter__(self):
         self._table.write(self._df, index='index', partition_size=self._partition_size)
@@ -60,17 +57,3 @@ class astype(bmark.Benched):
 
     def __exit__(self, exc, value, traceback):
         self._table.drop_table()
-
-
-def _convert_to_pa_dtype(dtype):
-    if __is_valid_dtype(dtype):
-        dtype = pa.from_numpy_dtype(dtype)
-    return dtype
-
-
-def __is_valid_dtype(item):
-    try:
-        pa.from_numpy_dtype(item)
-        return True
-    except Exception:
-        return False
