@@ -1,36 +1,36 @@
+from featherstore import snapshot
 from featherstore.connection import (
     connect,
-    disconnect,
     create_database,
     current_db,
-    is_connected,
     database_exists,
+    disconnect,
+    is_connected,
 )
 from featherstore.store import (
+    Store,
     create_store,
-    rename_store,
     drop_store,
     list_stores,
+    rename_store,
     store_exists,
-    Store,
 )
 from featherstore.table import Table
-from featherstore import snapshot
 
 __version__ = "0.3.0"
 __all__ = [
-    "connect",
-    "disconnect",
-    "create_database",
-    "current_db",
-    "is_connected",
-    "database_exists",
-    "create_store",
-    "rename_store",
-    "drop_store",
-    "list_stores",
-    "store_exists",
     "Store",
     "Table",
+    "connect",
+    "create_database",
+    "create_store",
+    "current_db",
+    "database_exists",
+    "disconnect",
+    "drop_store",
+    "is_connected",
+    "list_stores",
+    "rename_store",
     "snapshot",
+    "store_exists",
 ]

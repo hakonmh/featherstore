@@ -1,4 +1,9 @@
+import os
+
 import pytest
+
+import featherstore as fs
+
 from .fixtures import (
     DB_PATH,
     STORE_NAME,
@@ -8,9 +13,6 @@ from .fixtures import (
     get_partition_size,
     make_table,
 )
-
-import os
-import featherstore as fs
 
 SNAPSHOT_PATH = os.path.join(DB_PATH, "table_snapshot.tar.xz")
 

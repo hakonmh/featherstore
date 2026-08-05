@@ -3,6 +3,7 @@ import polars as pl
 import pyarrow as pa
 
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
+
 from . import _utils
 
 

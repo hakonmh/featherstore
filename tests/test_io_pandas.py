@@ -1,4 +1,7 @@
+import numpy as np
+import pandas as pd
 import pytest
+
 from .fixtures import (
     TABLE_NAME,
     assert_df_equals,
@@ -11,9 +14,6 @@ from .fixtures import (
     sorted_string_index,
     split_table,
 )
-
-import pandas as pd
-import numpy as np
 
 
 def test_that_rangeindex_is_converted_back(store):

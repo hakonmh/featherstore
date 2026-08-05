@@ -1,5 +1,7 @@
 import bmark
+
 import featherstore as fs
+
 from . import _fixtures as fx
 
 write_bench = bmark.Benchmark()

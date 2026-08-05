@@ -126,7 +126,7 @@ def _format_pd_metadata(df, index_name):
 
 
 def _make_pd_metadata(df, index_name):
-    metadata = dict()
+    metadata = {}
 
     metadata["index_columns"] = [index_name]
     metadata["column_indexes"] = [
@@ -271,7 +271,7 @@ def update_metadata(table, df, old_partition_names, **kwargs):
 def _make_partition_metadata(df):
     metadata = {}
 
-    first_partition = tuple(df.values())[0]
+    first_partition = next(iter(df.values()))
     index_col_name = _table_utils.get_index_name(first_partition)
     for name, partition in df.items():
         data = {

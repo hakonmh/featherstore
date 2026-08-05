@@ -1,4 +1,8 @@
+import numpy as np
+import polars as pl
+import pyarrow as pa
 import pytest
+
 from .fixtures import (
     DEFAULT_ARROW_INDEX_NAME,
     TABLE_NAME,
@@ -8,11 +12,6 @@ from .fixtures import (
     make_table,
     to_arrow_dtype,
 )
-
-import polars as pl
-import pyarrow as pa
-import numpy as np
-
 
 TYPE_MAP = {
     pa.float16(): "float",
@@ -57,7 +56,6 @@ kwargs_as_list = True
         (pa.large_string(), pa.string()),
         (np.int64, np.int32),
         (np.float32, np.float64),
-        (np.int64, np.int32),
         (np.int32, np.float64),
         (np.uint32, np.int32),
         (bool, np.int16),

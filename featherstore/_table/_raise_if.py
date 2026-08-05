@@ -142,15 +142,14 @@ def rows_items_not_all_same_type(rows):
         rows = rows.values()
         if rows is not None:
             pa.array(rows)
-    except Exception:
+    except (TypeError, pa.ArrowInvalid, pa.ArrowTypeError):
         raise TypeError("'rows' items not all of same type")
 
 
 def rows_argument_items_type_not_same_as_index(rows, table_data):
     index_dtype = table_data["index_dtype"]
-    if rows:
-        if not _rows_type_matches_index(rows, index_dtype):
-            raise TypeError("'rows' type doesn't match table index dtype")
+    if rows and not _rows_type_matches_index(rows, index_dtype):
+        raise TypeError("'rows' type doesn't match table index dtype")
 
 
 def _rows_type_matches_index(rows, index_dtype):
@@ -218,7 +217,7 @@ def _isinstance_temporal(obj):
         else:
             _ = pd.to_datetime(obj)
         is_temporal = True
-    except Exception:
+    except (ValueError, TypeError, pd.errors.OutOfBoundsDatetime):
         is_temporal = False
     return is_temporal
 

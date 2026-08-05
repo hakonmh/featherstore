@@ -1,8 +1,9 @@
-from .fixtures import DB_PATH
-
 import os
 import shutil
+
 import featherstore as fs
+
+from .fixtures import DB_PATH
 
 
 def test_create_database():

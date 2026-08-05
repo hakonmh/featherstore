@@ -1,5 +1,6 @@
 import os
 import pickle
+
 from featherstore import _utils
 
 METADATA_FOLDER_NAME = ".metadata"
@@ -32,7 +33,7 @@ class Metadata:
         return self.index.keys()
 
     def read(self):
-        items = dict()
+        items = {}
         with open(self._db_path, "rb") as f:
             for key in self.keys():
                 byte_offset = self.index[key]

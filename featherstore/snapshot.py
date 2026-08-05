@@ -1,7 +1,8 @@
-import tarfile
 import os
 import pickle
-from datetime import datetime
+import tarfile
+from datetime import UTC, datetime
+
 from featherstore.connection import Connection, current_db
 
 METADATA_FILE_NAME = "metadata.pkl"
@@ -194,7 +195,7 @@ def __raise_if_input_type_is_not_valid(input_type):
 
 
 def __create_snapshot_metadata(metadata_path, source_type):
-    snapshot_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    snapshot_time = datetime.now(tz=UTC).strftime("%Y-%m-%d %H:%M:%S")
     metadata = {"type": source_type, "snapshot_time": snapshot_time}
     with open(metadata_path, "wb") as f:
         f.write(pickle.dumps(metadata))

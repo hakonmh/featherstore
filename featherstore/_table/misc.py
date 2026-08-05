@@ -1,6 +1,6 @@
 from featherstore import store
-from featherstore.connection import Connection
 from featherstore._table import _raise_if
+from featherstore.connection import Connection
 
 
 def can_init_table(table_name, store_name):

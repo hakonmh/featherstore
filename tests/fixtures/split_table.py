@@ -6,6 +6,7 @@ import polars as pl
 import pyarrow as pa
 
 from featherstore._table._table_utils import DEFAULT_ARROW_INDEX_NAME
+
 from . import _utils
 from .convert_table import convert_table
 
@@ -159,10 +160,11 @@ def split_pa_rows(df, rows, index_name, iloc):
     mask = pa.compute.invert(mask)
     df = df.filter(mask)
 
-    if index_name in (DEFAULT_ARROW_INDEX_NAME, "__rangeindex__"):
-        if _utils.is_rangeindex(df[index_name]):
-            df = df.drop([index_name])
-            other = other.drop([index_name])
+    if index_name in (DEFAULT_ARROW_INDEX_NAME, "__rangeindex__") and _utils.is_rangeindex(
+        df[index_name]
+    ):
+        df = df.drop([index_name])
+        other = other.drop([index_name])
     return df, other
 
 
@@ -170,7 +172,7 @@ def _format_rows_arg(rows, *, to_dtype=None):
     if to_dtype:
         is_dict = isinstance(rows, dict)
         if is_dict:
-            keyword = tuple(rows.keys())[0]
+            keyword = next(iter(rows.keys()))
             rows = rows[keyword]
 
         if not __is_collection(rows):
@@ -204,7 +206,7 @@ def _filter_arrow_table(df, rows, index_col_name):
         row_indices = pa.compute.index_in(rows, value_set=index)
         df = df.take(row_indices)
         return df
-    keyword = tuple(rows.keys())[0]
+    keyword = next(iter(rows.keys()))
     rows = rows[keyword]
 
     if keyword == "before":

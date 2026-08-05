@@ -1,14 +1,14 @@
-import os
 import bisect
+import itertools
+import os
 
 import pyarrow as pa
 
-from featherstore.connection import Connection
 from featherstore import _utils
-from featherstore._table import _raise_if
-from featherstore._table import _table_utils
-from featherstore._table.read import get_partition_names as _get_partition_names
+from featherstore._table import _raise_if, _table_utils
 from featherstore._table._indexers import ColIndexer, RowIndexer
+from featherstore._table.read import get_partition_names as _get_partition_names
+from featherstore.connection import Connection
 
 
 def can_drop_rows_from_table(table, rows):
@@ -136,7 +136,7 @@ def _idx_still_default_after_dropping_rows_list(rows, partition_metadata):
     last_row_value = rows[-1]
 
     last_row_removed = last_row_value == last_stored_value
-    rows_are_continuous = all(a + 1 == b for a, b in zip(rows, rows[1:]))
+    rows_are_continuous = all(a + 1 == b for a, b in itertools.pairwise(rows))
     values_removed_only_from_end_of_table = last_row_removed and rows_are_continuous
     if values_removed_only_from_end_of_table:
         _has_still_default_index = True
@@ -210,7 +210,7 @@ def create_partitions(df, rows_per_partition, partition_names):
 
 
 def get_partitions_to_drop(df, partition_names):
-    names = [x for x in partition_names if x not in df.keys()]
+    names = [x for x in partition_names if x not in df]
     return names
 
 

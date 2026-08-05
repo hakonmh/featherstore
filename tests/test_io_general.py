@@ -1,4 +1,9 @@
+from contextlib import nullcontext
+
+import pandas as pd
+import pyarrow as pa
 import pytest
+
 from .fixtures import (
     TABLE_NAME,
     assert_df_equals,
@@ -20,10 +25,6 @@ from .fixtures import (
     unsorted_int_index,
     unsorted_string_index,
 )
-
-from contextlib import nullcontext
-import pandas as pd
-import pyarrow as pa
 
 
 @pytest.mark.parametrize("astype", ["pandas[series]", "polars[series]", "arrow"])
@@ -109,7 +110,7 @@ def test_empty_df_io(store, astype):
 def _invalid_table_dtype():
     df = make_table(astype="pandas")
     args = [TABLE_NAME, df.values]
-    kwargs = dict()
+    kwargs = {}
     return args, kwargs
 
 
@@ -122,7 +123,7 @@ def _invalid_index_dtype():
     df = df.add_column(0, "idx", index)
 
     args = [TABLE_NAME, df]
-    kwargs = dict(index="idx")
+    kwargs = {"index": "idx"}
     return args, kwargs
 
 
@@ -132,7 +133,7 @@ def _duplicate_index():
     df = pd.concat([df, df1])
 
     args = [TABLE_NAME, df]
-    kwargs = dict()
+    kwargs = {}
     return args, kwargs
 
 
@@ -141,7 +142,7 @@ def _index_not_in_cols():
     df.column_names = ["c0", "c1"]
 
     args = [TABLE_NAME, df]
-    kwargs = dict(index="c2")
+    kwargs = {"index": "c2"}
     return args, kwargs
 
 
@@ -150,7 +151,7 @@ def _invalid_col_names_dtype():
     df.columns = ["c0", "c1", "c2", 3, "c4"]
 
     args = [TABLE_NAME, df]
-    kwargs = dict()
+    kwargs = {}
     return args, kwargs
 
 
@@ -159,28 +160,28 @@ def _duplicate_col_names():
     df.columns = ["c0", "c0"]
 
     args = [TABLE_NAME, df]
-    kwargs = dict()
+    kwargs = {}
     return args, kwargs
 
 
 def _invalid_warnings_arg():
     df = make_table()
     args = [TABLE_NAME, df]
-    kwargs = dict(warnings="abcd")
+    kwargs = {"warnings": "abcd"}
     return args, kwargs
 
 
 def _invalid_errors_arg():
     df = make_table()
     args = [TABLE_NAME, df]
-    kwargs = dict(errors="abcd")
+    kwargs = {"errors": "abcd"}
     return args, kwargs
 
 
 def _invalid_partition_size_dtype():
     df = make_table()
     args = [TABLE_NAME, df]
-    kwargs = dict(partition_size=3.15)
+    kwargs = {"partition_size": 3.15}
     return args, kwargs
 
 
@@ -232,7 +233,7 @@ def test_trying_to_overwrite_existing_table(store, errors, exception):
         assert_table_equals(table, expected)
 
 
-INVALID_TABLE_NAME_DTYPE = [21, dict()]
+INVALID_TABLE_NAME_DTYPE = [21, {}]
 INVALID_ROW_DTYPE = [TABLE_NAME, {"rows": 14}]
 ROW_ELEMENTS_NOT_ALL_SAME_DTYPE = [TABLE_NAME, {"rows": [5, "ab", 7.13]}]
 ROWS_NOT_SAME_DTYPE_AS_INDEX = [TABLE_NAME, {"rows": ["index", "not", "string"]}]

@@ -7,7 +7,6 @@ subset, or invoke via ``python table_operations.py`` or ``task bench:table-opera
 
 import numpy as np
 import pyarrow as pa
-
 from common import table_header
 from table_operations_benches import append, astype, drop, insert, read, update, write
 

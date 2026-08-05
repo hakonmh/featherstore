@@ -1,4 +1,6 @@
+import pandas as pd
 import pytest
+
 from .fixtures import (
     TABLE_NAME,
     assert_table_equals,
@@ -13,9 +15,6 @@ from .fixtures import (
     split_table,
     unsorted_int_index,
 )
-
-import pandas as pd
-
 
 DROPPED_ROWS_INDICES = [2, 5, 7, 10]
 

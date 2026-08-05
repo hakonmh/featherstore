@@ -1,5 +1,6 @@
-from ._fixtures import OtherIO, ReadFileIO
 import pandas as pd
+
+from ._fixtures import OtherIO, ReadFileIO
 
 
 class PandasWriteCsv(OtherIO):

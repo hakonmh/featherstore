@@ -2,8 +2,9 @@ from collections.abc import MappingView
 from itertools import chain
 
 import pandas as pd
-from featherstore._utils import filter_items_like_pattern
+
 from featherstore._table import _table_utils
+from featherstore._utils import filter_items_like_pattern
 
 
 class Indexer:
@@ -56,7 +57,7 @@ class Indexer:
                 item = items.index[0]
             else:
                 item = items[0]
-        except Exception:
+        except (StopIteration, IndexError, KeyError, TypeError):
             item = None
         return _table_utils.is_collection(item)
 
@@ -94,9 +95,8 @@ class Indexer:
         return new
 
     def __getitem__(self, index):
-        if self.keys() is not None:
-            if index in self.keys():
-                index = self.keys().index(index)
+        if self.keys() is not None and index in self.keys():
+            index = self.keys().index(index)
         if self.values() is not None:
             return self.values()[index]
 

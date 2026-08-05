@@ -1,4 +1,6 @@
+import pandas as pd
 import pytest
+
 from .fixtures import (
     TABLE_NAME,
     assert_table_equals,
@@ -11,8 +13,6 @@ from .fixtures import (
     sorted_string_index,
     split_table,
 )
-
-import pandas as pd
 
 ARGS = [
     (default_index, [10, 24, 0, 13], None),

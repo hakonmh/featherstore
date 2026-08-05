@@ -1,10 +1,12 @@
-import pytest
-from .fixtures import DB_PATH, STORE_NAME, MD_NAME
-
 import os
 import shutil
+
+import pytest
+
 import featherstore as fs
 from featherstore import _metadata
+
+from .fixtures import DB_PATH, MD_NAME, STORE_NAME
 
 
 @pytest.fixture(scope="function", name="store")

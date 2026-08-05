@@ -1,11 +1,9 @@
 import pyarrow as pa
 
-from featherstore.connection import Connection
 from featherstore import _utils
+from featherstore._table import _raise_if, _table_utils, common
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
-from featherstore._table import _raise_if
-from featherstore._table import _table_utils
-from featherstore._table import common
+from featherstore.connection import Connection
 
 
 def can_append_table(table, df, warnings):
@@ -27,11 +25,10 @@ def can_append_table(table, df, warnings):
 
     index = _table_utils.get_index_if_exists(df, index_name)
     index_is_provided = index is not None
-    if not has_default_index or index_is_provided:
-        if not common.index_is_default(index):
-            _raise_if_append_data_not_ordered_after_stored_data(
-                index, table._partition_data
-            )
+    if (not has_default_index or index_is_provided) and not common.index_is_default(
+        index
+    ):
+        _raise_if_append_data_not_ordered_after_stored_data(index, table._partition_data)
 
     raise_if_index_not_exist(index, has_default_index)
     _raise_if.index_values_contains_duplicates(index)

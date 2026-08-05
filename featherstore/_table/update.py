@@ -1,8 +1,9 @@
 import warnings
+
 import pandas as pd
 
-from featherstore.connection import Connection
 from featherstore._table import _raise_if
+from featherstore.connection import Connection
 
 
 def can_update_table(table, df):
