@@ -301,7 +301,7 @@ def get_index_if_exists(df, index_name):
     else:
         try:
             index = df[index_name]
-        except (KeyError, TypeError, IndexError):
+        except (KeyError, TypeError, IndexError, pl.exceptions.ColumnNotFoundError):
             index = None
     return convert_to_arrow(index, as_array=True)
 

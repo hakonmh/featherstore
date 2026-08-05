@@ -45,7 +45,8 @@ def __is_valid_dtype(item):
 
 def _raise_if_new_index_type_is_not_valid(cols, table_data):
     index_name = table_data["index_name"]
-    if index_name in cols:
+    col_keys = cols.keys()
+    if col_keys is not None and index_name in col_keys:
         _raise_if.index_type_not_supported(cols[index_name])
 
 
