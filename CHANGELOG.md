@@ -7,7 +7,7 @@ Changelog
 **Warning**: This update causes some API-breaking changes:
 
 * Raised minimum Python version from 3.8 to 3.11
-* Raised dependency floors to `pandas>=2.2.0`, `polars[timezone]>=1.0.0`,
+* Raised dependency floors to `pandas>=2.2.0`, `polars[timezone]>=1.21.0`,
   and `pyarrow>=14.0.0` (upper bounds removed)
 * Renamed `Table.insert()` to `Table.insert_rows()` and
   `Table.add_columns()` to `Table.insert_columns()`
@@ -42,6 +42,15 @@ Enhancements:
 * Added Taskfile benchmark tasks: `bench:format-comparison`,
   `bench:table-operations`, and `bench:log`
 * Internal benchmark logs now write to `.dev/bmarks`
+* Broadened supported index types (decimal, float, uint, binary, duration, and
+  more) with stricter validation in `_raise_if` and `_table_utils`
+* Replaced test-suite star imports with explicit fixture imports; added `__all__`
+  to `tests/fixtures`
+* Applied ruff formatting across `featherstore`, `tests`, and `benchmarks`
+* Added e2e workflow test and shared fixtures for astype, expected-table, and
+  hardcoded-table scenarios
+* Raised minimum Polars version to 1.21.0 (first release with `n_unique()`
+  support for decimal index dtypes)
 
 Bugfixes:
 
