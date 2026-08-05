@@ -10,3 +10,4 @@ This page gives an overview of all public FeatherStore objects, functions and me
    API/Store
    API/Table
    API/Snapshot
+   API/Exceptions

@@ -349,6 +349,7 @@
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Store</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Table.html">Table</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Snapshot.html">Snapshot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Exceptions.html">Exceptions</a></li>
 </ul>
 </div>
 </nav></div>
@@ -413,7 +414,7 @@
 <span id="store"></span><h1>Store<a class="headerlink" href="#module-featherstore.store" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.store.create_store">
-<span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">create_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L10-L32"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.create_store" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">create_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L16-L51"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.create_store" title="Link to this definition">#</a></dt>
 <dd><p>Creates a new store.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -427,12 +428,21 @@ default <cite>raise</cite></p></li>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#featherstore.store.Store" title="featherstore.store.Store">Store</a></p>
 </dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreAlreadyExistsError" title="featherstore.exceptions.StoreAlreadyExistsError"><strong>StoreAlreadyExistsError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">errors='raise'</span></code> and the store already exists.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenStoreNameError" title="featherstore.exceptions.ForbiddenStoreNameError"><strong>ForbiddenStoreNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is reserved.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is not a str.</p></li>
+<li><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">errors</span></code> is not <code class="docutils literal notranslate"><span class="pre">'raise'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.store.rename_store">
-<span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">rename_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L35-L45"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.rename_store" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">rename_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L54-L77"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.rename_store" title="Link to this definition">#</a></dt>
 <dd><p>Renames a store</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -441,12 +451,21 @@ default <cite>raise</cite></p></li>
 <li><p><strong>to</strong> (<em>str</em>) – The new name of the store.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreAlreadyExistsError" title="featherstore.exceptions.StoreAlreadyExistsError"><strong>StoreAlreadyExistsError</strong></a> – If the new store name already exists.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenStoreNameError" title="featherstore.exceptions.ForbiddenStoreNameError"><strong>ForbiddenStoreNameError</strong></a> – If the new store name is reserved.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> or <code class="docutils literal notranslate"><span class="pre">to</span></code> is not a str.</p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.store.drop_store">
-<span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">drop_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L48-L64"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.drop_store" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">drop_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L80-L109"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.drop_store" title="Link to this definition">#</a></dt>
 <dd><p>Deletes a store</p>
 <p><em>Warning</em>: You can not delete a store containing tables. All tables must
 be deleted first.</p>
@@ -458,12 +477,21 @@ be deleted first.</p>
 <cite>raise</cite> or <cite>ignore</cite>, by default <cite>raise</cite></p></li>
 </ul>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">errors='raise'</span></code> and the store does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotEmptyError" title="featherstore.exceptions.StoreNotEmptyError"><strong>StoreNotEmptyError</strong></a> – If the store still contains tables.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is not a str.</p></li>
+<li><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">errors</span></code> is not <code class="docutils literal notranslate"><span class="pre">'raise'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.store.list_stores">
-<span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">list_stores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">like</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L67-L97"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.list_stores" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">list_stores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">like</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L112-L142"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.list_stores" title="Link to this definition">#</a></dt>
 <dd><p>Lists stores in database</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -486,12 +514,12 @@ be deleted first.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.store.store_exists">
-<span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">store_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L100-L102"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.store_exists" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">store_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L145-L147"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.store_exists" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="featherstore.store.Store">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">Store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L105-L354"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">Store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L150-L566"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A class for doing basic tasks with tables within a store.</p>
 <p>Stores are directories for organizing data in logical groups
@@ -500,21 +528,37 @@ within your FeatherStore database.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>store_name</strong> (<em>str</em>) – The name of the store to be selected</p>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenStoreNameError" title="featherstore.exceptions.ForbiddenStoreNameError"><strong>ForbiddenStoreNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is reserved.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is not a str.</p></li>
+</ul>
+</dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.store.Store.rename">
-<span class="sig-name descname"><span class="pre">rename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L122-L136"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.rename" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">rename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L178-L203"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.rename" title="Link to this definition">#</a></dt>
 <dd><p>Renames the current store</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>to</strong> (<em>str</em>) – The new name of the store.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreAlreadyExistsError" title="featherstore.exceptions.StoreAlreadyExistsError"><strong>StoreAlreadyExistsError</strong></a> – If the new store name already exists.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenStoreNameError" title="featherstore.exceptions.ForbiddenStoreNameError"><strong>ForbiddenStoreNameError</strong></a> – If the new store name is reserved.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">to</span></code> is not a str.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.store.Store.drop">
-<span class="sig-name descname"><span class="pre">drop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L138-L150"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.drop" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">drop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L205-L217"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.drop" title="Link to this definition">#</a></dt>
 <dd><p>Deletes the current store</p>
 <p><em>Warning</em>: You can not delete a store containing tables. All tables must
 be deleted first.</p>
@@ -528,7 +572,7 @@ be deleted first.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.store.Store.list_tables">
-<span class="sig-name descname"><span class="pre">list_tables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">like</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L152-L177"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.list_tables" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">list_tables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">like</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L219-L244"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.list_tables" title="Link to this definition">#</a></dt>
 <dd><p>Lists tables in store</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -551,12 +595,12 @@ be deleted first.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.store.Store.table_exists">
-<span class="sig-name descname"><span class="pre">table_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L179-L180"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.table_exists" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">table_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L246-L247"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.table_exists" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.store.Store.read_arrow">
-<span class="sig-name descname"><span class="pre">read_arrow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L182-L202"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.read_arrow" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">read_arrow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L249-L290"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.read_arrow" title="Link to this definition">#</a></dt>
 <dd><p>Reads PyArrow Table from store</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -573,12 +617,25 @@ Windows and <cite>True</cite> on other systems.</p></li>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>pyarrow.Table</p>
 </dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.TableNotFoundError" title="featherstore.exceptions.TableNotFoundError"><strong>TableNotFoundError</strong></a> – If the table does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ColumnNotFoundError" title="featherstore.exceptions.ColumnNotFoundError"><strong>ColumnNotFoundError</strong></a> – If any requested column is not in the table.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.RowNotFoundError" title="featherstore.exceptions.RowNotFoundError"><strong>RowNotFoundError</strong></a> – If any requested row is not in the table.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexTypeMismatchError" title="featherstore.exceptions.IndexTypeMismatchError"><strong>IndexTypeMismatchError</strong></a> – If row values do not match the table index dtype.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code>, <code class="docutils literal notranslate"><span class="pre">cols</span></code>, or <code class="docutils literal notranslate"><span class="pre">rows</span></code> has an invalid type.</p></li>
+<li><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">mmap</span></code> is not a bool or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.store.Store.read_pandas">
-<span class="sig-name descname"><span class="pre">read_pandas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L204-L224"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.read_pandas" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">read_pandas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L292-L333"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.read_pandas" title="Link to this definition">#</a></dt>
 <dd><p>Reads Pandas DataFrame or Series from store</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -595,12 +652,25 @@ Windows and <cite>True</cite> on other systems.</p></li>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>pandas.DataFrame or pandas.Series</p>
 </dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.TableNotFoundError" title="featherstore.exceptions.TableNotFoundError"><strong>TableNotFoundError</strong></a> – If the table does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ColumnNotFoundError" title="featherstore.exceptions.ColumnNotFoundError"><strong>ColumnNotFoundError</strong></a> – If any requested column is not in the table.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.RowNotFoundError" title="featherstore.exceptions.RowNotFoundError"><strong>RowNotFoundError</strong></a> – If any requested row is not in the table.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexTypeMismatchError" title="featherstore.exceptions.IndexTypeMismatchError"><strong>IndexTypeMismatchError</strong></a> – If row values do not match the table index dtype.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code>, <code class="docutils literal notranslate"><span class="pre">cols</span></code>, or <code class="docutils literal notranslate"><span class="pre">rows</span></code> has an invalid type.</p></li>
+<li><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">mmap</span></code> is not a bool or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.store.Store.read_polars">
-<span class="sig-name descname"><span class="pre">read_polars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L226-L246"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.read_polars" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">read_polars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L335-L376"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.read_polars" title="Link to this definition">#</a></dt>
 <dd><p>Reads Polars DataFrame or Series from store</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -617,12 +687,25 @@ Windows and <cite>True</cite> on other systems.</p></li>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>polars.DataFrame or polars.Series</p>
 </dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.TableNotFoundError" title="featherstore.exceptions.TableNotFoundError"><strong>TableNotFoundError</strong></a> – If the table does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ColumnNotFoundError" title="featherstore.exceptions.ColumnNotFoundError"><strong>ColumnNotFoundError</strong></a> – If any requested column is not in the table.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.RowNotFoundError" title="featherstore.exceptions.RowNotFoundError"><strong>RowNotFoundError</strong></a> – If any requested row is not in the table.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexTypeMismatchError" title="featherstore.exceptions.IndexTypeMismatchError"><strong>IndexTypeMismatchError</strong></a> – If row values do not match the table index dtype.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code>, <code class="docutils literal notranslate"><span class="pre">cols</span></code>, or <code class="docutils literal notranslate"><span class="pre">rows</span></code> has an invalid type.</p></li>
+<li><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">mmap</span></code> is not a bool or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.store.Store.write_table">
-<span class="sig-name descname"><span class="pre">write_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">134217728</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L248-L289"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.write_table" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">write_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">134217728</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L378-L448"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.write_table" title="Link to this definition">#</a></dt>
 <dd><p>Writes a DataFrame to the current store as a partitioned table</p>
 <p>The DataFrame index column, if provided, must be either of type int, str,
 or datetime. FeatherStore sorts the DataFrame by the index before storage.</p>
@@ -641,12 +724,29 @@ provided, by default <cite>None</cite></p></li>
 Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</cite></p></li>
 </ul>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.TableAlreadyExistsError" title="featherstore.exceptions.TableAlreadyExistsError"><strong>TableAlreadyExistsError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">errors='raise'</span></code> and the table already exists.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.DuplicateColumnNamesError" title="featherstore.exceptions.DuplicateColumnNamesError"><strong>DuplicateColumnNamesError</strong></a> – If column names are not unique.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.DuplicateIndexValuesError" title="featherstore.exceptions.DuplicateIndexValuesError"><strong>DuplicateIndexValuesError</strong></a> – If index values are not unique.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexNameMismatchError" title="featherstore.exceptions.IndexNameMismatchError"><strong>IndexNameMismatchError</strong></a> – If the index name does not match the stored table.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexNotInColumnsError" title="featherstore.exceptions.IndexNotInColumnsError"><strong>IndexNotInColumnsError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">index</span></code> is not among the table columns.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexTypeMismatchError" title="featherstore.exceptions.IndexTypeMismatchError"><strong>IndexTypeMismatchError</strong></a> – If the index type does not match the stored table.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.UnsupportedIndexTypeError" title="featherstore.exceptions.UnsupportedIndexTypeError"><strong>UnsupportedIndexTypeError</strong></a> – If the index type is not supported.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.MultiTypeColumnError" title="featherstore.exceptions.MultiTypeColumnError"><strong>MultiTypeColumnError</strong></a> – If a column contains multiple dtypes.</p></li>
+<li><p><strong>TypeError</strong> – If arguments have invalid types.</p></li>
+<li><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">errors</span></code> or <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is invalid.</p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.store.Store.append_table">
-<span class="sig-name descname"><span class="pre">append_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L291-L304"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.append_table" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">append_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L450-L494"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.append_table" title="Link to this definition">#</a></dt>
 <dd><p>Appends data to a table</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -657,12 +757,30 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</cite></p></li>
 </ul>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.TableNotFoundError" title="featherstore.exceptions.TableNotFoundError"><strong>TableNotFoundError</strong></a> – If the table does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.AppendIndexError" title="featherstore.exceptions.AppendIndexError"><strong>AppendIndexError</strong></a> – If append index is not strictly after stored data.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ColumnDtypeMismatchError" title="featherstore.exceptions.ColumnDtypeMismatchError"><strong>ColumnDtypeMismatchError</strong></a> – If column dtypes are incompatible.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ColumnMismatchError" title="featherstore.exceptions.ColumnMismatchError"><strong>ColumnMismatchError</strong></a> – If column names do not match the stored table.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.DuplicateColumnNamesError" title="featherstore.exceptions.DuplicateColumnNamesError"><strong>DuplicateColumnNamesError</strong></a> – If column names are not unique.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.DuplicateIndexValuesError" title="featherstore.exceptions.DuplicateIndexValuesError"><strong>DuplicateIndexValuesError</strong></a> – If index values are not unique.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexNameMismatchError" title="featherstore.exceptions.IndexNameMismatchError"><strong>IndexNameMismatchError</strong></a> – If the index name does not match the stored table.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexTypeMismatchError" title="featherstore.exceptions.IndexTypeMismatchError"><strong>IndexTypeMismatchError</strong></a> – If the index type does not match the stored table.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.MissingIndexError" title="featherstore.exceptions.MissingIndexError"><strong>MissingIndexError</strong></a> – If an index is required but not provided.</p></li>
+<li><p><strong>TypeError</strong> – If arguments have invalid types.</p></li>
+<li><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is invalid.</p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.store.Store.rename_table">
-<span class="sig-name descname"><span class="pre">rename_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L306-L316"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.rename_table" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">rename_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L496-L519"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.rename_table" title="Link to this definition">#</a></dt>
 <dd><p>Renames a table</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -671,12 +789,21 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 <li><p><strong>to</strong> (<em>str</em>) – The new name of the table.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> or <code class="docutils literal notranslate"><span class="pre">to</span></code> is reserved.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.TableAlreadyExistsError" title="featherstore.exceptions.TableAlreadyExistsError"><strong>TableAlreadyExistsError</strong></a> – If the new table name already exists.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> or <code class="docutils literal notranslate"><span class="pre">to</span></code> is not a str.</p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.store.Store.drop_table">
-<span class="sig-name descname"><span class="pre">drop_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L318-L326"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.drop_table" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">drop_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L521-L529"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.drop_table" title="Link to this definition">#</a></dt>
 <dd><p>Deletes a table</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -687,7 +814,7 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.store.Store.select_table">
-<span class="sig-name descname"><span class="pre">select_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L328-L342"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.select_table" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">select_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L531-L545"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.select_table" title="Link to this definition">#</a></dt>
 <dd><p>Selects a single table.</p>
 <p>Table objects have more features for editing stored tables.</p>
 <dl class="field-list simple">
@@ -702,12 +829,19 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.store.Store.create_snapshot">
-<span class="sig-name descname"><span class="pre">create_snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L344-L354"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.create_snapshot" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">create_snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L547-L566"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store.create_snapshot" title="Link to this definition">#</a></dt>
 <dd><p>Creates a compressed backup of the store.</p>
 <p>The store can later be restored by using <cite>snapshot.restore_store()</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to the snapshot archive.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.SnapshotTargetNotFoundError" title="featherstore.exceptions.SnapshotTargetNotFoundError"><strong>SnapshotTargetNotFoundError</strong></a> – If the store path does not exist.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">path</span></code> is not a str.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

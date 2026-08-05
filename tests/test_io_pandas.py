@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from featherstore.exceptions import MultiTypeColumnError
+
 from .fixtures import (
     TABLE_NAME,
     assert_df_equals,
@@ -154,7 +156,7 @@ def test_multitype_col_and_row_io(store):
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
     # Act & Assert
-    with pytest.raises(ValueError):
+    with pytest.raises(MultiTypeColumnError):
         table.write(original_df, partition_size=partition_size, warnings="ignore")
 
 

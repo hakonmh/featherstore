@@ -1,5 +1,11 @@
 import pytest
 
+from featherstore.exceptions import (
+    ColumnMismatchError,
+    DuplicateColumnNamesError,
+    IndexNameInColumnsError,
+)
+
 from .fixtures import (
     DEFAULT_ARROW_INDEX_NAME,
     TABLE_NAME,
@@ -37,10 +43,10 @@ INVALID_ELEMENTS_DTYPE = [1, "c0", "c2"]
 @pytest.mark.parametrize(
     ("cols", "exception"),
     [
-        (COLS_NOT_IN_TABLE, ValueError),
-        (NUMBER_OF_COLS_DOESNT_MATCH, ValueError),
-        (INDEX_IS_PROVIDED, ValueError),
-        (CONTAINS_DUPLICATES, IndexError),
+        (COLS_NOT_IN_TABLE, ColumnMismatchError),
+        (NUMBER_OF_COLS_DOESNT_MATCH, ColumnMismatchError),
+        (INDEX_IS_PROVIDED, IndexNameInColumnsError),
+        (CONTAINS_DUPLICATES, DuplicateColumnNamesError),
         (INVALID_DTYPE, TypeError),
         (INVALID_ELEMENTS_DTYPE, TypeError),
     ],

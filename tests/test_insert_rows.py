@@ -1,6 +1,16 @@
 import pandas as pd
 import pytest
 
+from featherstore.exceptions import (
+    ColumnDtypeMismatchError,
+    ColumnMismatchError,
+    DuplicateColumnNamesError,
+    DuplicateIndexValuesError,
+    IndexNameMismatchError,
+    IndexTypeMismatchError,
+    RowAlreadyExistsError,
+)
+
 from .fixtures import (
     TABLE_NAME,
     assert_table_equals,
@@ -118,13 +128,13 @@ def _duplicate_column_names():
     ("insert_df", "exception"),
     [
         (_insert_table_not_pd_table, TypeError),
-        (_non_matching_index_dtype, TypeError),
-        (_non_matching_column_dtypes, TypeError),
-        (_index_values_already_in_stored_data, ValueError),
-        (_column_name_not_in_stored_data, ValueError),
-        (_index_name_not_the_same_as_stored_index, ValueError),
-        (_duplicate_index_values, IndexError),
-        (_duplicate_column_names, IndexError),
+        (_non_matching_index_dtype, IndexTypeMismatchError),
+        (_non_matching_column_dtypes, ColumnDtypeMismatchError),
+        (_index_values_already_in_stored_data, RowAlreadyExistsError),
+        (_column_name_not_in_stored_data, ColumnMismatchError),
+        (_index_name_not_the_same_as_stored_index, IndexNameMismatchError),
+        (_duplicate_index_values, DuplicateIndexValuesError),
+        (_duplicate_column_names, DuplicateColumnNamesError),
     ],
     ids=[
         "_insert_table_not_pd_table",

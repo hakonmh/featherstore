@@ -9,6 +9,7 @@ from featherstore import _utils
 from featherstore._table import _raise_if, _table_utils, common
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore.connection import Connection
+from featherstore.exceptions import IndexNotInColumnsError
 
 
 def can_write_table(table, df, index_name, partition_size, errors, warnings):
@@ -46,7 +47,9 @@ def _raise_if_index_argument_is_not_str_or_none(index):
 
 def _raise_if_provided_index_not_in_cols(index, cols):
     if isinstance(index, str) and index not in cols:
-        raise IndexError("'index' not in table columns")
+        raise IndexNotInColumnsError(
+            f"'index' not in table columns (index={index!r}, columns={cols})"
+        )
 
 
 def create_partitions(df, rows_per_partition, partition_names=None):

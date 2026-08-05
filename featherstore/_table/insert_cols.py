@@ -5,6 +5,11 @@ import pandas as pd
 from featherstore._table import _raise_if, _table_utils
 from featherstore._table._indexers import ColIndexer
 from featherstore.connection import Connection
+from featherstore.exceptions import (
+    ColumnAlreadyExistsError,
+    ColumnLengthMismatchError,
+    IndexMismatchError,
+)
 
 
 def can_insert_columns(table, df, idx=-1):
@@ -34,7 +39,10 @@ def _raise_if_col_name_already_in_table(cols, table_data):
     cols = cols.like(stored_cols)
     some_cols_in_stored_cols = set(stored_cols) - (set(stored_cols) - set(cols))
     if some_cols_in_stored_cols:
-        raise IndexError("Column name already exists in table")
+        existing = sorted(some_cols_in_stored_cols)
+        raise ColumnAlreadyExistsError(
+            f"Column names already exist in table ({existing})"
+        )
 
 
 def _raise_if_num_rows_does_not_match(df, table_data):
@@ -43,7 +51,7 @@ def _raise_if_num_rows_does_not_match(df, table_data):
     new_cols_length = len(df)
 
     if new_cols_length != stored_table_length:
-        raise IndexError(
+        raise ColumnLengthMismatchError(
             f"Length of new cols ({new_cols_length}) doesn't match "
             f"length of stored data ({stored_table_length})"
         )
@@ -91,7 +99,10 @@ def _raise_if_rows_not_in_old_data(old_df, df):
     index = df.index
     old_index = old_df.index
     if not index.equals(old_index):
-        raise ValueError("New and old indices doesn't match")
+        raise IndexMismatchError(
+            f"New and old indices doesn't match "
+            f"(new={index.tolist()}, stored={old_index.tolist()})"
+        )
 
 
 def _insert_cols(old_df, df, index):

@@ -5,6 +5,7 @@ import pyarrow as pa
 
 from featherstore._table import _raise_if, _table_utils
 from featherstore.connection import Connection
+from featherstore.exceptions import RowAlreadyExistsError
 
 
 def can_insert_rows(table, df):
@@ -41,7 +42,7 @@ def _raise_if_rows_in_old_data(old_df, df, index_name):
     is_in = pa.compute.is_in(index, value_set=old_index)
     rows_in_old_df = pa.compute.any(is_in).as_py()
     if rows_in_old_df:
-        raise ValueError("Some rows already in stored table")
+        raise RowAlreadyExistsError("Some rows already in stored table")
 
 
 def create_partitions(df, rows_per_partition, partition_names, all_partition_names):

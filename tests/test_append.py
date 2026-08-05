@@ -1,6 +1,16 @@
 import pandas as pd
 import pytest
 
+from featherstore.exceptions import (
+    AppendIndexError,
+    ColumnDtypeMismatchError,
+    ColumnMismatchError,
+    DuplicateColumnNamesError,
+    DuplicateIndexValuesError,
+    IndexNameMismatchError,
+    IndexTypeMismatchError,
+)
+
 from .fixtures import (
     TABLE_NAME,
     assert_df_equals,
@@ -147,15 +157,15 @@ def _num_cols_doesnt_match():
 @pytest.mark.parametrize(
     ("append_df", "exception"),
     [
-        (_non_matching_index_dtype, TypeError),
-        (_non_matching_column_dtypes, TypeError),
-        (_index_not_ordered_after_stored_data, ValueError),
-        (_index_value_already_in_stored_data, ValueError),
-        (_column_name_not_in_stored_data, ValueError),
-        (_index_name_not_the_same_as_stored_index, ValueError),
-        (_duplicate_index_values, IndexError),
-        (_duplicate_column_names, IndexError),
-        (_num_cols_doesnt_match, ValueError),
+        (_non_matching_index_dtype, IndexTypeMismatchError),
+        (_non_matching_column_dtypes, ColumnDtypeMismatchError),
+        (_index_not_ordered_after_stored_data, AppendIndexError),
+        (_index_value_already_in_stored_data, AppendIndexError),
+        (_column_name_not_in_stored_data, ColumnMismatchError),
+        (_index_name_not_the_same_as_stored_index, IndexNameMismatchError),
+        (_duplicate_index_values, DuplicateIndexValuesError),
+        (_duplicate_column_names, DuplicateColumnNamesError),
+        (_num_cols_doesnt_match, ColumnMismatchError),
     ],
     ids=[
         "_non_matching_index_dtype",

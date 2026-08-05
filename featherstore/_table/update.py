@@ -4,6 +4,7 @@ import pandas as pd
 
 from featherstore._table import _raise_if
 from featherstore.connection import Connection
+from featherstore.exceptions import ColumnDtypeMismatchError, RowNotFoundError
 
 
 def can_update_table(table, df):
@@ -44,7 +45,8 @@ def _raise_if_rows_is_not_in_old_data(old_df, df):
     old_index = old_df.index
     rows_not_in_old_df = not all(index.isin(old_index))
     if rows_not_in_old_df:
-        raise ValueError("Some rows not in stored table")
+        missing = index[~index.isin(old_index)].tolist()
+        raise RowNotFoundError(f"Some rows not in stored table ({missing})")
 
 
 def _coerce_pd_col_dtypes(df, *, to):
@@ -53,5 +55,5 @@ def _coerce_pd_col_dtypes(df, *, to):
     try:
         df = df.astype(dtypes)
     except ValueError:
-        raise TypeError("New and old column dtypes do not match")
+        raise ColumnDtypeMismatchError("New and old column dtypes do not match")
     return df

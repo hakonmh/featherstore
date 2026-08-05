@@ -4,6 +4,7 @@ from featherstore import _utils
 from featherstore._table import _raise_if, _table_utils, common
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore.connection import Connection
+from featherstore.exceptions import AppendIndexError, MissingIndexError
 
 
 def can_append_table(table, df, warnings):
@@ -40,7 +41,7 @@ def _raise_if_append_data_not_ordered_after_stored_data(index, partition_data):
     append_data_start = pa.compute.min(index).as_py()
     stored_data_end = _get_last_stored_value(partition_data)
     if append_data_start <= stored_data_end:
-        raise ValueError(
+        raise AppendIndexError(
             f"New_data.index can't be <= old_data.index[-1] ({append_data_start}"
             f" <= {stored_data_end})"
         )
@@ -56,7 +57,7 @@ def _get_last_stored_value(partition_data):
 def raise_if_index_not_exist(index, has_default_index):
     index_not_provided = index is None
     if index_not_provided and not has_default_index:
-        raise ValueError("Must provide index")
+        raise MissingIndexError("Must provide index")
 
 
 def format_default_index(table, df):

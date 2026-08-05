@@ -48,7 +48,7 @@ Dependency requirements
 FeatherStore 0.3.0 requires:
 
 * pandas >= 2.2.0
-* polars[timezone] >= 1.0.0
+* polars[timezone] >= 1.21.0
 * pyarrow >= 14.0.0
 
 These are installed automatically with ``pip install featherstore``.

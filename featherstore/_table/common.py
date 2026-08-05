@@ -7,6 +7,7 @@ from pyarrow import pandas_compat as pc
 
 from featherstore._table import _table_utils
 from featherstore._table._indexers import ColIndexer, RowIndexer
+from featherstore.exceptions import MultiTypeColumnError
 
 HAS_MULTI_TYPE_COLUMN = (pa.lib.ArrowTypeError, pa.lib.ArrowInvalid)
 
@@ -67,7 +68,7 @@ def _transpose_table_and_convert_to_arrow(df):
     try:
         df = _table_utils.convert_to_arrow(df)
     except HAS_MULTI_TYPE_COLUMN:
-        raise ValueError(
+        raise MultiTypeColumnError(
             "Cannot convert table with multiple dtypes in same column to arrow."
         )
     new_metadata = json.dumps({"transposed": True})

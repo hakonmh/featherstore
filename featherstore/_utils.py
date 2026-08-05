@@ -5,6 +5,8 @@ import re
 import time
 from pathlib import Path
 
+from featherstore.exceptions import UnsafeDeletePathError
+
 DB_MARKER_NAME = ".featherstore"
 DEFAULT_ARROW_INDEX_NAME = "__index_level_0__"
 
@@ -30,7 +32,7 @@ def delete_folder_tree(path, db_path):
     if _is_in_database(path, db_path):
         __delete_folder_tree(path)
     else:
-        raise PermissionError(f"Can't delete files outside the database ({path})")
+        raise UnsafeDeletePathError(f"Can't delete files outside the database ({path})")
 
 
 def _is_in_database(path, db_path):

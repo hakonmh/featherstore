@@ -1,6 +1,7 @@
 from featherstore import store
 from featherstore._table import _raise_if
 from featherstore.connection import Connection
+from featherstore.exceptions import ColumnMismatchError
 
 
 def can_init_table(table_name, store_name):
@@ -38,7 +39,10 @@ def _raise_if_cols_doesnt_match(cols, table_data):
 
     cols_doesnt_match = set(stored_cols) != set(cols)
     if cols_doesnt_match:
-        raise ValueError("The columns provided doesn't match the columns stored")
+        raise ColumnMismatchError(
+            "The columns provided doesn't match the columns stored "
+            f"(provided={sorted(cols)}, stored={sorted(stored_cols)})"
+        )
 
 
 def num_cols_matches_table_cols(data, table_data):

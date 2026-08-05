@@ -9,6 +9,11 @@ from featherstore._table import _raise_if, _table_utils
 from featherstore._table._indexers import ColIndexer, RowIndexer
 from featherstore._table.read import get_partition_names as _get_partition_names
 from featherstore.connection import Connection
+from featherstore.exceptions import (
+    CannotDropAllColumnsError,
+    CannotDropAllRowsError,
+    ColumnNotFoundError,
+)
 
 
 def can_drop_rows_from_table(table, rows):
@@ -78,7 +83,7 @@ def _drop_rows(df, rows, index_name):
 
 def _raise_if_all_rows_is_dropped(df):
     if not df:
-        raise IndexError("Can't drop all rows from stored table")
+        raise CannotDropAllRowsError("Can't drop all rows from stored table")
 
 
 def has_still_default_index(table, rows):
@@ -183,14 +188,16 @@ class CheckDropCols:
         _raise_if.index_in_cols(self._dropped_cols, self._table_data)
 
     def cols_are_not_in_stored_data(self):
-        some_cols_not_in_stored_cols = bool(self._dropped_cols - self._stored_cols)
-        if some_cols_not_in_stored_cols:
-            raise IndexError("Trying to drop a column not found in table")
+        missing_cols = self._dropped_cols - self._stored_cols
+        if missing_cols:
+            raise ColumnNotFoundError(
+                f"Trying to drop columns not found in table ({sorted(missing_cols)})"
+            )
 
     def all_rows_are_dropped(self):
         trying_to_drop_all_cols = not bool(self._stored_cols - self._dropped_cols)
         if trying_to_drop_all_cols:
-            raise IndexError(
+            raise CannotDropAllColumnsError(
                 "Can't drop all columns. To drop full table, use 'drop_table()'"
             )
 

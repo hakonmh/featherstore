@@ -2,6 +2,11 @@ import os
 
 from featherstore import _utils
 from featherstore._utils import DB_MARKER_NAME, expand_home_dir_modifier, mark_as_hidden
+from featherstore.exceptions import (
+    NotADatabaseError,
+    NotConnectedError,
+    PopulatedDirectoryError,
+)
 
 
 def connect(connection_string):
@@ -11,12 +16,25 @@ def connect(connection_string):
     ----------
     connection_string : str
         Path to the database directory
+
+    Raises
+    ------
+    NotADatabaseError
+        If ``connection_string`` is not a FeatherStore database.
+    TypeError
+        If ``connection_string`` is not a str.
     """
     Connection(connection_string)
 
 
 def disconnect():
-    """Disconnects from the current database."""
+    """Disconnects from the current database.
+
+    Raises
+    ------
+    NotConnectedError
+        If FeatherStore is not connected to a database.
+    """
     Connection.disconnect()
 
 
@@ -33,6 +51,15 @@ def create_database(path, *, errors="raise", connect=True):
         in existing directory, by default `raise`
     connect : bool
         Whether or not to connect to the created database, by default True
+
+    Raises
+    ------
+    PopulatedDirectoryError
+        If ``errors='raise'`` and the directory is not empty.
+    TypeError
+        If ``db_path`` is not a str.
+    ValueError
+        If ``errors`` is not ``'raise'`` or ``'ignore'``.
     """
     _can_create_database(path, errors)
     path = expand_home_dir_modifier(path)
@@ -57,6 +84,11 @@ def current_db():
     -------
     str
         The current database directory
+
+    Raises
+    ------
+    NotConnectedError
+        If FeatherStore is not connected to a database.
     """
     return Connection.location()
 
@@ -114,7 +146,7 @@ class Connection:
     @classmethod
     def _raise_if_not_connected(cls):
         if not cls.is_connected():
-            raise ConnectionError("Not connected to a database")
+            raise NotConnectedError("Not connected to a database")
 
 
 def _can_create_database(db_path, errors):
@@ -135,7 +167,9 @@ def _raise_if_directory_is_empty(db_path):
     if directory_exists:
         directory_is_not_empty = len(os.listdir(db_path)) > 0
         if directory_is_not_empty:
-            raise OSError("Can not create database in a populated directory")
+            raise PopulatedDirectoryError(
+                "Can not create database in a populated directory"
+            )
 
 
 def _can_connect(connection_string):
@@ -156,4 +190,4 @@ def _raise_if_directory_is_not_database(connection_string):
     db_marker_path = os.path.join(path, DB_MARKER_NAME)
     is_database = os.path.exists(db_marker_path)
     if not is_database:
-        raise ConnectionRefusedError(f"{connection_string} is not a database")
+        raise NotADatabaseError(f"{connection_string} is not a database")
