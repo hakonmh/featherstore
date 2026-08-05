@@ -1,22 +1,22 @@
 import os
 
-from featherstore.connection import current_db
-from featherstore._metadata import Metadata
 from featherstore import _utils
+from featherstore._metadata import Metadata
+from featherstore._table import (
+    append,
+    astype,
+    common,
+    drop,
+    insert_cols,
+    insert_rows,
+    misc,
+    read,
+    rename_cols,
+    update,
+    write,
+)
+from featherstore.connection import current_db
 from featherstore.snapshot import _create_snapshot
-
-from featherstore._table import read
-from featherstore._table import write
-from featherstore._table import append
-from featherstore._table import update
-from featherstore._table import insert_rows
-from featherstore._table import drop
-from featherstore._table import insert_cols
-from featherstore._table import rename_cols
-
-from featherstore._table import astype
-from featherstore._table import misc
-from featherstore._table import common
 
 DEFAULT_PARTITION_SIZE = 128 * 1024**2
 
@@ -438,8 +438,7 @@ class Table:
         df = common.format_table(df, index_name=index_name, warnings=False)
 
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
-        if old_rows_per_partition > rows_per_partition:
-            rows_per_partition = old_rows_per_partition
+        rows_per_partition = max(rows_per_partition, old_rows_per_partition)
         partitions = drop.create_partitions(df, rows_per_partition, partition_names)
 
         columns = df.column_names

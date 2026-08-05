@@ -1,16 +1,15 @@
 import os
 import platform
 
-import pyarrow as pa
-from pyarrow import ipc
 import pandas as pd
 import polars as pl
+import pyarrow as pa
+from pyarrow import ipc
 
-from featherstore.connection import Connection
 from featherstore._metadata import Metadata
-from featherstore._table import _raise_if
-from featherstore._table import _table_utils
+from featherstore._table import _raise_if, _table_utils
 from featherstore._table._indexers import ColIndexer, RowIndexer
+from featherstore.connection import Connection
 
 
 def can_read_table(table, cols, rows, mmap):
@@ -104,9 +103,11 @@ def _row_after_candidate(target, candidate):
     return target <= candidate["min"]
 
 
-def read_table(
-    table, partition_names, cols=ColIndexer(None), rows=RowIndexer(None), mmap=None
-):
+def read_table(table, partition_names, cols=None, rows=None, mmap=None):
+    if cols is None:
+        cols = ColIndexer(None)
+    if rows is None:
+        rows = RowIndexer(None)
     index_name = table._table_data["index_name"]
     if cols.values() is None:
         cols = ColIndexer(table._table_data["columns"])

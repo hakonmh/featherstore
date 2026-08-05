@@ -4,8 +4,8 @@ import pandas as pd
 import polars as pl
 import pyarrow as pa
 
-from .make_table import get_col_dtypes
 from . import _utils
+from .make_table import get_col_dtypes
 
 
 def update_values(df, index_name=None):
@@ -51,7 +51,6 @@ def __get_dtype(df):
     dtype = df.dtype.kind
     DTYPES = {"i": "int", "f": "float", "b": "bool", "O": "string", "M": "datetime"}
     dtype = DTYPES[dtype]
-    if dtype == "int":
-        if df.min() >= 0:
-            dtype = "uint"
+    if dtype == "int" and df.min() >= 0:
+        dtype = "uint"
     return dtype

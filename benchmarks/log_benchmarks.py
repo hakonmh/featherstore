@@ -8,8 +8,6 @@ current FeatherStore version. Invoke via ``python log_benchmarks.py`` or
 
 import os
 
-from featherstore import __version__ as version
-
 from table_operations import (
     append_bmark,
     insert_cols_bmark,
@@ -19,6 +17,8 @@ from table_operations import (
     read_rows_bmark,
     write_bmark,
 )
+
+from featherstore import __version__ as version
 
 BENCHMARKS_PATH = ".dev/bmarks"
 

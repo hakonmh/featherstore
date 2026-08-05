@@ -1,4 +1,5 @@
 import pytest
+
 from .fixtures import (
     DEFAULT_ARROW_INDEX_NAME,
     TABLE_NAME,

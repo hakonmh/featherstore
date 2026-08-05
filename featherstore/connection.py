@@ -1,6 +1,7 @@
 import os
+
 from featherstore import _utils
-from featherstore._utils import mark_as_hidden, expand_home_dir_modifier, DB_MARKER_NAME
+from featherstore._utils import DB_MARKER_NAME, expand_home_dir_modifier, mark_as_hidden
 
 
 def connect(connection_string):
@@ -84,7 +85,7 @@ def database_exists(path):
 
 class Connection:
     def __new__(cls, *args, **kwargs):
-        cls.instance = super(Connection, cls).__new__(cls)
+        cls.instance = super().__new__(cls)
         return cls.instance
 
     def __init__(self, connection_string):

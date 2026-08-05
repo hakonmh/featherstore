@@ -33,9 +33,7 @@ def get_index_name(df):
         cols = get_col_names(df)
         if "Date" in cols:
             index_name = "Date"
-        elif "index" in cols:
-            index_name = "index"
-        elif "Index" in cols:
+        elif "index" in cols or "Index" in cols:
             index_name = "index"
         elif DEFAULT_ARROW_INDEX_NAME in cols:
             index_name = DEFAULT_ARROW_INDEX_NAME

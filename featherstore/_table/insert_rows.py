@@ -1,9 +1,10 @@
+import itertools
+
 import pandas as pd
 import pyarrow as pa
 
+from featherstore._table import _raise_if, _table_utils
 from featherstore.connection import Connection
-from featherstore._table import _raise_if
-from featherstore._table import _table_utils
 
 
 def can_insert_rows(table, df):
@@ -94,11 +95,9 @@ def has_still_default_index(table, df):
     first_row_value = rows[0].as_py()
 
     rows_are_continuous = all(
-        a.as_py() + 1 == b.as_py() for a, b in zip(rows, rows[1:])
+        a.as_py() + 1 == b.as_py() for a, b in itertools.pairwise(rows)
     )
-    if first_row_value > last_stored_value and rows_are_continuous:
-        _has_still_default_index = True
-    elif len(rows) == 0:
+    if first_row_value > last_stored_value and rows_are_continuous or len(rows) == 0:
         _has_still_default_index = True
     else:
         _has_still_default_index = False

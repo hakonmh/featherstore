@@ -1,10 +1,11 @@
 import random
 
 import pandas as pd
-import pyarrow as pa
 import polars as pl
+import pyarrow as pa
 
 from featherstore.table import DEFAULT_PARTITION_SIZE
+
 from . import _utils
 from .convert_table import _convert_to_arrow
 
@@ -27,12 +28,11 @@ def sort_table(df, *, by=None):
         if index_name:
             sorted_index = pa.compute.sort_indices(df[index_name])
             df = df.take(sorted_index)
-    elif isinstance(df, (pl.DataFrame, pl.Series)):
-        if index_name:
-            if isinstance(df, pl.Series):
-                df = df.sort()
-            else:
-                df = df.sort(by=index_name)
+    elif isinstance(df, (pl.DataFrame, pl.Series)) and index_name:
+        if isinstance(df, pl.Series):
+            df = df.sort()
+        else:
+            df = df.sort(by=index_name)
     return df
 
 
@@ -83,9 +83,8 @@ def drop_default_index_if_exists(df):
         return df
 
     df = df.drop([_utils.DEFAULT_ARROW_INDEX_NAME])
-    if isinstance(df, pl.DataFrame):
-        if df.shape[1] == 1:
-            df = df.to_series()
+    if isinstance(df, pl.DataFrame) and df.shape[1] == 1:
+        df = df.to_series()
     return df
 
 

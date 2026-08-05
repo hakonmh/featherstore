@@ -1,6 +1,5 @@
+from featherstore._table import _raise_if, common
 from featherstore.connection import Connection
-from featherstore._table import _raise_if
-from featherstore._table import common
 
 
 def can_rename_columns(table, cols, new_col_names):
@@ -54,6 +53,6 @@ def _replace_col_names(stored_cols, cols):
 
 
 def write_metadata(table, df):
-    first_partition = tuple(df.values())[0]
+    first_partition = next(iter(df.values()))
     col_names = first_partition.schema.names
     table._table_data["columns"] = col_names

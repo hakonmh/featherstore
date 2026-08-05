@@ -2,9 +2,9 @@ import os
 
 from featherstore import _utils
 from featherstore._utils import DB_MARKER_NAME
-from featherstore.table import Table, DEFAULT_PARTITION_SIZE
-from featherstore.connection import current_db, Connection
+from featherstore.connection import Connection, current_db
 from featherstore.snapshot import _create_snapshot
+from featherstore.table import DEFAULT_PARTITION_SIZE, Table
 
 
 def create_store(store_name, *, errors="raise"):

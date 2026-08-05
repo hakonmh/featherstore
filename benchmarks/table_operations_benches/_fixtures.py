@@ -1,22 +1,22 @@
-import itertools
-import string
 import copy
+import itertools
 import os
+import string
 
-import pyarrow as pa
-import polars as pl
-import pandas as pd
 import numpy as np
+import pandas as pd
+import polars as pl
+import pyarrow as pa
 
 import featherstore as fs
-from featherstore._utils import (
-    filter_items_like_pattern,
-    delete_folder_tree,
-    DB_MARKER_NAME,
-)
 from featherstore._table._indexers import RowIndexer
 from featherstore._table._table_utils import filter_arrow_table
 from featherstore._table.common import _format_pd_metadata
+from featherstore._utils import (
+    DB_MARKER_NAME,
+    delete_folder_tree,
+    filter_items_like_pattern,
+)
 from featherstore.table import DEFAULT_PARTITION_SIZE
 
 RANDS_CHARS = np.array(list(string.ascii_lowercase + " "))
@@ -83,7 +83,7 @@ def make_table(shape=(30, 5), *, sorted=True, astype="arrow", dtype=None):
     else:
         col_dtypes = itertools.cycle(COL_DTYPES.values())
 
-    data = dict()
+    data = {}
     if sorted:
         data["index"] = pd.RangeIndex(rows)
     else:
@@ -295,7 +295,7 @@ def is_numpy_dtype(item):
     try:
         pa.from_numpy_dtype(item)
         return True
-    except Exception:
+    except (TypeError, ValueError, pa.ArrowInvalid):
         return False
 
 

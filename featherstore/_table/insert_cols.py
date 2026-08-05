@@ -2,10 +2,9 @@ from numbers import Integral
 
 import pandas as pd
 
-from featherstore.connection import Connection
-from featherstore._table import _raise_if
-from featherstore._table import _table_utils
+from featherstore._table import _raise_if, _table_utils
 from featherstore._table._indexers import ColIndexer
+from featherstore.connection import Connection
 
 
 def can_insert_columns(table, df, idx=-1):
@@ -79,8 +78,6 @@ def insert_columns(old_df, df, index):
 def _format_tables(old_df, df):
     if isinstance(df, pd.Series):
         df = df.to_frame()
-    else:
-        df = df
 
     index_not_sorted = not df.index.is_monotonic_increasing
     if index_not_sorted:

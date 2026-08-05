@@ -1,6 +1,8 @@
-from ._fixtures import OtherIO
-import duckdb
 import os
+
+import duckdb
+
+from ._fixtures import OtherIO
 
 
 class DuckdbWritePandas(OtherIO):
@@ -37,7 +39,7 @@ class DuckdbReadPandas(OtherIO):
 
     def setup(self):
         super().setup()
-        df = self._df  # noqa: F841
+        df = self._df
         con = duckdb.connect(self._path)
         con.execute("CREATE TABLE table_name AS SELECT * FROM df")
         con.execute("INSERT INTO table_name SELECT * FROM df")

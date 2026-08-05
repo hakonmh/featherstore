@@ -1,4 +1,5 @@
 import pytest
+
 from .fixtures import (
     TABLE_NAME,
     assert_df_equals,

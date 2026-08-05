@@ -1,4 +1,8 @@
+import warnings
+
+import pandas as pd
 import pytest
+
 from .fixtures import (
     TABLE_NAME,
     assert_df_equals,
@@ -12,9 +16,6 @@ from .fixtures import (
     split_table,
     update_values,
 )
-
-import warnings
-import pandas as pd
 
 
 @pytest.mark.parametrize(

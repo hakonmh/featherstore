@@ -1,9 +1,10 @@
-from collections.abc import Iterable, Set
 import json
+from collections.abc import Iterable
+from collections.abc import Set as AbstractSet
 
-import pyarrow as pa
 import pandas as pd
 import polars as pl
+import pyarrow as pa
 
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 
@@ -300,7 +301,7 @@ def get_index_if_exists(df, index_name):
     else:
         try:
             index = df[index_name]
-        except Exception:
+        except (KeyError, TypeError, IndexError, pl.exceptions.ColumnNotFoundError):
             index = None
     return convert_to_arrow(index, as_array=True)
 
@@ -405,7 +406,7 @@ def is_collection(obj):
 def is_list_like(obj):
     is_iterable = isinstance(obj, Iterable)
     is_not_string = not isinstance(obj, (str, bytes))
-    is_not_set = not isinstance(obj, Set)
+    is_not_set = not isinstance(obj, AbstractSet)
     return is_iterable and is_not_string and is_not_set
 
 

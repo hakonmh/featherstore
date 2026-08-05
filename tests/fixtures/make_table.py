@@ -1,14 +1,14 @@
 import itertools
+from decimal import Decimal
 from string import ascii_letters, ascii_lowercase
 
-from decimal import Decimal
-
+import numpy as np
 import pandas as pd
 import polars as pl
 import pyarrow as pa
-import numpy as np
 
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
+
 from . import _utils
 
 RANDS_CHARS = np.array(list(ascii_letters + " "))
@@ -38,7 +38,7 @@ def _make_df(rows, cols, dtype=None, rng=None):
     else:
         col_dtypes = itertools.cycle(col_dtypes.values())
 
-    data = dict()
+    data = {}
     for col in range(cols):
         col_dtype = next(col_dtypes)
         data[f"c{col}"] = col_dtype(rows, rng)
@@ -138,7 +138,7 @@ def __is_default_index(df):
             is_default_index = True
         else:
             is_default_index = False
-    except Exception:
+    except (KeyError, TypeError, IndexError):
         is_default_index = False
     return is_default_index
 

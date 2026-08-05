@@ -1,7 +1,7 @@
 import bmark
-import featherstore as fs
-
 from table_operations_benches import _fixtures as fx
+
+import featherstore as fs
 
 
 class FeatherStoreWritePandas(bmark.Benched):

@@ -1,16 +1,14 @@
-import os
 import json
+import os
 from numbers import Integral
 
 import pyarrow as pa
 from pyarrow import ipc
 
-from featherstore.connection import Connection
 from featherstore import _utils
+from featherstore._table import _raise_if, _table_utils, common
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
-from featherstore._table import common
-from featherstore._table import _raise_if
-from featherstore._table import _table_utils
+from featherstore.connection import Connection
 
 
 def can_write_table(table, df, index_name, partition_size, errors, warnings):
@@ -61,7 +59,7 @@ def create_partitions(df, rows_per_partition, partition_names=None):
 
 def _make_partition_ids(partitioned_df):
     num_partitions = len(partitioned_df)
-    partition_ids = list()
+    partition_ids = []
     for partition_num in range(1, num_partitions + 1):
         partition_id = _table_utils.convert_int_to_partition_id(partition_num)
         partition_ids.append(partition_id)
@@ -144,7 +142,6 @@ def _write_feather(df, file_path):
     # Feather V2 is the Arrow IPC file format. Write to a temp file first so we
     # never truncate an inode that may still be memory-mapped from a prior read.
     tmp_path = f"{file_path}.tmp"
-    with pa.OSFile(tmp_path, "wb") as sink:
-        with ipc.new_file(sink, df.schema) as writer:
-            writer.write_table(df)
+    with pa.OSFile(tmp_path, "wb") as sink, ipc.new_file(sink, df.schema) as writer:
+        writer.write_table(df)
     os.replace(tmp_path, file_path)

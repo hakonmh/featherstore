@@ -31,5 +31,5 @@ def _drop_pandas_metadata(df):
 def to_arrow_dtype(dtype):
     try:
         return pa.from_numpy_dtype(dtype)
-    except Exception:
+    except (TypeError, ValueError, pa.ArrowInvalid):
         return dtype

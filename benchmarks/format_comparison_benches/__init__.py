@@ -1,1 +1,1 @@
-from . import csv, duckdb, feather, parquet, pickle, fstore  # noqa: F401
+from . import csv, duckdb, feather, fstore, parquet, pickle  # noqa: F401

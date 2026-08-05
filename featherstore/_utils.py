@@ -1,9 +1,9 @@
-import os
-from pathlib import Path
-import platform
 import ctypes
+import os
+import platform
 import re
 import time
+from pathlib import Path
 
 DB_MARKER_NAME = ".featherstore"
 DEFAULT_ARROW_INDEX_NAME = "__index_level_0__"

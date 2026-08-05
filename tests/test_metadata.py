@@ -1,8 +1,9 @@
-from .fixtures import DB_PATH
-
 import os
 import shutil
-from featherstore._metadata import Metadata, METADATA_FOLDER_NAME
+
+from featherstore._metadata import METADATA_FOLDER_NAME, Metadata
+
+from .fixtures import DB_PATH
 
 
 def test_create():

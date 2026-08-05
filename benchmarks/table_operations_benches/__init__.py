@@ -1,1 +1,1 @@
-from . import write, read, append, drop, insert, update, astype  # noqa: F401
+from . import append, astype, drop, insert, read, update, write  # noqa: F401

@@ -2,7 +2,6 @@ import os
 import shutil
 
 import bmark
-
 from table_operations_benches import _fixtures as fx
 
 BENCH_DIR = "db"
