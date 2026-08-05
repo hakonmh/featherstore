@@ -20,6 +20,8 @@ jobs:
       with:
         python-version: "3.11"
         enable-cache: true
+        activate-environment: true
+        no-project: true
     - name: Install dependencies
       run: |
         uv pip install pytest ruff pyarrow==14.0.0 pandas==2.2.0 'polars[timezone]==1.21.0'
