@@ -25,7 +25,7 @@ classifiers = [
 ]
 dependencies = [
     "pandas>=2.2.0",
-    "polars[timezone]>=1.0.0",
+    "polars[timezone]>=1.21.0",
     "pyarrow>=14.0.0",
 ]
 
@@ -62,7 +62,7 @@ markers = [
 
 [tool.flake8]
 exclude = [".dev", "benchmarks", "build", "dist"]
-ignore = ["F405", "F403"]
+ignore = ["F405", "F403", "E203"]
 max-line-length = 100
 count = true
 per-file-ignores = [

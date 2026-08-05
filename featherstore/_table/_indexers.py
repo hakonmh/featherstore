@@ -7,9 +7,8 @@ from featherstore._table import _table_utils
 
 
 class Indexer:
-
     def __init__(self, items, keywords):
-        if hasattr(items, 'copy'):
+        if hasattr(items, "copy"):
             items = items.copy()
 
         if isinstance(items, dict):
@@ -41,9 +40,9 @@ class Indexer:
 
         if isinstance(items, list):
             _values = items
-        elif hasattr(items, 'tolist'):
+        elif hasattr(items, "tolist"):
             _values = items.tolist()
-        elif hasattr(items, 'to_list'):
+        elif hasattr(items, "to_list"):
             _values = items.to_list()
         else:
             _values = list(items)
@@ -123,16 +122,17 @@ class Indexer:
 
     def __repr__(self):
         class_name = str(self.__class__)
-        class_name = class_name.split('.')[-1]
-        class_name = class_name.replace("'>", '')
-        return f"{class_name}(Keys: {self.keys()} | Values: {self.values()} |" \
-               f" Keyword: {self.keyword})"
+        class_name = class_name.split(".")[-1]
+        class_name = class_name.replace("'>", "")
+        return (
+            f"{class_name}(Keys: {self.keys()} | Values: {self.values()} |"
+            f" Keyword: {self.keyword})"
+        )
 
 
 class RowIndexer(Indexer):
-
     def __init__(self, rows):
-        super().__init__(rows, keywords=('before', 'after', 'between'))
+        super().__init__(rows, keywords=("before", "after", "between"))
 
     def convert_types(self, *, to):
         formatted_rows = self.copy()
@@ -155,9 +155,8 @@ class RowIndexer(Indexer):
 
 
 class ColIndexer(Indexer):
-
     def __init__(self, cols):
-        super().__init__(cols, keywords=['like'])
+        super().__init__(cols, keywords=["like"])
 
     def like(self, stored_cols):
         if self.keyword:

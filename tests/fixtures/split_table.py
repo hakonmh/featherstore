@@ -10,7 +10,9 @@ from . import _utils
 from .convert_table import convert_table
 
 
-def split_table(df, rows=None, cols=None, index_name=None, keep_index=False, iloc=False):
+def split_table(
+    df, rows=None, cols=None, index_name=None, keep_index=False, iloc=False
+):
     if cols is not None and rows is not None:
         df, other = split_cols(df, cols, index_name, keep_index)
         df, _ = split_rows(df, rows, index_name, iloc)
@@ -43,11 +45,14 @@ def split_col_arg(df, cols):
     if isinstance(cols, dict):
         cols = _filter_items_like_pattern(cols, df_cols)
     not_cols = [c for c in df_cols if c not in cols]
-    return not_cols, cols,
+    return (
+        not_cols,
+        cols,
+    )
 
 
 def _filter_items_like_pattern(cols, df_cols):
-    pattern = cols['like']
+    pattern = cols["like"]
     if not isinstance(pattern, str):
         pattern = pattern[0]
     pattern = __sql_str_pattern_to_regexp(pattern)
@@ -113,8 +118,8 @@ def split_pd_rows(df, rows, iloc):
 
     arrow_df = pa.Table.from_pandas(df, preserve_index=True)
     df, other = split_pa_rows(arrow_df, rows=rows, index_name=df.index.name, iloc=iloc)
-    df = convert_table(df, to='pandas', as_series=as_series)
-    other = convert_table(other, to='pandas', as_series=as_series)
+    df = convert_table(df, to="pandas", as_series=as_series)
+    other = convert_table(other, to="pandas", as_series=as_series)
 
     if isinstance(df.index, pd.RangeIndex) and isinstance(other.index, pd.RangeIndex):
         start_value = df.index[-1] + 1
@@ -131,8 +136,8 @@ def split_pl_rows(df, rows, index_name, iloc):
     df = df.to_arrow()
     df, other = split_pa_rows(df, rows=rows, index_name=index_name, iloc=iloc)
 
-    df = convert_table(df, to='polars', as_series=as_series)
-    other = convert_table(other, to='polars', as_series=as_series)
+    df = convert_table(df, to="polars", as_series=as_series)
+    other = convert_table(other, to="polars", as_series=as_series)
     return df, other
 
 
@@ -142,7 +147,7 @@ def split_pa_rows(df, rows, index_name, iloc):
 
     if index_name is None or iloc:
         if DEFAULT_ARROW_INDEX_NAME in df.column_names:
-            index_name = '__rangeindex__'
+            index_name = "__rangeindex__"
         else:
             index_name = DEFAULT_ARROW_INDEX_NAME
         df = df.add_column(0, index_name, [pd.RangeIndex(len(df))])
@@ -154,7 +159,7 @@ def split_pa_rows(df, rows, index_name, iloc):
     mask = pa.compute.invert(mask)
     df = df.filter(mask)
 
-    if index_name in (DEFAULT_ARROW_INDEX_NAME, '__rangeindex__'):
+    if index_name in (DEFAULT_ARROW_INDEX_NAME, "__rangeindex__"):
         if _utils.is_rangeindex(df[index_name]):
             df = df.drop([index_name])
             other = other.drop([index_name])
@@ -202,13 +207,13 @@ def _filter_arrow_table(df, rows, index_col_name):
     keyword = tuple(rows.keys())[0]
     rows = rows[keyword]
 
-    if keyword == 'before':
+    if keyword == "before":
         upper_bound = __compute_upper_bound(rows[0], index)
         df = df[:upper_bound]
-    elif keyword == 'after':
+    elif keyword == "after":
         lower_bound = __compute_lower_bound(rows[0], index)
         df = df[lower_bound:]
-    elif keyword == 'between':
+    elif keyword == "between":
         lower_bound = __compute_lower_bound(rows[0], index)
         upper_bound = __compute_upper_bound(rows[1], index)
         df = df[lower_bound:upper_bound]

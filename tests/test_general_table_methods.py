@@ -1,5 +1,13 @@
 import pytest
-from .fixtures import *
+from .fixtures import (
+    TABLE_NAME,
+    assert_table_equals,
+    default_index,
+    get_index_name,
+    get_partition_size,
+    make_table,
+    sorted_datetime_index,
+)
 
 
 def test_rename_table(store):
@@ -29,8 +37,16 @@ def test_list_tables_like(store):
     # Arrange
     df = make_table(sorted_datetime_index)
     index_name = get_index_name(df)
-    TABLE_NAMES = ("a_table", "AAPL", "MSFT", "TSLA", "AMZN", "FB",
-                   "2019-01-01", "saab")
+    TABLE_NAMES = (
+        "a_table",
+        "AAPL",
+        "MSFT",
+        "TSLA",
+        "AMZN",
+        "FB",
+        "2019-01-01",
+        "saab",
+    )
 
     for table_name in TABLE_NAMES:
         store.write_table(table_name, df, index=index_name)
@@ -99,7 +115,7 @@ def test_get_columns(store):
 
 
 @pytest.mark.parametrize("index", [default_index, sorted_datetime_index])
-@pytest.mark.parametrize("astype", ['arrow', 'pandas'])
+@pytest.mark.parametrize("astype", ["arrow", "pandas"])
 @pytest.mark.parametrize("num_partitions", [5, 2, -1])
 def test_repartition(store, index, astype, num_partitions):
     # Arrange

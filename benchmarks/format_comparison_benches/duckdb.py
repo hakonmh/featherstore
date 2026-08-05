@@ -4,11 +4,10 @@ import os
 
 
 class DuckdbWritePandas(OtherIO):
-
     def __init__(self, shape):
-        super().__init__(shape, astype='pandas')
+        super().__init__(shape, astype="pandas")
         self.name = "Pandas write DuckDB"
-        self._path += '.duckdb'
+        self._path += ".duckdb"
 
     def run(self):
         df = self._df  # noqa: F841
@@ -28,11 +27,10 @@ class DuckdbWritePandas(OtherIO):
 
 
 class DuckdbReadPandas(OtherIO):
-
     def __init__(self, shape):
         self.name = "Pandas read DuckDB"
-        super().__init__(shape, astype='pandas')
-        self._path += '.feather'
+        super().__init__(shape, astype="pandas")
+        self._path += ".feather"
 
     def run(self):
         self._con.execute("SELECT * from table_name").fetchdf()

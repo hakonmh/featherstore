@@ -28,7 +28,9 @@ def can_change_type(table, cols, astype):
 
 
 def _raise_if_astype_items_are_not_pa_or_np_types(astype):
-    col_elements_are_arrow_types = all(isinstance(item, (pa.DataType)) for item in astype)
+    col_elements_are_arrow_types = all(
+        isinstance(item, (pa.DataType)) for item in astype
+    )
     col_elements_are_np_types = all(__is_valid_dtype(item) for item in astype)
 
     if not (col_elements_are_arrow_types or col_elements_are_np_types):
@@ -44,19 +46,9 @@ def __is_valid_dtype(item):
 
 
 def _raise_if_new_index_type_is_not_valid(cols, table_data):
-    index_name = table_data['index_name']
+    index_name = table_data["index_name"]
     if index_name in cols.keys():
-        new_index_dtype = cols[index_name]
-        __raise_if_index_is_not_supported_type(new_index_dtype)
-
-
-def __raise_if_index_is_not_supported_type(dtype):
-    is_integer = pa.types.is_integer(dtype)
-    is_temporal = pa.types.is_temporal(dtype)
-    is_string = pa.types.is_string(dtype) or pa.types.is_large_string(dtype)
-    if not is_integer and not is_temporal and not is_string:
-        raise TypeError(f"Table.index type must be either int, str or "
-                        f"datetime (is type {dtype})")
+        _raise_if.index_type_not_supported(cols[index_name])
 
 
 def change_type(df, cols):
@@ -88,7 +80,7 @@ def create_partitions(df, rows_per_partition, partition_names=None):
 
 def _add_or_remove_partition_ids(partitions, partition_ids):
     if len(partitions) < len(partition_ids):
-        partition_ids = partition_ids[:len(partitions)]
+        partition_ids = partition_ids[: len(partitions)]
     else:
         partition_ids = _table_utils.add_new_partition_ids(partitions, partition_ids)
     return partition_ids

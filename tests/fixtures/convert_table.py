@@ -7,9 +7,9 @@ from . import _utils
 
 
 def convert_table(df, *, to, index_name=None, as_series=True):
-    if to == 'pandas':
+    if to == "pandas":
         df = _convert_to_pandas(df, index_name=index_name, as_series=as_series)
-    elif to == 'arrow':
+    elif to == "arrow":
         df = _convert_to_arrow(df)
     elif to == "polars":
         df = _convert_to_polars(df, as_series=as_series)
@@ -41,12 +41,12 @@ def _convert_to_pandas(df, index_name=None, as_series=True):
 
 def __convert_object_cols_to_string(df):
     for col in df.columns:
-        if df[col].dtype.name == 'object':
+        if df[col].dtype.name == "object":
             try:
                 if isinstance(df[col][0], str):
-                    df[col] = df[col].astype('string')
+                    df[col] = df[col].astype("string")
             except KeyError:
-                df[col] = df[col].astype('string')
+                df[col] = df[col].astype("string")
     return df
 
 

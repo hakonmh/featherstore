@@ -12,14 +12,14 @@ import featherstore as fs
 from featherstore._utils import (
     filter_items_like_pattern,
     delete_folder_tree,
-    DB_MARKER_NAME
+    DB_MARKER_NAME,
 )
 from featherstore._table._indexers import RowIndexer
 from featherstore._table._table_utils import filter_arrow_table
 from featherstore._table.common import _format_pd_metadata
 from featherstore.table import DEFAULT_PARTITION_SIZE
 
-RANDS_CHARS = np.array(list(string.ascii_lowercase + ' '))
+RANDS_CHARS = np.array(list(string.ascii_lowercase + " "))
 
 
 def delete_db():
@@ -47,7 +47,7 @@ def _make_datetime_col(rows):
     start = -852076800  # 1943-01-01 in seconds relative to epoch
     end = 1640995200  # 2022-01-01 in seconds relative to epoch
     times_since_epoch = np.random.randint(start, end, size=rows, dtype=np.int32)
-    dtime = times_since_epoch.astype('datetime64[s]')
+    dtime = times_since_epoch.astype("datetime64[s]")
     return dtime
 
 
@@ -66,12 +66,12 @@ def _make_bool_col(rows):
 
 
 COL_DTYPES = {
-    'int': _make_int_col,
-    'string': _make_string_col,
-    'float': _make_float_col,
-    'datetime': _make_datetime_col,
-    'bool': _make_bool_col,
-    'uint': _make_uint_col,
+    "int": _make_int_col,
+    "string": _make_string_col,
+    "float": _make_float_col,
+    "datetime": _make_datetime_col,
+    "bool": _make_bool_col,
+    "uint": _make_uint_col,
 }
 
 
@@ -85,20 +85,20 @@ def make_table(shape=(30, 5), *, sorted=True, astype="arrow", dtype=None):
 
     data = dict()
     if sorted:
-        data['index'] = pd.RangeIndex(rows)
+        data["index"] = pd.RangeIndex(rows)
     else:
-        data['index'] = np.random.default_rng().permutation(rows)
+        data["index"] = np.random.default_rng().permutation(rows)
 
     for col in range(cols):
         col_dtype = next(col_dtypes)
         data[f"c{col}"] = col_dtype(rows)
-    if astype == 'pandas':
+    if astype == "pandas":
         df = pd.DataFrame.from_dict(data)
-        df.set_index('index', inplace=True)
-    elif astype in {'arrow', 'polars'}:
+        df.set_index("index", inplace=True)
+    elif astype in {"arrow", "polars"}:
         df = pa.Table.from_pydict(data)
-        df = _format_pd_metadata(df, 'index')
-        if astype == 'polars':
+        df = _format_pd_metadata(df, "index")
+        if astype == "polars":
             df = pl.from_arrow(df)
     return df
 
@@ -125,13 +125,13 @@ def get_partition_size(df, num_partitions=0):
 
 def _has_rangeindex(df):
     try:
-        index_type = df.schema.pandas_metadata['index_columns'][0]['kind']
-        return index_type == 'range'
+        index_type = df.schema.pandas_metadata["index_columns"][0]["kind"]
+        return index_type == "range"
     except TypeError:
         return False
 
 
-def split_table(df, rows=None, cols=None, index_name='index', keep_index=False):
+def split_table(df, rows=None, cols=None, index_name="index", keep_index=False):
     if isinstance(df, (pd.DataFrame, pd.Series)):
         df, other = split_pandas(df, rows, cols)
     elif isinstance(df, pa.Table):
@@ -144,7 +144,7 @@ def split_table(df, rows=None, cols=None, index_name='index', keep_index=False):
 def split_pandas(df, rows, cols):
     both_rows_and_cols_are_provided = cols is not None and rows is not None
     if both_rows_and_cols_are_provided:
-        raise AttributeError('Both cols and rows provided')
+        raise AttributeError("Both cols and rows provided")
     elif rows is not None:
         df, other = _split_pd_rows(df, rows)
     elif cols is not None:
@@ -165,7 +165,7 @@ def _split_pd_rows(df, rows):
 def split_arrow(df, rows, cols, index_name, keep_index):
     both_rows_and_cols_are_provided = cols is not None and rows is not None
     if both_rows_and_cols_are_provided:
-        raise AttributeError('Both cols and rows provided')
+        raise AttributeError("Both cols and rows provided")
     elif rows is not None:
         df, other = _split_pa_rows(df, rows, index_name)
     elif cols is not None:
@@ -185,7 +185,7 @@ def _split_pa_rows(df, rows, index_name):
 def split_polars(df, rows, cols, index_name, keep_index):
     both_rows_and_cols_are_provided = cols is not None and rows is not None
     if both_rows_and_cols_are_provided:
-        raise AttributeError('Both cols and rows provided')
+        raise AttributeError("Both cols and rows provided")
     elif rows is not None:
         df, other = _split_pl_rows(df, rows, index_name)
     elif cols is not None:
@@ -207,7 +207,7 @@ def _split_cols(df, cols, index_name=None, keep_index=False):
     df_cols = _get_cols(df)
 
     if isinstance(cols, dict):
-        pattern = cols['like']
+        pattern = cols["like"]
         cols = filter_items_like_pattern(df_cols, like=pattern)
     not_cols = [c for c in df_cols if c not in cols]
     if keep_index and not isinstance(df, (pd.DataFrame, pd.Series)):
@@ -238,7 +238,7 @@ def _split_cols(df, cols, not_cols):
     return df, other
 
 
-def update_values(df, index_name='index'):
+def update_values(df, index_name="index"):
     df = copy.copy(df)
     col_names = df.column_names if isinstance(df, pa.Table) else df.columns
     for col_name in col_names:
@@ -268,19 +268,19 @@ def _update_col(df):
 def _get_dtype(df):
     dtype = df.dtype.kind
 
-    if dtype == 'i':
+    if dtype == "i":
         if df.min() < 0:
-            dtype = 'int'
+            dtype = "int"
         else:
-            dtype = 'uint'
-    elif dtype == 'f':
-        dtype = 'float'
-    elif dtype == 'b':
-        dtype = 'bool'
-    elif dtype == 'O':
-        dtype = 'string'
-    elif dtype == 'M':
-        dtype = 'datetime'
+            dtype = "uint"
+    elif dtype == "f":
+        dtype = "float"
+    elif dtype == "b":
+        dtype = "bool"
+    elif dtype == "O":
+        dtype = "string"
+    elif dtype == "M":
+        dtype = "datetime"
 
     return dtype
 
@@ -299,7 +299,7 @@ def is_numpy_dtype(item):
         return False
 
 
-def change_dtype(df, to, index_name='index', cols=None):
+def change_dtype(df, to, index_name="index", cols=None):
     arrow_dtype = to_pa_dtype(to)
     schema = df.schema
     cols = cols if cols else schema.names

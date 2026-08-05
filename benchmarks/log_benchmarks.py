@@ -5,6 +5,7 @@ table shapes and writes timing logs under ``.dev/bmarks``, tagged with the
 current FeatherStore version. Invoke via ``python log_benchmarks.py`` or
 ``task bench:log``.
 """
+
 import os
 
 from featherstore import __version__ as version
@@ -19,12 +20,12 @@ from table_operations import (
     write_bmark,
 )
 
-BENCHMARKS_PATH = '.dev/bmarks'
+BENCHMARKS_PATH = ".dev/bmarks"
 
 RUN_KWARGS = {
-    'n': 3,
-    'r': 6,
-    'sort': False,
+    "n": 3,
+    "r": 6,
+    "sort": False,
 }
 
 BENCH_FUNCS = [
@@ -39,15 +40,15 @@ BENCH_FUNCS = [
 
 
 def log_benchmark(shape, num_partitions, version, quiet=True):
-    run_kwargs = {**RUN_KWARGS, 'quiet': quiet}
+    run_kwargs = {**RUN_KWARGS, "quiet": quiet}
     os.makedirs(BENCHMARKS_PATH, exist_ok=True)
-    path = f'{BENCHMARKS_PATH}/Shape{shape} - Partitions({num_partitions})'
+    path = f"{BENCHMARKS_PATH}/Shape{shape} - Partitions({num_partitions})"
 
     print("Running benchmarks...")
     for func, extra_args in BENCH_FUNCS:
         print(f"Running {func.__name__} benchmark...")
         if extra_args:
-            ratio, = extra_args
+            (ratio,) = extra_args
             result = func(shape, ratio, num_partitions=num_partitions, **run_kwargs)
         else:
             result = func(shape, num_partitions=num_partitions, **run_kwargs)
@@ -56,7 +57,7 @@ def log_benchmark(shape, num_partitions, version, quiet=True):
         print(f"Logged benchmark results to {path}...")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     configs = [
         ((1_000, 10), 5),
         ((100_000, 50), 500),

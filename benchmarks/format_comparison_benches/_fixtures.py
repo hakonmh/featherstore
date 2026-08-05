@@ -5,16 +5,15 @@ import bmark
 
 from table_operations_benches import _fixtures as fx
 
-BENCH_DIR = 'db'
-BENCH_MARKER = '.bmark'
+BENCH_DIR = "db"
+BENCH_MARKER = ".bmark"
 
 
 class OtherIO(bmark.Benched):
-
     def __init__(self, shape, astype):
         self._shape = shape
         self._astype = astype
-        self._path = f'{BENCH_DIR}/table_name'
+        self._path = f"{BENCH_DIR}/table_name"
         super().__init__()
 
     def setup(self):
@@ -30,10 +29,9 @@ class OtherIO(bmark.Benched):
 
 
 class ReadFileIO(OtherIO):
-
     def __init__(self, shape, extension, name):
         self.name = name
-        super().__init__(shape, astype='pandas')
+        super().__init__(shape, astype="pandas")
         self._path += extension
 
     def setup(self):
@@ -58,9 +56,9 @@ class ReadFileIO(OtherIO):
 
 def _setup():
     if os.path.exists(BENCH_DIR):
-        raise FileExistsError('Database already exists')
+        raise FileExistsError("Database already exists")
     os.makedirs(BENCH_DIR)
-    with open(os.path.join(BENCH_DIR, BENCH_MARKER), 'a'):
+    with open(os.path.join(BENCH_DIR, BENCH_MARKER), "a"):
         pass
 
 

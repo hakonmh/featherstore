@@ -1,12 +1,18 @@
 import pytest
-from .fixtures import *
+from .fixtures import (
+    TABLE_NAME,
+    assert_df_equals,
+    get_partition_size,
+    make_table,
+    split_table,
+)
 
 
 @pytest.mark.integration
 def test_windows_permission_error(store):
     # Arrange
-    original_df = make_table(rows=100, astype='arrow')
-    update_df = make_table(rows=20, astype='pandas')
+    original_df = make_table(rows=100, astype="arrow")
+    update_df = make_table(rows=20, astype="pandas")
 
     partition_size = get_partition_size(original_df, num_partitions=100)
     table = store.select_table(TABLE_NAME)
@@ -25,15 +31,15 @@ def test_windows_permission_error(store):
 def test_linux_memory_mapping(store):
     """Tests that altering an array doesn't change the underlying file"""
     # Arrange
-    df = make_table(rows=100, astype='arrow')
-    original_df, insert_df = split_table(df, cols=['c4'])
+    df = make_table(rows=100, astype="arrow")
+    original_df, insert_df = split_table(df, cols=["c4"])
 
     partition_size = get_partition_size(original_df, num_partitions=100)
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size)
     # Act
     df = table.read_arrow(mmap=True)
-    df1 = original_df.append_column('c4', insert_df['c4'])
+    df1 = original_df.append_column("c4", insert_df["c4"])
     # Assert
     assert_df_equals(df, original_df)
     assert df != df1

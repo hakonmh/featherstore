@@ -66,7 +66,7 @@ def _predicate_filtering(rows, partition_names, partition_data):
         start = _binary_search(min(rows.values()), partition_names, partition_data)
         end = _binary_search(max(rows.values()), partition_names, partition_data)
 
-    partition_names = partition_names[start:end + 1]
+    partition_names = partition_names[start : end + 1]
     return partition_names
 
 
@@ -91,21 +91,22 @@ def _binary_search(target, partition_names, partition_data):
 
 
 def _row_inside_candidate(target, candidate):
-    candidate_min = candidate['min']
-    candidate_max = candidate['max']
+    candidate_min = candidate["min"]
+    candidate_max = candidate["max"]
     return target <= candidate_max and target >= candidate_min
 
 
 def _row_before_candidate(target, candidate):
-    return target >= candidate['max']
+    return target >= candidate["max"]
 
 
 def _row_after_candidate(target, candidate):
-    return target <= candidate['min']
+    return target <= candidate["min"]
 
 
-def read_table(table, partition_names, cols=ColIndexer(None),
-               rows=RowIndexer(None), mmap=None):
+def read_table(
+    table, partition_names, cols=ColIndexer(None), rows=RowIndexer(None), mmap=None
+):
     index_name = table._table_data["index_name"]
     if cols.values() is None:
         cols = ColIndexer(table._table_data["columns"])
@@ -141,9 +142,9 @@ def __read_feather(path, cols, mmap):
 
 def _read_ipc_table(path, use_mmap):
     if use_mmap:
-        source = pa.memory_map(path, 'r')
+        source = pa.memory_map(path, "r")
     else:
-        source = pa.OSFile(path, 'r')
+        source = pa.OSFile(path, "r")
     try:
         return ipc.open_file(source).read_all()
     finally:
@@ -175,7 +176,7 @@ def convert_table_to_pandas(df):
 
     if _can_be_converted_to_series(df):
         df = df.squeeze(axis=1)
-        if df.name == '0':
+        if df.name == "0":
             df.name = None
 
     index = df.index
@@ -210,6 +211,6 @@ def convert_table_to_polars(df):
     if num_cols == 1:
         full_table = full_table.to_series()
         series_name = full_table.name
-        if series_name == '0':
-            full_table = pl.Series('', full_table)
+        if series_name == "0":
+            full_table = pl.Series("", full_table)
     return full_table

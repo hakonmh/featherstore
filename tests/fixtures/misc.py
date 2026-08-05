@@ -61,8 +61,8 @@ def get_partition_size(df, num_partitions=5):
 
 def _has_rangeindex(df):
     try:
-        index_type = df.schema.pandas_metadata['index_columns'][0]['kind']
-        return index_type == 'range'
+        index_type = df.schema.pandas_metadata["index_columns"][0]["kind"]
+        return index_type == "range"
     except TypeError:
         return False
 

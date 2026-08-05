@@ -33,7 +33,6 @@ def insert_data(df, *, to):
     return df
 
 
-
 def _raise_if_rows_in_old_data(old_df, df, index_name):
     index = df[index_name]
     old_index = old_df[index_name]
@@ -46,8 +45,9 @@ def _raise_if_rows_in_old_data(old_df, df, index_name):
 
 def create_partitions(df, rows_per_partition, partition_names, all_partition_names):
     partitions = _table_utils.make_partitions(df, rows_per_partition)
-    new_partition_names = _insert_new_partition_ids(partitions, partition_names,
-                                                    all_partition_names)
+    new_partition_names = _insert_new_partition_ids(
+        partitions, partition_names, all_partition_names
+    )
     partitions = _table_utils.assign_ids_to_partitions(partitions, new_partition_names)
     return partitions
 
@@ -56,11 +56,12 @@ def _insert_new_partition_ids(partitioned_df, partition_names, all_partition_nam
     num_partitions = len(partitioned_df)
     num_partition_names = len(partition_names)
     num_names_to_make = num_partitions - num_partition_names
-    subsequent_partition = _table_utils.get_next_item(item=partition_names[-1],
-                                                      sequence=all_partition_names)
-    new_partition_names = _make_partition_names(num_names_to_make,
-                                                partition_names,
-                                                subsequent_partition)
+    subsequent_partition = _table_utils.get_next_item(
+        item=partition_names[-1], sequence=all_partition_names
+    )
+    new_partition_names = _make_partition_names(
+        num_names_to_make, partition_names, subsequent_partition
+    )
     return new_partition_names
 
 
@@ -92,7 +93,9 @@ def has_still_default_index(table, df):
     last_stored_value = _table_utils.get_last_stored_index_value(table._partition_data)
     first_row_value = rows[0].as_py()
 
-    rows_are_continuous = all(a.as_py() + 1 == b.as_py() for a, b in zip(rows, rows[1:]))
+    rows_are_continuous = all(
+        a.as_py() + 1 == b.as_py() for a, b in zip(rows, rows[1:])
+    )
     if first_row_value > last_stored_value and rows_are_continuous:
         _has_still_default_index = True
     elif len(rows) == 0:

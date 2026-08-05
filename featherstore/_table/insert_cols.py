@@ -44,8 +44,10 @@ def _raise_if_num_rows_does_not_match(df, table_data):
     new_cols_length = len(df)
 
     if new_cols_length != stored_table_length:
-        raise IndexError(f"Length of new cols ({new_cols_length}) doesn't match "
-                         f"length of stored data ({stored_table_length})")
+        raise IndexError(
+            f"Length of new cols ({new_cols_length}) doesn't match "
+            f"length of stored data ({stored_table_length})"
+        )
 
 
 def _raise_if_idx_is_invalid(df, idx):
@@ -53,12 +55,15 @@ def _raise_if_idx_is_invalid(df, idx):
 
     if _table_utils.is_collection(idx):
         if len(idx) != num_new_cols:
-            raise ValueError(f"Length of 'idx' ({len(idx)}) != number of new columns "
-                             f"({num_new_cols})")
+            raise ValueError(
+                f"Length of 'idx' ({len(idx)}) != number of new columns "
+                f"({num_new_cols})"
+            )
         for position in idx:
             if not isinstance(position, Integral):
-                raise TypeError(f"Elements in 'idx' must be of type int "
-                                f"(is type {type(position)})")
+                raise TypeError(
+                    f"Elements in 'idx' must be of type int (is type {type(position)})"
+                )
     elif not isinstance(idx, Integral):
         raise TypeError(f"'idx' must be an int (is type {type(idx)})")
 
@@ -110,9 +115,10 @@ def _insert_cols(old_df, df, index):
     return df
 
 
-
 def create_partitions(df, rows_per_partition, partition_names):
     partitions = _table_utils.make_partitions(df, rows_per_partition)
-    new_partition_names = _table_utils.add_new_partition_ids(partitions, partition_names)
+    new_partition_names = _table_utils.add_new_partition_ids(
+        partitions, partition_names
+    )
     partitions = _table_utils.assign_ids_to_partitions(partitions, new_partition_names)
     return partitions

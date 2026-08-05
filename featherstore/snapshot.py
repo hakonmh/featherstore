@@ -4,10 +4,10 @@ import pickle
 from datetime import datetime
 from featherstore.connection import Connection, current_db
 
-METADATA_FILE_NAME = 'metadata.pkl'
+METADATA_FILE_NAME = "metadata.pkl"
 
 
-def restore_table(store_name, source, errors='raise'):
+def restore_table(store_name, source, errors="raise"):
     """Restores a table in to the currently selected db.
 
     Parameters
@@ -32,7 +32,7 @@ def restore_table(store_name, source, errors='raise'):
     return table_name
 
 
-def restore_store(source, errors='raise'):
+def restore_store(source, errors="raise"):
     """Restores a store in to the currently selected db.
 
     Parameters
@@ -55,8 +55,8 @@ def restore_store(source, errors='raise'):
 
 
 def _extract_snapshot(output_path, source):
-    if '.tar.xz' not in source:
-        source = f'{source}.tar.xz'
+    if ".tar.xz" not in source:
+        source = f"{source}.tar.xz"
     with tarfile.open(source, "r") as tar:
         members = tar.getnames()
         members.remove(METADATA_FILE_NAME)
@@ -68,7 +68,7 @@ def _extract_snapshot(output_path, source):
 
 def _extract_tar_member(tar, member, output_path):
     try:
-        tar.extract(member, output_path, filter='data')
+        tar.extract(member, output_path, filter="data")
     except TypeError:
         tar.extract(member, output_path)
 
@@ -108,29 +108,29 @@ def __raise_if_source_path_is_not_str(source):
 
 
 def __raise_if_snapshot_not_found(source):
-    if '.tar.xz' not in source:
-        source = f'{source}.tar.xz'
+    if ".tar.xz" not in source:
+        source = f"{source}.tar.xz"
     if not os.path.exists(source):
         raise FileNotFoundError("Snapshot not found")
 
 
 def __raise_if_not_snapshot_of_table(source):
-    if '.tar.xz' not in source:
-        source = f'{source}.tar.xz'
+    if ".tar.xz" not in source:
+        source = f"{source}.tar.xz"
 
     with tarfile.open(source, "r") as tar:
         metadata = tar.extractfile(METADATA_FILE_NAME).read()
         metadata = pickle.loads(metadata)
-    if metadata['type'] != 'table':
+    if metadata["type"] != "table":
         raise ValueError("File is not a snapshot of a table")
 
 
 def __raise_if_table_already_exists(store, source, errors):
-    if errors == 'raise':
+    if errors == "raise":
         store_path = os.path.join(current_db(), store)
 
-        if '.tar.xz' not in source:
-            source = f'{source}.tar.xz'
+        if ".tar.xz" not in source:
+            source = f"{source}.tar.xz"
         table_name = __get_name(source)
 
         if table_name in os.listdir(store_path):
@@ -138,22 +138,22 @@ def __raise_if_table_already_exists(store, source, errors):
 
 
 def __raise_if_store_already_exists(source, errors):
-    if '.tar.xz' not in source:
-        source = f'{source}.tar.xz'
+    if ".tar.xz" not in source:
+        source = f"{source}.tar.xz"
     store_name = __get_name(source)
 
-    if store_name in os.listdir(current_db()) and errors == 'raise':
+    if store_name in os.listdir(current_db()) and errors == "raise":
         raise FileExistsError(f"A store with name {store_name} already exists")
 
 
 def __raise_if_not_snapshot_of_store(source):
-    if '.tar.xz' not in source:
-        source = f'{source}.tar.xz'
+    if ".tar.xz" not in source:
+        source = f"{source}.tar.xz"
 
     with tarfile.open(source, "r") as tar:
         metadata = tar.extractfile(METADATA_FILE_NAME).read()
         metadata = pickle.loads(metadata)
-    if metadata['type'] != 'store':
+    if metadata["type"] != "store":
         raise ValueError("File is not a snapshot of a store")
 
 
@@ -161,6 +161,7 @@ def __get_name(source):
     with tarfile.open(source, "r") as tar:
         name = tar.getnames()[0]
     return name
+
 
 # ----------------- create snapshot ------------------
 
@@ -188,21 +189,20 @@ def __raise_if_input_doesnt_exists(input_path):
 
 
 def __raise_if_input_type_is_not_valid(input_type):
-    if input_type not in ('table', 'store'):
+    if input_type not in ("table", "store"):
         raise ValueError("Input type should be either 'table' or 'store")
 
 
 def __create_snapshot_metadata(metadata_path, source_type):
-    snapshot_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    metadata = {'type': source_type,
-                'snapshot_time': snapshot_time}
-    with open(metadata_path, 'wb') as f:
+    snapshot_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    metadata = {"type": source_type, "snapshot_time": snapshot_time}
+    with open(metadata_path, "wb") as f:
         f.write(pickle.dumps(metadata))
 
 
 def __write_snapshot(output_path, input_path, metadata_path):
-    if 'tar.xz' not in output_path:
-        output_path = f'{output_path}.tar.xz'
+    if "tar.xz" not in output_path:
+        output_path = f"{output_path}.tar.xz"
 
     with tarfile.open(output_path, "w:xz") as tar:
         tar.add(input_path, arcname=os.path.basename(input_path))
