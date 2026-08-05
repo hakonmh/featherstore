@@ -9,6 +9,7 @@ tests/_db
 .vscode/
 *.code-workspace
 .devcontainer/
+.cursor/
 
 # Environment and secrets
 .env

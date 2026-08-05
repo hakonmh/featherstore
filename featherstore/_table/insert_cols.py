@@ -1,3 +1,5 @@
+from numbers import Integral
+
 import pandas as pd
 
 from featherstore.connection import Connection
@@ -6,7 +8,7 @@ from featherstore._table import _table_utils
 from featherstore._table._indexers import ColIndexer
 
 
-def can_insert_columns(table, df):
+def can_insert_columns(table, df, idx=-1):
     Connection._raise_if_not_connected()
 
     _raise_if.table_not_exists(table)
@@ -23,6 +25,7 @@ def can_insert_columns(table, df):
     _raise_if_num_rows_does_not_match(df, table._table_data)
     _raise_if.index_values_contains_duplicates(df.index)
     _raise_if.index_type_not_same_as_stored_index(df, table._table_data)
+    _raise_if_idx_is_invalid(df, idx)
 
 
 def _raise_if_col_name_already_in_table(cols, table_data):
@@ -43,6 +46,21 @@ def _raise_if_num_rows_does_not_match(df, table_data):
     if new_cols_length != stored_table_length:
         raise IndexError(f"Length of new cols ({new_cols_length}) doesn't match "
                          f"length of stored data ({stored_table_length})")
+
+
+def _raise_if_idx_is_invalid(df, idx):
+    num_new_cols = 1 if isinstance(df, pd.Series) else len(df.columns)
+
+    if _table_utils.is_collection(idx):
+        if len(idx) != num_new_cols:
+            raise ValueError(f"Length of 'idx' ({len(idx)}) != number of new columns "
+                             f"({num_new_cols})")
+        for position in idx:
+            if not isinstance(position, Integral):
+                raise TypeError(f"Elements in 'idx' must be of type int "
+                                f"(is type {type(position)})")
+    elif not isinstance(idx, Integral):
+        raise TypeError(f"'idx' must be an int (is type {type(idx)})")
 
 
 def insert_columns(old_df, df, index):
@@ -81,6 +99,9 @@ def _insert_cols(old_df, df, index):
 
     if index == -1:
         cols.extend(new_cols)
+    elif _table_utils.is_collection(index):
+        for col, position in zip(new_cols, index):
+            cols.insert(position, col)
     else:
         for col in new_cols:
             cols.insert(index, col)

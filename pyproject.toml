@@ -53,9 +53,12 @@ exclude = ["tests*", "docs*", "benchmarks*", ".dev*"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-s --tb=short -m 'not integration'"
+addopts = "-s --tb=short -m 'not integration and not e2e'"
 testpaths = ["tests"]
-markers = ["integration"]
+markers = [
+    "integration: platform-specific integration tests",
+    "e2e: end-to-end tests",
+]
 
 [tool.flake8]
 exclude = [".dev", "benchmarks", "build", "dist"]

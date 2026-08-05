@@ -240,6 +240,26 @@ class Table:
 
         write.write_partitions(partitions, self._table_path)
 
+    def insert(self, df, idx=-1):
+        """Insert one or more rows or columns into the current table.
+
+        If ``df`` has the same number of columns as the table, rows are inserted.
+        Otherwise, columns are inserted at position ``idx``.
+
+        Parameters
+        ----------
+        df : Pandas DataFrame or Pandas Series
+            The data to be inserted.
+        idx : int or Sequence[int], optional
+            The position(s) to insert new column(s). Only used when inserting columns.
+            If a sequence is provided, it must have one position per new column.
+            Default is to add columns to the end.
+        """
+        if misc.num_cols_matches_table_cols(df, self._table_data):
+            self.insert_rows(df)
+        else:
+            self.insert_columns(df, idx=idx)
+
     def insert_rows(self, df):
         """Insert one or more rows into the current table.
 
@@ -282,11 +302,12 @@ class Table:
         ----------
         df : Pandas DataFrame or Pandas Series
             The data to be inserted. `df` must have the same index as the stored data.
-        idx : int
-            The position to insert the new column(s). Default is to add columns to
+        idx : int or Sequence[int], optional
+            The position(s) to insert the new column(s). If a sequence is provided,
+            it must have one position per new column. Default is to add columns to
             the end.
         """
-        insert_cols.can_insert_columns(self, df)
+        insert_cols.can_insert_columns(self, df, idx)
 
         index_name = self._table_data["index_name"]
         partition_size = self._table_data["partition_size"]
