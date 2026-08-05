@@ -1,9 +1,0 @@
-# Dependencies
-pandas>=2.2.0
-polars[timezone]>=1.0.0
-pyarrow>=14.0.0
-numpy>=1.26.0
-
-# Tools
-pytest>=7.0.0
-flake8>=5.0.4

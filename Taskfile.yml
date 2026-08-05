@@ -1,0 +1,10 @@
+version: '3'
+
+includes:
+  bench: .tasks/bench.yml
+  docs: .tasks/docs.yml
+  lint: .tasks/lint.yml
+  test: .tasks/tests.yml
+
+tasks:
+  uv-sync: uv sync --all-groups --all-extras

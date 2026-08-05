@@ -1,6 +1,0 @@
-bmark-py>=0.0.4
-pyarrow
-pandas
-polars
-numpy
-duckdb

@@ -1,19 +1,40 @@
-dev/
-plan/
-tests/_db
-/build/
-build/lib
-dist
-env
-venv
-__pycache__
-.git
-.vscode
-.pytest_cache
-settings.json
-*.egg-info
-*.code-workspace
-*.pyc
-*.lprof
+# Project specific
+.dev
 benchmarks/*.html
 db
+plan/
+tests/_db
+
+# IDE and editor
+.vscode/
+*.code-workspace
+.devcontainer/
+
+# Environment and secrets
+.env
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# UV
+uv.lock
+
+# Python
+__pycache__/
+*.py[oc]
+
+# Build and distribution
+build/
+dist/
+wheels/
+*.egg-info/
+_build/
+
+# Test, lint, and coverage
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+*.lprof

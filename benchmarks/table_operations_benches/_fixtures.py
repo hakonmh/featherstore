@@ -31,19 +31,19 @@ def delete_db():
         raise RuntimeError("Not a database!")
 
 
-def __make_float_col(rows):
+def _make_float_col(rows):
     return np.random.random(size=rows)
 
 
-def __make_uint_col(rows):
+def _make_uint_col(rows):
     return np.random.randint(0, 200000, size=rows)
 
 
-def __make_int_col(rows):
+def _make_int_col(rows):
     return np.random.randint(-100000, 100000, size=rows)
 
 
-def __make_datetime_col(rows):
+def _make_datetime_col(rows):
     start = -852076800  # 1943-01-01 in seconds relative to epoch
     end = 1640995200  # 2022-01-01 in seconds relative to epoch
     times_since_epoch = np.random.randint(start, end, size=rows, dtype=np.int32)
@@ -51,7 +51,7 @@ def __make_datetime_col(rows):
     return dtime
 
 
-def __make_string_col(rows):
+def _make_string_col(rows):
     str_length = 5
     df = (
         np.random.choice(RANDS_CHARS, size=str_length * rows)
@@ -61,17 +61,17 @@ def __make_string_col(rows):
     return df
 
 
-def __make_bool_column(rows):
+def _make_bool_col(rows):
     return np.random.randint(0, 2, size=rows, dtype=bool)
 
 
 COL_DTYPES = {
-    'int': __make_int_col,
-    'string': __make_string_col,
-    'float': __make_float_col,
-    'datetime': __make_datetime_col,
-    'bool': __make_bool_column,
-    'uint': __make_uint_col,
+    'int': _make_int_col,
+    'string': _make_string_col,
+    'float': _make_float_col,
+    'datetime': _make_datetime_col,
+    'bool': _make_bool_col,
+    'uint': _make_uint_col,
 }
 
 
@@ -204,7 +204,7 @@ def _split_pl_rows(df, rows, index_name):
 
 
 def _split_cols(df, cols, index_name=None, keep_index=False):
-    df_cols = __get_cols(df)
+    df_cols = _get_cols(df)
 
     if isinstance(cols, dict):
         pattern = cols['like']
@@ -216,11 +216,11 @@ def _split_cols(df, cols, index_name=None, keep_index=False):
         if index_name not in not_cols:
             not_cols.insert(0, index_name)
 
-    df, other = __split_cols(df, cols, not_cols)
+    df, other = _split_cols(df, cols, not_cols)
     return df, other
 
 
-def __get_cols(df):
+def _get_cols(df):
     if isinstance(df, pa.Table):
         df_cols = df.column_names
     else:
@@ -228,7 +228,7 @@ def __get_cols(df):
     return df_cols
 
 
-def __split_cols(df, cols, not_cols):
+def _split_cols(df, cols, not_cols):
     if isinstance(df, pa.Table):
         other = df.select(cols)
         df = df.select(not_cols)
@@ -259,13 +259,13 @@ def update_values(df, index_name='index'):
 
 
 def _update_col(df):
-    dtype = __get_dtype(df)
+    dtype = _get_dtype(df)
     make_col = COL_DTYPES[dtype]
     rows = df.shape[0]
     return make_col(rows)
 
 
-def __get_dtype(df):
+def _get_dtype(df):
     dtype = df.dtype.kind
 
     if dtype == 'i':
@@ -285,8 +285,22 @@ def __get_dtype(df):
     return dtype
 
 
+def to_pa_dtype(dtype):
+    if is_numpy_dtype(dtype):
+        dtype = pa.from_numpy_dtype(dtype)
+    return dtype
+
+
+def is_numpy_dtype(item):
+    try:
+        pa.from_numpy_dtype(item)
+        return True
+    except Exception:
+        return False
+
+
 def change_dtype(df, to, index_name='index', cols=None):
-    arrow_dtype = _convert_to_pa_dtype(to)
+    arrow_dtype = to_pa_dtype(to)
     schema = df.schema
     cols = cols if cols else schema.names
     for idx, field in enumerate(schema):
@@ -295,17 +309,3 @@ def change_dtype(df, to, index_name='index', cols=None):
             schema = schema.set(idx, field)
     df = df.cast(schema)
     return df
-
-
-def _convert_to_pa_dtype(dtype):
-    if __is_valid_dtype(dtype):
-        dtype = pa.from_numpy_dtype(dtype)
-    return dtype
-
-
-def __is_valid_dtype(item):
-    try:
-        pa.from_numpy_dtype(item)
-        return True
-    except Exception:
-        return False

@@ -1,6 +1,8 @@
 import bmark
-from . import _fixtures as fx
 import featherstore as fs
+
+from . import _fixtures as fx
+from ._helpers import close_table, partition_size
 
 append_bench = bmark.Benchmark()
 
@@ -19,7 +21,7 @@ class AppendFS(bmark.Benched):
     def setup(self):
         df = fx.make_table(self._shape, astype=self._astype)
         df, self._append_df = fx.split_table(df, rows=self._rows)
-        self._partition_size = fx.get_partition_size(df, self._num_partitions)
+        self._partition_size = partition_size(df, self._num_partitions)
 
         fs.create_database('db')
         store = fs.create_store('store_name')
@@ -27,16 +29,14 @@ class AppendFS(bmark.Benched):
         self._table.write(df, index='index', partition_size=self._partition_size)
 
     def teardown(self):
-        self._table.drop_table()
-        fs.drop_store('store_name')
-        fx.delete_db()
+        close_table()
 
     def __exit__(self, exc, value, traceback):
         self._table.drop(rows=self._rows)
 
 
 @append_bench()
-class append_pandas(AppendFS):
+class AppendPandas(AppendFS):
 
     def __init__(self, shape, rows=None, num_partitions=0):
         self.name = f"FS append Pandas (list of {rows:,d} rows)"
@@ -44,7 +44,7 @@ class append_pandas(AppendFS):
 
 
 @append_bench()
-class append_arrow(AppendFS):
+class AppendArrow(AppendFS):
 
     def __init__(self, shape, rows=None, num_partitions=0):
         self.name = f"FS append Arrow (list of {rows:,d} rows)"
@@ -52,7 +52,7 @@ class append_arrow(AppendFS):
 
 
 @append_bench()
-class append_polars(AppendFS):
+class AppendPolars(AppendFS):
 
     def __init__(self, shape, rows=None, num_partitions=0):
         self.name = f"FS append Polars (list of {rows:,d} rows)"

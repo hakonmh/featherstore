@@ -1,10 +1,10 @@
 import os
 import bisect
-import subprocess
 
 import pyarrow as pa
 
 from featherstore.connection import Connection
+from featherstore import _utils
 from featherstore._table import _raise_if
 from featherstore._table import _table_utils
 from featherstore._table.read import get_partition_names as _get_partition_names
@@ -216,14 +216,7 @@ def drop_partitions(table, partitions):
 
 def _delete_partition(table, partition):
     partition_path = os.path.join(table._table_path, f'{partition}.feather')
-    try:
-        os.remove(partition_path)
-    except PermissionError as e:
-        cmd = ["del", "/f", "/a", f"{e.filename}"]
-        output = subprocess.run(cmd, shell=True, check=True,
-                                capture_output=True).stderr.decode()
-        if output.startswith('The process cannot access the file'):
-            raise PermissionError('File still opened by memory-map')
+    _utils._remove_path(partition_path)
 
 
 def _delete_partition_metadata(table, partition):

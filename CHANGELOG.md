@@ -24,6 +24,25 @@ Enhancements:
 * Documentation updated for 0.3.0 (`rename_store(..., to=...)`,
   `table.exists()`, `insert_rows()`, `insert_columns()`, and dependency
   requirements)
+* Migrated packaging to `pyproject.toml`; removed `setup.py`,
+  `requirements.txt`, `pytest.ini`, and `.flake8` (pytest and flake8 config
+  now live in `pyproject.toml`)
+* CI and Read the Docs install via `pip install -e ".[dev]"`; PyPI publish
+  builds with `python -m build`
+* Added Taskfile tasks for `uv sync`, docs, lint, and tests
+* Refactored `benchmarks/`: renamed `external`/`internal` to
+  `format_comparison`/`table_operations`, applied clean-code structure
+  (shared helpers, explicit imports, PascalCase benchmark classes), and added
+  module docstrings
+* Added Taskfile benchmark tasks: `bench:format-comparison`,
+  `bench:table-operations`, and `bench:log`
+* Internal benchmark logs now write to `.dev/bmarks`
+
+Bugfixes:
+
+* Fixed intermittent `PermissionError` (WinError 32) on Windows when deleting
+  partition files during bulk cleanup (e.g. `drop_table()`); file removal now
+  retries `os.remove` instead of shelling out to `del`
 
 0.2.1
 -----

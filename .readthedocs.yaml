@@ -11,7 +11,10 @@ build:
 sphinx:
    configuration: docs/conf.py
 
-# The Python requirements required to build your docs
+# Install the project and the dev extra (docs tools live there)
 python:
    install:
-   - requirements: docs/requirements.txt
+   - method: pip
+     path: .
+     extra_requirements:
+       - dev

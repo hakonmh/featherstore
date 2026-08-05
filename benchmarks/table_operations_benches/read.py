@@ -41,7 +41,7 @@ class ReadFS(bmark.Benched):
 
 
 @read_bench()
-class read_arrow(ReadFS):
+class ReadArrow(ReadFS):
 
     def __init__(self, *, rows=None, cols=None, name='', **kwargs):
         self.name = "FS read Arrow"
@@ -52,7 +52,7 @@ class read_arrow(ReadFS):
 
 
 @read_bench()
-class read_pandas(ReadFS):
+class ReadPandas(ReadFS):
 
     def __init__(self, *, rows=None, cols=None, name='', **kwargs):
         self.name = "FS read Pandas"
@@ -63,7 +63,7 @@ class read_pandas(ReadFS):
 
 
 @read_bench()
-class read_polars(ReadFS):
+class ReadPolars(ReadFS):
 
     def __init__(self, *, rows=None, cols=None, name='', **kwargs):
         self.name = "FS read Polars"
