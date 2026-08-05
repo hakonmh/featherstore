@@ -160,9 +160,10 @@ def split_pa_rows(df, rows, index_name, iloc):
     mask = pa.compute.invert(mask)
     df = df.filter(mask)
 
-    if index_name in (DEFAULT_ARROW_INDEX_NAME, "__rangeindex__") and _utils.is_rangeindex(
-        df[index_name]
-    ):
+    if index_name in (
+        DEFAULT_ARROW_INDEX_NAME,
+        "__rangeindex__",
+    ) and _utils.is_rangeindex(df[index_name]):
         df = df.drop([index_name])
         other = other.drop([index_name])
     return df, other

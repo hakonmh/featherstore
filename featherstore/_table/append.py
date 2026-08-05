@@ -28,7 +28,9 @@ def can_append_table(table, df, warnings):
     if (not has_default_index or index_is_provided) and not common.index_is_default(
         index
     ):
-        _raise_if_append_data_not_ordered_after_stored_data(index, table._partition_data)
+        _raise_if_append_data_not_ordered_after_stored_data(
+            index, table._partition_data
+        )
 
     raise_if_index_not_exist(index, has_default_index)
     _raise_if.index_values_contains_duplicates(index)
