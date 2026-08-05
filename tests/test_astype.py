@@ -3,6 +3,8 @@ import polars as pl
 import pyarrow as pa
 import pytest
 
+from featherstore.exceptions import DuplicateColumnNamesError, UnsupportedIndexTypeError
+
 from .fixtures import (
     DEFAULT_ARROW_INDEX_NAME,
     TABLE_NAME,
@@ -129,10 +131,10 @@ DUPLICATE_COL_NAMES = [["c0", "c0"], [pa.int16(), pa.int32()]]
         (INVALID_COLS_VALUES_ARGUMENT_DTYPE, TypeError),
         (INVALID_TO_ARGUMENT_DTYPE, TypeError),
         (INVALID_TO_ITEMS_DTYPE, TypeError),
-        (FORBIDDEN_INDEX_DTYPE, TypeError),
+        (FORBIDDEN_INDEX_DTYPE, UnsupportedIndexTypeError),
         (NON_ARROW_DTYPE, TypeError),
         (INVALID_NEW_DTYPE, pa.ArrowInvalid),
-        (DUPLICATE_COL_NAMES, IndexError),
+        (DUPLICATE_COL_NAMES, DuplicateColumnNamesError),
     ],
     ids=[
         "NEW_DTYPES_PROVIDED_TWICE",

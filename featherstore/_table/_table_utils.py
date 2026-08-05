@@ -7,6 +7,11 @@ import polars as pl
 import pyarrow as pa
 
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
+from featherstore.exceptions import (
+    ColumnDtypeMismatchError,
+    PartitionCountMismatchError,
+    RowNotFoundError,
+)
 
 PARTITION_NAME_LENGTH = 14
 INSERTION_BUFFER_LENGTH = 10**6
@@ -19,7 +24,7 @@ def concat_arrow_tables(*dfs):
         dfs = _coerce_arrow_col_types(dfs, schema=main_df.schema)
         full_table = pa.concat_tables(dfs)
     except pa.ArrowInvalid:
-        raise TypeError("New and old column types doesn't match")
+        raise ColumnDtypeMismatchError("New and old column types doesn't match")
     return full_table
 
 
@@ -190,7 +195,10 @@ def append_new_partition_ids(num_partitions, partition_ids):
 
 def assign_ids_to_partitions(df, ids):
     if len(df) != len(ids):
-        raise IndexError("Num partitions doesn't match num partition names")
+        raise PartitionCountMismatchError(
+            f"Num partitions doesn't match num partition names "
+            f"({len(df)} != {len(ids)})"
+        )
     id_mapping = {}
     for identifier, partition in zip(ids, df):
         id_mapping[identifier] = partition
@@ -323,15 +331,18 @@ def _fetch_rows_in_list(df, index, rows):
     if not rows:
         return pa.table([[]] * len(df.column_names), schema=df.schema)
     row_indices = pa.compute.index_in(rows, value_set=index)
-    _raise_if_rows_not_in_table(row_indices)
+    _raise_if_rows_not_in_table(row_indices, rows, index)
     df = pa.compute.take(df, row_indices, boundscheck=False)
     return df
 
 
-def _raise_if_rows_not_in_table(row_indices):
+def _raise_if_rows_not_in_table(row_indices, rows, index):
     contains_null = row_indices.null_count > 0
     if contains_null:
-        raise IndexError("Trying to access a row not found in table")
+        is_in = pa.compute.is_in(rows, value_set=index)
+        missing_mask = pa.compute.invert(is_in)
+        missing = pa.compute.filter(rows, missing_mask).to_pylist()
+        raise RowNotFoundError(f"Trying to access rows not found in table ({missing})")
 
 
 def _fetch_rows_before(df, index, row):

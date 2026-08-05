@@ -4,6 +4,14 @@ import tarfile
 from datetime import UTC, datetime
 
 from featherstore.connection import Connection, current_db
+from featherstore.exceptions import (
+    InvalidSnapshotError,
+    SnapshotNotFoundError,
+    SnapshotTargetNotFoundError,
+    StoreAlreadyExistsError,
+    StoreNotFoundError,
+    TableAlreadyExistsError,
+)
 
 METADATA_FILE_NAME = "metadata.pkl"
 
@@ -26,6 +34,21 @@ def restore_table(store_name, source, errors="raise"):
     -------
     str
         The name of the table restored.
+
+    Raises
+    ------
+    NotConnectedError
+        If FeatherStore is not connected to a database.
+    StoreNotFoundError
+        If the target store does not exist.
+    SnapshotNotFoundError
+        If the snapshot file does not exist.
+    InvalidSnapshotError
+        If the file is not a snapshot of a table.
+    TableAlreadyExistsError
+        If ``errors='raise'`` and the table already exists.
+    TypeError
+        If ``store`` or ``source`` is not a str.
     """
     _can_restore_table(store_name, source, errors)
     store_path = os.path.join(current_db(), store_name)
@@ -49,6 +72,19 @@ def restore_store(source, errors="raise"):
     -------
     str
         The name of the store restored.
+
+    Raises
+    ------
+    NotConnectedError
+        If FeatherStore is not connected to a database.
+    SnapshotNotFoundError
+        If the snapshot file does not exist.
+    InvalidSnapshotError
+        If the file is not a snapshot of a store.
+    StoreAlreadyExistsError
+        If ``errors='raise'`` and the store already exists.
+    TypeError
+        If ``source`` is not a str.
     """
     _can_restore_store(source, errors)
     store_name = _extract_snapshot(current_db(), source)
@@ -100,7 +136,7 @@ def __raise_if_store_is_not_str(store):
 def __raise_if_store_doesnt_exist(store):
     store_path = os.path.join(current_db(), store)
     if not os.path.exists(store_path):
-        raise FileNotFoundError("'store' not found")
+        raise StoreNotFoundError(f"'store' not found (store={store!r})")
 
 
 def __raise_if_source_path_is_not_str(source):
@@ -112,7 +148,7 @@ def __raise_if_snapshot_not_found(source):
     if ".tar.xz" not in source:
         source = f"{source}.tar.xz"
     if not os.path.exists(source):
-        raise FileNotFoundError("Snapshot not found")
+        raise SnapshotNotFoundError(f"Snapshot not found (source={source!r})")
 
 
 def __raise_if_not_snapshot_of_table(source):
@@ -123,7 +159,9 @@ def __raise_if_not_snapshot_of_table(source):
         metadata = tar.extractfile(METADATA_FILE_NAME).read()
         metadata = pickle.loads(metadata)
     if metadata["type"] != "table":
-        raise ValueError("File is not a snapshot of a table")
+        raise InvalidSnapshotError(
+            f"File is not a snapshot of a table (source={source!r})"
+        )
 
 
 def __raise_if_table_already_exists(store, source, errors):
@@ -135,7 +173,9 @@ def __raise_if_table_already_exists(store, source, errors):
         table_name = __get_name(source)
 
         if table_name in os.listdir(store_path):
-            raise FileExistsError(f"A table with name {table_name} already exists")
+            raise TableAlreadyExistsError(
+                f"A table with name {table_name} already exists"
+            )
 
 
 def __raise_if_store_already_exists(source, errors):
@@ -144,7 +184,7 @@ def __raise_if_store_already_exists(source, errors):
     store_name = __get_name(source)
 
     if store_name in os.listdir(current_db()) and errors == "raise":
-        raise FileExistsError(f"A store with name {store_name} already exists")
+        raise StoreAlreadyExistsError(f"A store with name {store_name} already exists")
 
 
 def __raise_if_not_snapshot_of_store(source):
@@ -155,7 +195,9 @@ def __raise_if_not_snapshot_of_store(source):
         metadata = tar.extractfile(METADATA_FILE_NAME).read()
         metadata = pickle.loads(metadata)
     if metadata["type"] != "store":
-        raise ValueError("File is not a snapshot of a store")
+        raise InvalidSnapshotError(
+            f"File is not a snapshot of a store (source={source!r})"
+        )
 
 
 def __get_name(source):
@@ -186,7 +228,9 @@ def _can_create_snapshot(output_path, input_path, input_type):
 
 def __raise_if_input_doesnt_exists(input_path):
     if not os.path.exists(input_path):
-        raise FileNotFoundError("Snapshot target not found")
+        raise SnapshotTargetNotFoundError(
+            f"Snapshot target not found (input_path={input_path!r})"
+        )
 
 
 def __raise_if_input_type_is_not_valid(input_type):

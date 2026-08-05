@@ -3,6 +3,12 @@ import os
 from featherstore import _utils
 from featherstore._utils import DB_MARKER_NAME
 from featherstore.connection import Connection, current_db
+from featherstore.exceptions import (
+    ForbiddenStoreNameError,
+    StoreAlreadyExistsError,
+    StoreNotEmptyError,
+    StoreNotFoundError,
+)
 from featherstore.snapshot import _create_snapshot
 from featherstore.table import DEFAULT_PARTITION_SIZE, Table
 
@@ -22,6 +28,19 @@ def create_store(store_name, *, errors="raise"):
     Returns
     -------
     Store
+
+    Raises
+    ------
+    NotConnectedError
+        If FeatherStore is not connected to a database.
+    StoreAlreadyExistsError
+        If ``errors='raise'`` and the store already exists.
+    ForbiddenStoreNameError
+        If ``store_name`` is reserved.
+    TypeError
+        If ``store_name`` is not a str.
+    ValueError
+        If ``errors`` is not ``'raise'`` or ``'ignore'``.
     """
     _can_create_store(store_name, errors)
 
@@ -41,6 +60,19 @@ def rename_store(store_name, *, to):
         The name of the store to be renamed.
     to : str
         The new name of the store.
+
+    Raises
+    ------
+    NotConnectedError
+        If FeatherStore is not connected to a database.
+    StoreNotFoundError
+        If the store does not exist.
+    StoreAlreadyExistsError
+        If the new store name already exists.
+    ForbiddenStoreNameError
+        If the new store name is reserved.
+    TypeError
+        If ``store_name`` or ``to`` is not a str.
     """
     Store(store_name).rename(to=to)
 
@@ -58,6 +90,19 @@ def drop_store(store_name, *, errors="raise"):
     errors : str, optional
         Whether or not to raise an error if the store doesn't exist. Can be either
         `raise` or `ignore`, by default `raise`
+
+    Raises
+    ------
+    NotConnectedError
+        If FeatherStore is not connected to a database.
+    StoreNotFoundError
+        If ``errors='raise'`` and the store does not exist.
+    StoreNotEmptyError
+        If the store still contains tables.
+    TypeError
+        If ``store_name`` is not a str.
+    ValueError
+        If ``errors`` is not ``'raise'`` or ``'ignore'``.
     """
     _can_drop_store(store_name, errors)
     store_path = os.path.join(current_db(), store_name)
@@ -113,6 +158,17 @@ class Store:
         ----------
         store_name : str
             The name of the store to be selected
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        StoreNotFoundError
+            If the store does not exist.
+        ForbiddenStoreNameError
+            If ``store_name`` is reserved.
+        TypeError
+            If ``store_name`` is not a str.
         """
         _can_init_store(store_name)
 
@@ -126,6 +182,17 @@ class Store:
         ----------
         to : str
             The new name of the store.
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        StoreAlreadyExistsError
+            If the new store name already exists.
+        ForbiddenStoreNameError
+            If the new store name is reserved.
+        TypeError
+            If ``to`` is not a str.
         """
         new_store_name = to
         _can_rename_store(new_store_name)
@@ -198,6 +265,27 @@ class Store:
         Returns
         -------
         pyarrow.Table
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        StoreNotFoundError
+            If the store does not exist.
+        ForbiddenTableNameError
+            If ``table_name`` is reserved.
+        TableNotFoundError
+            If the table does not exist.
+        ColumnNotFoundError
+            If any requested column is not in the table.
+        RowNotFoundError
+            If any requested row is not in the table.
+        IndexTypeMismatchError
+            If row values do not match the table index dtype.
+        TypeError
+            If ``table_name``, ``cols``, or ``rows`` has an invalid type.
+        ValueError
+            If ``mmap`` is not a bool or ``None``.
         """
         return Table(table_name, self.name).read_arrow(cols=cols, rows=rows, mmap=mmap)
 
@@ -220,6 +308,27 @@ class Store:
         Returns
         -------
         pandas.DataFrame or pandas.Series
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        StoreNotFoundError
+            If the store does not exist.
+        ForbiddenTableNameError
+            If ``table_name`` is reserved.
+        TableNotFoundError
+            If the table does not exist.
+        ColumnNotFoundError
+            If any requested column is not in the table.
+        RowNotFoundError
+            If any requested row is not in the table.
+        IndexTypeMismatchError
+            If row values do not match the table index dtype.
+        TypeError
+            If ``table_name``, ``cols``, or ``rows`` has an invalid type.
+        ValueError
+            If ``mmap`` is not a bool or ``None``.
         """
         return Table(table_name, self.name).read_pandas(cols=cols, rows=rows, mmap=mmap)
 
@@ -242,6 +351,27 @@ class Store:
         Returns
         -------
         polars.DataFrame or polars.Series
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        StoreNotFoundError
+            If the store does not exist.
+        ForbiddenTableNameError
+            If ``table_name`` is reserved.
+        TableNotFoundError
+            If the table does not exist.
+        ColumnNotFoundError
+            If any requested column is not in the table.
+        RowNotFoundError
+            If any requested row is not in the table.
+        IndexTypeMismatchError
+            If row values do not match the table index dtype.
+        TypeError
+            If ``table_name``, ``cols``, or ``rows`` has an invalid type.
+        ValueError
+            If ``mmap`` is not a bool or ``None``.
         """
         return Table(table_name, self.name).read_polars(cols=cols, rows=rows, mmap=mmap)
 
@@ -279,6 +409,35 @@ class Store:
         warnings : str, optional
             Whether or not to warn if a unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        StoreNotFoundError
+            If the store does not exist.
+        ForbiddenTableNameError
+            If ``table_name`` is reserved.
+        TableAlreadyExistsError
+            If ``errors='raise'`` and the table already exists.
+        DuplicateColumnNamesError
+            If column names are not unique.
+        DuplicateIndexValuesError
+            If index values are not unique.
+        IndexNameMismatchError
+            If the index name does not match the stored table.
+        IndexNotInColumnsError
+            If ``index`` is not among the table columns.
+        IndexTypeMismatchError
+            If the index type does not match the stored table.
+        UnsupportedIndexTypeError
+            If the index type is not supported.
+        MultiTypeColumnError
+            If a column contains multiple dtypes.
+        TypeError
+            If arguments have invalid types.
+        ValueError
+            If ``errors`` or ``warnings`` is invalid.
         """
         Table(table_name, self.name).write(
             df,
@@ -300,6 +459,37 @@ class Store:
         warnings : str, optional
             Whether or not to warn if a unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        StoreNotFoundError
+            If the store does not exist.
+        ForbiddenTableNameError
+            If ``table_name`` is reserved.
+        TableNotFoundError
+            If the table does not exist.
+        AppendIndexError
+            If append index is not strictly after stored data.
+        ColumnDtypeMismatchError
+            If column dtypes are incompatible.
+        ColumnMismatchError
+            If column names do not match the stored table.
+        DuplicateColumnNamesError
+            If column names are not unique.
+        DuplicateIndexValuesError
+            If index values are not unique.
+        IndexNameMismatchError
+            If the index name does not match the stored table.
+        IndexTypeMismatchError
+            If the index type does not match the stored table.
+        MissingIndexError
+            If an index is required but not provided.
+        TypeError
+            If arguments have invalid types.
+        ValueError
+            If ``warnings`` is invalid.
         """
         Table(table_name, self.name).append(df, warnings=warnings)
 
@@ -312,6 +502,19 @@ class Store:
             The name of the table to be renamed
         to : str
             The new name of the table.
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        StoreNotFoundError
+            If the store does not exist.
+        ForbiddenTableNameError
+            If ``table_name`` or ``to`` is reserved.
+        TableAlreadyExistsError
+            If the new table name already exists.
+        TypeError
+            If ``table_name`` or ``to`` is not a str.
         """
         Table(table_name, self.name).rename_table(to=to)
 
@@ -350,6 +553,15 @@ class Store:
         ----------
         path : str
             The path to the snapshot archive.
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        SnapshotTargetNotFoundError
+            If the store path does not exist.
+        TypeError
+            If ``path`` is not a str.
         """
         _create_snapshot(path, self._store_path, "store")
 
@@ -377,7 +589,7 @@ def _raise_if_store_contains_tables(store_name):
         store_content = os.listdir(store_path)
         store_is_empty = len(store_content) == 0
         if not store_is_empty:
-            raise PermissionError("Can't delete a store that contains tables")
+            raise StoreNotEmptyError("Can't delete a store that contains tables")
 
 
 def _can_init_store(store_name):
@@ -401,19 +613,19 @@ def _raise_if_store_name_is_str(store_name):
 
 def _raise_if_store_name_is_forbidden(store_name):
     if store_name == DB_MARKER_NAME:
-        raise ValueError(f"Store name {DB_MARKER_NAME} is forbidden")
+        raise ForbiddenStoreNameError(f"Store name {DB_MARKER_NAME} is forbidden")
 
 
 def _raise_if_store_not_exists(store_name):
     store_path = os.path.join(current_db(), store_name)
     if not os.path.exists(store_path):
-        raise FileNotFoundError(f"Store doesn't exists: '{store_name}'")
+        raise StoreNotFoundError(f"Store doesn't exists: '{store_name}'")
 
 
 def _raise_if_store_already_exists(store_name):
     store_path = os.path.join(current_db(), store_name)
     if os.path.exists(store_path):
-        raise OSError(f"A store with name {store_name} already exists")
+        raise StoreAlreadyExistsError(f"A store with name {store_name} already exists")
 
 
 def _can_list(like):

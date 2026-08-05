@@ -4,6 +4,18 @@ import pandas as pd
 import pyarrow as pa
 import pytest
 
+from featherstore.exceptions import (
+    ColumnNotFoundError,
+    DuplicateColumnNamesError,
+    DuplicateIndexValuesError,
+    IndexNotInColumnsError,
+    IndexTypeMismatchError,
+    RowNotFoundError,
+    TableAlreadyExistsError,
+    TableNotFoundError,
+    UnsupportedIndexTypeError,
+)
+
 from .fixtures import (
     TABLE_NAME,
     assert_df_equals,
@@ -189,11 +201,11 @@ def _invalid_partition_size_dtype():
     ("arguments", "exception"),
     [
         (_invalid_table_dtype, TypeError),
-        (_invalid_index_dtype, TypeError),
-        (_duplicate_index, IndexError),
-        (_index_not_in_cols, IndexError),
+        (_invalid_index_dtype, UnsupportedIndexTypeError),
+        (_duplicate_index, DuplicateIndexValuesError),
+        (_index_not_in_cols, IndexNotInColumnsError),
         (_invalid_col_names_dtype, TypeError),
-        (_duplicate_col_names, IndexError),
+        (_duplicate_col_names, DuplicateColumnNamesError),
         (_invalid_warnings_arg, ValueError),
         (_invalid_errors_arg, ValueError),
         (_invalid_partition_size_dtype, TypeError),
@@ -220,7 +232,7 @@ def test_can_write(store, arguments, exception):
 
 @pytest.mark.parametrize(
     ("errors", "exception"),
-    [("raise", pytest.raises(FileExistsError)), ("ignore", nullcontext())],
+    [("raise", pytest.raises(TableAlreadyExistsError)), ("ignore", nullcontext())],
 )
 def test_trying_to_overwrite_existing_table(store, errors, exception):
     # Arrange
@@ -249,11 +261,11 @@ COLS_NOT_IN_TABLE = [TABLE_NAME, {"cols": ["c0", "c1", "c3334"]}]
         (INVALID_TABLE_NAME_DTYPE, TypeError),
         (INVALID_ROW_DTYPE, TypeError),
         (ROW_ELEMENTS_NOT_ALL_SAME_DTYPE, TypeError),
-        (ROWS_NOT_SAME_DTYPE_AS_INDEX, TypeError),
-        (ROWS_NOT_IN_TABLE, IndexError),
+        (ROWS_NOT_SAME_DTYPE_AS_INDEX, IndexTypeMismatchError),
+        (ROWS_NOT_IN_TABLE, RowNotFoundError),
         (INVALID_COL_DTYPE, TypeError),
         (INVALID_COL_ELEMENTS_DTYPE, TypeError),
-        (COLS_NOT_IN_TABLE, IndexError),
+        (COLS_NOT_IN_TABLE, ColumnNotFoundError),
     ],
     ids=[
         "INVALID_TABLE_NAME_DTYPE",
@@ -280,7 +292,7 @@ def test_read_when_no_table_exists(store):
     # Arrange
     table = store.select_table(TABLE_NAME)
     # Act
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(TableNotFoundError):
         table.read_pandas()
     # Assert
     assert not table.exists()

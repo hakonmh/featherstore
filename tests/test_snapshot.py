@@ -3,6 +3,7 @@ import os
 import pytest
 
 import featherstore as fs
+from featherstore.exceptions import StoreAlreadyExistsError, TableAlreadyExistsError
 
 from .fixtures import (
     DB_PATH,
@@ -75,7 +76,7 @@ def test_that_restoring_snapshot_cannot_overwrite_existing_table(store):
     # Act
     table.create_snapshot(SNAPSHOT_PATH)
     # Assert
-    with pytest.raises(FileExistsError):
+    with pytest.raises(TableAlreadyExistsError):
         fs.snapshot.restore_table(STORE_NAME, SNAPSHOT_PATH)
 
 
@@ -87,5 +88,5 @@ def test_that_restoring_snapshot_cannot_overwrite_existing_store(store):
     # Act
     store.create_snapshot(SNAPSHOT_PATH)
     # Assert
-    with pytest.raises(FileExistsError):
+    with pytest.raises(StoreAlreadyExistsError):
         fs.snapshot.restore_store(SNAPSHOT_PATH)

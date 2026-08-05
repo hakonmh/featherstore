@@ -1,5 +1,10 @@
 import pytest
 
+from featherstore.exceptions import (
+    DuplicateColumnNamesError,
+    IndexNameInColumnsError,
+)
+
 from .fixtures import (
     DEFAULT_ARROW_INDEX_NAME,
     TABLE_NAME,
@@ -54,9 +59,9 @@ RENAME_COL_TO_INDEX_NAME = [{"c0": DEFAULT_ARROW_INDEX_NAME}, None]
         (INVALID_NEW_COLS_ARGUMENT_DTYPE, TypeError),
         (INVALID_COLS_KEYS_ARGUMENT_DTYPE, TypeError),
         (INVALID_COLS_VALUES_ARGUMENT_DTYPE, TypeError),
-        (DUPLICATE_COL_NAMES, IndexError),
-        (COL_NAME_ALREADY_IN_TABLE, IndexError),
-        (RENAME_COL_TO_INDEX_NAME, ValueError),
+        (DUPLICATE_COL_NAMES, DuplicateColumnNamesError),
+        (COL_NAME_ALREADY_IN_TABLE, DuplicateColumnNamesError),
+        (RENAME_COL_TO_INDEX_NAME, IndexNameInColumnsError),
     ],
     ids=[
         "NEW_COL_NAMES_PROVIDED_TWICE",

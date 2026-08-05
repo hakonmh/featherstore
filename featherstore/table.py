@@ -42,6 +42,17 @@ class Table:
             The name of the table.
         store_name : str
             The name of the store.
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        StoreNotFoundError
+            If the store does not exist.
+        ForbiddenTableNameError
+            If ``table_name`` is reserved.
+        TypeError
+            If ``table_name`` is not a str.
         """
         misc.can_init_table(table_name, store_name)
 
@@ -68,6 +79,23 @@ class Table:
         Returns
         -------
         pyarrow.Table
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        TableNotFoundError
+            If the table does not exist.
+        ColumnNotFoundError
+            If any requested column is not in the table.
+        RowNotFoundError
+            If any requested row is not in the table.
+        IndexTypeMismatchError
+            If row values do not match the table index dtype.
+        TypeError
+            If ``cols`` or ``rows`` has an invalid type.
+        ValueError
+            If ``mmap`` is not a bool or ``None``.
         """
         read.can_read_table(self, cols, rows, mmap)
 
@@ -108,6 +136,10 @@ class Table:
         Returns
         -------
         pandas.DataFrame or pandas.Series
+
+        Raises
+        ------
+        Same exceptions as :meth:`read_arrow`.
         """
         df = self.read_arrow(cols=cols, rows=rows, mmap=mmap)
         df = read.convert_table_to_pandas(df)
@@ -132,6 +164,10 @@ class Table:
         Returns
         -------
         polars.DataFrame or polars.Series
+
+        Raises
+        ------
+        Same exceptions as :meth:`read_arrow`.
         """
         df = self.read_arrow(cols=cols, rows=rows, mmap=mmap)
         df = read.convert_table_to_polars(df)
@@ -169,6 +205,27 @@ class Table:
         warnings : str, optional
             Whether or not to warn if a unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        TableAlreadyExistsError
+            If ``errors='raise'`` and the table already exists.
+        DuplicateColumnNamesError
+            If column names are not unique.
+        DuplicateIndexValuesError
+            If index values are not unique.
+        IndexNotInColumnsError
+            If ``index`` is not among the table columns.
+        UnsupportedIndexTypeError
+            If the index type is not supported.
+        MultiTypeColumnError
+            If a column contains multiple dtypes.
+        TypeError
+            If arguments have invalid types.
+        ValueError
+            If ``errors`` or ``warnings`` is invalid.
         """
         write.can_write_table(self, df, index, partition_size, errors, warnings)
 
@@ -194,6 +251,33 @@ class Table:
         warnings : str, optional
             Whether or not to warn if a unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        TableNotFoundError
+            If the table does not exist.
+        AppendIndexError
+            If append index is not strictly after stored data.
+        ColumnDtypeMismatchError
+            If column dtypes are incompatible.
+        ColumnMismatchError
+            If column names do not match the stored table.
+        DuplicateColumnNamesError
+            If column names are not unique.
+        DuplicateIndexValuesError
+            If index values are not unique.
+        IndexNameMismatchError
+            If the index name does not match the stored table.
+        IndexTypeMismatchError
+            If the index type does not match the stored table.
+        MissingIndexError
+            If an index is required but not provided.
+        TypeError
+            If ``df`` has an invalid type.
+        ValueError
+            If ``warnings`` is invalid.
         """
         append.can_append_table(self, df, warnings)
 
@@ -234,6 +318,29 @@ class Table:
         df : Pandas DataFrame or Pandas Series
             The updated data. The index of `df` is the rows to be updated, while
             the columns of `df` are the new values.
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        TableNotFoundError
+            If the table does not exist.
+        ColumnDtypeMismatchError
+            If column dtypes are incompatible.
+        ColumnNotFoundError
+            If any column is not in the stored table.
+        DuplicateColumnNamesError
+            If column names are not unique.
+        DuplicateIndexValuesError
+            If index values are not unique.
+        IndexNameMismatchError
+            If the index name does not match the stored table.
+        IndexTypeMismatchError
+            If the index type does not match the stored table.
+        RowNotFoundError
+            If any row is not in the stored table.
+        TypeError
+            If ``df`` is not a Pandas DataFrame or Series.
         """
         update.can_update_table(self, df)
 
@@ -266,6 +373,10 @@ class Table:
             The position(s) to insert new column(s). Only used when inserting columns.
             If a sequence is provided, it must have one position per new column.
             Default is to add columns to the end.
+
+        Raises
+        ------
+        Same exceptions as :meth:`insert_rows` and :meth:`insert_columns`.
         """
         if misc.num_cols_matches_table_cols(df, self._table_data):
             self.insert_rows(df)
@@ -280,6 +391,29 @@ class Table:
         df : Pandas DataFrame or Pandas Series
             The data to be inserted. `df` must have the same index and column
             types as the stored data.
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        TableNotFoundError
+            If the table does not exist.
+        ColumnDtypeMismatchError
+            If column dtypes are incompatible.
+        ColumnMismatchError
+            If column names do not match the stored table.
+        DuplicateColumnNamesError
+            If column names are not unique.
+        DuplicateIndexValuesError
+            If index values are not unique.
+        IndexNameMismatchError
+            If the index name does not match the stored table.
+        IndexTypeMismatchError
+            If the index type does not match the stored table.
+        RowAlreadyExistsError
+            If any row already exists in the stored table.
+        TypeError
+            If ``df`` is not a Pandas DataFrame or Series.
         """
         insert_rows.can_insert_rows(self, df)
 
@@ -319,6 +453,29 @@ class Table:
             The position(s) to insert the new column(s). If a sequence is provided,
             it must have one position per new column. Default is to add columns to
             the end.
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        TableNotFoundError
+            If the table does not exist.
+        ColumnAlreadyExistsError
+            If a new column name already exists.
+        ColumnLengthMismatchError
+            If new column length does not match stored row count.
+        DuplicateColumnNamesError
+            If column names are not unique.
+        IndexMismatchError
+            If indices do not match the stored table.
+        IndexNameInColumnsError
+            If a new column uses the index name.
+        IndexTypeMismatchError
+            If the index type does not match the stored table.
+        TypeError
+            If ``df`` or ``idx`` has an invalid type.
+        ValueError
+            If ``idx`` length does not match the number of new columns.
         """
         insert_cols.can_insert_columns(self, df, idx)
 
@@ -364,7 +521,25 @@ class Table:
         Raises
         ------
         AttributeError
-            Raised if neither of `rows` and `cols` are provided.
+            If neither ``rows`` nor ``cols`` is provided.
+        CannotDropAllColumnsError
+            If dropping all columns.
+        CannotDropAllRowsError
+            If dropping all rows.
+        ColumnNotFoundError
+            If any column to drop is not in the table.
+        IndexNameInColumnsError
+            If attempting to drop the index column.
+        IndexTypeMismatchError
+            If row values do not match the table index dtype.
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        RowNotFoundError
+            If any row to drop is not in the table.
+        TableNotFoundError
+            If the table does not exist.
+        TypeError
+            If ``cols`` or ``rows`` has an invalid type.
         """
         neither_of_rows_and_cols_are_provided = cols is None and rows is None
         if neither_of_rows_and_cols_are_provided:
@@ -385,6 +560,10 @@ class Table:
             list of index values or, filter-predicates in the form of
             `{keyword: value}`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
+
+        Raises
+        ------
+        Same exceptions as :meth:`drop` when dropping rows.
         """
         drop.can_drop_rows_from_table(self, rows)
 
@@ -421,6 +600,10 @@ class Table:
         cols : Collection, optional
             list of column names or filter-predicates in the form of
             `{'like': pattern}`, by default `None`
+
+        Raises
+        ------
+        Same exceptions as :meth:`drop` when dropping columns.
         """
         drop.can_drop_cols_from_table(self, cols)
 
@@ -470,6 +653,25 @@ class Table:
             to be renamed to new column names
         to : Collection[str], optional
             New column names, by default `None`
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        TableNotFoundError
+            If the table does not exist.
+        AttributeError
+            If ``to`` is provided twice or not provided when required.
+        ColumnNotFoundError
+            If any column to rename is not in the table.
+        DuplicateColumnNamesError
+            If renamed columns would not be unique.
+        IndexNameInColumnsError
+            If a column is renamed to the index name.
+        TypeError
+            If ``cols`` or ``to`` has an invalid type.
+        ValueError
+            If the number of columns and new names do not match.
         """
         rename_cols.can_rename_columns(self, cols, to)
 
@@ -511,6 +713,10 @@ class Table:
         cols : Sequence[str]
             The new column ordering. The column names provided must be the
             same as the column names used in the table.
+
+        Raises
+        ------
+        Same exceptions as :meth:`reorder_columns`.
         """
         misc.can_reorder_columns(self, cols)
         self._table_data["columns"] = cols
@@ -523,6 +729,21 @@ class Table:
         cols : Sequence[str]
             The new column ordering. The column names provided must be the
             same as the column names used in the table.
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        TableNotFoundError
+            If the table does not exist.
+        ColumnMismatchError
+            If column names do not match the stored table.
+        DuplicateColumnNamesError
+            If column names are not unique.
+        IndexNameInColumnsError
+            If the index name is included in ``cols``.
+        TypeError
+            If ``cols`` has an invalid type.
         """
         self.columns = cols
 
@@ -553,6 +774,23 @@ class Table:
             dict mapping columns to new column data types.
         to : Sequence[Pyarrow DataType], optional
             New column data types, by default `None`
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        TableNotFoundError
+            If the table does not exist.
+        AttributeError
+            If ``to`` is provided twice or not provided when required.
+        DuplicateColumnNamesError
+            If column names are not unique.
+        UnsupportedIndexTypeError
+            If a forbidden index dtype is requested.
+        TypeError
+            If ``cols`` or ``to`` has an invalid type.
+        ValueError
+            If the number of columns and dtypes do not match.
         """
         astype.can_change_type(self, cols, to)
         index_name = self._table_data["index_name"]
@@ -586,6 +824,17 @@ class Table:
         ----------
         to : str
             The new name of the table.
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        ForbiddenTableNameError
+            If ``to`` is reserved.
+        TableAlreadyExistsError
+            If a table with the new name already exists.
+        TypeError
+            If ``to`` is not a str.
         """
         new_table_name = to
         store_path = os.path.split(self._table_path)[0]
@@ -612,6 +861,15 @@ class Table:
         ----------
         path : str
             The path to the snapshot archive.
+
+        Raises
+        ------
+        NotConnectedError
+            If FeatherStore is not connected to a database.
+        SnapshotTargetNotFoundError
+            If the table path does not exist.
+        TypeError
+            If ``path`` is not a str.
         """
         _create_snapshot(path, self._table_path, "table")
 

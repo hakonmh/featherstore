@@ -1,5 +1,14 @@
 import pytest
 
+from featherstore.exceptions import (
+    ColumnAlreadyExistsError,
+    ColumnLengthMismatchError,
+    DuplicateColumnNamesError,
+    IndexMismatchError,
+    IndexNameInColumnsError,
+    IndexTypeMismatchError,
+)
+
 from .fixtures import (
     DEFAULT_ARROW_INDEX_NAME,
     TABLE_NAME,
@@ -148,12 +157,12 @@ def _one_new_col():
     ("insert_cols_df", "exception"),
     [
         (_wrong_table_type, TypeError),
-        (_col_name_already_in_table, IndexError),
-        (_add_col_named_same_as_index, ValueError),
-        (_new_cols_contain_duplicate_names, IndexError),
-        (_non_matching_index_dtype, TypeError),
-        (_num_rows_doesnt_match, IndexError),
-        (_non_matching_index_values, ValueError),
+        (_col_name_already_in_table, ColumnAlreadyExistsError),
+        (_add_col_named_same_as_index, IndexNameInColumnsError),
+        (_new_cols_contain_duplicate_names, DuplicateColumnNamesError),
+        (_non_matching_index_dtype, IndexTypeMismatchError),
+        (_num_rows_doesnt_match, ColumnLengthMismatchError),
+        (_non_matching_index_values, IndexMismatchError),
     ],
     ids=[
         "_wrong_table_type",

@@ -1,6 +1,38 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+**Warning**: This update causes API-breaking changes for code that catches
+built-in exceptions from FeatherStore operations:
+
+* Domain errors now raise custom exceptions from
+  ``featherstore.exceptions`` instead of built-in types such as
+  ``IndexError``, ``FileNotFoundError``, ``FileExistsError``, ``ValueError``,
+  ``TypeError``, ``ConnectionError``, ``ConnectionRefusedError``,
+  ``PermissionError``, and ``OSError``
+* Import exception types via ``from featherstore.exceptions import ...``;
+  they are not re-exported from the top-level ``featherstore`` package
+* Argument-shape validation (invalid types, missing parameters) still raises
+  ``TypeError``, ``ValueError``, and ``AttributeError``
+
+Enhancements:
+
+* Added a hierarchical exception tree rooted at ``FeatherStoreException``,
+  with category bases (``TableError``, ``StoreError``, ``ColumnError``,
+  ``RowError``, ``IndexSchemaError``, ``DatabaseConnectionError``,
+  ``SnapshotError``, ``PathError``) and specific leaf exceptions such as
+  ``ColumnNotFoundError``, ``RowNotFoundError``, and
+  ``TableAlreadyExistsError``
+* Improved domain error messages to include offending values where useful
+  (for example, missing column names and row indices)
+* Added ``tests/test_exceptions.py`` for hierarchy and message coverage
+* Added an Exceptions page to the API reference with a nested hierarchy list
+  and per-class documentation
+* Added ``Raises`` sections to public method and function docstrings for
+  ``Table``, ``Store``, ``connection``, and ``snapshot``
+
 0.3.0
 -----
 

@@ -1,6 +1,15 @@
 import pandas as pd
 import pytest
 
+from featherstore.exceptions import (
+    CannotDropAllColumnsError,
+    CannotDropAllRowsError,
+    ColumnNotFoundError,
+    IndexNameInColumnsError,
+    IndexTypeMismatchError,
+    RowNotFoundError,
+)
+
 from .fixtures import (
     TABLE_NAME,
     assert_table_equals,
@@ -99,14 +108,14 @@ DROP_ALL_COLS = {"like": "c%"}
     ("rows", "cols", "exception"),
     [
         (INVALID_ROWS_DTYPE, None, TypeError),
-        (INVALID_ROWS_ELEMENTS_DTYPE, None, TypeError),
-        (ROWS_NOT_IN_TABLE, None, IndexError),
-        (DROP_ALL_ROWS, None, IndexError),
+        (INVALID_ROWS_ELEMENTS_DTYPE, None, IndexTypeMismatchError),
+        (ROWS_NOT_IN_TABLE, None, RowNotFoundError),
+        (DROP_ALL_ROWS, None, CannotDropAllRowsError),
         (None, INVALID_COLS_DTYPE, TypeError),
         (None, INVALID_COLS_ELEMENTS_DTYPE, TypeError),
-        (None, DROP_INDEX, ValueError),
-        (None, COL_NOT_IN_TABLE, IndexError),
-        (None, DROP_ALL_COLS, IndexError),
+        (None, DROP_INDEX, IndexNameInColumnsError),
+        (None, COL_NOT_IN_TABLE, ColumnNotFoundError),
+        (None, DROP_ALL_COLS, CannotDropAllColumnsError),
     ],
     ids=[
         "INVALID_ROWS_DTYPE",

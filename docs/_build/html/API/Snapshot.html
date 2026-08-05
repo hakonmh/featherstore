@@ -46,7 +46,7 @@
     <link rel="icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Benchmarks" href="../Benchmarks.html" />
+    <link rel="next" title="Exceptions" href="Exceptions.html" />
     <link rel="prev" title="Table" href="Table.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -349,6 +349,7 @@
 <li class="toctree-l1"><a class="reference internal" href="Store.html">Store</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Table.html">Table</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Snapshot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Exceptions.html">Exceptions</a></li>
 </ul>
 </div>
 </nav></div>
@@ -418,7 +419,7 @@ and <code class="docutils literal notranslate"><span class="pre">Store.create_sn
 </div>
 <dl class="py function" id="module-featherstore.snapshot">
 <dt class="sig sig-object py" id="featherstore.snapshot.restore_table">
-<span class="sig-prename descclassname"><span class="pre">featherstore.snapshot.</span></span><span class="sig-name descname"><span class="pre">restore_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/snapshot.py#L10-L32"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.snapshot.restore_table" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">featherstore.snapshot.</span></span><span class="sig-name descname"><span class="pre">restore_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/snapshot.py#L19-L56"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.snapshot.restore_table" title="Link to this definition">#</a></dt>
 <dd><p>Restores a table in to the currently selected db.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -436,12 +437,22 @@ table, by default <cite>raise</cite>.</p></li>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the target store does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.SnapshotNotFoundError" title="featherstore.exceptions.SnapshotNotFoundError"><strong>SnapshotNotFoundError</strong></a> – If the snapshot file does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.InvalidSnapshotError" title="featherstore.exceptions.InvalidSnapshotError"><strong>InvalidSnapshotError</strong></a> – If the file is not a snapshot of a table.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.TableAlreadyExistsError" title="featherstore.exceptions.TableAlreadyExistsError"><strong>TableAlreadyExistsError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">errors='raise'</span></code> and the table already exists.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">store</span></code> or <code class="docutils literal notranslate"><span class="pre">source</span></code> is not a str.</p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.snapshot.restore_store">
-<span class="sig-prename descclassname"><span class="pre">featherstore.snapshot.</span></span><span class="sig-name descname"><span class="pre">restore_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/snapshot.py#L35-L54"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.snapshot.restore_store" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">featherstore.snapshot.</span></span><span class="sig-name descname"><span class="pre">restore_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/snapshot.py#L59-L91"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.snapshot.restore_store" title="Link to this definition">#</a></dt>
 <dd><p>Restores a store in to the currently selected db.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -457,6 +468,15 @@ store, by default <cite>raise</cite>.</p></li>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.SnapshotNotFoundError" title="featherstore.exceptions.SnapshotNotFoundError"><strong>SnapshotNotFoundError</strong></a> – If the snapshot file does not exist.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.InvalidSnapshotError" title="featherstore.exceptions.InvalidSnapshotError"><strong>InvalidSnapshotError</strong></a> – If the file is not a snapshot of a store.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreAlreadyExistsError" title="featherstore.exceptions.StoreAlreadyExistsError"><strong>StoreAlreadyExistsError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">errors='raise'</span></code> and the store already exists.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">source</span></code> is not a str.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -483,11 +503,11 @@ store, by default <cite>raise</cite>.</p></li>
       </div>
     </a>
     <a class="right-next"
-       href="../Benchmarks.html"
+       href="Exceptions.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Benchmarks</p>
+        <p class="prev-next-title">Exceptions</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
