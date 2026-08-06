@@ -1,21 +1,12 @@
 import pyarrow as pa
 
-from featherstore._table import _raise_if, _table_utils, common
-from featherstore.connection import Connection
+from featherstore._table import _raise_if, _table_utils
 
 
 def can_change_type(table, cols, astype):
-    Connection._raise_if_not_connected()
-    _raise_if.table_not_exists(table)
+    _raise_if.not_connected_or_table_not_exists(table)
 
-    _raise_if.cols_argument_is_not_collection(cols)
-    _raise_if.to_is_provided_twice(cols, astype)
-    _raise_if.to_not_provided(cols, astype)
-
-    if not isinstance(cols, dict):
-        _raise_if.to_argument_is_not_list_like(astype)
-        _raise_if.length_of_cols_and_to_doesnt_match(cols, astype)
-    cols = common.format_cols_and_to_args(cols, astype)
+    cols = _raise_if.cols_and_to_arguments_are_not_valid(cols, astype)
 
     _raise_if.cols_argument_items_is_not_str_or_none(cols.keys())
     _raise_if_astype_items_are_not_pa_or_np_types(cols.values())

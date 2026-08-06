@@ -8,12 +8,11 @@ from pyarrow import ipc
 from featherstore import _utils
 from featherstore._table import _raise_if, _table_utils, common
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
-from featherstore.connection import Connection
 from featherstore.exceptions import IndexNotInColumnsError
 
 
 def can_write_table(table, df, index_name, partition_size, errors, warnings):
-    Connection._raise_if_not_connected()
+    _raise_if.not_connected()
     _utils.raise_if_errors_argument_is_not_valid(errors)
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
     _raise_if_partition_size_is_not_int(partition_size)

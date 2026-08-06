@@ -2,26 +2,18 @@ import warnings
 
 import pandas as pd
 
-from featherstore._table import _raise_if
-from featherstore.connection import Connection
+from featherstore._table import _raise_if, _table_utils
 from featherstore.exceptions import ColumnDtypeMismatchError, RowNotFoundError
 
 
 def can_update_table(table, df):
-    Connection._raise_if_not_connected()
-
-    _raise_if.table_not_exists(table)
+    _raise_if.not_connected_or_table_not_exists(table)
     _raise_if.df_is_not_pandas_table(df)
 
-    if isinstance(df, pd.Series):
-        cols = [df.name]
-    else:
-        cols = df.columns.tolist()
-
-    _raise_if.index_name_not_same_as_stored_index(df, table._table_data)
-    _raise_if.col_names_contains_duplicates(cols)
-    _raise_if.index_type_not_same_as_stored_index(df, table._table_data)
-    _raise_if.index_values_contains_duplicates(df.index)
+    cols = _table_utils.get_pandas_column_names(df)
+    _raise_if.df_index_or_column_names_incompatible_with_stored(
+        df, table._table_data, cols
+    )
     _raise_if.cols_not_in_table(cols, table._table_data)
 
 

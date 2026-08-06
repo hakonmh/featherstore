@@ -71,6 +71,12 @@ def get_col_names(df, has_default_index):
     return cols
 
 
+def get_pandas_column_names(df):
+    if isinstance(df, pd.Series):
+        return [df.name]
+    return df.columns.tolist()
+
+
 def convert_to_arrow(df, as_array=False):
     if isinstance(df, (pl.Series, pd.Series, pd.Index)):
         if as_array:

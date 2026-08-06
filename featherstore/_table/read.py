@@ -9,19 +9,14 @@ from pyarrow import ipc
 from featherstore._metadata import Metadata
 from featherstore._table import _raise_if, _table_utils
 from featherstore._table._indexers import ColIndexer, RowIndexer
-from featherstore.connection import Connection
 
 
 def can_read_table(table, cols, rows, mmap):
-    Connection._raise_if_not_connected()
-    _raise_if.table_not_exists(table)
+    _raise_if.not_connected_or_table_not_exists(table)
 
     _raise_if_mmap_is_not_bool_or_none(mmap)
 
-    _raise_if.rows_argument_is_not_collection_or_none(rows)
-    rows = RowIndexer(rows)
-    _raise_if.rows_items_not_all_same_type(rows)
-    _raise_if.rows_argument_items_type_not_same_as_index(rows, table._table_data)
+    _raise_if.rows_argument_is_not_valid(rows, table._table_data, allow_none=True)
 
     _raise_if.cols_argument_is_not_collection_or_none(cols)
     cols = ColIndexer(cols)
