@@ -30,6 +30,7 @@ def test_reorder_columns(store, use_property):
         table.reorder_columns(COLS)
     # Assert
     assert_table_equals(table, expected)
+    assert table.columns == [DEFAULT_ARROW_INDEX_NAME, *COLS]
 
 
 COLS_NOT_IN_TABLE = ["c0", "c2", "d1"]
