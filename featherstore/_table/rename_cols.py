@@ -1,19 +1,10 @@
-from featherstore._table import _raise_if, common
-from featherstore.connection import Connection
+from featherstore._table import _raise_if
 
 
 def can_rename_columns(table, cols, new_col_names):
-    Connection._raise_if_not_connected()
-    _raise_if.table_not_exists(table)
+    _raise_if.not_connected_or_table_not_exists(table)
 
-    _raise_if.cols_argument_is_not_collection(cols)
-    _raise_if.to_is_provided_twice(cols, new_col_names)
-    _raise_if.to_not_provided(cols, new_col_names)
-
-    if not isinstance(cols, dict):
-        _raise_if.to_argument_is_not_list_like(new_col_names)
-        _raise_if.length_of_cols_and_to_doesnt_match(cols, new_col_names)
-    cols = common.format_cols_and_to_args(cols, new_col_names)
+    cols = _raise_if.cols_and_to_arguments_are_not_valid(cols, new_col_names)
 
     _raise_if.cols_argument_items_is_not_str_or_none(cols.keys())
     _raise_if_new_cols_items_is_not_str(cols.values())

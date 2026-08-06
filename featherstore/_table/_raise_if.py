@@ -7,8 +7,9 @@ import polars as pl
 import pyarrow as pa
 
 from featherstore._metadata import METADATA_FOLDER_NAME
-from featherstore._table import _table_utils
-from featherstore._table._indexers import ColIndexer
+from featherstore._table import _table_utils, common
+from featherstore._table._indexers import ColIndexer, RowIndexer
+from featherstore.connection import Connection
 from featherstore.exceptions import (
     ColumnMismatchError,
     ColumnNotFoundError,
@@ -339,3 +340,47 @@ def index_values_contains_duplicates(index):
         contains_duplicates = index.n_unique() < index.shape[0]
         if contains_duplicates:
             raise DuplicateIndexValuesError("Index values must be unique")
+
+
+def not_connected():
+    Connection._raise_if_not_connected()
+
+
+def not_connected_or_table_not_exists(table):
+    not_connected()
+    table_not_exists(table)
+
+
+def df_index_or_column_names_incompatible_with_stored(
+    df, table_data, cols, *, index=None, check_index_values=True
+):
+    index_name_not_same_as_stored_index(df, table_data)
+    col_names_contains_duplicates(cols)
+    index_type_not_same_as_stored_index(df, table_data)
+    if check_index_values:
+        if index is None:
+            index = df.index
+        index_values_contains_duplicates(index)
+
+
+def rows_argument_is_not_valid(rows, table_data, *, allow_none=False):
+    if allow_none:
+        rows_argument_is_not_collection_or_none(rows)
+    else:
+        rows_argument_is_not_collection(rows)
+
+    rows = RowIndexer(rows)
+    rows_items_not_all_same_type(rows)
+    rows_argument_items_type_not_same_as_index(rows, table_data)
+    return rows
+
+
+def cols_and_to_arguments_are_not_valid(cols, to):
+    cols_argument_is_not_collection(cols)
+    to_is_provided_twice(cols, to)
+    to_not_provided(cols, to)
+
+    if not isinstance(cols, dict):
+        to_argument_is_not_list_like(to)
+        length_of_cols_and_to_doesnt_match(cols, to)
+    return common.format_cols_and_to_args(cols, to)

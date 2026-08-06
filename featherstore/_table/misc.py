@@ -1,11 +1,10 @@
 from featherstore import store
 from featherstore._table import _raise_if
-from featherstore.connection import Connection
 from featherstore.exceptions import ColumnMismatchError
 
 
 def can_init_table(table_name, store_name):
-    Connection._raise_if_not_connected()
+    _raise_if.not_connected()
     store._raise_if_store_name_is_str(store_name)
     store._raise_if_store_not_exists(store_name)
 
@@ -14,7 +13,7 @@ def can_init_table(table_name, store_name):
 
 
 def can_rename_table(new_table_name, new_table_path):
-    Connection._raise_if_not_connected()
+    _raise_if.not_connected()
 
     _raise_if.table_name_is_not_str(new_table_name)
     _raise_if.table_name_is_forbidden(new_table_path)
@@ -22,8 +21,7 @@ def can_rename_table(new_table_name, new_table_path):
 
 
 def can_reorder_columns(table, cols):
-    Connection._raise_if_not_connected()
-    _raise_if.table_not_exists(table)
+    _raise_if.not_connected_or_table_not_exists(table)
 
     _raise_if.cols_argument_is_not_list_like(cols)
     _raise_if.cols_argument_items_is_not_str_or_none(cols)

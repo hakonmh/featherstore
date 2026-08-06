@@ -6,9 +6,8 @@ import pyarrow as pa
 
 from featherstore import _utils
 from featherstore._table import _raise_if, _table_utils
-from featherstore._table._indexers import ColIndexer, RowIndexer
+from featherstore._table._indexers import ColIndexer
 from featherstore._table.read import get_partition_names as _get_partition_names
-from featherstore.connection import Connection
 from featherstore.exceptions import (
     CannotDropAllColumnsError,
     CannotDropAllRowsError,
@@ -17,13 +16,8 @@ from featherstore.exceptions import (
 
 
 def can_drop_rows_from_table(table, rows):
-    Connection._raise_if_not_connected()
-    _raise_if.table_not_exists(table)
-    _raise_if.rows_argument_is_not_collection(rows)
-
-    rows = RowIndexer(rows)
-    _raise_if.rows_items_not_all_same_type(rows)
-    _raise_if.rows_argument_items_type_not_same_as_index(rows, table._table_data)
+    _raise_if.not_connected_or_table_not_exists(table)
+    _raise_if.rows_argument_is_not_valid(rows, table._table_data)
 
 
 def get_partition_names(table, rows):
@@ -154,8 +148,7 @@ def _idx_still_default_after_dropping_rows_list(rows, partition_metadata):
 
 
 def can_drop_cols_from_table(table, cols):
-    Connection._raise_if_not_connected()
-    _raise_if.table_not_exists(table)
+    _raise_if.not_connected_or_table_not_exists(table)
     _raise_if.cols_argument_is_not_collection(cols)
 
     raise_if = CheckDropCols(cols, table)

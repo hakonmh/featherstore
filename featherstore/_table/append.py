@@ -3,22 +3,20 @@ import pyarrow as pa
 from featherstore import _utils
 from featherstore._table import _raise_if, _table_utils, common
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
-from featherstore.connection import Connection
 from featherstore.exceptions import AppendIndexError, MissingIndexError
 
 
 def can_append_table(table, df, warnings):
-    Connection._raise_if_not_connected()
+    _raise_if.not_connected_or_table_not_exists(table)
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
 
-    _raise_if.table_not_exists(table)
     _raise_if.df_is_not_supported_table_type(df)
 
     table_data = table._table_data
     cols = _table_utils.get_col_names(df, has_default_index=False)
-    _raise_if.index_name_not_same_as_stored_index(df, table_data)
-    _raise_if.col_names_contains_duplicates(cols)
-    _raise_if.index_type_not_same_as_stored_index(df, table_data)
+    _raise_if.df_index_or_column_names_incompatible_with_stored(
+        df, table_data, cols, check_index_values=False
+    )
     _raise_if.cols_does_not_match(df, table_data)
 
     has_default_index = table_data["has_default_index"]

@@ -4,7 +4,6 @@ import pandas as pd
 
 from featherstore._table import _raise_if, _table_utils
 from featherstore._table._indexers import ColIndexer
-from featherstore.connection import Connection
 from featherstore.exceptions import (
     ColumnAlreadyExistsError,
     ColumnLengthMismatchError,
@@ -13,15 +12,10 @@ from featherstore.exceptions import (
 
 
 def can_insert_columns(table, df, idx=-1):
-    Connection._raise_if_not_connected()
-
-    _raise_if.table_not_exists(table)
+    _raise_if.not_connected_or_table_not_exists(table)
     _raise_if.df_is_not_pandas_table(df)
 
-    if isinstance(df, pd.Series):
-        cols = [df.name]
-    else:
-        cols = df.columns.tolist()
+    cols = _table_utils.get_pandas_column_names(df)
     _raise_if.col_names_contains_duplicates(cols)
     _raise_if.index_in_cols(cols, table._table_data)
     _raise_if_col_name_already_in_table(cols, table._table_data)
