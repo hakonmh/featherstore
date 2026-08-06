@@ -25,6 +25,23 @@ def test_database_exists(create_db):
     assert not fs.database_exists(os.path.join(DB_PATH, "missing"))
 
 
+def test_database_exists_expands_home_dir_modifier():
+    # Arrange
+    path = os.path.join("~", ".featherstore_test_db_exists")
+    expanded = os.path.expanduser(path)
+    if os.path.exists(expanded):
+        shutil.rmtree(expanded)
+    fs.create_database(path, connect=False)
+    # Act
+    exists_with_modifier = fs.database_exists(path)
+    exists_expanded = fs.database_exists(expanded)
+    # Assert
+    assert exists_with_modifier
+    assert exists_expanded
+    # Teardown
+    shutil.rmtree(expanded)
+
+
 def test_connect(create_db):
     # Arrange
     was_connected = fs.is_connected()

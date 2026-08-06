@@ -33,6 +33,26 @@ Enhancements:
 * Added ``Raises`` sections to public method and function docstrings for
   ``Table``, ``Store``, ``connection``, and ``snapshot``
 
+Bug fixes:
+
+* Fixed silent data loss on repeated mid-table ``insert_rows`` caused by
+  lossy partition-ID round-trips (fractional IDs collapsed when generating
+  new mid-gap partition names)
+* Fixed ``reorder_columns`` / ``columns`` setter dropping the index name from
+  table metadata
+* Fixed ``rename_table`` allowing the forbidden ``.metadata`` name
+* Fixed snapshot restore with ``errors="ignore"`` leaving orphan partition
+  files or tables behind
+* Fixed ``astype`` not refreshing ``index_dtype`` metadata when casting the
+  index
+* Fixed stale ``num_columns`` / ``shape`` after inserting or dropping columns
+* Fixed ``database_exists`` not expanding ``~`` in paths
+* Fixed ``Indexer.keyword`` raising ``AttributeError`` for non-keyword dict
+  keys
+* Fixed SQL ``LIKE`` patterns treating regex metacharacters as special and
+  crashing on empty patterns
+* Fixed snapshot restore accepting invalid ``errors`` values
+
 0.3.0
 -----
 

@@ -111,6 +111,7 @@ def database_exists(path):
     bool
         ``True`` if the directory contains a FeatherStore database marker.
     """
+    path = expand_home_dir_modifier(path)
     db_marker_path = os.path.join(path, DB_MARKER_NAME)
     return os.path.exists(db_marker_path)
 

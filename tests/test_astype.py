@@ -84,6 +84,21 @@ def test_change_pa_dtype(store, from_dtype, to_dtype):
     assert_table_equals(table, expected, astype="all")
 
 
+def test_change_index_dtype(store):
+    # Arrange
+    COLS = [DEFAULT_ARROW_INDEX_NAME]
+    original_df = make_table(rows=60, cols=3, astype="arrow", dtype="int")
+    expected = change_dtype(original_df, pa.int32(), cols=COLS)
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+    # Act
+    table.astype(COLS, to=[pa.int32()])
+    # Assert
+    assert_table_equals(table, expected, astype="all")
+
+
 def _get_dtype_str(dtype):
     dtype = to_arrow_dtype(dtype)
     return TYPE_MAP[dtype]

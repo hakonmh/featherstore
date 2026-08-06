@@ -59,10 +59,10 @@ def _insert_new_partition_ids(partitioned_df, partition_names, all_partition_nam
 
 
 def _make_partition_names(num_names, partition_names, subsequent_partition):
-    last_id = _table_utils.convert_partition_id_to_int(partition_names[-1])
+    last_id = _table_utils.convert_partition_id_to_float(partition_names[-1])
     subsequent_partition_exists = subsequent_partition is not None
     if subsequent_partition_exists:
-        subsequent_id = _table_utils.convert_partition_id_to_int(subsequent_partition)
+        subsequent_id = _table_utils.convert_partition_id_to_float(subsequent_partition)
         increment = (subsequent_id - last_id) / (num_names + 1)
     else:  # Called only when partition_names[-1] is the end of the table
         increment = 1

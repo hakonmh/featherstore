@@ -21,6 +21,7 @@ from .fixtures import (
     make_table,
     merge_rows,
     sort_table,
+    sorted_float_index,
     sorted_string_index,
     split_table,
     unsorted_int_index,
@@ -71,6 +72,27 @@ def test_default_index_behavior_when_inserting(store, row_indices):
     table.write(original_df, partition_size=partition_size, warnings="ignore")
     # Act
     table.insert_rows(insert_df)
+    # Assert
+    assert_table_equals(table, expected)
+
+
+@pytest.mark.parametrize("num_partitions", [17, 30])
+def test_insert_rows_with_successive_mid_table_inserts(store, num_partitions):
+    # Arrange
+    expected = make_table(sorted_float_index, rows=100, cols=3, astype="pandas")
+    first_rows = [idx + 0.5 for idx in range(10, 30, 2)]
+    second_rows = [idx + 0.5 for idx in range(11, 30, 2)]
+
+    without_second, second_insert = split_table(expected, rows=second_rows)
+    original_df, first_insert = split_table(without_second, rows=first_rows)
+    expected = sort_table(expected)
+
+    partition_size = get_partition_size(original_df, num_partitions)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size, warnings="ignore")
+    # Act
+    table.insert_rows(first_insert)
+    table.insert_rows(second_insert)
     # Assert
     assert_table_equals(table, expected)
 

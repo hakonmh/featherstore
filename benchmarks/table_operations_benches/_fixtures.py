@@ -216,7 +216,7 @@ def _split_cols(df, cols, index_name=None, keep_index=False):
         if index_name not in not_cols:
             not_cols.insert(0, index_name)
 
-    df, other = _split_cols(df, cols, not_cols)
+    df, other = _select_col_groups(df, cols, not_cols)
     return df, other
 
 
@@ -228,7 +228,7 @@ def _get_cols(df):
     return df_cols
 
 
-def _split_cols(df, cols, not_cols):
+def _select_col_groups(df, cols, not_cols):
     if isinstance(df, pa.Table):
         other = df.select(cols)
         df = df.select(not_cols)
@@ -252,7 +252,7 @@ def update_values(df, index_name="index"):
             df = df.set_column(col_idx, col_name, pa.array(col))
         elif isinstance(df, pl.DataFrame):
             col = pl.Series(col_name, col)
-            df = df.with_column(col)
+            df = df.with_columns(col)
         elif isinstance(df, (pd.DataFrame, pd.Series)):
             df[col_name] = col
     return df

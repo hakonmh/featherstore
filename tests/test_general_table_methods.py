@@ -1,5 +1,8 @@
 import pytest
 
+from featherstore._metadata import METADATA_FOLDER_NAME
+from featherstore.exceptions import ForbiddenTableNameError
+
 from .fixtures import (
     TABLE_NAME,
     assert_table_equals,
@@ -8,6 +11,7 @@ from .fixtures import (
     get_partition_size,
     make_table,
     sorted_datetime_index,
+    split_table,
 )
 
 
@@ -21,6 +25,16 @@ def test_rename_table(store):
     # Assert
     table_names = store.list_tables()
     assert table_names == [NEW_TABLE_NAME]
+
+
+def test_cannot_rename_table_to_forbidden_name(store):
+    # Arrange
+    df = make_table()
+    table = store.select_table(TABLE_NAME)
+    table.write(df)
+    # Act and Assert
+    with pytest.raises(ForbiddenTableNameError):
+        table.rename_table(to=METADATA_FOLDER_NAME)
 
 
 def test_drop_table(store):
@@ -59,6 +73,17 @@ def test_list_tables_like(store):
     assert tables_like_unbounded_wildcard == ["AAPL", "AMZN", "a_table"]
 
 
+def test_list_tables_like_literal_special_characters(store):
+    # Arrange
+    df = make_table()
+    store.write_table("col.name", df)
+    store.write_table("colXname", df)
+    # Act
+    tables = store.list_tables(like="col.name")
+    # Assert
+    assert tables == ["col.name"]
+
+
 def test_table_exists(store):
     # Arrange
     df = make_table()
@@ -84,6 +109,22 @@ def test_get_shape(store, index):
     shape = table.shape
     # Assert
     assert shape == expected
+
+
+def test_shape_after_inserting_and_dropping_columns(store):
+    # Arrange
+    df = make_table(cols=4, astype="pandas")
+    original_df, new_cols = split_table(df, cols=["c3"])
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df)
+    # Act
+    table.insert_columns(new_cols)
+    shape_after_insert = table.shape
+    table.drop_columns(["c3"])
+    shape_after_drop = table.shape
+    # Assert
+    assert shape_after_insert == (30, 5)
+    assert shape_after_drop == (30, 4)
 
 
 def test_get_index(store):

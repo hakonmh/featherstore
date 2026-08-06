@@ -14,7 +14,6 @@ class DuckdbWritePandas(OtherIO):
     def run(self):
         df = self._df  # noqa: F841
         self._con.execute("CREATE TABLE table_name AS SELECT * FROM df")
-        self._con.execute("INSERT INTO table_name SELECT * FROM df")
 
     def setup(self):
         super().setup()
@@ -32,7 +31,7 @@ class DuckdbReadPandas(OtherIO):
     def __init__(self, shape):
         self.name = "Pandas read DuckDB"
         super().__init__(shape, astype="pandas")
-        self._path += ".feather"
+        self._path += ".duckdb"
 
     def run(self):
         self._con.execute("SELECT * from table_name").fetchdf()
@@ -42,7 +41,6 @@ class DuckdbReadPandas(OtherIO):
         df = self._df
         con = duckdb.connect(self._path)
         con.execute("CREATE TABLE table_name AS SELECT * FROM df")
-        con.execute("INSERT INTO table_name SELECT * FROM df")
         con.close()
         del self._df, df
 

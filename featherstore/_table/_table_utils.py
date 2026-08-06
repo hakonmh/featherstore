@@ -176,6 +176,10 @@ def convert_int_to_partition_id(partition_id):
     return partition_id
 
 
+def convert_partition_id_to_float(partition_id):
+    return int(partition_id) / INSERTION_BUFFER_LENGTH
+
+
 def convert_partition_id_to_int(partition_id):
     return int(partition_id) // INSERTION_BUFFER_LENGTH
 

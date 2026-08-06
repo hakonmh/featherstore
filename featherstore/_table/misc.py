@@ -16,7 +16,7 @@ def can_rename_table(new_table_name, new_table_path):
     _raise_if.not_connected()
 
     _raise_if.table_name_is_not_str(new_table_name)
-    _raise_if.table_name_is_forbidden(new_table_path)
+    _raise_if.table_name_is_forbidden(new_table_name)
     _raise_if.table_already_exists(new_table_path)
 
 
@@ -31,7 +31,7 @@ def can_reorder_columns(table, cols):
 
 
 def _raise_if_cols_doesnt_match(cols, table_data):
-    stored_cols = table_data["columns"]
+    stored_cols = table_data["columns"].copy()
     index_name = table_data["index_name"]
     stored_cols.remove(index_name)
 

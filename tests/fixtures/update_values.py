@@ -29,7 +29,7 @@ def update_values(df, index_name=None):
             df = df.set_column(col_idx, col_name, pa.array(col))
         elif isinstance(df, pl.DataFrame):
             col = pl.Series(col_name, col)
-            df = df.with_column(col)
+            df = df.with_columns(col)
         elif isinstance(df, pd.DataFrame):
             df[col_name] = col
         elif isinstance(df, pd.Series):
