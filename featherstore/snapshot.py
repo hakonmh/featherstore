@@ -50,6 +50,8 @@ def restore_table(store_name, source, errors="raise"):
         If ``errors='raise'`` and the table already exists.
     TypeError
         If ``store`` or ``source`` is not a str.
+    ValueError
+        If ``errors`` is not ``'raise'`` or ``'ignore'``.
     """
     _can_restore_table(store_name, source, errors)
     store_path = os.path.join(current_db(), store_name)
@@ -86,6 +88,8 @@ def restore_store(source, errors="raise"):
         If ``errors='raise'`` and the store already exists.
     TypeError
         If ``source`` is not a str.
+    ValueError
+        If ``errors`` is not ``'raise'`` or ``'ignore'``.
     """
     _can_restore_store(source, errors)
     store_name = _extract_snapshot(current_db(), source)

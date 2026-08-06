@@ -9,6 +9,7 @@ from .fixtures import (
     DB_PATH,
     STORE_NAME,
     TABLE_NAME,
+    TABLE_PATH,
     assert_df_equals,
     assert_table_equals,
     get_partition_size,
@@ -109,10 +110,7 @@ def test_restoring_snapshot_overwrites_existing_table(store):
     # Assert
     table = store.select_table(TABLE_NAME)
     assert_table_equals(table, original_df)
-    partition_files = [
-        name for name in os.listdir(table._table_path) if name.endswith(".feather")
-    ]
-    assert len(partition_files) == len(table._partition_data.keys())
+    _assert_no_orphan_partitions(table)
     # Teardown
     os.remove(SNAPSHOT_PATH)
 
@@ -128,3 +126,10 @@ def test_that_restoring_snapshot_rejects_invalid_errors_argument(store):
         fs.snapshot.restore_table(STORE_NAME, SNAPSHOT_PATH, errors="invalid")
     # Teardown
     os.remove(SNAPSHOT_PATH)
+
+
+def _assert_no_orphan_partitions(table):
+    partition_files = [
+        name for name in os.listdir(TABLE_PATH) if name.endswith(".feather")
+    ]
+    assert len(partition_files) == len(table._partition_data.keys())
