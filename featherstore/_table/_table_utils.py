@@ -176,7 +176,13 @@ def convert_int_to_partition_id(partition_id):
     return partition_id
 
 
+def convert_partition_id_to_float(partition_id):
+    """Decode a partition name into its full logical id (may be fractional)."""
+    return int(partition_id) / INSERTION_BUFFER_LENGTH
+
+
 def convert_partition_id_to_int(partition_id):
+    """Decode a partition name into a floored logical id for append ranges."""
     return int(partition_id) // INSERTION_BUFFER_LENGTH
 
 

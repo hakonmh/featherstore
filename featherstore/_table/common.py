@@ -264,8 +264,13 @@ def update_metadata(table, df, old_partition_names, **kwargs):
     table_metadata = _compute_table_metadata_update(
         table, new_partition_metadata, old_partition_names
     )
+    first_partition = next(iter(df.values()))
+    table_metadata["num_columns"] = first_partition.num_columns
+    table_metadata["index_dtype"] = _table_utils.get_index_dtype(first_partition)
     for key, value in kwargs.items():
         table_metadata[key] = value
+    if "columns" in kwargs:
+        table_metadata["num_columns"] = len(kwargs["columns"])
     return table_metadata, new_partition_metadata
 
 

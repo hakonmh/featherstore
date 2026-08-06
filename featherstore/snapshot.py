@@ -3,6 +3,7 @@ import pickle
 import tarfile
 from datetime import UTC, datetime
 
+from featherstore import _utils
 from featherstore.connection import Connection, current_db
 from featherstore.exceptions import (
     InvalidSnapshotError,
@@ -98,6 +99,9 @@ def _extract_snapshot(output_path, source):
         members = tar.getnames()
         members.remove(METADATA_FILE_NAME)
         name = members[0]
+        target_path = os.path.join(output_path, name)
+        if os.path.exists(target_path):
+            _utils.delete_folder_tree(target_path, current_db())
         for member in members:
             _extract_tar_member(tar, member, output_path)
     return name
@@ -112,6 +116,7 @@ def _extract_tar_member(tar, member, output_path):
 
 def _can_restore_table(store, source, errors):
     Connection._raise_if_not_connected()
+    _utils.raise_if_errors_argument_is_not_valid(errors)
     __raise_if_store_is_not_str(store)
     __raise_if_store_doesnt_exist(store)
     __raise_if_source_path_is_not_str(source)
@@ -122,6 +127,7 @@ def _can_restore_table(store, source, errors):
 
 def _can_restore_store(source, errors):
     Connection._raise_if_not_connected()
+    _utils.raise_if_errors_argument_is_not_valid(errors)
     __raise_if_source_path_is_not_str(source)
     __raise_if_snapshot_not_found(source)
     __raise_if_not_snapshot_of_store(source)

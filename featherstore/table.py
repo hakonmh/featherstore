@@ -719,7 +719,8 @@ class Table:
         Same exceptions as :meth:`reorder_columns`.
         """
         misc.can_reorder_columns(self, cols)
-        self._table_data["columns"] = cols
+        index_name = self._table_data["index_name"]
+        self._table_data["columns"] = [index_name, *cols]
 
     def reorder_columns(self, cols):
         """Reorder the current columns

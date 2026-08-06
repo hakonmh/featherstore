@@ -87,15 +87,20 @@ def filter_items_like_pattern(items, *, like):
 
 
 def _sql_str_pattern_to_regexp(pattern):
-    if pattern[0] != "%":
-        pattern = "^" + pattern
-    if pattern[-1] != "%":
-        pattern = pattern + "$"
-    pattern = pattern.replace("?", ".")
-    pattern = pattern.replace("%", ".*")
-
-    pattern = pattern.lower()
-    return re.compile(pattern)
+    parts = []
+    for char in pattern.lower():
+        if char == "%":
+            parts.append(".*")
+        elif char == "?":
+            parts.append(".")
+        else:
+            parts.append(re.escape(char))
+    regex = "".join(parts)
+    if not pattern.startswith("%"):
+        regex = f"^{regex}"
+    if not pattern.endswith("%"):
+        regex = f"{regex}$"
+    return re.compile(regex)
 
 
 def _filter(items, *, like):
