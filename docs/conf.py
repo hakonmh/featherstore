@@ -15,16 +15,16 @@ import os
 import sys
 import warnings
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
-project = 'FeatherStore'
-copyright = '2021, Håkon Magne Holmen'
-author = 'Håkon Magne Holmen'
+project = "FeatherStore"
+copyright = "2021, Håkon Magne Holmen"
+author = "Håkon Magne Holmen"
 
 # The full version, including alpha/beta/rc tags
-release = '0.2.1'
+release = "0.2.1"
 
 # -- General configuration ---------------------------------------------------
 
@@ -32,26 +32,26 @@ release = '0.2.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.autosummary',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autosummary",
     "sphinx.ext.linkcode",
 ]
 
 autosummary_generate = True
-autoclass_content = 'both'
-autodoc_member_order = 'bysource'
+autoclass_content = "both"
+autodoc_member_order = "bysource"
 # Napoleon settings
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', '_templates', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "_templates", "Thumbs.db", ".DS_Store"]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -59,13 +59,13 @@ exclude_patterns = ['_build', '_templates', 'Thumbs.db', '.DS_Store']
 html_show_sourcelink = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'pydata_sphinx_theme'
+html_theme = "pydata_sphinx_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
-html_favicon = '_static/favicon.ico'
+html_static_path = ["_static"]
+html_favicon = "_static/favicon.ico"
 html_theme_options = {
     "logo": {
         "image_light": "logo-dark.png",
@@ -75,9 +75,9 @@ html_theme_options = {
         {
             "name": "GitHub",
             "url": "https://github.com/hakonmh/featherstore",
-            "icon": "fa-brands fa-github"
+            "icon": "fa-brands fa-github",
         }
-    ]
+    ],
 }
 
 
@@ -87,10 +87,10 @@ def linkcode_resolve(domain, info):
     Based on pandas equivalent:
     https://github.com/pandas-dev/pandas/blob/main/doc/source/conf.py#L629-L686
     """
-    if domain != 'py':
+    if domain != "py":
         return None
     modname = info["module"]
-    filename = modname.replace('.', '/')
+    filename = modname.replace(".", "/")
     fullname = info["fullname"]
 
     submod = sys.modules.get(modname)

@@ -9,7 +9,6 @@ from .fixtures import (
     get_partition_size,
     insert_column_names_at,
     make_table,
-    merge_rows,
     sort_table,
     split_table,
     unsorted_int_index,
@@ -106,22 +105,60 @@ def _build_expected_with_col_positions(df, col_names, col_indices):
     return expected
 
 
+def test_insert_adds_columns_when_names_differ(store):
+    # Arrange
+    original_df = make_table(cols=2, astype="pandas")
+    new_cols = make_table(cols=2, astype="pandas")
+    new_cols.columns = ["n0", "n1"]
+    expected = original_df.copy()
+    expected["n0"] = new_cols["n0"]
+    expected["n1"] = new_cols["n1"]
+
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df)
+    # Act
+    table.insert(new_cols)
+    # Assert
+    assert_table_equals(table, expected)
+
+
 @pytest.mark.parametrize("row_indices", ([-2, -1], [30, 33], [33, 30, 32, 31]))
-def test_insert_ignores_idx_when_inserting_rows(store, row_indices):
+def test_insert_raises_when_idx_passed_for_rows(store, row_indices):
     # Arrange
     original_df = make_table(default_index, rows=30, astype="pandas")
     insert_df = make_table(default_index, rows=len(row_indices), astype="pandas")
     insert_df.index = row_indices
 
-    expected = merge_rows(original_df, insert_df, as_arrow=True)
-
     partition_size = get_partition_size(original_df, 5)
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size, warnings="ignore")
-    # Act
-    table.insert(insert_df, idx=0)
-    # Assert
-    assert_table_equals(table, expected)
+    # Act and Assert
+    with pytest.raises(TypeError, match="idx"):
+        table.insert(insert_df, idx=0)
+
+
+def test_insert_rejects_positional_idx(store):
+    # Arrange
+    original_df = make_table(cols=2, astype="pandas")
+    new_cols = make_table(cols=1, astype="pandas")
+    new_cols.columns = ["new_c0"]
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df)
+    # Act and Assert
+    with pytest.raises(TypeError):
+        table.insert(new_cols, 0)
+
+
+def test_insert_columns_rejects_positional_idx(store):
+    # Arrange
+    original_df = make_table(cols=2, astype="pandas")
+    new_cols = make_table(cols=1, astype="pandas")
+    new_cols.columns = ["new_c0"]
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df)
+    # Act and Assert
+    with pytest.raises(TypeError):
+        table.insert_columns(new_cols, 0)
 
 
 def _two_new_cols():
