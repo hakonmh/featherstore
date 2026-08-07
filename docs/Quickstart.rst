@@ -182,8 +182,8 @@ more features for working with tables.
     >> True
 
 One of those features is ``Table.insert()``, which inserts rows or columns
-depending on the shape of the input data. If the input has the same number of
-columns as the table, rows are inserted; otherwise columns are inserted.
+depending on the column names of the input data. If the input column names
+match the stored table, rows are inserted; otherwise columns are inserted.
 
 You can also call ``Table.insert_rows()`` or ``Table.insert_columns()`` directly
 when you want to be explicit about the operation.
@@ -192,7 +192,7 @@ when you want to be explicit about the operation.
 .. code-block:: python
 
     df2 = pd.DataFrame(randn(2, 2), index=[4, 2], columns=list("AB"))
-    table.insert(df2)  # same number of columns -> inserts rows
+    table.insert(df2)  # matching column names -> inserts rows
     table.read_pandas()
 
     # The data will be inserted into its sorted index position
@@ -204,9 +204,10 @@ when you want to be explicit about the operation.
     5 -0.353684  1.550073
     6  1.275938  1.054702
 
-To add columns, pass data with fewer columns than the table. Use ``idx`` to
-control where the new column(s) are placed. A single integer inserts a block
-of columns at that position; a sequence places each column individually.
+To add columns, pass data whose column names are not already in the table.
+Use ``idx`` to control where the new column(s) are placed. A single integer
+inserts a block of columns at that position; a sequence places each column
+individually.
 
 .. code-block:: python
 

@@ -1,58 +1,6 @@
 Changelog
 =========
 
-Unreleased
-----------
-
-**Warning**: This update causes API-breaking changes for code that catches
-built-in exceptions from FeatherStore operations:
-
-* Domain errors now raise custom exceptions from
-  ``featherstore.exceptions`` instead of built-in types such as
-  ``IndexError``, ``FileNotFoundError``, ``FileExistsError``, ``ValueError``,
-  ``TypeError``, ``ConnectionError``, ``ConnectionRefusedError``,
-  ``PermissionError``, and ``OSError``
-* Import exception types via ``from featherstore.exceptions import ...``;
-  they are not re-exported from the top-level ``featherstore`` package
-* Argument-shape validation (invalid types, missing parameters) still raises
-  ``TypeError``, ``ValueError``, and ``AttributeError``
-
-Enhancements:
-
-* Added a hierarchical exception tree rooted at ``FeatherStoreException``,
-  with category bases (``TableError``, ``StoreError``, ``ColumnError``,
-  ``RowError``, ``IndexSchemaError``, ``DatabaseConnectionError``,
-  ``SnapshotError``, ``PathError``) and specific leaf exceptions such as
-  ``ColumnNotFoundError``, ``RowNotFoundError``, and
-  ``TableAlreadyExistsError``
-* Improved domain error messages to include offending values where useful
-  (for example, missing column names and row indices)
-* Added ``tests/test_exceptions.py`` for hierarchy and message coverage
-* Added an Exceptions page to the API reference with a nested hierarchy list
-  and per-class documentation
-* Added ``Raises`` sections to public method and function docstrings for
-  ``Table``, ``Store``, ``connection``, and ``snapshot``
-
-Bug fixes:
-
-* Fixed silent data loss on repeated mid-table ``insert_rows`` caused by
-  lossy partition-ID round-trips (fractional IDs collapsed when generating
-  new mid-gap partition names)
-* Fixed ``reorder_columns`` / ``columns`` setter dropping the index name from
-  table metadata
-* Fixed ``rename_table`` allowing the forbidden ``.metadata`` name
-* Fixed snapshot restore with ``errors="ignore"`` leaving orphan partition
-  files or tables behind
-* Fixed ``astype`` not refreshing ``index_dtype`` metadata when casting the
-  index
-* Fixed stale ``num_columns`` / ``shape`` after inserting or dropping columns
-* Fixed ``database_exists`` not expanding ``~`` in paths
-* Fixed ``Indexer.keyword`` raising ``AttributeError`` for non-keyword dict
-  keys
-* Fixed SQL ``LIKE`` patterns treating regex metacharacters as special and
-  crashing on empty patterns
-* Fixed snapshot restore accepting invalid ``errors`` values
-
 0.3.0
 -----
 
@@ -63,6 +11,15 @@ Bug fixes:
   and `pyarrow>=14.0.0` (upper bounds removed)
 * Renamed `Table.insert()` to `Table.insert_rows()` and
   `Table.add_columns()` to `Table.insert_columns()`
+* Domain errors now raise custom exceptions from
+  ``featherstore.exceptions`` instead of built-in types such as
+  ``IndexError``, ``FileNotFoundError``, ``FileExistsError``, ``ValueError``,
+  ``TypeError``, ``ConnectionError``, ``ConnectionRefusedError``,
+  ``PermissionError``, and ``OSError``
+* Import exception types via ``from featherstore.exceptions import ...``;
+  they are not re-exported from the top-level ``featherstore`` package
+* Argument-shape validation (invalid types, missing parameters) still raises
+  ``TypeError``, ``ValueError``, and ``AttributeError``
 
 Enhancements:
 
@@ -103,12 +60,43 @@ Enhancements:
   hardcoded-table scenarios
 * Raised minimum Polars version to 1.21.0 (first release with `n_unique()`
   support for decimal index dtypes)
+* Added a hierarchical exception tree rooted at ``FeatherStoreException``,
+  with category bases (``TableError``, ``StoreError``, ``ColumnError``,
+  ``RowError``, ``IndexSchemaError``, ``DatabaseConnectionError``,
+  ``SnapshotError``, ``PathError``) and specific leaf exceptions such as
+  ``ColumnNotFoundError``, ``RowNotFoundError``, and
+  ``TableAlreadyExistsError``
+* Improved domain error messages to include offending values where useful
+  (for example, missing column names and row indices)
+* Added ``tests/test_exceptions.py`` for hierarchy and message coverage
+* Added an Exceptions page to the API reference with a nested hierarchy list
+  and per-class documentation
+* Added ``Raises`` sections to public method and function docstrings for
+  ``Table``, ``Store``, ``connection``, and ``snapshot``
 
 Bugfixes:
 
 * Fixed intermittent `PermissionError` (WinError 32) on Windows when deleting
   partition files during bulk cleanup (e.g. `drop_table()`); file removal now
   retries `os.remove` instead of shelling out to `del`
+* Fixed silent data loss on repeated mid-table ``insert_rows`` caused by
+  lossy partition-ID round-trips (fractional IDs collapsed when generating
+  new mid-gap partition names)
+* Fixed ``reorder_columns`` / ``columns`` setter dropping the index name from
+  table metadata
+* Fixed ``rename_table`` allowing the forbidden ``.metadata`` name
+* Fixed snapshot restore with ``errors="ignore"`` leaving orphan partition
+  files or tables behind
+* Fixed ``astype`` not refreshing ``index_dtype`` metadata when casting the
+  index
+* Fixed stale ``num_columns`` / ``shape`` after inserting or dropping columns
+* Fixed ``database_exists`` not expanding ``~`` in paths
+* Fixed ``Indexer.keyword`` raising ``AttributeError`` for non-keyword dict
+  keys
+* Fixed SQL ``LIKE`` patterns treating regex metacharacters as special and
+  crashing on empty patterns
+* Fixed snapshot restore accepting invalid ``errors`` values
+
 
 0.2.1
 -----

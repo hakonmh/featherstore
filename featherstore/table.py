@@ -7,6 +7,7 @@ from featherstore._table import (
     astype,
     common,
     drop,
+    insert,
     insert_cols,
     insert_rows,
     misc,
@@ -359,10 +360,10 @@ class Table:
 
         write.write_partitions(partitions, self._table_path)
 
-    def insert(self, df, idx=-1):
+    def insert(self, df, *, idx=-1):
         """Insert one or more rows or columns into the current table.
 
-        If ``df`` has the same number of columns as the table, rows are inserted.
+        If ``df`` column names match the stored table, rows are inserted.
         Otherwise, columns are inserted at position ``idx``.
 
         Parameters
@@ -370,15 +371,18 @@ class Table:
         df : Pandas DataFrame or Pandas Series
             The data to be inserted.
         idx : int or Sequence[int], optional
-            The position(s) to insert new column(s). Only used when inserting columns.
-            If a sequence is provided, it must have one position per new column.
-            Default is to add columns to the end.
+            The position(s) to insert new column(s). Only valid when inserting
+            columns. If a sequence is provided, it must have one position per new
+            column. Default is to add columns to the end.
 
         Raises
         ------
+        TypeError
+            If ``idx`` is passed when inserting rows.
         Same exceptions as :meth:`insert_rows` and :meth:`insert_columns`.
         """
-        if misc.num_cols_matches_table_cols(df, self._table_data):
+        insert.can_insert(df, self._table_data, idx)
+        if insert.cols_matches_table_cols(df, self._table_data):
             self.insert_rows(df)
         else:
             self.insert_columns(df, idx=idx)
@@ -442,7 +446,7 @@ class Table:
         write.write_metadata(self, metadata)
         write.write_partitions(partitions, self._table_path)
 
-    def insert_columns(self, df, idx=-1):
+    def insert_columns(self, df, *, idx=-1):
         """Insert one or more columns into the current table.
 
         Parameters
