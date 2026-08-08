@@ -15,9 +15,9 @@ from .fixtures import (
     assert_table_equals,
     continuous_datetime_index,
     continuous_string_index,
+    convert_expected,
     convert_table,
     default_index,
-    drop_default_index_if_exists,
     get_index_name,
     get_partition_size,
     make_table,
@@ -46,8 +46,6 @@ from .fixtures import (
 @pytest.mark.parametrize("astype", ["pandas", "polars", "arrow"])
 def test_update_table(store, index, rows, cols, num_cols, astype):
     # Arrange
-    as_series = astype.startswith("pandas")
-
     original_pd = make_table(index, cols=num_cols, astype="pandas")
     _, update_pd = split_table(original_pd, rows=rows, cols=cols)
     update_pd = replace_values(update_pd)
@@ -55,9 +53,7 @@ def test_update_table(store, index, rows, cols, num_cols, astype):
 
     original_df = convert_table(original_pd, to=astype)
     update_df = convert_table(update_pd, to=astype, keep_index=True)
-    expected = convert_table(expected_pd, to=astype, as_series=as_series)
-    if not as_series:
-        expected = drop_default_index_if_exists(expected)
+    expected = convert_expected(expected_pd, to=astype, like=original_pd)
 
     table = store.select_table(TABLE_NAME)
     table.write(original_df, index=get_index_name(original_df))

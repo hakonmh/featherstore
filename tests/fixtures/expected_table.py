@@ -1,7 +1,7 @@
 import pandas as pd
 
 from .convert_table import convert_table
-from .misc import sort_table
+from .misc import df_has_default_index, drop_default_index_if_exists, sort_table
 
 
 def merge_rows(df, other, *, as_arrow=False):
@@ -14,6 +14,21 @@ def merge_rows(df, other, *, as_arrow=False):
 def update_table(df, update_df):
     expected = df.copy()
     expected.update(update_df)
+    return expected
+
+
+def convert_expected(df, *, to, like=None):
+    """Convert expected result for assertions.
+
+    Drops the default index when ``like`` has one. If ``like`` is omitted, drops
+    it when ``df`` itself has a default index after conversion.
+    """
+    as_series = to.startswith("pandas")
+    expected = convert_table(df, to=to, as_series=as_series, keep_index=True)
+    if as_series:
+        return expected
+    if like is None or df_has_default_index(like):
+        return drop_default_index_if_exists(expected)
     return expected
 
 

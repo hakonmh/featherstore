@@ -35,30 +35,27 @@ def _update_pandas_series(series):
 
 
 def _update_pandas_dataframe(df, index_name):
-    for col_name in _data_column_names(df, index_name):
+    data_cols = _utils.get_data_col_names(df, index_name=index_name)
+    for col_name in data_cols:
         df[col_name] = _regenerate_values(df[col_name].to_numpy())
     return _utils.convert_object_cols_to_string(df)
 
 
 def _update_polars_dataframe(df, index_name):
-    for col_name in _data_column_names(df, index_name):
+    data_cols = _utils.get_data_col_names(df, index_name=index_name)
+    for col_name in data_cols:
         updated = _regenerate_values(df[col_name].to_numpy())
         df = df.with_columns(pl.Series(col_name, updated))
     return df
 
 
 def _update_arrow_table(table, index_name):
-    for col_name in _data_column_names(table, index_name):
+    data_cols = _utils.get_data_col_names(table, index_name=index_name)
+    for col_name in data_cols:
         updated = _regenerate_values(table[col_name].to_numpy())
         col_idx = table.column_names.index(col_name)
         table = table.set_column(col_idx, col_name, pa.array(updated))
     return table
-
-
-def _data_column_names(df, index_name):
-    return [
-        name for name in _utils.get_col_names(df, index=False) if name != index_name
-    ]
 
 
 def _regenerate_values(values):

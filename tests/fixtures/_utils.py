@@ -58,11 +58,33 @@ def is_rangeindex(index):
     return is_rangeindex
 
 
+def get_data_col_names(df, index_name=None):
+    if index_name is None:
+        index_name = get_index_name(df)
+    if index_name is None:
+        index_name = DEFAULT_ARROW_INDEX_NAME
+    cols = _raw_col_names(df)
+    if isinstance(df, (pd.Series, pd.DataFrame)):
+        return cols
+    return [c for c in cols if c != index_name]
+
+
+def get_col_names(df, has_default_index=False):
+    cols = list(_raw_col_names(df))
+    if isinstance(df, (pd.DataFrame, pd.Series)):
+        index_name = df.index.name or DEFAULT_ARROW_INDEX_NAME
+        if index_name not in cols:
+            cols.append(index_name)
+    elif has_default_index and DEFAULT_ARROW_INDEX_NAME not in cols:
+        cols.append(DEFAULT_ARROW_INDEX_NAME)
+    return cols
+
+
 def get_index_name(df):
     if isinstance(df, (pd.Series, pd.DataFrame)):
         index_name = None
     else:
-        cols = get_col_names(df)
+        cols = _raw_col_names(df)
         if "Date" in cols:
             index_name = "Date"
         elif "index" in cols or "Index" in cols:
@@ -74,19 +96,16 @@ def get_index_name(df):
     return index_name
 
 
-def get_col_names(df, index=True):
-    if isinstance(df, (pd.DataFrame, pl.DataFrame)):
-        cols = list(df.columns)
-    elif isinstance(df, pa.Table):
-        cols = df.column_names
-    else:
-        cols = [df.name]
-
-    if isinstance(df, (pd.DataFrame, pd.Series)) and index:
-        index_name = df.index.name
-        index_name = index_name if index_name else DEFAULT_ARROW_INDEX_NAME
-        cols.append(index_name)
-    return cols
+def _raw_col_names(df):
+    if isinstance(df, pd.Series):
+        return [df.name]
+    if isinstance(df, pd.DataFrame):
+        return df.columns.tolist()
+    if isinstance(df, pl.DataFrame):
+        return list(df.columns)
+    if isinstance(df, pa.Table):
+        return df.column_names
+    return [df.name]
 
 
 def convert_object_cols_to_string(df):

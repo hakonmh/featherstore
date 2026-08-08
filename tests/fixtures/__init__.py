@@ -1,12 +1,13 @@
 from os.path import join
 
-from featherstore._utils import DB_MARKER_NAME, DEFAULT_ARROW_INDEX_NAME
+from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 
 from ._utils import get_index_name
 from .assertions import assert_df_equals, assert_store_table_equal, assert_table_equals
 from .cast_table import change_dtype, to_arrow_dtype
 from .convert_table import convert_table
 from .expected_table import (
+    convert_expected,
     insert_column_names_at,
     merge_rows,
     update_table,
@@ -33,13 +34,10 @@ from .make_table import (
     sorted_time32_index,
     sorted_timedelta_index,
     sorted_uint_index,
-    unsorted_datetime_index,
     unsorted_int_index,
     unsorted_string_index,
 )
 from .misc import (
-    df_has_default_index,
-    drop_default_index_if_exists,
     get_partition_size,
     shuffle_cols,
     sort_table,
@@ -54,7 +52,6 @@ TABLE_PATH = join(DB_PATH, STORE_NAME, TABLE_NAME)
 MD_NAME = "db"
 
 __all__ = [
-    "DB_MARKER_NAME",
     "DB_PATH",
     "DEFAULT_ARROW_INDEX_NAME",
     "MD_NAME",
@@ -69,10 +66,9 @@ __all__ = [
     "change_dtype",
     "continuous_datetime_index",
     "continuous_string_index",
+    "convert_expected",
     "convert_table",
     "default_index",
-    "df_has_default_index",
-    "drop_default_index_if_exists",
     "fake_default_index",
     "get_index_name",
     "get_partition_size",
@@ -96,7 +92,6 @@ __all__ = [
     "sorted_uint_index",
     "split_table",
     "to_arrow_dtype",
-    "unsorted_datetime_index",
     "unsorted_int_index",
     "unsorted_string_index",
     "update_table",

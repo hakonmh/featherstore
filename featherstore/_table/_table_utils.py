@@ -54,30 +54,34 @@ def sort_arrow_table(df, *, by):
     return df.take(indices)
 
 
-def get_col_names(df, has_default_index):
-    if isinstance(df, pd.DataFrame):
-        cols = df.columns.tolist()
-    elif isinstance(df, pl.DataFrame):
-        cols = df.columns
-    elif isinstance(df, pa.Table):
-        cols = df.column_names
-    else:
-        cols = [df.name]
+def get_data_col_names(df, *, index_name):
+    cols = _raw_col_names(df)
+    if isinstance(df, (pd.Series, pd.DataFrame)):
+        return cols
+    return [c for c in cols if c != index_name]
 
+
+def get_col_names(df, has_default_index):
+    cols = list(_raw_col_names(df))
     if isinstance(df, (pd.DataFrame, pd.Series)):
-        index_name = df.index.name
-        index_name = index_name if index_name else DEFAULT_ARROW_INDEX_NAME
-        cols.append(index_name)
+        index_name = df.index.name or DEFAULT_ARROW_INDEX_NAME
+        if index_name not in cols:
+            cols.append(index_name)
     elif has_default_index and DEFAULT_ARROW_INDEX_NAME not in cols:
         cols.append(DEFAULT_ARROW_INDEX_NAME)
-
     return cols
 
 
-def get_pandas_column_names(df):
+def _raw_col_names(df):
     if isinstance(df, pd.Series):
         return [df.name]
-    return df.columns.tolist()
+    if isinstance(df, pd.DataFrame):
+        return df.columns.tolist()
+    if isinstance(df, pl.DataFrame):
+        return list(df.columns)
+    if isinstance(df, pa.Table):
+        return df.column_names
+    return [df.name]
 
 
 def convert_to_arrow(df, as_array=False):

@@ -13,14 +13,14 @@ def can_append_table(table, df, warnings):
     _raise_if.df_is_not_table_type(df, _table_utils.SUPPORTED_TABLE_TYPES)
 
     table_data = table._table_data
-    cols = _table_utils.get_col_names(df, has_default_index=False)
-    _raise_if.df_index_or_column_names_incompatible_with_stored(
+    index_name = table_data["index_name"]
+    cols = _table_utils.get_data_col_names(df, index_name=index_name)
+    _raise_if.incoming_index_schema_incompatible_with_stored(
         df, table_data, cols, check_index_values=False
     )
     _raise_if.cols_does_not_match(df, table_data)
 
     has_default_index = table_data["has_default_index"]
-    index_name = table_data["index_name"]
 
     index = _table_utils.get_index_if_exists(df, index_name)
     index_is_provided = index is not None

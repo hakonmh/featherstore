@@ -10,6 +10,8 @@ from featherstore._table import _table_utils, common
 from featherstore._table._indexers import ColIndexer, RowIndexer
 from featherstore.connection import Connection
 from featherstore.exceptions import (
+    ColumnAlreadyExistsError,
+    ColumnLengthMismatchError,
     ColumnMismatchError,
     ColumnNotFoundError,
     DuplicateColumnNamesError,
@@ -133,17 +135,28 @@ def cols_does_not_match(df, table_data):
 
 
 def cols_not_in_table(cols, table_data):
-    stored_cols = table_data["columns"]
-    if not isinstance(cols, ColIndexer):
-        cols = ColIndexer(cols)
-
-    cols = cols.like(stored_cols)
-    some_cols_not_in_stored_cols = set(cols) - set(stored_cols)
-    if some_cols_not_in_stored_cols:
-        missing = sorted(some_cols_not_in_stored_cols)
+    cols, stored_cols = _cols_like_stored(cols, table_data)
+    missing = sorted(set(cols) - set(stored_cols))
+    if missing:
         raise ColumnNotFoundError(
             f"Trying to access columns not found in table ({missing})"
         )
+
+
+def cols_already_in_table(cols, table_data):
+    cols, stored_cols = _cols_like_stored(cols, table_data)
+    existing = sorted(set(cols) & set(stored_cols))
+    if existing:
+        raise ColumnAlreadyExistsError(
+            f"Column names already exist in table ({existing})"
+        )
+
+
+def _cols_like_stored(cols, table_data):
+    stored_cols = table_data["columns"]
+    if not isinstance(cols, ColIndexer):
+        cols = ColIndexer(cols)
+    return cols.like(stored_cols), stored_cols
 
 
 def index_values_in_stored_data(old_df, df, index_name, *, all_must_be_in):
@@ -377,7 +390,7 @@ def not_connected_or_table_not_exists(table):
     table_not_exists(table)
 
 
-def df_index_or_column_names_incompatible_with_stored(
+def incoming_index_schema_incompatible_with_stored(
     df, table_data, cols, *, index=None, check_index_values=True
 ):
     index_name_not_same_as_stored_index(df, table_data)
@@ -387,6 +400,16 @@ def df_index_or_column_names_incompatible_with_stored(
         if index is None:
             index = _table_utils.get_index_if_exists(df, table_data["index_name"])
         index_values_contains_duplicates(index)
+
+
+def row_count_does_not_match_stored(df, table_data):
+    stored_row_count = table_data["num_rows"]
+    incoming_row_count = len(df)
+    if incoming_row_count != stored_row_count:
+        raise ColumnLengthMismatchError(
+            f"Number of rows in new columns ({incoming_row_count}) doesn't match "
+            f"stored table ({stored_row_count})"
+        )
 
 
 def rows_argument_is_not_valid(rows, table_data, *, allow_none=False):

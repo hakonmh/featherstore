@@ -11,10 +11,20 @@ from .convert_table import _convert_to_arrow
 
 
 def shuffle_cols(df):
-    cols = _utils.get_col_names(df, index=False)
-    shuffled_cols = random.sample(tuple(cols), len(cols))
+    data_cols = _utils.get_data_col_names(df)
+    shuffled_cols = random.sample(tuple(data_cols), len(data_cols))
     if isinstance(df, pa.Table):
-        df = df.select(shuffled_cols)
+        index_name = _utils.get_index_name(df)
+        if index_name and index_name in df.column_names:
+            df = df.select([index_name, *shuffled_cols])
+        else:
+            df = df.select(shuffled_cols)
+    elif isinstance(df, pl.DataFrame):
+        index_name = _utils.get_index_name(df)
+        if index_name and index_name in df.columns:
+            df = df.select([index_name, *shuffled_cols])
+        else:
+            df = df.select(shuffled_cols)
     else:
         df = df[shuffled_cols]
     return df
