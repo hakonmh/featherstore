@@ -1,39 +1,31 @@
 import itertools
 
-import pyarrow as pa
-
+from featherstore import _utils
 from featherstore._table import _raise_if, _table_utils
-from featherstore.exceptions import RowAlreadyExistsError
 
 
-def can_insert_rows(table, df):
+def can_insert_rows(table, df, warnings):
     _raise_if.not_connected_or_table_not_exists(table)
-    _raise_if.df_is_not_pandas_table(df)
+    _utils.raise_if_warnings_argument_is_not_valid(warnings)
+    _raise_if.df_is_not_table_type(df, _table_utils.EDIT_TABLE_TYPES)
 
-    cols = _table_utils.get_pandas_column_names(df)
+    table_data = table._table_data
+    cols = _table_utils.get_col_names(df, has_default_index=False)
+    index_name = table_data["index_name"]
+    index = _table_utils.get_index_if_exists(df, index_name)
     _raise_if.df_index_or_column_names_incompatible_with_stored(
-        df, table._table_data, cols
+        df, table_data, cols, index=index
     )
-    _raise_if.cols_does_not_match(df, table._table_data)
+    _raise_if.cols_does_not_match(df, table_data)
 
 
 def insert_data(df, *, to):
     index_name = _table_utils.get_index_name(df)
-    _raise_if_rows_in_old_data(to, df, index_name)
+    _raise_if.index_values_in_stored_data(to, df, index_name, all_must_be_in=False)
 
     df = _table_utils.concat_arrow_tables(to, df)
     df = _table_utils.sort_arrow_table(df, by=index_name)
     return df
-
-
-def _raise_if_rows_in_old_data(old_df, df, index_name):
-    index = df[index_name]
-    old_index = old_df[index_name]
-
-    is_in = pa.compute.is_in(index, value_set=old_index)
-    rows_in_old_df = pa.compute.any(is_in).as_py()
-    if rows_in_old_df:
-        raise RowAlreadyExistsError("Some rows already in stored table")
 
 
 def create_partitions(df, rows_per_partition, partition_names, all_partition_names):

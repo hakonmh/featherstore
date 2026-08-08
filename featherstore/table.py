@@ -387,14 +387,17 @@ class Table:
         else:
             self.insert_columns(df, idx=idx)
 
-    def insert_rows(self, df):
+    def insert_rows(self, df, *, warnings="warn"):
         """Insert one or more rows into the current table.
 
         Parameters
         ----------
-        df : Pandas DataFrame or Pandas Series
+        df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
             The data to be inserted. `df` must have the same index and column
             types as the stored data.
+        warnings : str, optional
+            Whether or not to warn if a unsorted index is about to get sorted.
+            Can be either `warn` or `ignore`, by default `warn`
 
         Raises
         ------
@@ -417,20 +420,21 @@ class Table:
         RowAlreadyExistsError
             If any row already exists in the stored table.
         TypeError
-            If ``df`` is not a Pandas DataFrame or Series.
+            If ``df`` is not a supported table type.
+        ValueError
+            If ``warnings`` is invalid.
         """
-        insert_rows.can_insert_rows(self, df)
+        insert_rows.can_insert_rows(self, df, warnings)
 
         index_name = self._table_data["index_name"]
         index_type = self._table_data["index_dtype"]
         rows_per_partition = self._table_data["rows_per_partition"]
         all_partition_names = self._partition_data.keys()
 
-        rows = common.format_rows_arg(df.index, to_dtype=index_type)
-
-        df = common.format_table(df, index_name=index_name, warnings="ignore")
+        df = common.format_table(df, index_name=index_name, warnings=warnings)
         has_default_index = insert_rows.has_still_default_index(self, df)
 
+        rows = common.format_rows_arg(df[index_name].to_pylist(), to_dtype=index_type)
         partition_names = read.get_partition_names(self, rows)
         stored_df = read.read_table(self, partition_names)
 
