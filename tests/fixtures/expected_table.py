@@ -1,15 +1,20 @@
 import pandas as pd
 
 from .convert_table import convert_table
-from .misc import format_arrow_table, sort_table
+from .misc import sort_table
 
 
 def merge_rows(df, other, *, as_arrow=False):
     new_df = sort_table(pd.concat([df, other]))
     if as_arrow:
         new_df = convert_table(new_df, to="arrow")
-        new_df = format_arrow_table(new_df)
     return new_df
+
+
+def update_table(df, update_df):
+    expected = df.copy()
+    expected.update(update_df)
+    return expected
 
 
 def insert_columns_expected(expected, new_cols, idx):

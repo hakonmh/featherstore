@@ -3,7 +3,6 @@ from decimal import Decimal
 from numbers import Integral, Real
 
 import pandas as pd
-import polars as pl
 import pyarrow as pa
 
 from featherstore._metadata import METADATA_FOLDER_NAME
@@ -19,10 +18,14 @@ from featherstore.exceptions import (
     IndexNameInColumnsError,
     IndexNameMismatchError,
     IndexTypeMismatchError,
+    RowAlreadyExistsError,
+    RowNotFoundError,
     TableAlreadyExistsError,
     TableNotFoundError,
     UnsupportedIndexTypeError,
 )
+
+_STRING_ARROW_TYPES = {"string", "utf8", "large_string", "large_utf8"}
 
 NoneType = type(None)
 
@@ -52,8 +55,8 @@ def table_name_is_forbidden(table_name):
         )
 
 
-def df_is_not_supported_table_type(df):
-    if not isinstance(df, (pd.DataFrame, pd.Series, pl.DataFrame, pl.Series, pa.Table)):
+def df_is_not_table_type(df, allowed_types):
+    if not isinstance(df, allowed_types):
         raise TypeError(f"'df' must be a supported DataFrame type (is type {type(df)})")
 
 
@@ -141,6 +144,18 @@ def cols_not_in_table(cols, table_data):
         raise ColumnNotFoundError(
             f"Trying to access columns not found in table ({missing})"
         )
+
+
+def index_values_in_stored_data(old_df, df, index_name, *, all_must_be_in):
+    index = df[index_name]
+    old_index = old_df[index_name]
+    is_in = pa.compute.is_in(index, value_set=old_index)
+    if all_must_be_in:
+        if not pa.compute.all(is_in).as_py():
+            missing = index.filter(pa.compute.invert(is_in)).to_pylist()
+            raise RowNotFoundError(f"Some rows not in stored table ({missing})")
+    elif pa.compute.any(is_in).as_py():
+        raise RowAlreadyExistsError("Some rows already in stored table")
 
 
 def to_is_provided_twice(cols, to):
@@ -296,14 +311,25 @@ def index_type_not_supported(index_or_dtype):
 
 
 def index_type_not_same_as_stored_index(df, table_data):
-    if isinstance(df, (pd.DataFrame, pd.Series)):
-        index_type = str(pa.Array.from_pandas(df.index).type)
-        stored_index_type = table_data["index_dtype"]
+    index_name = table_data["index_name"]
+    index = _table_utils.get_index_if_exists(df, index_name)
+    if index is not None:
+        index_type = _normalize_index_dtype(index.type)
+        stored_index_type = _normalize_index_dtype(table_data["index_dtype"])
         if index_type != stored_index_type:
             raise IndexTypeMismatchError(
                 "New and old index types do not match "
                 f"(new={index_type}, stored={stored_index_type})"
             )
+
+
+def _normalize_index_dtype(dtype):
+    dtype = str(dtype)
+    if dtype in _STRING_ARROW_TYPES:
+        return "string"
+    if dtype.startswith("timestamp"):
+        return "timestamp"
+    return dtype
 
 
 def index_name_not_same_as_stored_index(df, table_data):
@@ -359,7 +385,7 @@ def df_index_or_column_names_incompatible_with_stored(
     index_type_not_same_as_stored_index(df, table_data)
     if check_index_values:
         if index is None:
-            index = df.index
+            index = _table_utils.get_index_if_exists(df, table_data["index_name"])
         index_values_contains_duplicates(index)
 
 

@@ -316,7 +316,7 @@ class Table:
 
         Parameters
         ----------
-        df : Pandas DataFrame or Pandas Series
+        df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
             The updated data. The index of `df` is the rows to be updated, while
             the columns of `df` are the new values.
 
@@ -341,7 +341,7 @@ class Table:
         RowNotFoundError
             If any row is not in the stored table.
         TypeError
-            If ``df`` is not a Pandas DataFrame or Series.
+            If ``df`` is not a supported table type.
         """
         update.can_update_table(self, df)
 
@@ -349,13 +349,13 @@ class Table:
         index_type = self._table_data["index_dtype"]
         rows_per_partition = self._table_data["rows_per_partition"]
 
-        rows = common.format_rows_arg(df.index, to_dtype=index_type)
+        df = common.format_table(df, index_name=index_name, warnings=False)
+        rows = common.format_rows_arg(df[index_name].to_pylist(), to_dtype=index_type)
 
         partition_names = read.get_partition_names(self, rows)
         stored_df = read.read_table(self, partition_names)
 
         df = update.update_data(stored_df, to=df)
-        df = common.format_table(df, index_name=index_name, warnings=False)
         partitions = write.create_partitions(df, rows_per_partition, partition_names)
 
         write.write_partitions(partitions, self._table_path)

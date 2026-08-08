@@ -5,6 +5,21 @@ import pyarrow as pa
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 
 
+def parse_astype(astype):
+    """Split a ``make_table``-style astype into ``(backend, as_series)``."""
+    backend = astype.split("[", 1)[0]
+    as_series = "[series]" in astype
+    return backend, as_series
+
+
+def squeeze_df(df):
+    if isinstance(df, pl.DataFrame) and df.shape[1] == 1:
+        return df.to_series()
+    if isinstance(df, pd.DataFrame) and df.shape[1] == 1:
+        return df.squeeze(axis=1)
+    return df
+
+
 def make_index_first_column(df):
     index_name = df.schema.pandas_metadata["index_columns"][0]
     cols = df.column_names
@@ -12,6 +27,23 @@ def make_index_first_column(df):
     cols.insert(0, index_name)
     df = df.select(cols)
     return df
+
+
+def format_arrow_table(df):
+    if _index_in_columns(df):
+        df = make_index_first_column(df)
+    return df
+
+
+def _index_in_columns(df):
+    metadata = df.schema.pandas_metadata
+    if not metadata:
+        return False
+    index_columns = metadata.get("index_columns") or []
+    if not index_columns:
+        return False
+    index_name = index_columns[0]
+    return isinstance(index_name, str) and index_name in df.column_names
 
 
 def is_rangeindex(index):

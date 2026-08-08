@@ -6,7 +6,11 @@ from ._utils import get_index_name
 from .assertions import assert_df_equals, assert_store_table_equal, assert_table_equals
 from .cast_table import change_dtype, to_arrow_dtype
 from .convert_table import convert_table
-from .expected_table import insert_column_names_at, insert_columns_expected, merge_rows
+from .expected_table import (
+    insert_column_names_at,
+    merge_rows,
+    update_table,
+)
 from .hardcoded_table import (
     apply_operations_to_expected,
     build_e2e_operations,
@@ -36,13 +40,12 @@ from .make_table import (
 from .misc import (
     df_has_default_index,
     drop_default_index_if_exists,
-    format_arrow_table,
     get_partition_size,
     shuffle_cols,
     sort_table,
 )
 from .split_table import split_table
-from .update_values import update_values
+from .update_values import replace_values
 
 DB_PATH = join("tests", "_db")
 STORE_NAME = "test_store"
@@ -71,14 +74,13 @@ __all__ = [
     "df_has_default_index",
     "drop_default_index_if_exists",
     "fake_default_index",
-    "format_arrow_table",
     "get_index_name",
     "get_partition_size",
     "insert_column_names_at",
-    "insert_columns_expected",
     "make_hardcoded_table",
     "make_table",
     "merge_rows",
+    "replace_values",
     "shuffle_cols",
     "shuffle_e2e_operations",
     "sort_table",
@@ -97,5 +99,5 @@ __all__ = [
     "unsorted_datetime_index",
     "unsorted_int_index",
     "unsorted_string_index",
-    "update_values",
+    "update_table",
 ]

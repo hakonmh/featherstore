@@ -19,7 +19,7 @@ def can_write_table(table, df, index_name, partition_size, errors, warnings):
 
     if errors == "raise":
         _raise_if.table_already_exists(table._table_path)
-    _raise_if.df_is_not_supported_table_type(df)
+    _raise_if.df_is_not_table_type(df, _table_utils.SUPPORTED_TABLE_TYPES)
 
     cols = _table_utils.get_col_names(df, has_default_index=False)
     _raise_if_index_argument_is_not_str_or_none(index_name)

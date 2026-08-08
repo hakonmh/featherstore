@@ -8,49 +8,74 @@ from . import _utils
 from .make_table import get_col_dtypes
 
 
-def update_values(df, index_name=None):
+def replace_values(df, index_name=None):
+    """Replace data-column values with new samples of the same dtype.
+
+    The index column is left unchanged.
+    """
     if index_name is None:
         index_name = _utils.get_index_name(df)
 
     df = copy.copy(df)
 
-    col_names = _utils.get_col_names(df, index=False)
-    for col_name in col_names:
-        if col_name == index_name:
-            continue
-        if isinstance(df, pd.Series):
-            col = df.to_numpy()
-        else:
-            col = df[col_name].to_numpy()
-        col = _update_col(col)
-
-        if isinstance(df, pa.Table):
-            col_idx = col_names.index(col_name)
-            df = df.set_column(col_idx, col_name, pa.array(col))
-        elif isinstance(df, pl.DataFrame):
-            col = pl.Series(col_name, col)
-            df = df.with_columns(col)
-        elif isinstance(df, pd.DataFrame):
-            df[col_name] = col
-        elif isinstance(df, pd.Series):
-            df[:] = col
+    if isinstance(df, pd.Series):
+        return _update_pandas_series(df)
     if isinstance(df, pd.DataFrame):
-        df = _utils.convert_object_cols_to_string(df)
+        return _update_pandas_dataframe(df, index_name)
+    if isinstance(df, pl.DataFrame):
+        return _update_polars_dataframe(df, index_name)
+    if isinstance(df, pa.Table):
+        return _update_arrow_table(df, index_name)
+    raise TypeError(f"Unsupported type: {type(df)!r}")
+
+
+def _update_pandas_series(series):
+    series[:] = _regenerate_values(series.to_numpy())
+    return series
+
+
+def _update_pandas_dataframe(df, index_name):
+    for col_name in _data_column_names(df, index_name):
+        df[col_name] = _regenerate_values(df[col_name].to_numpy())
+    return _utils.convert_object_cols_to_string(df)
+
+
+def _update_polars_dataframe(df, index_name):
+    for col_name in _data_column_names(df, index_name):
+        updated = _regenerate_values(df[col_name].to_numpy())
+        df = df.with_columns(pl.Series(col_name, updated))
     return df
 
 
-def _update_col(df):
-    dtype = __get_dtype(df)
-    col_dtypes = get_col_dtypes()
-    make_col = col_dtypes[dtype]
-    rows = df.shape[0]
-    return make_col(rows)
+def _update_arrow_table(table, index_name):
+    for col_name in _data_column_names(table, index_name):
+        updated = _regenerate_values(table[col_name].to_numpy())
+        col_idx = table.column_names.index(col_name)
+        table = table.set_column(col_idx, col_name, pa.array(updated))
+    return table
 
 
-def __get_dtype(df):
-    dtype = df.dtype.kind
-    DTYPES = {"i": "int", "f": "float", "b": "bool", "O": "string", "M": "datetime"}
-    dtype = DTYPES[dtype]
-    if dtype == "int" and df.min() >= 0:
-        dtype = "uint"
-    return dtype
+def _data_column_names(df, index_name):
+    return [
+        name for name in _utils.get_col_names(df, index=False) if name != index_name
+    ]
+
+
+def _regenerate_values(values):
+    dtype = _numpy_dtype_name(values)
+    make_col = get_col_dtypes()[dtype]
+    return make_col(values.shape[0])
+
+
+def _numpy_dtype_name(values):
+    kind_to_name = {
+        "i": "int",
+        "f": "float",
+        "b": "bool",
+        "O": "string",
+        "M": "datetime",
+    }
+    name = kind_to_name[values.dtype.kind]
+    if name == "int" and values.min() >= 0:
+        return "uint"
+    return name

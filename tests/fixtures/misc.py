@@ -67,17 +67,6 @@ def _has_rangeindex(df):
         return False
 
 
-def format_arrow_table(df):
-    if __index_in_columns(df):
-        df = _utils.make_index_first_column(df)
-    return df
-
-
-def __index_in_columns(df):
-    index_name = df.schema.pandas_metadata["index_columns"][0]
-    return index_name in df.column_names
-
-
 def drop_default_index_if_exists(df):
     if not df_has_default_index(df):
         return df

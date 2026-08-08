@@ -53,7 +53,7 @@ def test_polars_arrow_filtering(store, index, rows, cols, astype):
 def test_polars_and_arrow_to_pandas(store, astype, cols):
     # Arrange
     original_df = make_table(astype=astype, cols=cols)
-    expected = convert_table(original_df, to="pandas")
+    expected = convert_table(original_df, to="pandas", as_series=True)
 
     index_name = get_index_name(original_df)
     partition_size = get_partition_size(original_df)

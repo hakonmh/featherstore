@@ -16,6 +16,9 @@ from featherstore.exceptions import (
 PARTITION_NAME_LENGTH = 14
 INSERTION_BUFFER_LENGTH = 10**6
 
+SUPPORTED_TABLE_TYPES = (pd.DataFrame, pd.Series, pl.DataFrame, pl.Series, pa.Table)
+EDIT_TABLE_TYPES = (pd.DataFrame, pd.Series, pl.DataFrame, pa.Table)
+
 
 def concat_arrow_tables(*dfs):
     main_df = dfs[0]

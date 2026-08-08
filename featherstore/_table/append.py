@@ -10,7 +10,7 @@ def can_append_table(table, df, warnings):
     _raise_if.not_connected_or_table_not_exists(table)
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
 
-    _raise_if.df_is_not_supported_table_type(df)
+    _raise_if.df_is_not_table_type(df, _table_utils.SUPPORTED_TABLE_TYPES)
 
     table_data = table._table_data
     cols = _table_utils.get_col_names(df, has_default_index=False)
