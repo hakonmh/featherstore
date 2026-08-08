@@ -1,18 +1,33 @@
 version: '3'
 
 tasks:
-  all:
+  check:
     desc: Run ruff lint and format checks
     cmds:
-      - task: ruff
+      - task: check-lint
+      - task: check-format
+  fix:
+    desc: Run ruff lint and format fixes
+    cmds:
+      - task: lint
       - task: format
-  ruff:
+  check-lint:
     desc: Lint Python sources with ruff
     cmds:
       - cmd /c uv run ruff check featherstore tests
     silent: false
-  format:
+  check-format:
     desc: Check Python formatting with ruff
     cmds:
       - cmd /c uv run ruff format --check featherstore tests
+    silent: false
+  lint:
+    desc: Lint Python sources with ruff
+    cmds:
+      - cmd /c uv run ruff check --fix featherstore tests
+    silent: false
+  format:
+    desc: Format Python sources with ruff
+    cmds:
+      - cmd /c uv run ruff format featherstore tests
     silent: false

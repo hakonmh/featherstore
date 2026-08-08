@@ -8,3 +8,9 @@ includes:
 
 tasks:
   uv-sync: uv sync --all-groups --all-extras
+  pre-commit:
+    desc: Run the same checks as GitHub Actions (tests, lint fix, docs lint)
+    cmds:
+      - task: test:all
+      - task: lint:fix
+      - task: docs:lint

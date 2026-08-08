@@ -38,6 +38,8 @@ dev = [
     "pydata-sphinx-theme",
     "bmark-py>=0.0.4",
     "duckdb",
+    "doc8",
+    "pre-commit",
 ]
 
 [project.urls]
