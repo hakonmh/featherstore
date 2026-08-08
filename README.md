@@ -17,8 +17,8 @@ the necessary segments of data:
 
 * Partial reading of data
 * Append data
-* Insert rows and columns
-* Update data
+* Insert rows and columns (Pandas, Polars DataFrame, or PyArrow Table)
+* Update data (Pandas, Polars DataFrame, or PyArrow Table)
 * Drop data
 * Read metadata (including column names, index, table dimensions, etc.)
 * Changing column types
@@ -82,7 +82,8 @@ new_dates = pd.date_range("2021-01-06", periods=1)
 df1 = pd.DataFrame(randn(1, 4), index=new_dates, columns=list("ABCD"))
 store.append_table('example_table', df1)
 
->>> # Insert rows or columns via Table.insert() (dispatches on column names)
+>>> # Insert rows or columns via Table.insert() (dispatches on column names).
+# update / insert_* also accept Polars DataFrames and PyArrow Tables.
 table = store.select_table('example_table')
 new_rows = pd.DataFrame(randn(1, 4), index=[pd.Timestamp("2021-01-07")], columns=list("ABCD"))
 table.insert(new_rows)  # matching column names -> inserts rows

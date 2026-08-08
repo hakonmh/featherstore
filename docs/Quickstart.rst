@@ -185,8 +185,15 @@ One of those features is ``Table.insert()``, which inserts rows or columns
 depending on the column names of the input data. If the input column names
 match the stored table, rows are inserted; otherwise columns are inserted.
 
+``Table.update()``, ``Table.insert_rows()``, ``Table.insert_columns()``, and
+``Table.insert()`` accept Pandas DataFrames/Series, Polars DataFrames, and
+PyArrow Tables as input. Polars Series is not supported for these edit APIs.
+
 You can also call ``Table.insert_rows()`` or ``Table.insert_columns()`` directly
 when you want to be explicit about the operation.
+
+Pass ``warnings='ignore'`` to suppress sorting warnings when inserting rows or
+columns with an unsorted index (default is ``warnings='warn'``).
 
 
 .. code-block:: python

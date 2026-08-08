@@ -23,43 +23,21 @@ Changelog
 
 Enhancements:
 
+* ``Table.update()``, ``Table.insert_rows()``, ``Table.insert_columns()``, and
+  ``Table.insert()`` accept Pandas DataFrame/Series, Polars DataFrame, and
+  PyArrow Table input (Polars Series is not supported for these edit APIs)
 * Re-added `Table.insert()` as a convenience method that dispatches to
   `insert_rows()` or `insert_columns()` based on the number of columns in
   the input data
-* Export `database_exists()` from the top-level `featherstore` package
 * `Table.insert_columns()` and `Table.insert()` accept a sequence of column
   positions for `idx` (one position per new column)
+* ``Table.insert_rows()``, ``Table.insert_columns()``, and ``Table.insert()``
+  accept a ``warnings=`` parameter (``"warn"`` or ``"ignore"``, default
+  ``"warn"``) to control unsorted-index sorting warnings
 * Partition writes use Arrow IPC with atomic replace (avoids corrupting
   memory-mapped files on overwrite)
-* Pandas metadata generation updated for pandas 2.2 / 3.x string and float
-  dtypes (version-gated string metadata constants); sorting uses Arrow
-  `sort_indices` so categoricals keep unused categories
-* Snapshot extraction passes `filter='data'` on Python 3.12+
-* Documentation updated for 0.3.0 (`rename_store(..., to=...)`,
-  `table.exists()`, `insert()`, `insert_rows()`, `insert_columns()`, and
-  dependency requirements)
-* Migrated packaging to `pyproject.toml`; removed `setup.py`,
-  `requirements.txt`, `pytest.ini`, and `.flake8` (pytest and flake8 config
-  now live in `pyproject.toml`)
-* CI and Read the Docs install via `pip install -e ".[dev]"`; PyPI publish
-  builds with `python -m build`
-* Added Taskfile tasks for `uv sync`, docs, lint, and tests
-* Refactored `benchmarks/`: renamed `external`/`internal` to
-  `format_comparison`/`table_operations`, applied clean-code structure
-  (shared helpers, explicit imports, PascalCase benchmark classes), and added
-  module docstrings
-* Added Taskfile benchmark tasks: `bench:format-comparison`,
-  `bench:table-operations`, and `bench:log`
-* Internal benchmark logs now write to `.dev/bmarks`
 * Broadened supported index types (decimal, float, uint, binary, duration, and
   more) with stricter validation in `_raise_if` and `_table_utils`
-* Replaced test-suite star imports with explicit fixture imports; added `__all__`
-  to `tests/fixtures`
-* Applied ruff formatting across `featherstore`, `tests`, and `benchmarks`
-* Added e2e workflow test and shared fixtures for astype, expected-table, and
-  hardcoded-table scenarios
-* Raised minimum Polars version to 1.21.0 (first release with `n_unique()`
-  support for decimal index dtypes)
 * Added a hierarchical exception tree rooted at ``FeatherStoreException``,
   with category bases (``TableError``, ``StoreError``, ``ColumnError``,
   ``RowError``, ``IndexSchemaError``, ``DatabaseConnectionError``,
@@ -68,35 +46,62 @@ Enhancements:
   ``TableAlreadyExistsError``
 * Improved domain error messages to include offending values where useful
   (for example, missing column names and row indices)
-* Added ``tests/test_exceptions.py`` for hierarchy and message coverage
+* Export `database_exists()` from the top-level `featherstore` package
+* Pandas metadata generation updated for pandas 2.2 / 3.x string and float
+  dtypes (version-gated string metadata constants); sorting uses Arrow
+  `sort_indices` so categoricals keep unused categories
+* Raised minimum Polars version to 1.21.0 (first release with `n_unique()`
+  support for decimal index dtypes)
+* Documentation updated for 0.3.0 (`rename_store(..., to=...)`,
+  `table.exists()`, `insert()`, `insert_rows()`, `insert_columns()`,
+  multi-backend edit APIs, `warnings=`, and dependency requirements)
 * Added an Exceptions page to the API reference with a nested hierarchy list
   and per-class documentation
 * Added ``Raises`` sections to public method and function docstrings for
   ``Table``, ``Store``, ``connection``, and ``snapshot``
+* Migrated packaging to `pyproject.toml`; removed `setup.py`,
+  `requirements.txt`, `pytest.ini`, and `.flake8` (pytest and flake8 config
+  now live in `pyproject.toml`)
+* CI and Read the Docs install via `pip install -e ".[dev]"`; PyPI publish
+  builds with `python -m build`
+* Snapshot extraction passes `filter='data'` on Python 3.12+
+* Added Taskfile tasks for `uv sync`, docs, lint, and tests
+* Refactored `benchmarks/`: renamed `external`/`internal` to
+  `format_comparison`/`table_operations`, applied clean-code structure
+  (shared helpers, explicit imports, PascalCase benchmark classes), and added
+  module docstrings
+* Added Taskfile benchmark tasks: `bench:format-comparison`,
+  `bench:table-operations`, and `bench:log`
+* Added ``tests/test_exceptions.py`` for hierarchy and message coverage
+* Added e2e workflow test and shared fixtures for astype, expected-table, and
+  hardcoded-table scenarios
+* Replaced test-suite star imports with explicit fixture imports; added `__all__`
+  to `tests/fixtures`
+* Applied ruff formatting across `featherstore`, `tests`, and `benchmarks`
+* Internal benchmark logs now write to `.dev/bmarks`
 
 Bugfixes:
 
-* Fixed intermittent `PermissionError` (WinError 32) on Windows when deleting
-  partition files during bulk cleanup (e.g. `drop_table()`); file removal now
-  retries `os.remove` instead of shelling out to `del`
 * Fixed silent data loss on repeated mid-table ``insert_rows`` caused by
   lossy partition-ID round-trips (fractional IDs collapsed when generating
   new mid-gap partition names)
-* Fixed ``reorder_columns`` / ``columns`` setter dropping the index name from
-  table metadata
-* Fixed ``rename_table`` allowing the forbidden ``.metadata`` name
+* Fixed intermittent `PermissionError` (WinError 32) on Windows when deleting
+  partition files during bulk cleanup (e.g. `drop_table()`); file removal now
+  retries `os.remove` instead of shelling out to `del`
 * Fixed snapshot restore with ``errors="ignore"`` leaving orphan partition
   files or tables behind
 * Fixed ``astype`` not refreshing ``index_dtype`` metadata when casting the
   index
 * Fixed stale ``num_columns`` / ``shape`` after inserting or dropping columns
+* Fixed ``reorder_columns`` / ``columns`` setter dropping the index name from
+  table metadata
+* Fixed ``rename_table`` allowing the forbidden ``.metadata`` name
 * Fixed ``database_exists`` not expanding ``~`` in paths
 * Fixed ``Indexer.keyword`` raising ``AttributeError`` for non-keyword dict
   keys
 * Fixed SQL ``LIKE`` patterns treating regex metacharacters as special and
   crashing on empty patterns
 * Fixed snapshot restore accepting invalid ``errors`` values
-
 
 0.2.1
 -----

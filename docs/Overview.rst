@@ -9,8 +9,8 @@ the necessary segments of data:
 
 * Partial reading of data
 * Append data
-* Insert rows and columns
-* Update data
+* Insert rows and columns (Pandas, Polars DataFrame, or PyArrow Table)
+* Update data (Pandas, Polars DataFrame, or PyArrow Table)
 * Drop data
 * Read metadata (including column names, indices, table dimensions, etc.)
 * Changing column types
