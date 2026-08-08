@@ -81,14 +81,14 @@ def _convert_to_polars(df, as_series, keep_index=False):
 def convert_expected(df, *, to, like=None):
     """Convert expected result for assertions.
 
-    Drops the default index when ``like`` has one. If ``like`` is omitted, drops
-    it when ``df`` itself has a default index after conversion.
+    Drops the default index when the converted expected value has one and either
+    ``like`` is omitted or it also has a default index.
     """
     as_series = to.startswith("pandas")
     expected = convert_table(df, to=to, as_series=as_series, keep_index=True)
     if as_series:
         return expected
-    if like is None or _has_default_index(like):
+    if _has_default_index(expected) and (like is None or _has_default_index(like)):
         return _drop_default_index(expected)
     return expected
 
@@ -103,6 +103,12 @@ def _has_default_index(df):
 
 
 def _drop_default_index(df):
+    if isinstance(df, (pl.Series, pd.Series)):
+        return df
+    if isinstance(df, pl.DataFrame) and DEFAULT_ARROW_INDEX_NAME not in df.columns:
+        return df
+    if isinstance(df, pa.Table) and DEFAULT_ARROW_INDEX_NAME not in df.column_names:
+        return df
     df = df.drop([DEFAULT_ARROW_INDEX_NAME])
     if isinstance(df, pl.DataFrame) and df.shape[1] == 1:
         df = df.to_series()

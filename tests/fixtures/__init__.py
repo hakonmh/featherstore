@@ -8,12 +8,12 @@ from ._utils import get_index_name
 from .assertions import assert_df_equals, assert_store_table_equal, assert_table_equals
 from .cast_table import change_dtype, to_arrow_dtype
 from .convert_table import convert_expected, convert_table
-from .hardcoded_table import (
-    apply_operations_to_expected,
-    build_e2e_operations,
-    make_hardcoded_table,
-    merge_rows,
-    shuffle_e2e_operations,
+from .edit_table import (
+    insert_column_names_at,
+    regenerate_values,
+    shuffle_cols,
+    sort_table,
+    update_table,
 )
 from .make_table import (
     continuous_datetime_index,
@@ -34,13 +34,6 @@ from .make_table import (
     unsorted_int_index,
     unsorted_string_index,
 )
-from .edit_table import (
-    insert_column_names_at,
-    regenerate_values,
-    shuffle_cols,
-    sort_table,
-    update_table,
-)
 from .misc import get_partition_size
 from .split_table import split_table
 
@@ -57,11 +50,9 @@ __all__ = [
     "STORE_NAME",
     "TABLE_NAME",
     "TABLE_PATH",
-    "apply_operations_to_expected",
     "assert_df_equals",
     "assert_store_table_equal",
     "assert_table_equals",
-    "build_e2e_operations",
     "change_dtype",
     "continuous_datetime_index",
     "continuous_string_index",
@@ -72,12 +63,9 @@ __all__ = [
     "get_index_name",
     "get_partition_size",
     "insert_column_names_at",
-    "make_hardcoded_table",
     "make_table",
-    "merge_rows",
     "regenerate_values",
     "shuffle_cols",
-    "shuffle_e2e_operations",
     "sort_table",
     "sorted_binary_index",
     "sorted_date32_index",
