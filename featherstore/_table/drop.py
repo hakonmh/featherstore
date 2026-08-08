@@ -5,7 +5,7 @@ import os
 import pyarrow as pa
 
 from featherstore import _utils
-from featherstore._table import _raise_if, _table_utils
+from featherstore._table import _partitions, _raise_if, _table_utils
 from featherstore._table._indexers import ColIndexer
 from featherstore._table.read import get_partition_names as _get_partition_names
 from featherstore.exceptions import (
@@ -102,7 +102,7 @@ def has_still_default_index(table, rows):
 
 
 def _idx_still_default_after_dropping_rows_before(rows, partition_metadata):
-    first_stored_value = _table_utils.get_first_stored_index_value(partition_metadata)
+    first_stored_value = _partitions.get_first_stored_index_value(partition_metadata)
     before = rows[0]
     no_values_are_removed = before < first_stored_value
     if no_values_are_removed:
@@ -113,8 +113,8 @@ def _idx_still_default_after_dropping_rows_before(rows, partition_metadata):
 
 
 def _idx_still_default_after_dropping_rows_between(rows, partition_metadata):
-    first_stored_value = _table_utils.get_first_stored_index_value(partition_metadata)
-    last_stored_value = _table_utils.get_last_stored_index_value(partition_metadata)
+    first_stored_value = _partitions.get_first_stored_index_value(partition_metadata)
+    last_stored_value = _partitions.get_last_stored_index_value(partition_metadata)
     after = rows[0]
     before = rows[1]
     start_after_table_end = after > last_stored_value
@@ -130,7 +130,7 @@ def _idx_still_default_after_dropping_rows_between(rows, partition_metadata):
 
 
 def _idx_still_default_after_dropping_rows_list(rows, partition_metadata):
-    last_stored_value = _table_utils.get_last_stored_index_value(partition_metadata)
+    last_stored_value = _partitions.get_last_stored_index_value(partition_metadata)
     rows = sorted(rows)
     last_row_value = rows[-1]
 
@@ -203,10 +203,9 @@ def drop_cols_from_data(df, cols):
 
 
 def create_partitions(df, rows_per_partition, partition_names):
-    partitions = _table_utils.make_partitions(df, rows_per_partition)
-    partition_names = partition_names[: len(partitions)]
-    partitions = _table_utils.assign_ids_to_partitions(partitions, partition_names)
-    return partitions
+    return _partitions.create_partitions(
+        df, rows_per_partition, partition_names, strategy="shrink"
+    )
 
 
 def get_partitions_to_drop(df, partition_names):

@@ -6,7 +6,7 @@ import pyarrow as pa
 from pyarrow import ipc
 
 from featherstore import _utils
-from featherstore._table import _raise_if, _table_utils, common
+from featherstore._table import _partitions, _raise_if, _table_utils, common
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore.exceptions import IndexNotInColumnsError
 
@@ -52,20 +52,10 @@ def _raise_if_provided_index_not_in_cols(index, cols):
 
 
 def create_partitions(df, rows_per_partition, partition_names=None):
-    partitions = _table_utils.make_partitions(df, rows_per_partition)
-    if partition_names is None:
-        partition_names = _make_partition_ids(partitions)
-    partitions = _table_utils.assign_ids_to_partitions(partitions, partition_names)
-    return partitions
-
-
-def _make_partition_ids(partitioned_df):
-    num_partitions = len(partitioned_df)
-    partition_ids = []
-    for partition_num in range(1, num_partitions + 1):
-        partition_id = _table_utils.convert_int_to_partition_id(partition_num)
-        partition_ids.append(partition_id)
-    return partition_ids
+    strategy = "new" if partition_names is None else "reuse"
+    return _partitions.create_partitions(
+        df, rows_per_partition, partition_names, strategy=strategy
+    )
 
 
 def generate_metadata(df, partition_size, rows_per_partition):

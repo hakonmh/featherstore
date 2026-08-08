@@ -9,12 +9,8 @@ import pyarrow as pa
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore.exceptions import (
     ColumnDtypeMismatchError,
-    PartitionCountMismatchError,
     RowNotFoundError,
 )
-
-PARTITION_NAME_LENGTH = 14
-INSERTION_BUFFER_LENGTH = 10**6
 
 SUPPORTED_TABLE_TYPES = (pd.DataFrame, pd.Series, pl.DataFrame, pl.Series, pa.Table)
 EDIT_TABLE_TYPES = (pd.DataFrame, pd.Series, pl.DataFrame, pa.Table)
@@ -132,106 +128,6 @@ def get_next_item(item, sequence):
     is_not_last_item = idx < (len(sequence) - 1)
     if is_not_last_item:
         return sequence[idx + 1]
-
-
-def make_partitions(df, rows_per_partition):
-    df = df.combine_chunks()
-    if rows_per_partition == -1:
-        partitions = _make_single_partition(df)
-    else:
-        partitions = df.to_batches(rows_per_partition)
-        partitions = _combine_small_partitions(partitions, rows_per_partition)
-        if len(partitions) == 0:
-            partitions = [pa.RecordBatch.from_pylist(df.to_pylist(), df.schema)]
-    return partitions
-
-
-def _make_single_partition(df):
-    return df.to_batches()
-
-
-def _combine_small_partitions(partitions, partition_size):
-    has_multiple_partitions = len(partitions) > 1
-    try:
-        size_of_last_partition = partitions[-1].num_rows
-    except IndexError:
-        size_of_last_partition = 0
-    min_partition_size = partition_size * 0.5
-
-    if has_multiple_partitions and size_of_last_partition < min_partition_size:
-        new_last_partition = _combine_last_two_partitions(partitions)
-        partitions = _replace_last_two_partitions(new_last_partition, partitions)
-    return partitions
-
-
-def _combine_last_two_partitions(partitions):
-    last_partition = pa.Table.from_batches(partitions[-2:])
-    last_partition = last_partition.combine_chunks()
-    return last_partition.to_batches()
-
-
-def _replace_last_two_partitions(new_last_partition, partitions):
-    partitions = partitions[:-2]
-    partitions.extend(new_last_partition)
-    return partitions
-
-
-def convert_int_to_partition_id(partition_id):
-    partition_id = int(partition_id * INSERTION_BUFFER_LENGTH)
-    format_string = f"0{PARTITION_NAME_LENGTH}d"
-    partition_id = format(partition_id, format_string)
-    return partition_id
-
-
-def convert_partition_id_to_float(partition_id):
-    return int(partition_id) / INSERTION_BUFFER_LENGTH
-
-
-def convert_partition_id_to_int(partition_id):
-    return int(partition_id) // INSERTION_BUFFER_LENGTH
-
-
-def add_new_partition_ids(partitions, partition_ids):
-    partition_ids = partition_ids.copy()
-    num_new_partition_ids = len(partitions) - len(partition_ids) + 1
-    partition_ids = append_new_partition_ids(num_new_partition_ids, partition_ids)
-    return sorted(partition_ids)
-
-
-def append_new_partition_ids(num_partitions, partition_ids):
-    last_partition_id = partition_ids[-1]
-
-    range_start = convert_partition_id_to_int(last_partition_id) + 1
-    range_end = range_start + num_partitions - 1
-
-    for partition_num in range(range_start, range_end):
-        partition_id = convert_int_to_partition_id(partition_num)
-        partition_ids.append(partition_id)
-    return partition_ids
-
-
-def assign_ids_to_partitions(df, ids):
-    if len(df) != len(ids):
-        raise PartitionCountMismatchError(
-            f"Num partitions doesn't match num partition names "
-            f"({len(df)} != {len(ids)})"
-        )
-    id_mapping = {}
-    for identifier, partition in zip(ids, df):
-        id_mapping[identifier] = partition
-    return id_mapping
-
-
-def get_first_stored_index_value(partition_metadata):
-    first_partition = partition_metadata.keys()[0]
-    first_stored_value = partition_metadata[first_partition]["min"]
-    return first_stored_value
-
-
-def get_last_stored_index_value(partition_metadata):
-    last_partition = partition_metadata.keys()[-1]
-    last_stored_value = partition_metadata[last_partition]["max"]
-    return last_stored_value
 
 
 def get_index_name(df):

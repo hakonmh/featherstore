@@ -134,6 +134,18 @@ def cols_does_not_match(df, table_data):
         )
 
 
+def provided_cols_do_not_match_stored(cols, table_data):
+    stored_cols = table_data["columns"].copy()
+    index_name = table_data["index_name"]
+    stored_cols.remove(index_name)
+
+    if set(stored_cols) != set(cols):
+        raise ColumnMismatchError(
+            "The columns provided doesn't match the columns stored "
+            f"(provided={sorted(cols)}, stored={sorted(stored_cols)})"
+        )
+
+
 def cols_not_in_table(cols, table_data):
     cols, stored_cols = _cols_like_stored(cols, table_data)
     missing = sorted(set(cols) - set(stored_cols))

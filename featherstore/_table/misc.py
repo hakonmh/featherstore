@@ -1,6 +1,5 @@
 from featherstore import store
 from featherstore._table import _raise_if
-from featherstore.exceptions import ColumnMismatchError
 
 
 def can_init_table(table_name, store_name):
@@ -27,17 +26,4 @@ def can_reorder_columns(table, cols):
     _raise_if.cols_argument_items_is_not_str_or_none(cols)
     _raise_if.index_in_cols(cols, table._table_data)
     _raise_if.col_names_contains_duplicates(cols)
-    _raise_if_cols_doesnt_match(cols, table._table_data)
-
-
-def _raise_if_cols_doesnt_match(cols, table_data):
-    stored_cols = table_data["columns"].copy()
-    index_name = table_data["index_name"]
-    stored_cols.remove(index_name)
-
-    cols_doesnt_match = set(stored_cols) != set(cols)
-    if cols_doesnt_match:
-        raise ColumnMismatchError(
-            "The columns provided doesn't match the columns stored "
-            f"(provided={sorted(cols)}, stored={sorted(stored_cols)})"
-        )
+    _raise_if.provided_cols_do_not_match_stored(cols, table._table_data)

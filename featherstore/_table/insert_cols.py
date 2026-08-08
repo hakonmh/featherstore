@@ -3,7 +3,7 @@ from numbers import Integral
 import pyarrow.compute as pc
 
 from featherstore import _utils
-from featherstore._table import _raise_if, _table_utils
+from featherstore._table import _partitions, _raise_if, _table_utils
 from featherstore.exceptions import IndexMismatchError
 
 
@@ -97,9 +97,7 @@ def _insert_columns_block(old_df, df, new_cols, index):
 
 
 def create_partitions(df, rows_per_partition, partition_names):
-    partitions = _table_utils.make_partitions(df, rows_per_partition)
-    new_partition_names = _table_utils.add_new_partition_ids(
-        partitions, partition_names
+    return _partitions.create_partitions(
+        df, rows_per_partition, partition_names, strategy="grow"
     )
-    partitions = _table_utils.assign_ids_to_partitions(partitions, new_partition_names)
-    return partitions
+

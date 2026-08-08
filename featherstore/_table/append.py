@@ -1,7 +1,7 @@
 import pyarrow as pa
 
 from featherstore import _utils
-from featherstore._table import _raise_if, _table_utils, common
+from featherstore._table import _partitions, _raise_if, _table_utils, common
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore.exceptions import AppendIndexError, MissingIndexError
 
@@ -79,9 +79,6 @@ def append_data(df, *, to):
 
 
 def create_partitions(df, rows_per_partition, last_partition_name):
-    partitions = _table_utils.make_partitions(df, rows_per_partition)
-    new_partition_names = _table_utils.append_new_partition_ids(
-        len(partitions), [last_partition_name]
+    return _partitions.create_partitions(
+        df, rows_per_partition, last_partition_name, strategy="append"
     )
-    partitions = _table_utils.assign_ids_to_partitions(partitions, new_partition_names)
-    return partitions

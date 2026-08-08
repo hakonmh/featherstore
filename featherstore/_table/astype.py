@@ -1,6 +1,6 @@
 import pyarrow as pa
 
-from featherstore._table import _raise_if, _table_utils
+from featherstore._table import _partitions, _raise_if
 
 
 def can_change_type(table, cols, astype):
@@ -62,18 +62,9 @@ def _convert_to_pa_dtype(dtype):
 
 
 def create_partitions(df, rows_per_partition, partition_names=None):
-    partitions = _table_utils.make_partitions(df, rows_per_partition)
-    partition_names = _add_or_remove_partition_ids(partitions, partition_names)
-    partitions = _table_utils.assign_ids_to_partitions(partitions, partition_names)
-    return partitions
-
-
-def _add_or_remove_partition_ids(partitions, partition_ids):
-    if len(partitions) < len(partition_ids):
-        partition_ids = partition_ids[: len(partitions)]
-    else:
-        partition_ids = _table_utils.add_new_partition_ids(partitions, partition_ids)
-    return partition_ids
+    return _partitions.create_partitions(
+        df, rows_per_partition, partition_names, strategy="grow"
+    )
 
 
 def get_partitions_to_drop(partitions, stored_names):
