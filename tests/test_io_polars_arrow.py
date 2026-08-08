@@ -6,8 +6,8 @@ from .fixtures import (
     assert_df_equals,
     assert_table_equals,
     continuous_datetime_index,
+    convert_expected,
     convert_table,
-    drop_default_index_if_exists,
     fake_default_index,
     get_index_name,
     get_partition_size,
@@ -33,10 +33,10 @@ def test_polars_arrow_filtering(store, index, rows, cols, astype):
     _, expected = split_table(
         original_df, rows=rows, cols=cols, index_name=index_name, keep_index=True
     )
+    expected = convert_expected(expected, to=astype, like=original_df)
     if index == fake_default_index:
         original_df = original_df.drop([DEFAULT_ARROW_INDEX_NAME])
         index_name = None
-        expected = drop_default_index_if_exists(expected)
 
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)
@@ -53,7 +53,7 @@ def test_polars_arrow_filtering(store, index, rows, cols, astype):
 def test_polars_and_arrow_to_pandas(store, astype, cols):
     # Arrange
     original_df = make_table(astype=astype, cols=cols)
-    expected = convert_table(original_df, to="pandas")
+    expected = convert_table(original_df, to="pandas", as_series=True)
 
     index_name = get_index_name(original_df)
     partition_size = get_partition_size(original_df)
@@ -78,7 +78,7 @@ def test_polars_series_io(store, rows, cols):
     # Arrange
     original_df = make_table(cols=1, astype="polars[series]")
     _, expected = split_table(original_df, rows=rows)
-    expected = drop_default_index_if_exists(expected)
+    expected = convert_expected(expected, to="polars")
 
     partition_size = get_partition_size(original_df)
     table = store.select_table(TABLE_NAME)

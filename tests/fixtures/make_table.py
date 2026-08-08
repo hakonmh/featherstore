@@ -1,3 +1,9 @@
+"""Generate synthetic random tables for tests.
+
+Put table factories, index generators, column dtype samplers, and anything
+that creates new test data from scratch here.
+"""
+
 import itertools
 from decimal import Decimal
 from string import ascii_letters, ascii_lowercase
@@ -109,38 +115,16 @@ def _make_bool_column(rows, rng=None):
 
 
 def _convert_df_to(df, *, to):
-    astype = to
-    if not astype.startswith("pandas"):
+    backend, as_series = _utils.parse_astype(to)
+    if backend != "pandas":
         df = pa.Table.from_pandas(df)
-        if not __is_default_index(df):
-            df = _utils.make_index_first_column(df)
+        df = _utils.format_arrow_table(df)
         df = _cast_time32_index_if_needed(df)
-    if astype.startswith("polars"):
+    if backend == "polars":
         df = pl.from_arrow(df)
-
-    if "[series]" in astype:
-        df = _squeeze_df(df)
+    if as_series:
+        df = _utils.squeeze_df(df)
     return df
-
-
-def _squeeze_df(df):
-    if isinstance(df, pl.DataFrame):
-        df = df.to_series()
-    elif isinstance(df, pd.DataFrame):
-        df = df.squeeze(axis=1)
-    return df
-
-
-def __is_default_index(df):
-    index_data = df.schema.pandas_metadata["index_columns"][0]
-    try:
-        if index_data["name"] is None and index_data["kind"] == "range":
-            is_default_index = True
-        else:
-            is_default_index = False
-    except (KeyError, TypeError, IndexError):
-        is_default_index = False
-    return is_default_index
 
 
 def default_index(rows):

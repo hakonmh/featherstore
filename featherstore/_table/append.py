@@ -1,7 +1,7 @@
 import pyarrow as pa
 
 from featherstore import _utils
-from featherstore._table import _raise_if, _table_utils, common
+from featherstore._table import _partitions, _raise_if, _table_utils, common
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore.exceptions import AppendIndexError, MissingIndexError
 
@@ -10,17 +10,17 @@ def can_append_table(table, df, warnings):
     _raise_if.not_connected_or_table_not_exists(table)
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
 
-    _raise_if.df_is_not_supported_table_type(df)
+    _raise_if.df_is_not_table_type(df, _table_utils.SUPPORTED_TABLE_TYPES)
 
     table_data = table._table_data
-    cols = _table_utils.get_col_names(df, has_default_index=False)
-    _raise_if.df_index_or_column_names_incompatible_with_stored(
+    index_name = table_data["index_name"]
+    cols = _table_utils.get_col_names(df, index_name=index_name)
+    _raise_if.incoming_index_schema_incompatible_with_stored(
         df, table_data, cols, check_index_values=False
     )
     _raise_if.cols_does_not_match(df, table_data)
 
     has_default_index = table_data["has_default_index"]
-    index_name = table_data["index_name"]
 
     index = _table_utils.get_index_if_exists(df, index_name)
     index_is_provided = index is not None
@@ -79,9 +79,6 @@ def append_data(df, *, to):
 
 
 def create_partitions(df, rows_per_partition, last_partition_name):
-    partitions = _table_utils.make_partitions(df, rows_per_partition)
-    new_partition_names = _table_utils.append_new_partition_ids(
-        len(partitions), [last_partition_name]
+    return _partitions.create_partitions(
+        df, rows_per_partition, last_partition_name, strategy="append"
     )
-    partitions = _table_utils.assign_ids_to_partitions(partitions, new_partition_names)
-    return partitions

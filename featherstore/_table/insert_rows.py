@@ -1,79 +1,41 @@
 import itertools
 
-import pyarrow as pa
-
-from featherstore._table import _raise_if, _table_utils
-from featherstore.exceptions import RowAlreadyExistsError
+from featherstore import _utils
+from featherstore._table import _partitions, _raise_if, _table_utils
 
 
-def can_insert_rows(table, df):
+def can_insert_rows(table, df, warnings):
     _raise_if.not_connected_or_table_not_exists(table)
-    _raise_if.df_is_not_pandas_table(df)
+    _utils.raise_if_warnings_argument_is_not_valid(warnings)
+    _raise_if.df_is_not_table_type(df, _table_utils.EDIT_TABLE_TYPES)
 
-    cols = _table_utils.get_pandas_column_names(df)
-    _raise_if.df_index_or_column_names_incompatible_with_stored(
-        df, table._table_data, cols
+    table_data = table._table_data
+    index_name = table_data["index_name"]
+    cols = _table_utils.get_col_names(df, index_name=index_name)
+    index = _table_utils.get_index_if_exists(df, index_name)
+    _raise_if.incoming_index_schema_incompatible_with_stored(
+        df, table_data, cols, index=index
     )
-    _raise_if.cols_does_not_match(df, table._table_data)
+    _raise_if.cols_does_not_match(df, table_data)
 
 
 def insert_data(df, *, to):
     index_name = _table_utils.get_index_name(df)
-    _raise_if_rows_in_old_data(to, df, index_name)
+    _raise_if.index_values_in_stored_data(to, df, index_name, all_must_be_in=False)
 
     df = _table_utils.concat_arrow_tables(to, df)
     df = _table_utils.sort_arrow_table(df, by=index_name)
     return df
 
 
-def _raise_if_rows_in_old_data(old_df, df, index_name):
-    index = df[index_name]
-    old_index = old_df[index_name]
-
-    is_in = pa.compute.is_in(index, value_set=old_index)
-    rows_in_old_df = pa.compute.any(is_in).as_py()
-    if rows_in_old_df:
-        raise RowAlreadyExistsError("Some rows already in stored table")
-
-
 def create_partitions(df, rows_per_partition, partition_names, all_partition_names):
-    partitions = _table_utils.make_partitions(df, rows_per_partition)
-    new_partition_names = _insert_new_partition_ids(
-        partitions, partition_names, all_partition_names
+    return _partitions.create_partitions(
+        df,
+        rows_per_partition,
+        partition_names,
+        strategy="insert",
+        all_partition_names=all_partition_names,
     )
-    partitions = _table_utils.assign_ids_to_partitions(partitions, new_partition_names)
-    return partitions
-
-
-def _insert_new_partition_ids(partitioned_df, partition_names, all_partition_names):
-    num_partitions = len(partitioned_df)
-    num_partition_names = len(partition_names)
-    num_names_to_make = num_partitions - num_partition_names
-    subsequent_partition = _table_utils.get_next_item(
-        item=partition_names[-1], sequence=all_partition_names
-    )
-    new_partition_names = _make_partition_names(
-        num_names_to_make, partition_names, subsequent_partition
-    )
-    return new_partition_names
-
-
-def _make_partition_names(num_names, partition_names, subsequent_partition):
-    last_id = _table_utils.convert_partition_id_to_float(partition_names[-1])
-    subsequent_partition_exists = subsequent_partition is not None
-    if subsequent_partition_exists:
-        subsequent_id = _table_utils.convert_partition_id_to_float(subsequent_partition)
-        increment = (subsequent_id - last_id) / (num_names + 1)
-    else:  # Called only when partition_names[-1] is the end of the table
-        increment = 1
-
-    new_partition_names = partition_names.copy()
-    for partition_num in range(1, num_names + 1):
-        new_partition_id = last_id + increment * partition_num
-        new_partition_id = _table_utils.convert_int_to_partition_id(new_partition_id)
-        new_partition_names.append(new_partition_id)
-
-    return sorted(new_partition_names)
 
 
 def has_still_default_index(table, df):
@@ -83,7 +45,7 @@ def has_still_default_index(table, df):
 
     index_name = table._table_data["index_name"]
     rows = df[index_name]
-    last_stored_value = _table_utils.get_last_stored_index_value(table._partition_data)
+    last_stored_value = _partitions.get_last_stored_index_value(table._partition_data)
     first_row_value = rows[0].as_py()
 
     rows_are_continuous = all(

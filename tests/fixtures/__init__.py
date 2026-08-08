@@ -1,17 +1,19 @@
+"""Public re-exports and shared constants for the test fixture package."""
+
 from os.path import join
 
-from featherstore._utils import DB_MARKER_NAME, DEFAULT_ARROW_INDEX_NAME
+from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 
 from ._utils import get_index_name
 from .assertions import assert_df_equals, assert_store_table_equal, assert_table_equals
 from .cast_table import change_dtype, to_arrow_dtype
-from .convert_table import convert_table
-from .expected_table import insert_column_names_at, insert_columns_expected, merge_rows
-from .hardcoded_table import (
-    apply_operations_to_expected,
-    build_e2e_operations,
-    make_hardcoded_table,
-    shuffle_e2e_operations,
+from .convert_table import convert_expected, convert_table
+from .edit_table import (
+    insert_column_names_at,
+    regenerate_values,
+    shuffle_cols,
+    sort_table,
+    update_table,
 )
 from .make_table import (
     continuous_datetime_index,
@@ -29,20 +31,11 @@ from .make_table import (
     sorted_time32_index,
     sorted_timedelta_index,
     sorted_uint_index,
-    unsorted_datetime_index,
     unsorted_int_index,
     unsorted_string_index,
 )
-from .misc import (
-    df_has_default_index,
-    drop_default_index_if_exists,
-    format_arrow_table,
-    get_partition_size,
-    shuffle_cols,
-    sort_table,
-)
+from .misc import get_partition_size
 from .split_table import split_table
-from .update_values import update_values
 
 DB_PATH = join("tests", "_db")
 STORE_NAME = "test_store"
@@ -51,36 +44,28 @@ TABLE_PATH = join(DB_PATH, STORE_NAME, TABLE_NAME)
 MD_NAME = "db"
 
 __all__ = [
-    "DB_MARKER_NAME",
     "DB_PATH",
     "DEFAULT_ARROW_INDEX_NAME",
     "MD_NAME",
     "STORE_NAME",
     "TABLE_NAME",
     "TABLE_PATH",
-    "apply_operations_to_expected",
     "assert_df_equals",
     "assert_store_table_equal",
     "assert_table_equals",
-    "build_e2e_operations",
     "change_dtype",
     "continuous_datetime_index",
     "continuous_string_index",
+    "convert_expected",
     "convert_table",
     "default_index",
-    "df_has_default_index",
-    "drop_default_index_if_exists",
     "fake_default_index",
-    "format_arrow_table",
     "get_index_name",
     "get_partition_size",
     "insert_column_names_at",
-    "insert_columns_expected",
-    "make_hardcoded_table",
     "make_table",
-    "merge_rows",
+    "regenerate_values",
     "shuffle_cols",
-    "shuffle_e2e_operations",
     "sort_table",
     "sorted_binary_index",
     "sorted_date32_index",
@@ -94,8 +79,7 @@ __all__ = [
     "sorted_uint_index",
     "split_table",
     "to_arrow_dtype",
-    "unsorted_datetime_index",
     "unsorted_int_index",
     "unsorted_string_index",
-    "update_values",
+    "update_table",
 ]

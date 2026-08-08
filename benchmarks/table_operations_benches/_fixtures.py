@@ -239,50 +239,72 @@ def _select_col_groups(df, cols, not_cols):
 
 
 def update_values(df, index_name="index"):
-    df = copy.copy(df)
-    col_names = df.column_names if isinstance(df, pa.Table) else df.columns
-    for col_name in col_names:
-        if col_name == index_name:
-            continue
-        col = df[col_name].to_numpy()
-        col = _update_col(col)
+    """Replace data-column values with new samples of the same dtype.
 
-        if isinstance(df, pa.Table):
-            col_idx = col_names.index(col_name)
-            df = df.set_column(col_idx, col_name, pa.array(col))
-        elif isinstance(df, pl.DataFrame):
-            col = pl.Series(col_name, col)
-            df = df.with_columns(col)
-        elif isinstance(df, (pd.DataFrame, pd.Series)):
-            df[col_name] = col
+    The index column is left unchanged.
+    """
+    df = copy.copy(df)
+
+    if isinstance(df, pd.Series):
+        return _update_pandas_series(df)
+    if isinstance(df, pd.DataFrame):
+        return _update_pandas_dataframe(df, index_name)
+    if isinstance(df, pl.DataFrame):
+        return _update_polars_dataframe(df, index_name)
+    if isinstance(df, pa.Table):
+        return _update_arrow_table(df, index_name)
+    raise TypeError(f"Unsupported type: {type(df)!r}")
+
+
+def _update_pandas_series(series):
+    series[:] = _regenerate_values(series.to_numpy())
+    return series
+
+
+def _update_pandas_dataframe(df, index_name):
+    for col_name in _data_column_names(df, index_name):
+        df[col_name] = _regenerate_values(df[col_name].to_numpy())
     return df
 
 
-def _update_col(df):
-    dtype = _get_dtype(df)
+def _update_polars_dataframe(df, index_name):
+    for col_name in _data_column_names(df, index_name):
+        updated = _regenerate_values(df[col_name].to_numpy())
+        df = df.with_columns(pl.Series(col_name, updated))
+    return df
+
+
+def _update_arrow_table(table, index_name):
+    for col_name in _data_column_names(table, index_name):
+        updated = _regenerate_values(table[col_name].to_numpy())
+        col_idx = table.column_names.index(col_name)
+        table = table.set_column(col_idx, col_name, pa.array(updated))
+    return table
+
+
+def _data_column_names(df, index_name):
+    col_names = df.column_names if isinstance(df, pa.Table) else df.columns
+    return [name for name in col_names if name != index_name]
+
+
+def _regenerate_values(values):
+    dtype = _numpy_dtype_name(values)
     make_col = COL_DTYPES[dtype]
-    rows = df.shape[0]
-    return make_col(rows)
+    return make_col(values.shape[0])
 
 
-def _get_dtype(df):
-    dtype = df.dtype.kind
-
-    if dtype == "i":
-        if df.min() < 0:
-            dtype = "int"
-        else:
-            dtype = "uint"
-    elif dtype == "f":
-        dtype = "float"
-    elif dtype == "b":
-        dtype = "bool"
-    elif dtype == "O":
-        dtype = "string"
-    elif dtype == "M":
-        dtype = "datetime"
-
-    return dtype
+def _numpy_dtype_name(values):
+    kind_to_name = {
+        "i": "int",
+        "f": "float",
+        "b": "bool",
+        "O": "string",
+        "M": "datetime",
+    }
+    name = kind_to_name[values.dtype.kind]
+    if name == "int" and values.min() >= 0:
+        return "uint"
+    return name
 
 
 def to_pa_dtype(dtype):

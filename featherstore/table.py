@@ -316,7 +316,7 @@ class Table:
 
         Parameters
         ----------
-        df : Pandas DataFrame or Pandas Series
+        df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
             The updated data. The index of `df` is the rows to be updated, while
             the columns of `df` are the new values.
 
@@ -341,7 +341,7 @@ class Table:
         RowNotFoundError
             If any row is not in the stored table.
         TypeError
-            If ``df`` is not a Pandas DataFrame or Series.
+            If ``df`` is not a supported table type.
         """
         update.can_update_table(self, df)
 
@@ -349,18 +349,18 @@ class Table:
         index_type = self._table_data["index_dtype"]
         rows_per_partition = self._table_data["rows_per_partition"]
 
-        rows = common.format_rows_arg(df.index, to_dtype=index_type)
+        df = common.format_table(df, index_name=index_name, warnings=False)
+        rows = common.format_rows_arg(df[index_name].to_pylist(), to_dtype=index_type)
 
         partition_names = read.get_partition_names(self, rows)
         stored_df = read.read_table(self, partition_names)
 
         df = update.update_data(stored_df, to=df)
-        df = common.format_table(df, index_name=index_name, warnings=False)
         partitions = write.create_partitions(df, rows_per_partition, partition_names)
 
         write.write_partitions(partitions, self._table_path)
 
-    def insert(self, df, *, idx=-1):
+    def insert(self, df, *, idx=-1, warnings="warn"):
         """Insert one or more rows or columns into the current table.
 
         If ``df`` column names match the stored table, rows are inserted.
@@ -368,12 +368,15 @@ class Table:
 
         Parameters
         ----------
-        df : Pandas DataFrame or Pandas Series
+        df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
             The data to be inserted.
         idx : int or Sequence[int], optional
             The position(s) to insert new column(s). Only valid when inserting
             columns. If a sequence is provided, it must have one position per new
             column. Default is to add columns to the end.
+        warnings : str, optional
+            Whether or not to warn if a unsorted index is about to get sorted.
+            Can be either `warn` or `ignore`, by default `warn`
 
         Raises
         ------
@@ -383,18 +386,21 @@ class Table:
         """
         insert.can_insert(df, self._table_data, idx)
         if insert.cols_matches_table_cols(df, self._table_data):
-            self.insert_rows(df)
+            self.insert_rows(df, warnings=warnings)
         else:
-            self.insert_columns(df, idx=idx)
+            self.insert_columns(df, idx=idx, warnings=warnings)
 
-    def insert_rows(self, df):
+    def insert_rows(self, df, *, warnings="warn"):
         """Insert one or more rows into the current table.
 
         Parameters
         ----------
-        df : Pandas DataFrame or Pandas Series
+        df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
             The data to be inserted. `df` must have the same index and column
             types as the stored data.
+        warnings : str, optional
+            Whether or not to warn if a unsorted index is about to get sorted.
+            Can be either `warn` or `ignore`, by default `warn`
 
         Raises
         ------
@@ -417,20 +423,21 @@ class Table:
         RowAlreadyExistsError
             If any row already exists in the stored table.
         TypeError
-            If ``df`` is not a Pandas DataFrame or Series.
+            If ``df`` is not a supported table type.
+        ValueError
+            If ``warnings`` is invalid.
         """
-        insert_rows.can_insert_rows(self, df)
+        insert_rows.can_insert_rows(self, df, warnings)
 
         index_name = self._table_data["index_name"]
         index_type = self._table_data["index_dtype"]
         rows_per_partition = self._table_data["rows_per_partition"]
         all_partition_names = self._partition_data.keys()
 
-        rows = common.format_rows_arg(df.index, to_dtype=index_type)
-
-        df = common.format_table(df, index_name=index_name, warnings="ignore")
+        df = common.format_table(df, index_name=index_name, warnings=warnings)
         has_default_index = insert_rows.has_still_default_index(self, df)
 
+        rows = common.format_rows_arg(df[index_name].to_pylist(), to_dtype=index_type)
         partition_names = read.get_partition_names(self, rows)
         stored_df = read.read_table(self, partition_names)
 
@@ -446,17 +453,20 @@ class Table:
         write.write_metadata(self, metadata)
         write.write_partitions(partitions, self._table_path)
 
-    def insert_columns(self, df, *, idx=-1):
+    def insert_columns(self, df, *, idx=-1, warnings="warn"):
         """Insert one or more columns into the current table.
 
         Parameters
         ----------
-        df : Pandas DataFrame or Pandas Series
+        df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
             The data to be inserted. `df` must have the same index as the stored data.
         idx : int or Sequence[int], optional
             The position(s) to insert the new column(s). If a sequence is provided,
             it must have one position per new column. Default is to add columns to
             the end.
+        warnings : str, optional
+            Whether or not to warn if a unsorted index is about to get sorted.
+            Can be either `warn` or `ignore`, by default `warn`
 
         Raises
         ------
@@ -479,18 +489,20 @@ class Table:
         TypeError
             If ``df`` or ``idx`` has an invalid type.
         ValueError
-            If ``idx`` length does not match the number of new columns.
+            If ``idx`` length does not match the number of new columns, or
+            ``warnings`` is invalid.
         """
-        insert_cols.can_insert_columns(self, df, idx)
+        insert_cols.can_insert_columns(self, df, idx, warnings)
 
         index_name = self._table_data["index_name"]
         partition_size = self._table_data["partition_size"]
+
+        df = common.format_table(df, index_name=index_name, warnings=warnings)
 
         partition_names = read.get_partition_names(self, None)
         stored_df = read.read_table(self, partition_names)
 
         df = insert_cols.insert_columns(stored_df, df, index=idx)
-        df = common.format_table(df, index_name=index_name, warnings=False)
 
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
         columns = df.column_names

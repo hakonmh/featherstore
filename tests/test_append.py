@@ -17,7 +17,6 @@ from .fixtures import (
     assert_table_equals,
     convert_table,
     default_index,
-    format_arrow_table,
     get_index_name,
     get_partition_size,
     make_table,
@@ -84,7 +83,6 @@ def test_append_custom_values_to_default_index(store):
     expected = pd.concat([original_df, append_df1, append_df2])
     expected = sort_table(expected)
     expected = convert_table(expected, to="arrow")
-    expected = format_arrow_table(expected)
 
     table = store.select_table(TABLE_NAME)
     table.write(original_df)

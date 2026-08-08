@@ -6,7 +6,7 @@ import pyarrow as pa
 from pyarrow import ipc
 
 from featherstore import _utils
-from featherstore._table import _raise_if, _table_utils, common
+from featherstore._table import _partitions, _raise_if, _table_utils, common
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from featherstore.exceptions import IndexNotInColumnsError
 
@@ -19,9 +19,9 @@ def can_write_table(table, df, index_name, partition_size, errors, warnings):
 
     if errors == "raise":
         _raise_if.table_already_exists(table._table_path)
-    _raise_if.df_is_not_supported_table_type(df)
+    _raise_if.df_is_not_table_type(df, _table_utils.SUPPORTED_TABLE_TYPES)
 
-    cols = _table_utils.get_col_names(df, has_default_index=False)
+    cols = _table_utils.get_col_and_index_names(df, has_default_index=False)
     _raise_if_index_argument_is_not_str_or_none(index_name)
     _raise_if_provided_index_not_in_cols(index_name, cols)
     _raise_if.cols_argument_items_is_not_str_or_none(cols)
@@ -52,20 +52,10 @@ def _raise_if_provided_index_not_in_cols(index, cols):
 
 
 def create_partitions(df, rows_per_partition, partition_names=None):
-    partitions = _table_utils.make_partitions(df, rows_per_partition)
-    if partition_names is None:
-        partition_names = _make_partition_ids(partitions)
-    partitions = _table_utils.assign_ids_to_partitions(partitions, partition_names)
-    return partitions
-
-
-def _make_partition_ids(partitioned_df):
-    num_partitions = len(partitioned_df)
-    partition_ids = []
-    for partition_num in range(1, num_partitions + 1):
-        partition_id = _table_utils.convert_int_to_partition_id(partition_num)
-        partition_ids.append(partition_id)
-    return partition_ids
+    strategy = "new" if partition_names is None else "reuse"
+    return _partitions.create_partitions(
+        df, rows_per_partition, partition_names, strategy=strategy
+    )
 
 
 def generate_metadata(df, partition_size, rows_per_partition):

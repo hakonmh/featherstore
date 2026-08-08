@@ -1,3 +1,9 @@
+"""Split tables into row or column subsets for test inputs.
+
+Put helpers that partition a table into kept and remainder parts by labels,
+positions, or column names here.
+"""
+
 import re
 from collections.abc import Iterable
 
@@ -42,7 +48,7 @@ def split_cols(df, cols, index_name=None, keep_index=False):
 
 
 def split_col_arg(df, cols):
-    df_cols = _utils.get_col_names(df, index=False)
+    df_cols = _utils.get_col_names(df)
     if isinstance(cols, dict):
         cols = _filter_items_like_pattern(cols, df_cols)
     not_cols = [c for c in df_cols if c not in cols]

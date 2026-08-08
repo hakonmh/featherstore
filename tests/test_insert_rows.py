@@ -1,3 +1,5 @@
+import warnings
+
 import pandas as pd
 import pytest
 
@@ -16,10 +18,11 @@ from .fixtures import (
     assert_table_equals,
     continuous_datetime_index,
     continuous_string_index,
+    convert_table,
     default_index,
+    get_index_name,
     get_partition_size,
     make_table,
-    merge_rows,
     sort_table,
     sorted_float_index,
     sorted_string_index,
@@ -43,17 +46,55 @@ DROPPED_ROWS_INDICES = [2, 5, 7, 10]
     ["num_rows", "num_cols", "num_partitions"],
     [[75, 5, 5], [75, 5, 30], [30, 1, 1], [30, 1, 5]],
 )
-def test_insert_table(store, index, row_indices, num_rows, num_cols, num_partitions):
+@pytest.mark.parametrize("astype", ["pandas", "polars", "arrow"])
+def test_insert_table(
+    store, index, row_indices, num_rows, num_cols, num_partitions, astype
+):
     # Arrange
-    expected = make_table(index, rows=num_rows, cols=num_cols, astype="pandas[series]")
-    original_df, insert_df = split_table(expected, rows=row_indices)
-    expected = sort_table(expected)
+    as_series = astype.startswith("pandas")
+
+    expected_pd = make_table(index, rows=num_rows, cols=num_cols, astype="pandas")
+    original_pd, insert_pd = split_table(expected_pd, rows=row_indices)
+    expected_pd = sort_table(expected_pd)
+
+    original_df = convert_table(original_pd, to=astype, keep_index=True)
+    insert_df = convert_table(insert_pd, to=astype, keep_index=True)
+    expected = convert_table(
+        expected_pd, to=astype, as_series=as_series, keep_index=True
+    )
 
     partition_size = get_partition_size(original_df, num_partitions)
     table = store.select_table(TABLE_NAME)
-    table.write(original_df, partition_size=partition_size, warnings="ignore")
+    table.write(
+        original_df,
+        partition_size=partition_size,
+        warnings="ignore",
+        index=get_index_name(original_df),
+    )
     # Act
-    table.insert_rows(insert_df)
+    table.insert_rows(insert_df, warnings="ignore")
+    # Assert
+    assert_table_equals(table, expected)
+
+
+@pytest.mark.parametrize(
+    ["index", "row_indices"],
+    [
+        [default_index, [4, 1, 7, 8, 3]],
+        [continuous_string_index, ["ab", "al"]],
+        [continuous_datetime_index, ["2021-01-10", "2021-01-14"]],
+    ],
+)
+def test_insert_series(store, index, row_indices):
+    # Arrange
+    expected = make_table(index, rows=30, cols=1, astype="pandas[series]")
+    original_df, insert_df = split_table(expected, rows=row_indices)
+    expected = sort_table(expected)
+
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, warnings="ignore")
+    # Act
+    table.insert_rows(insert_df, warnings="ignore")
     # Assert
     assert_table_equals(table, expected)
 
@@ -65,15 +106,22 @@ def test_default_index_behavior_when_inserting(store, row_indices):
     insert_df = make_table(default_index, rows=len(row_indices), astype="pandas")
     insert_df.index = row_indices
 
-    expected = merge_rows(original_df, insert_df, as_arrow=True)
+    expected = _insert_rows(original_df, insert_df)
 
     partition_size = get_partition_size(original_df, 5)
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size, warnings="ignore")
     # Act
-    table.insert_rows(insert_df)
+    table.insert_rows(insert_df, warnings="ignore")
     # Assert
     assert_table_equals(table, expected)
+
+
+def _insert_rows(df, other):
+    expected = pd.concat([df, other])
+    expected = sort_table(expected)
+    expected = convert_table(expected, to="arrow")
+    return expected
 
 
 @pytest.mark.parametrize("num_partitions", [17, 30])
@@ -91,15 +139,41 @@ def test_insert_rows_with_successive_mid_table_inserts(store, num_partitions):
     table = store.select_table(TABLE_NAME)
     table.write(original_df, partition_size=partition_size, warnings="ignore")
     # Act
-    table.insert_rows(first_insert)
-    table.insert_rows(second_insert)
+    table.insert_rows(first_insert, warnings="ignore")
+    table.insert_rows(second_insert, warnings="ignore")
     # Assert
     assert_table_equals(table, expected)
 
 
-def _insert_table_not_pd_table():
-    df = make_table(astype="polars")
-    return df
+def test_insert_rows_warns_on_unsorted_index(store):
+    # Arrange
+    expected = make_table(rows=30, cols=3, astype="pandas")
+    original_df, insert_df = split_table(expected, rows=[4, 1, 7])
+    insert_df = insert_df.iloc[::-1]
+
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, warnings="ignore")
+    # Act and Assert
+    with pytest.warns(UserWarning, match="unsorted"):
+        table.insert_rows(insert_df, warnings="warn")
+
+
+def test_insert_rows_can_ignore_unsorted_index_warning(store):
+    # Arrange
+    expected = make_table(rows=30, cols=3, astype="pandas")
+    original_df, insert_df = split_table(expected, rows=[4, 1, 7])
+    insert_df = insert_df.iloc[::-1]
+
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, warnings="ignore")
+    # Act and Assert
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        table.insert_rows(insert_df, warnings="ignore")
+
+
+def _insert_table_not_supported_type():
+    return make_table(cols=1, astype="polars[series]")
 
 
 def _non_matching_index_dtype():
@@ -149,7 +223,7 @@ def _duplicate_column_names():
 @pytest.mark.parametrize(
     ("insert_df", "exception"),
     [
-        (_insert_table_not_pd_table, TypeError),
+        (_insert_table_not_supported_type, TypeError),
         (_non_matching_index_dtype, IndexTypeMismatchError),
         (_non_matching_column_dtypes, ColumnDtypeMismatchError),
         (_index_values_already_in_stored_data, RowAlreadyExistsError),
@@ -159,7 +233,7 @@ def _duplicate_column_names():
         (_duplicate_column_names, DuplicateColumnNamesError),
     ],
     ids=[
-        "_insert_table_not_pd_table",
+        "_insert_table_not_supported_type",
         "_non_matching_index_dtype",
         "_non_matching_column_dtypes",
         "_index_values_already_in_stored_data",
@@ -179,3 +253,15 @@ def test_can_insert_rows(store, insert_df, exception):
     # Act and Assert
     with pytest.raises(exception):
         table.insert_rows(insert_df)
+
+
+def test_insert_rows_rejects_invalid_warnings(store):
+    # Arrange
+    original_df = make_table(cols=5, astype="pandas")
+    insert_df = original_df.iloc[DROPPED_ROWS_INDICES, :].copy()
+    original_df = original_df.drop(index=DROPPED_ROWS_INDICES)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df)
+    # Act and Assert
+    with pytest.raises(ValueError):
+        table.insert_rows(insert_df, warnings="abcd")

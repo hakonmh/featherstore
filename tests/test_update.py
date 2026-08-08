@@ -1,6 +1,3 @@
-import warnings
-
-import pandas as pd
 import pytest
 
 from featherstore.exceptions import (
@@ -15,16 +12,19 @@ from featherstore.exceptions import (
 
 from .fixtures import (
     TABLE_NAME,
-    assert_df_equals,
     assert_table_equals,
     continuous_datetime_index,
     continuous_string_index,
+    convert_expected,
+    convert_table,
     default_index,
+    get_index_name,
     get_partition_size,
     make_table,
+    regenerate_values,
     sorted_string_index,
     split_table,
-    update_values,
+    update_table,
 )
 
 
@@ -43,11 +43,39 @@ from .fixtures import (
         ),
     ],
 )
-def test_update_table(store, index, rows, cols, num_cols):
+@pytest.mark.parametrize("astype", ["pandas", "polars", "arrow"])
+def test_update_table(store, index, rows, cols, num_cols, astype):
     # Arrange
-    original_df = make_table(index, cols=num_cols, astype="pandas[series]")
-    _, update_df = split_table(original_df, rows=rows, cols=cols)
-    update_df = update_values(update_df)
+    original_pd = make_table(index, cols=num_cols, astype="pandas")
+    _, update_pd = split_table(original_pd, rows=rows, cols=cols)
+    update_pd = regenerate_values(update_pd)
+    expected_pd = update_table(original_pd, update_pd)
+
+    original_df = convert_table(original_pd, to=astype)
+    update_df = convert_table(update_pd, to=astype, keep_index=True)
+    expected = convert_expected(expected_pd, to=astype, like=original_pd)
+
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, index=get_index_name(original_df))
+    # Act
+    table.update(update_df)
+    # Assert
+    assert_table_equals(table, expected)
+
+
+@pytest.mark.parametrize(
+    ["index", "rows"],
+    [
+        (default_index, [10, 13, 14, 21]),
+        (continuous_string_index, ["al", "aj", "ba", "af"]),
+        (continuous_datetime_index, ["2021-01-01", "2021-01-16", "2021-01-07"]),
+    ],
+)
+def test_update_series(store, index, rows):
+    # Arrange
+    original_df = make_table(index, cols=1, astype="pandas[series]")
+    _, update_df = split_table(original_df, rows=rows)
+    update_df = regenerate_values(update_df)
     expected = update_table(original_df, update_df)
 
     table = store.select_table(TABLE_NAME)
@@ -55,23 +83,7 @@ def test_update_table(store, index, rows, cols, num_cols):
     # Act
     table.update(update_df)
     # Assert
-    df = table.read_pandas()
-    assert_df_equals(df, expected)
-    assert not df.equals(original_df)
-
-
-def update_table(df, update_df):
-    expected = df.copy()
-    rows = update_df.index
-    if isinstance(df, pd.Series):
-        expected.loc[rows] = update_df
-    else:
-        cols = update_df.columns
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            expected.loc[rows, cols] = update_df
-    return expected
+    assert_table_equals(table, expected)
 
 
 @pytest.mark.parametrize(["num_partitions", "rows"], [(7, 30), (3, 125), (27, 36)])
@@ -79,8 +91,9 @@ def test_partition_structure_after_update_table(store, num_partitions, rows):
     # Arrange
     original_df = make_table(rows=rows, astype="pandas")
     original_df.index.name = "index"
+
     _, update_df = split_table(original_df, rows=(10, 13, 14, 21), cols=["c2", "c0"])
-    update_df = update_values(update_df)
+    update_df = regenerate_values(update_df)
     expected = update_table(original_df, update_df)
 
     partition_size = get_partition_size(original_df, num_partitions)
@@ -93,11 +106,14 @@ def test_partition_structure_after_update_table(store, num_partitions, rows):
     table.update(update_df)
     # Assert
     assert_table_equals(table, expected)
-    _assert_that_partitions_are_the_same(table, partition_names, partition_data)
+    _assert_partitions_are_same_structure_after_update(
+        table, partition_names=partition_names, partition_data=partition_data
+    )
 
 
-def _assert_that_partitions_are_the_same(table, partition_names, partition_data):
-    # Check that partitions keep the same structure after update
+def _assert_partitions_are_same_structure_after_update(
+    table, *, partition_names, partition_data
+):
     df = table.read_arrow()
     index = df["index"]
     for partition, partition_name in zip(index.chunks, partition_names):
@@ -112,9 +128,8 @@ def _assert_that_partitions_are_the_same(table, partition_names, partition_data)
         assert num_rows == metadata["num_rows"]
 
 
-def _update_table_not_pd_table():
-    df = make_table(astype="polars")
-    return df
+def _update_table_not_supported_type():
+    return make_table(cols=1, astype="polars[series]")
 
 
 def _non_matching_index_dtype():
@@ -168,7 +183,7 @@ def _duplicate_column_names():
 @pytest.mark.parametrize(
     ("update_df", "exception"),
     [
-        (_update_table_not_pd_table, TypeError),
+        (_update_table_not_supported_type, TypeError),
         (_non_matching_index_dtype, IndexTypeMismatchError),
         (_non_matching_column_dtypes, ColumnDtypeMismatchError),
         (_index_not_in_table, RowNotFoundError),
@@ -178,7 +193,7 @@ def _duplicate_column_names():
         (_duplicate_column_names, DuplicateColumnNamesError),
     ],
     ids=[
-        "_update_table_not_pd_table",
+        "_update_table_not_supported_type",
         "_non_matching_index_dtype",
         "_non_matching_column_dtypes",
         "_index_not_in_table",

@@ -1,5 +1,6 @@
 # This workflow will install Python dependencies, run tests and lint on Python 3.11
 # with the minimum versions of the dependencies on Ubuntu.
+# Mirrors: task test:all, task lint:fix, task docs:lint
 
 name: Ubuntu Tests
 
@@ -24,11 +25,14 @@ jobs:
         no-project: true
     - name: Install dependencies
       run: |
-        uv pip install pytest ruff pyarrow==14.0.0 pandas==2.2.0 'polars[timezone]==1.21.0'
+        uv pip install pytest ruff numpy doc8 pyarrow==14.0.0 pandas==2.2.0 'polars[timezone]==1.21.0'
         uv pip install -e .
     - name: Test with pytest
-      run: uv run pytest
+      run: bash .scripts/tests/run_all_tests.sh
     - name: Lint with ruff
       run: |
-        uv run ruff check featherstore tests
-        uv run ruff format --check featherstore tests
+        uv run ruff check --fix featherstore tests
+        uv run ruff format featherstore tests
+    - name: Lint docs
+      working-directory: docs
+      run: uv run doc8 --ignore-path _build/html --ignore D000,D004,D005 --max-line-length 120
