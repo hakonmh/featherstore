@@ -1,3 +1,5 @@
+"""Public re-exports and shared constants for the test fixture package."""
+
 from os.path import join
 
 from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
@@ -5,17 +7,12 @@ from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 from ._utils import get_index_name
 from .assertions import assert_df_equals, assert_store_table_equal, assert_table_equals
 from .cast_table import change_dtype, to_arrow_dtype
-from .convert_table import convert_table
-from .expected_table import (
-    convert_expected,
-    insert_column_names_at,
-    merge_rows,
-    update_table,
-)
+from .convert_table import convert_expected, convert_table
 from .hardcoded_table import (
     apply_operations_to_expected,
     build_e2e_operations,
     make_hardcoded_table,
+    merge_rows,
     shuffle_e2e_operations,
 )
 from .make_table import (
@@ -37,13 +34,15 @@ from .make_table import (
     unsorted_int_index,
     unsorted_string_index,
 )
-from .misc import (
-    get_partition_size,
+from .edit_table import (
+    insert_column_names_at,
+    regenerate_values,
     shuffle_cols,
     sort_table,
+    update_table,
 )
+from .misc import get_partition_size
 from .split_table import split_table
-from .update_values import replace_values
 
 DB_PATH = join("tests", "_db")
 STORE_NAME = "test_store"
@@ -76,7 +75,7 @@ __all__ = [
     "make_hardcoded_table",
     "make_table",
     "merge_rows",
-    "replace_values",
+    "regenerate_values",
     "shuffle_cols",
     "shuffle_e2e_operations",
     "sort_table",

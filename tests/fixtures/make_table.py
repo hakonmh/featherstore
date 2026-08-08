@@ -1,3 +1,9 @@
+"""Generate synthetic random tables for tests.
+
+Put table factories, index generators, column dtype samplers, and anything
+that creates new test data from scratch here.
+"""
+
 import itertools
 from decimal import Decimal
 from string import ascii_letters, ascii_lowercase

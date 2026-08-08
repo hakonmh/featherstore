@@ -125,7 +125,7 @@ def length_of_cols_and_to_doesnt_match(cols, to):
 def cols_does_not_match(df, table_data):
     stored_data_cols = table_data["columns"]
     has_default_index = table_data["has_default_index"]
-    new_data_cols = _table_utils.get_col_names(df, has_default_index)
+    new_data_cols = _table_utils.get_col_and_index_names(df, has_default_index)
 
     if sorted(new_data_cols) != sorted(stored_data_cols):
         raise ColumnMismatchError(
@@ -360,7 +360,7 @@ def _normalize_index_dtype(dtype):
 def index_name_not_same_as_stored_index(df, table_data):
     stored_index_name = table_data["index_name"]
     has_default_index = table_data["has_default_index"]
-    cols = _table_utils.get_col_names(df, has_default_index=has_default_index)
+    cols = _table_utils.get_col_and_index_names(df, has_default_index=has_default_index)
     if stored_index_name not in cols:
         raise IndexNameMismatchError(
             "New and old index names do not match "

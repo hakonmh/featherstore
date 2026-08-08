@@ -23,7 +23,6 @@ from .fixtures import (
     get_index_name,
     get_partition_size,
     make_table,
-    merge_rows,
     sort_table,
     sorted_float_index,
     sorted_string_index,
@@ -48,7 +47,9 @@ DROPPED_ROWS_INDICES = [2, 5, 7, 10]
     [[75, 5, 5], [75, 5, 30], [30, 1, 1], [30, 1, 5]],
 )
 @pytest.mark.parametrize("astype", ["pandas", "polars", "arrow"])
-def test_insert_table(store, index, row_indices, num_rows, num_cols, num_partitions, astype):
+def test_insert_table(
+    store, index, row_indices, num_rows, num_cols, num_partitions, astype
+):
     # Arrange
     as_series = astype.startswith("pandas")
 
@@ -105,7 +106,7 @@ def test_default_index_behavior_when_inserting(store, row_indices):
     insert_df = make_table(default_index, rows=len(row_indices), astype="pandas")
     insert_df.index = row_indices
 
-    expected = merge_rows(original_df, insert_df, as_arrow=True)
+    expected = _insert_rows(original_df, insert_df)
 
     partition_size = get_partition_size(original_df, 5)
     table = store.select_table(TABLE_NAME)
@@ -114,6 +115,13 @@ def test_default_index_behavior_when_inserting(store, row_indices):
     table.insert_rows(insert_df, warnings="ignore")
     # Assert
     assert_table_equals(table, expected)
+
+
+def _insert_rows(df, other):
+    expected = pd.concat([df, other])
+    expected = sort_table(expected)
+    expected = convert_table(expected, to="arrow")
+    return expected
 
 
 @pytest.mark.parametrize("num_partitions", [17, 30])
@@ -135,7 +143,6 @@ def test_insert_rows_with_successive_mid_table_inserts(store, num_partitions):
     table.insert_rows(second_insert, warnings="ignore")
     # Assert
     assert_table_equals(table, expected)
-
 
 
 def test_insert_rows_warns_on_unsorted_index(store):

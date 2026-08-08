@@ -1,3 +1,8 @@
+"""Cast Arrow table column dtypes for tests.
+
+Put dtype-change helpers that operate on in-memory Arrow tables here.
+"""
+
 import pyarrow as pa
 
 

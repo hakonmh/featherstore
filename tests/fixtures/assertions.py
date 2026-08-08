@@ -1,3 +1,9 @@
+"""Assertions for comparing FeatherStore table reads against expected data.
+
+Put helpers that read from a Table/Store and compare across pandas, polars,
+or Arrow here.
+"""
+
 import pandas as pd
 import polars as pl
 import pyarrow as pa

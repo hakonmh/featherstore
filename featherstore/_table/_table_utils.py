@@ -50,14 +50,14 @@ def sort_arrow_table(df, *, by):
     return df.take(indices)
 
 
-def get_data_col_names(df, *, index_name):
+def get_col_names(df, *, index_name):
     cols = _raw_col_names(df)
     if isinstance(df, (pd.Series, pd.DataFrame)):
         return cols
     return [c for c in cols if c != index_name]
 
 
-def get_col_names(df, has_default_index):
+def get_col_and_index_names(df, has_default_index):
     cols = list(_raw_col_names(df))
     if isinstance(df, (pd.DataFrame, pd.Series)):
         index_name = df.index.name or DEFAULT_ARROW_INDEX_NAME

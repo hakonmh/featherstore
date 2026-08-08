@@ -1,49 +1,14 @@
-import random
+"""Miscellaneous fixture helpers that do not fit elsewhere.
+
+Put small, standalone utilities here only when no other fixture module is
+a better home.
+"""
 
 import pandas as pd
 import polars as pl
 import pyarrow as pa
 
 from featherstore.table import DEFAULT_PARTITION_SIZE
-
-from . import _utils
-from .convert_table import _convert_to_arrow
-
-
-def shuffle_cols(df):
-    data_cols = _utils.get_data_col_names(df)
-    shuffled_cols = random.sample(tuple(data_cols), len(data_cols))
-    if isinstance(df, pa.Table):
-        index_name = _utils.get_index_name(df)
-        if index_name and index_name in df.column_names:
-            df = df.select([index_name, *shuffled_cols])
-        else:
-            df = df.select(shuffled_cols)
-    elif isinstance(df, pl.DataFrame):
-        index_name = _utils.get_index_name(df)
-        if index_name and index_name in df.columns:
-            df = df.select([index_name, *shuffled_cols])
-        else:
-            df = df.select(shuffled_cols)
-    else:
-        df = df[shuffled_cols]
-    return df
-
-
-def sort_table(df, *, by=None):
-    index_name = by
-    if isinstance(df, (pd.DataFrame, pd.Series)):
-        df = df.sort_index()
-    elif isinstance(df, pa.Table):
-        if index_name:
-            sorted_index = pa.compute.sort_indices(df[index_name])
-            df = df.take(sorted_index)
-    elif isinstance(df, (pl.DataFrame, pl.Series)) and index_name:
-        if isinstance(df, pl.Series):
-            df = df.sort()
-        else:
-            df = df.sort(by=index_name)
-    return df
 
 
 def get_partition_size(df, num_partitions=5):
@@ -57,10 +22,11 @@ def get_partition_size(df, num_partitions=5):
         byte_size += df.index.nbytes
     elif isinstance(df, pd.Series):
         byte_size = df.nbytes + df.index.nbytes
-    elif isinstance(df, (pl.DataFrame, pl.Series)):
-        if isinstance(df, pl.Series):
-            df = df.to_frame()
+    elif isinstance(df, pl.DataFrame):
         df = df.to_arrow()
+    elif isinstance(df, pl.Series):
+        df = df.to_frame().to_arrow()
+
     if isinstance(df, pa.Table):
         byte_size = df.nbytes
         if _has_rangeindex(df):
@@ -75,23 +41,3 @@ def _has_rangeindex(df):
         return index_type == "range"
     except TypeError:
         return False
-
-
-def drop_default_index_if_exists(df):
-    if not df_has_default_index(df):
-        return df
-
-    df = df.drop([_utils.DEFAULT_ARROW_INDEX_NAME])
-    if isinstance(df, pl.DataFrame) and df.shape[1] == 1:
-        df = df.to_series()
-    return df
-
-
-def df_has_default_index(df):
-    # convert to arrow table
-    df = _convert_to_arrow(df, keep_index=True)
-    if _utils.DEFAULT_ARROW_INDEX_NAME not in df.column_names:
-        return False
-
-    index = df[_utils.DEFAULT_ARROW_INDEX_NAME]
-    return _utils.is_rangeindex(index)

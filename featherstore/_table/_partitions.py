@@ -128,9 +128,7 @@ def resolve_partition_names(
         last_partition_name = _as_last_partition_name(partition_names)
         return append_new_partition_ids(len(partitions), [last_partition_name])
     if strategy == "insert":
-        return _insert_partition_ids(
-            partitions, partition_names, all_partition_names
-        )
+        return _insert_partition_ids(partitions, partition_names, all_partition_names)
     raise ValueError(f"Unknown partition naming strategy: {strategy!r}")
 
 

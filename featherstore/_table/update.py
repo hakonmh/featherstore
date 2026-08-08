@@ -12,7 +12,7 @@ def can_update_table(table, df):
 
     table_data = table._table_data
     index_name = table_data["index_name"]
-    cols = _table_utils.get_data_col_names(df, index_name=index_name)
+    cols = _table_utils.get_col_names(df, index_name=index_name)
     index = _table_utils.get_index_if_exists(df, index_name)
     _raise_if.incoming_index_schema_incompatible_with_stored(
         df, table_data, cols, index=index

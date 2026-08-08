@@ -1,3 +1,9 @@
+"""Fixed deterministic tables and end-to-end operation workflows.
+
+Put hardcoded test data, scripted multi-step scenarios, and helpers that
+build expected results for those scenarios here.
+"""
+
 import random
 from dataclasses import dataclass
 
@@ -6,7 +12,7 @@ import pyarrow as pa
 
 from .cast_table import change_dtype
 from .convert_table import convert_table
-from .expected_table import insert_columns_expected, merge_rows
+from .edit_table import sort_table
 from .make_table import make_table
 from .split_table import split_table
 
@@ -15,6 +21,22 @@ ROW_LABELS = [f"r{i:02d}" for i in range(10)]
 INSERT_ROW_LABELS = ["r10", "r11"]
 INSERT_COL_NAMES = ["n0", "n1"]
 INSERT_COL_IDX = 2
+
+
+def merge_rows(df, other, *, as_arrow=False):
+    new_df = sort_table(pd.concat([df, other]))
+    if as_arrow:
+        new_df = convert_table(new_df, to="arrow")
+    return new_df
+
+
+def insert_columns_expected(expected, new_cols, idx):
+    expected = expected.copy()
+    new_cols = new_cols.copy()
+    new_cols.index = expected.index
+    for offset, col_name in enumerate(new_cols.columns):
+        expected.insert(idx + offset, col_name, new_cols[col_name])
+    return expected
 
 
 def _after_row_ops_table():

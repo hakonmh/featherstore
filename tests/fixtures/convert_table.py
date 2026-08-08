@@ -1,3 +1,9 @@
+"""Convert tables between pandas, polars, and Arrow.
+
+Put backend conversion helpers and expected-value preparation for assertions
+(e.g. index handling after convert) here.
+"""
+
 import pandas as pd
 import polars as pl
 import pyarrow as pa
@@ -31,7 +37,7 @@ def _convert_to_pandas(df, index_name=None, as_series=False):
         df = df.to_frame()
     df = df.to_pandas(date_as_object=False)
 
-    df = __convert_object_cols_to_string(df)
+    df = _utils.convert_object_cols_to_string(df)
     if isinstance(df.index, pd.DatetimeIndex):
         df.index.freq = df.index.inferred_freq
 
@@ -44,17 +50,6 @@ def _convert_to_pandas(df, index_name=None, as_series=False):
 
     if as_series:
         df = df.squeeze(axis=1)
-    return df
-
-
-def __convert_object_cols_to_string(df):
-    for col in df.columns:
-        if df[col].dtype.name == "object":
-            try:
-                if isinstance(df[col][0], str):
-                    df[col] = df[col].astype("string")
-            except KeyError:
-                df[col] = df[col].astype("string")
     return df
 
 
@@ -81,3 +76,34 @@ def _convert_to_polars(df, as_series, keep_index=False):
     if isinstance(df, pa.Table):
         df = pl.from_arrow(df)
     return _utils.squeeze_df(df) if as_series else df
+
+
+def convert_expected(df, *, to, like=None):
+    """Convert expected result for assertions.
+
+    Drops the default index when ``like`` has one. If ``like`` is omitted, drops
+    it when ``df`` itself has a default index after conversion.
+    """
+    as_series = to.startswith("pandas")
+    expected = convert_table(df, to=to, as_series=as_series, keep_index=True)
+    if as_series:
+        return expected
+    if like is None or _has_default_index(like):
+        return _drop_default_index(expected)
+    return expected
+
+
+def _has_default_index(df):
+    df = _convert_to_arrow(df, keep_index=True)
+    if DEFAULT_ARROW_INDEX_NAME not in df.column_names:
+        return False
+
+    index = df[DEFAULT_ARROW_INDEX_NAME]
+    return _utils.is_rangeindex(index)
+
+
+def _drop_default_index(df):
+    df = df.drop([DEFAULT_ARROW_INDEX_NAME])
+    if isinstance(df, pl.DataFrame) and df.shape[1] == 1:
+        df = df.to_series()
+    return df

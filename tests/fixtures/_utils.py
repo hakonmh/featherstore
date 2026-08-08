@@ -1,3 +1,9 @@
+"""Shared low-level helpers used across fixture modules.
+
+Put cross-cutting table utilities here (column/index names, dtype parsing,
+Arrow formatting) rather than in the public test API.
+"""
+
 import pandas as pd
 import polars as pl
 import pyarrow as pa
@@ -20,18 +26,18 @@ def squeeze_df(df):
     return df
 
 
-def make_index_first_column(df):
+def format_arrow_table(df):
+    if _index_in_columns(df):
+        df = _make_index_first_column(df)
+    return df
+
+
+def _make_index_first_column(df):
     index_name = df.schema.pandas_metadata["index_columns"][0]
     cols = df.column_names
     cols.remove(index_name)
     cols.insert(0, index_name)
     df = df.select(cols)
-    return df
-
-
-def format_arrow_table(df):
-    if _index_in_columns(df):
-        df = make_index_first_column(df)
     return df
 
 
@@ -58,7 +64,7 @@ def is_rangeindex(index):
     return is_rangeindex
 
 
-def get_data_col_names(df, index_name=None):
+def get_col_names(df, index_name=None):
     if index_name is None:
         index_name = get_index_name(df)
     if index_name is None:
@@ -67,17 +73,6 @@ def get_data_col_names(df, index_name=None):
     if isinstance(df, (pd.Series, pd.DataFrame)):
         return cols
     return [c for c in cols if c != index_name]
-
-
-def get_col_names(df, has_default_index=False):
-    cols = list(_raw_col_names(df))
-    if isinstance(df, (pd.DataFrame, pd.Series)):
-        index_name = df.index.name or DEFAULT_ARROW_INDEX_NAME
-        if index_name not in cols:
-            cols.append(index_name)
-    elif has_default_index and DEFAULT_ARROW_INDEX_NAME not in cols:
-        cols.append(DEFAULT_ARROW_INDEX_NAME)
-    return cols
 
 
 def get_index_name(df):
@@ -109,11 +104,11 @@ def _raw_col_names(df):
 
 
 def convert_object_cols_to_string(df):
-    if isinstance(df, dict):
-        dtypes = {col: df[col].dtype.kind for col in df}
-    else:
-        dtypes = df.dtypes
-    for col, dtype in dtypes.items():
-        if dtype in ("O", "U"):
-            df[col] = pd.array(df[col], dtype="string")
+    for col in df.columns:
+        if df[col].dtype.name == "object":
+            try:
+                if isinstance(df[col].iloc[0], str):
+                    df[col] = df[col].astype("string")
+            except (KeyError, IndexError):
+                df[col] = df[col].astype("string")
     return df

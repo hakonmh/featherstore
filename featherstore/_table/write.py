@@ -21,7 +21,7 @@ def can_write_table(table, df, index_name, partition_size, errors, warnings):
         _raise_if.table_already_exists(table._table_path)
     _raise_if.df_is_not_table_type(df, _table_utils.SUPPORTED_TABLE_TYPES)
 
-    cols = _table_utils.get_col_names(df, has_default_index=False)
+    cols = _table_utils.get_col_and_index_names(df, has_default_index=False)
     _raise_if_index_argument_is_not_str_or_none(index_name)
     _raise_if_provided_index_not_in_cols(index_name, cols)
     _raise_if.cols_argument_items_is_not_str_or_none(cols)

@@ -23,7 +23,7 @@ from .fixtures import (
     make_table,
     sorted_string_index,
     split_table,
-    replace_values,
+    regenerate_values,
     update_table,
 )
 
@@ -48,7 +48,7 @@ def test_update_table(store, index, rows, cols, num_cols, astype):
     # Arrange
     original_pd = make_table(index, cols=num_cols, astype="pandas")
     _, update_pd = split_table(original_pd, rows=rows, cols=cols)
-    update_pd = replace_values(update_pd)
+    update_pd = regenerate_values(update_pd)
     expected_pd = update_table(original_pd, update_pd)
 
     original_df = convert_table(original_pd, to=astype)
@@ -75,7 +75,7 @@ def test_update_series(store, index, rows):
     # Arrange
     original_df = make_table(index, cols=1, astype="pandas[series]")
     _, update_df = split_table(original_df, rows=rows)
-    update_df = replace_values(update_df)
+    update_df = regenerate_values(update_df)
     expected = update_table(original_df, update_df)
 
     table = store.select_table(TABLE_NAME)
@@ -93,7 +93,7 @@ def test_partition_structure_after_update_table(store, num_partitions, rows):
     original_df.index.name = "index"
 
     _, update_df = split_table(original_df, rows=(10, 13, 14, 21), cols=["c2", "c0"])
-    update_df = replace_values(update_df)
+    update_df = regenerate_values(update_df)
     expected = update_table(original_df, update_df)
 
     partition_size = get_partition_size(original_df, num_partitions)
