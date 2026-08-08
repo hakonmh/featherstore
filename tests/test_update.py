@@ -21,9 +21,9 @@ from .fixtures import (
     get_index_name,
     get_partition_size,
     make_table,
+    regenerate_values,
     sorted_string_index,
     split_table,
-    regenerate_values,
     update_table,
 )
 
