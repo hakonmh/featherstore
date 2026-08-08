@@ -289,3 +289,15 @@ def test_insert_cols_rejects_invalid_warnings(store):
     # Act and Assert
     with pytest.raises(ValueError):
         table.insert_columns(new_cols, warnings="abcd")
+
+
+def test_insert_columns_rejects_positional_idx(store):
+    # Arrange
+    original_df = make_table(cols=2, astype="pandas")
+    new_cols = make_table(cols=1, astype="pandas")
+    new_cols.columns = ["new_c0"]
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df)
+    # Act and Assert
+    with pytest.raises(TypeError):
+        table.insert_columns(new_cols, 0)

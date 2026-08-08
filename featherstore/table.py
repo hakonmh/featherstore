@@ -360,7 +360,7 @@ class Table:
 
         write.write_partitions(partitions, self._table_path)
 
-    def insert(self, df, *, idx=-1):
+    def insert(self, df, *, idx=-1, warnings="warn"):
         """Insert one or more rows or columns into the current table.
 
         If ``df`` column names match the stored table, rows are inserted.
@@ -368,12 +368,15 @@ class Table:
 
         Parameters
         ----------
-        df : Pandas DataFrame or Pandas Series
+        df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
             The data to be inserted.
         idx : int or Sequence[int], optional
             The position(s) to insert new column(s). Only valid when inserting
             columns. If a sequence is provided, it must have one position per new
             column. Default is to add columns to the end.
+        warnings : str, optional
+            Whether or not to warn if a unsorted index is about to get sorted.
+            Can be either `warn` or `ignore`, by default `warn`
 
         Raises
         ------
@@ -383,9 +386,9 @@ class Table:
         """
         insert.can_insert(df, self._table_data, idx)
         if insert.cols_matches_table_cols(df, self._table_data):
-            self.insert_rows(df)
+            self.insert_rows(df, warnings=warnings)
         else:
-            self.insert_columns(df, idx=idx)
+            self.insert_columns(df, idx=idx, warnings=warnings)
 
     def insert_rows(self, df, *, warnings="warn"):
         """Insert one or more rows into the current table.
