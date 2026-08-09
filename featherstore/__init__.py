@@ -5,6 +5,7 @@ from featherstore.connection import (
     current_db,
     database_exists,
     disconnect,
+    drop_database,
     is_connected,
 )
 from featherstore.store import (
@@ -27,6 +28,7 @@ __all__ = [
     "current_db",
     "database_exists",
     "disconnect",
+    "drop_database",
     "drop_store",
     "is_connected",
     "list_stores",

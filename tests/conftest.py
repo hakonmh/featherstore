@@ -40,11 +40,14 @@ class SetupDB:
 @pytest.fixture(scope="function")
 def create_db():
     # Setup
+    if os.path.exists(DB_PATH):
+        shutil.rmtree(DB_PATH)
     fs.create_database(DB_PATH, connect=False)
     # Test
     yield
     # Teardown
-    shutil.rmtree(DB_PATH, ignore_errors=False)
+    if os.path.exists(DB_PATH):
+        shutil.rmtree(DB_PATH)
 
 
 @pytest.fixture(scope="function")
@@ -54,7 +57,8 @@ def connect_to_db():
     # Test
     yield
     # Teardown
-    fs.disconnect()
+    if fs.is_connected():
+        fs.disconnect()
 
 
 @pytest.fixture(scope="function")

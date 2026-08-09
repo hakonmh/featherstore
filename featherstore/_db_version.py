@@ -50,7 +50,6 @@ def _read_database_versions(db_path):
     return __parse_database_versions(payload)
 
 
-
 def __parse_database_versions(payload):
     if not isinstance(payload, dict):
         raise IncompatibleDatabaseVersionError(

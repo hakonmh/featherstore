@@ -83,6 +83,19 @@ def expand_home_dir_modifier(path):
     return os.path.expanduser(path)
 
 
+def list_stores(current_db, like=None):
+    db_content = os.listdir(current_db())
+    if like:
+        db_content = filter_items_like_pattern(db_content, like=like)
+    stores = []
+    for item in db_content:
+        path = os.path.join(current_db(), item)
+        if os.path.isdir(path):
+            stores.append(item)
+    stores.sort()
+    return stores
+
+
 def filter_items_like_pattern(items, *, like):
     pattern = _sql_str_pattern_to_regexp(like)
     results = _filter(items, like=pattern)

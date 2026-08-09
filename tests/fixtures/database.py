@@ -12,6 +12,11 @@ def _marker_path(db_path):
     raise FileNotFoundError(f"No database marker found in {db_path}")
 
 
+def remove_database_marker(db_path):
+    """Delete the database marker file from ``db_path``."""
+    os.remove(_marker_path(db_path))
+
+
 def _read_marker(db_path):
     with open(_marker_path(db_path), encoding="utf-8") as f:
         return json.load(f)
