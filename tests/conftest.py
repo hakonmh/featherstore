@@ -7,6 +7,7 @@ import featherstore as fs
 from featherstore import _metadata
 
 from .fixtures import DB_PATH, MD_NAME, STORE_NAME
+from .fixtures.database import setup_incompatible_database
 
 
 @pytest.fixture(scope="function", name="store")
@@ -54,6 +55,24 @@ def connect_to_db():
     yield
     # Teardown
     fs.disconnect()
+
+
+@pytest.fixture(scope="function")
+def empty_directory():
+    if os.path.exists(DB_PATH):
+        shutil.rmtree(DB_PATH)
+    os.makedirs(DB_PATH)
+    yield
+    shutil.rmtree(DB_PATH)
+
+
+@pytest.fixture(scope="function")
+def incompatible_database(request):
+    if os.path.exists(DB_PATH):
+        shutil.rmtree(DB_PATH)
+    setup_incompatible_database(DB_PATH, request.param)
+    yield request.param
+    shutil.rmtree(DB_PATH)
 
 
 @pytest.fixture(scope="function", name="metadata")

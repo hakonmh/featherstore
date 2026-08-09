@@ -1,7 +1,8 @@
 import os
 
 from featherstore import _utils
-from featherstore._utils import DB_MARKER_NAME, expand_home_dir_modifier, mark_as_hidden
+from featherstore._db_version import assert_database_compatible, write_database_marker
+from featherstore._utils import DB_MARKER_NAME, expand_home_dir_modifier
 from featherstore.exceptions import (
     NotADatabaseError,
     NotConnectedError,
@@ -21,6 +22,8 @@ def connect(connection_string):
     ------
     NotADatabaseError
         If ``connection_string`` is not a FeatherStore database.
+    IncompatibleDatabaseVersionError
+        If the database format versions are incompatible with this install.
     TypeError
         If ``connection_string`` is not a str.
     """
@@ -65,16 +68,9 @@ def create_database(path, *, errors="raise", connect=True):
     path = expand_home_dir_modifier(path)
     if not os.path.exists(path):
         os.mkdir(path)
-    _make_database_marker(path)
+    write_database_marker(path)
     if connect:
         Connection(path)
-
-
-def _make_database_marker(db_path):
-    """A database marker tells FeatherStore that `db_path` is a database directory"""
-    db_marker_path = os.path.join(db_path, DB_MARKER_NAME)
-    _utils.touch(db_marker_path)
-    mark_as_hidden(db_marker_path)
 
 
 def current_db():
@@ -176,6 +172,7 @@ def _raise_if_directory_is_empty(db_path):
 def _can_connect(connection_string):
     _raise_if_connection_str_is_not_string(connection_string)
     _raise_if_directory_is_not_database(connection_string)
+    _raise_if_database_not_compatible(connection_string)
 
 
 def _raise_if_connection_str_is_not_string(connection_string):
@@ -192,3 +189,9 @@ def _raise_if_directory_is_not_database(connection_string):
     is_database = os.path.exists(db_marker_path)
     if not is_database:
         raise NotADatabaseError(f"{connection_string} is not a database")
+
+
+def _raise_if_database_not_compatible(connection_string):
+    path = expand_home_dir_modifier(connection_string)
+    path = os.path.abspath(path)
+    assert_database_compatible(path)

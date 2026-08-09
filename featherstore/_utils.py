@@ -8,6 +8,9 @@ from pathlib import Path
 from featherstore.exceptions import UnsafeDeletePathError
 
 DB_MARKER_NAME = ".featherstore"
+METADATA_SCHEMA_VERSION = 1
+PARTITION_LAYOUT_VERSION = 1
+
 DEFAULT_ARROW_INDEX_NAME = "__index_level_0__"
 
 _WINDOWS_DELETE_RETRIES = 10

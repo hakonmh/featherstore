@@ -5,6 +5,7 @@ import warnings
 import pytest
 
 import featherstore as fs
+from featherstore.exceptions import IncompatibleDatabaseVersionError, NotADatabaseError
 
 from .fixtures import DB_PATH
 
@@ -171,3 +172,62 @@ def test_list_stores(create_db, connect_to_db):
     stores = fs.list_stores(like="sto%")
     # Assert
     assert stores == ["stocks", "store"]
+
+
+def test_create_database_allows_connect():
+    # Arrange
+    if os.path.exists(DB_PATH):
+        shutil.rmtree(DB_PATH)
+    # Act
+    fs.create_database(DB_PATH)
+    # Assert
+    assert fs.is_connected()
+    assert fs.database_exists(DB_PATH)
+    # Teardown
+    fs.disconnect()
+    shutil.rmtree(DB_PATH)
+
+
+@pytest.mark.parametrize(
+    "incompatible_database",
+    [
+        "empty_legacy_marker",
+        "invalid_json",
+        "missing_metadata_schema_version",
+        "non_integer_metadata_schema_version",
+        "outdated_metadata_schema",
+        "outdated_partition_layout",
+        "newer_metadata_schema",
+        "newer_partition_layout",
+    ],
+    indirect=True,
+)
+def test_connect_rejects_incompatible_database(incompatible_database):
+    # Act / Assert
+    with pytest.raises(IncompatibleDatabaseVersionError):
+        fs.connect(DB_PATH)
+
+
+@pytest.mark.parametrize("incompatible_database", ["empty_legacy_marker"], indirect=True)
+def test_database_exists_does_not_verify_format_compatibility(incompatible_database):
+    # Act
+    exists = fs.database_exists(DB_PATH)
+    # Assert
+    assert exists
+
+
+def test_connect_rejects_directory_without_database_marker(empty_directory):
+    # Act / Assert
+    with pytest.raises(NotADatabaseError):
+        fs.connect(DB_PATH)
+
+
+@pytest.mark.parametrize("incompatible_database", ["outdated_format"], indirect=True)
+def test_connect_reports_stored_and_expected_versions_on_mismatch(incompatible_database):
+    # Act / Assert
+    with pytest.raises(IncompatibleDatabaseVersionError) as exc_info:
+        fs.connect(DB_PATH)
+    message = str(exc_info.value)
+    assert "metadata_schema_version" in message
+    assert "partition_layout_version" in message
+    assert "expected" in message

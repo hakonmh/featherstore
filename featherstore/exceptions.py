@@ -157,6 +157,10 @@ class PopulatedDirectoryError(DatabaseConnectionError):
     """Raised when creating a database in a non-empty directory."""
 
 
+class IncompatibleDatabaseVersionError(DatabaseConnectionError):
+    """Raised when the database format versions are incompatible with this FeatherStore install."""
+
+
 class SnapshotError(FeatherStoreException):
     """Base class for snapshot errors."""
 
