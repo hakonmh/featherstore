@@ -237,7 +237,7 @@ class Table:
         metadata = write.generate_metadata(
             partitions, partition_size, rows_per_partition
         )
-        self.drop_table()
+        self.drop_table(warnings="ignore")
         self._create_table()
         write.write_metadata(self, metadata)
         write.write_partitions(partitions, self._table_path)
@@ -861,8 +861,21 @@ class Table:
         os.rename(self._table_path, new_path)
         self._table_path = new_path
 
-    def drop_table(self):
-        """Deletes the current table"""
+    def drop_table(self, *, warnings="warn"):
+        """Deletes the current table
+
+        Parameters
+        ----------
+        warnings : str, optional
+            Whether or not to warn if the table doesn't exist. Can be either
+            `warn` or `ignore`, by default `warn`
+
+        Raises
+        ------
+        ValueError
+            If ``warnings`` is not ``'warn'`` or ``'ignore'``.
+        """
+        misc.can_drop_table(self, warnings)
         if self.exists():
             _utils.delete_folder_tree(self._table_path, current_db())
             # Reset the metadata indices:

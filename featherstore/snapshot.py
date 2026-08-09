@@ -17,7 +17,7 @@ from featherstore.exceptions import (
 METADATA_FILE_NAME = "metadata.pkl"
 
 
-def restore_table(store_name, source, errors="raise"):
+def restore_table(store_name, source, *, errors="raise"):
     """Restores a table in to the currently selected db.
 
     Parameters
@@ -59,7 +59,7 @@ def restore_table(store_name, source, errors="raise"):
     return table_name
 
 
-def restore_store(source, errors="raise"):
+def restore_store(source, *, errors="raise"):
     """Restores a store in to the currently selected db.
 
     Parameters

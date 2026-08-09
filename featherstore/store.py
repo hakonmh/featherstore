@@ -1,4 +1,5 @@
 import os
+import warnings as _warnings
 
 from featherstore import _utils
 from featherstore._utils import DB_MARKER_NAME
@@ -13,17 +14,17 @@ from featherstore.snapshot import _create_snapshot
 from featherstore.table import DEFAULT_PARTITION_SIZE, Table
 
 
-def create_store(store_name, *, errors="raise"):
+def create_store(store_name, *, warnings="warn"):
     """Creates a new store.
 
     Parameters
     ----------
     store_name : str
         The name of the store to be created
-    errors : str, optional
-        Whether or not to raise an error if the store already exist. Can be either
-        `raise` or `ignore`, `ignore` passes if the store already exists, by
-        default `raise`
+    warnings : str, optional
+        Whether or not to warn if the store already exist. Can be either
+        `warn` or `ignore`, `ignore` passes silently if the store already
+        exists, by default `warn`
 
     Returns
     -------
@@ -33,20 +34,17 @@ def create_store(store_name, *, errors="raise"):
     ------
     NotConnectedError
         If FeatherStore is not connected to a database.
-    StoreAlreadyExistsError
-        If ``errors='raise'`` and the store already exists.
     ForbiddenStoreNameError
         If ``store_name`` is reserved.
     TypeError
         If ``store_name`` is not a str.
     ValueError
-        If ``errors`` is not ``'raise'`` or ``'ignore'``.
+        If ``warnings`` is not ``'warn'`` or ``'ignore'``.
     """
-    _can_create_store(store_name, errors)
+    _can_create_store(store_name, warnings)
 
     store_path = os.path.join(current_db(), store_name)
-    store_already_exists = os.path.exists(store_path)
-    if not store_already_exists:
+    if not os.path.exists(store_path):
         os.mkdir(store_path)
     return Store(store_name)
 
@@ -77,7 +75,7 @@ def rename_store(store_name, *, to):
     Store(store_name).rename(to=to)
 
 
-def drop_store(store_name, *, errors="raise"):
+def drop_store(store_name, *, warnings="warn"):
     """Deletes a store
 
     *Warning*: You can not delete a store containing tables. All tables must
@@ -87,26 +85,25 @@ def drop_store(store_name, *, errors="raise"):
     ----------
     store_name : str
         The name of the store to be deleted
-    errors : str, optional
-        Whether or not to raise an error if the store doesn't exist. Can be either
-        `raise` or `ignore`, by default `raise`
+    warnings : str, optional
+        Whether or not to warn if the store doesn't exist. Can be either
+        `warn` or `ignore`, by default `warn`
 
     Raises
     ------
     NotConnectedError
         If FeatherStore is not connected to a database.
-    StoreNotFoundError
-        If ``errors='raise'`` and the store does not exist.
     StoreNotEmptyError
         If the store still contains tables.
     TypeError
         If ``store_name`` is not a str.
     ValueError
-        If ``errors`` is not ``'raise'`` or ``'ignore'``.
+        If ``warnings`` is not ``'warn'`` or ``'ignore'``.
     """
-    _can_drop_store(store_name, errors)
+    _can_drop_store(store_name, warnings)
     store_path = os.path.join(current_db(), store_name)
-    _utils.delete_folder_tree(store_path, current_db())
+    if os.path.exists(store_path):
+        _utils.delete_folder_tree(store_path, current_db())
 
 
 def list_stores(*, like=None):
@@ -202,7 +199,7 @@ class Store:
         self.name = new_store_name
         self._store_path = new_path
 
-    def drop(self, *, errors="raise"):
+    def drop(self, *, warnings="warn"):
         """Deletes the current store
 
         *Warning*: You can not delete a store containing tables. All tables must
@@ -210,11 +207,11 @@ class Store:
 
         Parameters
         ----------
-        errors : str, optional
-            Whether or not to raise an error if the store doesn't exist. Can be either
-            `raise` or `ignore`, by default `raise`
+        warnings : str, optional
+            Whether or not to warn if the store doesn't exist. Can be either
+            `warn` or `ignore`, by default `warn`
         """
-        drop_store(self.name, errors=errors)
+        drop_store(self.name, warnings=warnings)
 
     def list_tables(self, *, like=None):
         """Lists tables in store
@@ -447,7 +444,7 @@ class Store:
             partition_size=partition_size,
         )
 
-    def append_table(self, table_name, df, warnings="warn"):
+    def append_table(self, table_name, df, *, warnings="warn"):
         """Appends data to a table
 
         Parameters
@@ -518,15 +515,18 @@ class Store:
         """
         Table(table_name, self.name).rename_table(to=to)
 
-    def drop_table(self, table_name):
+    def drop_table(self, table_name, *, warnings="warn"):
         """Deletes a table
 
         Parameters
         ----------
         table_name : str
             The name of the table to be deleted
+        warnings : str, optional
+            Whether or not to warn if the table doesn't exist. Can be either
+            `warn` or `ignore`, by default `warn`
         """
-        Table(table_name, self.name).drop_table()
+        Table(table_name, self.name).drop_table(warnings=warnings)
 
     def select_table(self, table_name):
         """Selects a single table.
@@ -566,20 +566,22 @@ class Store:
         _create_snapshot(path, self._store_path, "store")
 
 
-def _can_create_store(store_name, errors):
+def _can_create_store(store_name, warnings):
     Connection._raise_if_not_connected()
-    _utils.raise_if_errors_argument_is_not_valid(errors)
-    if errors == "raise":
-        _raise_if_store_already_exists(store_name)
+    _utils.raise_if_warnings_argument_is_not_valid(warnings)
     _raise_if_store_name_is_forbidden(store_name)
+    store_path = os.path.join(current_db(), store_name)
+    if os.path.exists(store_path) and warnings == "warn":
+        _warnings.warn(f"A store with name {store_name} already exists")
 
 
-def _can_drop_store(store_name, errors):
+def _can_drop_store(store_name, warnings):
     Connection._raise_if_not_connected()
-    _utils.raise_if_errors_argument_is_not_valid(errors)
-    if errors == "raise":
-        _raise_if_store_not_exists(store_name)
+    _utils.raise_if_warnings_argument_is_not_valid(warnings)
     _raise_if_store_contains_tables(store_name)
+    store_path = os.path.join(current_db(), store_name)
+    if not os.path.exists(store_path) and warnings == "warn":
+        _warnings.warn(f"Store doesn't exist: '{store_name}'")
 
 
 def _raise_if_store_contains_tables(store_name):

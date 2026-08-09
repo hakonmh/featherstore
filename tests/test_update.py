@@ -12,6 +12,7 @@ from featherstore.exceptions import (
 
 from .fixtures import (
     TABLE_NAME,
+    assert_partition_metadata_matches_files,
     assert_table_equals,
     continuous_datetime_index,
     continuous_string_index,
@@ -21,6 +22,7 @@ from .fixtures import (
     get_index_name,
     get_partition_size,
     make_table,
+    partition_layout,
     regenerate_values,
     sorted_string_index,
     split_table,
@@ -126,6 +128,27 @@ def _assert_partitions_are_same_structure_after_update(
         assert index_start == metadata["min"]
         assert index_end == metadata["max"]
         assert num_rows == metadata["num_rows"]
+
+
+def test_update_spanning_a_partition_seam(store):
+    # Arrange
+    original_df = make_table(astype="pandas")
+    original_df.index.name = "index"
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+
+    partitions = partition_layout(table)
+    seam_rows = [partitions[0].max, partitions[1].min]
+    _, update_df = split_table(original_df, rows=seam_rows, cols=["c0", "c2"])
+    update_df = regenerate_values(update_df)
+    expected = update_table(original_df, update_df)
+    # Act
+    table.update(update_df)
+    # Assert
+    assert_table_equals(table, expected)
+    assert_partition_metadata_matches_files(table)
 
 
 def _update_table_not_supported_type():
