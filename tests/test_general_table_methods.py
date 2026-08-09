@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 
 from featherstore._metadata import METADATA_FOLDER_NAME
@@ -46,6 +48,20 @@ def test_drop_table(store):
     # Assert
     table_names = store.list_tables()
     assert table_names == []
+
+
+def test_drop_table_warns_when_table_does_not_exist(store):
+    # Act / Assert
+    with pytest.warns(UserWarning, match="not found"):
+        store.drop_table(TABLE_NAME)
+    assert store.list_tables() == []
+
+
+def test_drop_table_can_ignore_missing_table_warning(store):
+    # Act / Assert
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        store.drop_table(TABLE_NAME, warnings="ignore")
 
 
 def test_list_tables_like(store):

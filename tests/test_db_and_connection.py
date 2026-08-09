@@ -1,5 +1,8 @@
 import os
 import shutil
+import warnings
+
+import pytest
 
 import featherstore as fs
 
@@ -76,6 +79,26 @@ def test_create_store(create_db, connect_to_db):
     assert stores == ["test_store"]
 
 
+def test_create_store_warns_when_store_already_exists(create_db, connect_to_db):
+    # Arrange
+    fs.create_store("test_store")
+    # Act / Assert
+    with pytest.warns(UserWarning, match="already exists"):
+        store = fs.create_store("test_store")
+    assert store.name == "test_store"
+    assert fs.list_stores() == ["test_store"]
+
+
+def test_create_store_can_ignore_existing_store_warning(create_db, connect_to_db):
+    # Arrange
+    fs.create_store("test_store")
+    # Act / Assert
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        store = fs.create_store("test_store", warnings="ignore")
+    assert store.name == "test_store"
+
+
 def test_drop_store(create_db, connect_to_db):
     # Arrange
     store = fs.create_store("test_store")
@@ -85,6 +108,20 @@ def test_drop_store(create_db, connect_to_db):
     # Assert
     assert stores_existed_before_delete
     assert not fs.store_exists(store.name)
+
+
+def test_drop_store_warns_when_store_does_not_exist(create_db, connect_to_db):
+    # Act / Assert
+    with pytest.warns(UserWarning, match="doesn't exist"):
+        fs.drop_store("missing_store")
+    assert not fs.store_exists("missing_store")
+
+
+def test_drop_store_can_ignore_missing_store_warning(create_db, connect_to_db):
+    # Act / Assert
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        fs.drop_store("missing_store", warnings="ignore")
 
 
 def test_store_drop(store):
