@@ -12,6 +12,8 @@ from featherstore.exceptions import (
 
 from .fixtures import (
     TABLE_NAME,
+    assert_df_equals,
+    assert_partition_metadata_matches_files,
     assert_table_equals,
     continuous_datetime_index,
     continuous_string_index,
@@ -19,6 +21,8 @@ from .fixtures import (
     fake_default_index,
     get_partition_size,
     make_table,
+    partition_layout,
+    partition_names,
     sorted_string_index,
     split_table,
 )
@@ -91,6 +95,135 @@ def test_default_index_behavior_when_dropping(store, rows):
     table.drop(rows=rows)
     # Assert
     assert_table_equals(table, expected)
+
+
+def _drop_before_a_partitions_last_row(partitions):
+    return {"before": partitions[0].max}
+
+
+def _drop_after_a_partitions_first_row(partitions):
+    return {"after": partitions[-1].min}
+
+
+def _drop_between_two_adjacent_partitions(partitions):
+    return {"between": [partitions[1].max, partitions[2].min]}
+
+
+def _drop_rows_on_both_sides_of_a_seam(partitions):
+    return [partitions[1].max, partitions[2].min]
+
+
+SEAM_DROPS = [
+    _drop_before_a_partitions_last_row,
+    _drop_after_a_partitions_first_row,
+    _drop_between_two_adjacent_partitions,
+    _drop_rows_on_both_sides_of_a_seam,
+]
+SEAM_DROP_IDS = [seam_drop.__name__ for seam_drop in SEAM_DROPS]
+
+
+@pytest.mark.parametrize("seam_drop", SEAM_DROPS, ids=SEAM_DROP_IDS)
+def test_dropping_at_a_partition_seam(store, seam_drop):
+    # Arrange
+    original_df = make_table(default_index, astype="pandas")
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+
+    rows = seam_drop(partition_layout(table))
+    expected, _ = split_table(original_df, rows=rows)
+    # Act
+    table.drop(rows=rows)
+    # Assert
+    assert_table_equals(table, expected)
+    assert_partition_metadata_matches_files(table)
+
+
+def test_dropping_a_partitions_last_row_pulls_the_next_row_across_the_seam(store):
+    # Arrange
+    original_df = make_table(default_index, astype="pandas")
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+
+    partitions = partition_layout(table)
+    # Act
+    table.drop_rows([partitions[0].max])
+    # Assert
+    assert partition_layout(table)[0].max == partitions[1].min
+    assert_partition_metadata_matches_files(table)
+
+
+def _drop_the_first_partitions_last_row(store, original_df):
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+
+    seam = partition_layout(table)[0].max
+    table.drop_rows([seam])
+    return table, seam
+
+
+def test_reading_before_a_dropped_seam_value_excludes_it(store):
+    # Arrange
+    original_df = make_table(default_index, astype="pandas")
+    table, dropped_seam = _drop_the_first_partitions_last_row(store, original_df)
+
+    expected = original_df.drop(index=dropped_seam).loc[:dropped_seam]
+    # Act
+    df = table.read_pandas(rows={"before": dropped_seam})
+    # Assert
+    assert_df_equals(df, expected)
+
+
+def test_reading_after_the_moved_seam_finds_the_row_that_crossed_it(store):
+    # Arrange
+    original_df = make_table(default_index, astype="pandas")
+    table, dropped_seam = _drop_the_first_partitions_last_row(store, original_df)
+    moved_seam = partition_layout(table)[0].max
+
+    expected = original_df.drop(index=dropped_seam).loc[moved_seam:]
+    # Act
+    df = table.read_pandas(rows={"after": moved_seam})
+    # Assert
+    assert_df_equals(df, expected)
+
+
+def test_dropping_every_row_of_a_middle_partition_removes_it(store):
+    # Arrange
+    original_df = make_table(default_index, astype="pandas")
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+
+    partitions = partition_layout(table)
+    emptied = partitions[2]
+    # Act
+    table.drop_rows({"between": [emptied.min, emptied.max]})
+    # Assert
+    remaining = partitions[:2] + partitions[3:]
+    assert partition_names(partition_layout(table)) == partition_names(remaining)
+    assert_partition_metadata_matches_files(table)
+
+
+def test_reading_across_a_removed_partition_returns_the_surrounding_rows(store):
+    # Arrange
+    original_df = make_table(default_index, astype="pandas")
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+
+    partitions = partition_layout(table)
+    emptied = partitions[2]
+    table.drop_rows({"between": [emptied.min, emptied.max]})
+
+    across_the_hole = [partitions[1].max, partitions[3].min]
+    expected = original_df.drop(index=original_df.loc[emptied.min : emptied.max].index)
+    expected = expected.loc[across_the_hole[0] : across_the_hole[1]]
+    # Act
+    df = table.read_pandas(rows={"between": across_the_hole})
+    # Assert
+    assert_df_equals(df, expected)
 
 
 INVALID_ROWS_DTYPE = "c1, c2, c3"

@@ -14,12 +14,17 @@ from featherstore.exceptions import (
 from .fixtures import (
     TABLE_NAME,
     assert_df_equals,
+    assert_partition_bounds_are_ordered,
+    assert_partition_metadata_matches_files,
     assert_table_equals,
     convert_table,
     default_index,
     get_index_name,
     get_partition_size,
     make_table,
+    partition_layout,
+    partition_names,
+    pruned_partitions,
     shuffle_cols,
     sort_table,
     sorted_datetime_index,
@@ -91,6 +96,42 @@ def test_append_custom_values_to_default_index(store):
     table.append(append_df2, warnings="ignore")
     # Assert
     assert_table_equals(table, expected)
+
+
+def test_append_that_overflows_the_last_partition_splits_it(store):
+    # Arrange
+    full_df = make_table(default_index, rows=36, astype="pandas")
+    original_df, append_df = split_table(full_df, rows={"after": 30}, iloc=True)
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+
+    partitions = partition_layout(table)
+    # Act
+    table.append(append_df, warnings="ignore")
+    # Assert
+    appended = partition_layout(table)
+    assert partition_names(appended[:-1]) == partition_names(partitions)
+    assert_partition_bounds_are_ordered(table)
+    assert_partition_metadata_matches_files(table)
+
+
+def test_reading_after_the_new_seam_opens_only_the_split_off_partition(store):
+    # Arrange
+    full_df = make_table(default_index, rows=36, astype="pandas")
+    original_df, append_df = split_table(full_df, rows={"after": 30}, iloc=True)
+
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+    table.append(append_df, warnings="ignore")
+
+    split_off = partition_layout(table)[-1]
+    # Act
+    pruned = pruned_partitions(table, {"after": split_off.min})
+    # Assert
+    assert pruned == [split_off.name]
 
 
 def _non_matching_index_dtype():

@@ -15,6 +15,9 @@ from featherstore.exceptions import (
 
 from .fixtures import (
     TABLE_NAME,
+    assert_df_equals,
+    assert_partition_bounds_are_ordered,
+    assert_partition_metadata_matches_files,
     assert_table_equals,
     continuous_datetime_index,
     continuous_string_index,
@@ -23,6 +26,7 @@ from .fixtures import (
     get_index_name,
     get_partition_size,
     make_table,
+    partition_layout,
     sort_table,
     sorted_float_index,
     sorted_string_index,
@@ -143,6 +147,54 @@ def test_insert_rows_with_successive_mid_table_inserts(store, num_partitions):
     table.insert_rows(second_insert, warnings="ignore")
     # Assert
     assert_table_equals(table, expected)
+
+
+def test_inserting_into_a_partition_seam_extends_the_preceding_partition(store):
+    # Arrange
+    original_df = make_table(sorted_float_index, astype="pandas")
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+
+    partitions = partition_layout(table)
+    seam_value = _midpoint(partitions[0].max, partitions[1].min)
+    insert_df = _row_at(original_df, seam_value)
+    # Act
+    table.insert_rows(insert_df, warnings="ignore")
+    # Assert
+    assert partition_layout(table)[0].max == seam_value
+    assert_partition_bounds_are_ordered(table)
+    assert_partition_metadata_matches_files(table)
+
+
+def test_reading_across_a_seam_that_has_been_inserted_into(store):
+    # Arrange
+    original_df = make_table(sorted_float_index, astype="pandas")
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+
+    partitions = partition_layout(table)
+    seam_start, seam_end = partitions[0].max, partitions[1].min
+    insert_df = _row_at(original_df, _midpoint(seam_start, seam_end))
+    table.insert_rows(insert_df, warnings="ignore")
+
+    expected = sort_table(pd.concat([original_df, insert_df]))
+    expected = expected.loc[seam_start:seam_end]
+    # Act
+    df = table.read_pandas(rows={"between": [seam_start, seam_end]})
+    # Assert
+    assert_df_equals(df, expected)
+
+
+def _midpoint(lower, upper):
+    return (lower + upper) / 2
+
+
+def _row_at(df, index_value):
+    row = df.head(1).copy()
+    row.index = pd.Index([index_value], name=df.index.name)
+    return row
 
 
 def test_insert_rows_warns_on_unsorted_index(store):

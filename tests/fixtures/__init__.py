@@ -35,6 +35,13 @@ from .make_table import (
     unsorted_string_index,
 )
 from .misc import get_partition_size
+from .partitions import (
+    assert_partition_bounds_are_ordered,
+    assert_partition_metadata_matches_files,
+    partition_layout,
+    partition_names,
+    pruned_partitions,
+)
 from .split_table import split_table
 
 DB_PATH = join("tests", "_db")
@@ -51,6 +58,8 @@ __all__ = [
     "TABLE_NAME",
     "TABLE_PATH",
     "assert_df_equals",
+    "assert_partition_bounds_are_ordered",
+    "assert_partition_metadata_matches_files",
     "assert_store_table_equal",
     "assert_table_equals",
     "change_dtype",
@@ -64,6 +73,9 @@ __all__ = [
     "get_partition_size",
     "insert_column_names_at",
     "make_table",
+    "partition_layout",
+    "partition_names",
+    "pruned_partitions",
     "regenerate_values",
     "shuffle_cols",
     "sort_table",

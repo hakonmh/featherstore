@@ -24,6 +24,9 @@ from .fixtures import (
     get_index_name,
     get_partition_size,
     make_table,
+    partition_layout,
+    partition_names,
+    pruned_partitions,
     sort_table,
     sorted_binary_index,
     sorted_date32_index,
@@ -34,6 +37,7 @@ from .fixtures import (
     sorted_time32_index,
     sorted_timedelta_index,
     sorted_uint_index,
+    split_table,
     unsorted_int_index,
     unsorted_string_index,
 )
@@ -117,6 +121,89 @@ def test_empty_df_io(store, astype):
     table.write(expected, partition_size=partition_size)
     # Assert
     assert_table_equals(table, expected)
+
+
+def _before_the_first_partitions_last_row(partitions):
+    return {"before": partitions[0].max}, partitions[:1]
+
+
+def _before_a_partitions_last_row(partitions):
+    return {"before": partitions[1].max}, partitions[:2]
+
+
+def _before_a_partitions_first_row(partitions):
+    return {"before": partitions[2].min}, partitions[:3]
+
+
+def _after_a_partitions_last_row(partitions):
+    return {"after": partitions[1].max}, partitions[1:]
+
+
+def _after_a_partitions_first_row(partitions):
+    return {"after": partitions[2].min}, partitions[2:]
+
+
+def _after_the_last_partitions_first_row(partitions):
+    return {"after": partitions[-1].min}, partitions[-1:]
+
+
+def _between_two_adjacent_partitions(partitions):
+    return {"between": [partitions[1].max, partitions[2].min]}, partitions[1:3]
+
+
+def _between_a_partitions_own_bounds(partitions):
+    return {"between": [partitions[2].min, partitions[2].max]}, partitions[2:3]
+
+
+def _rows_on_both_sides_of_a_seam(partitions):
+    return [partitions[1].max, partitions[2].min], partitions[1:3]
+
+
+SEAM_FILTERS = [
+    _before_the_first_partitions_last_row,
+    _before_a_partitions_last_row,
+    _before_a_partitions_first_row,
+    _after_a_partitions_last_row,
+    _after_a_partitions_first_row,
+    _after_the_last_partitions_first_row,
+    _between_two_adjacent_partitions,
+    _between_a_partitions_own_bounds,
+    _rows_on_both_sides_of_a_seam,
+]
+SEAM_FILTER_IDS = [seam_filter.__name__ for seam_filter in SEAM_FILTERS]
+
+
+@pytest.mark.parametrize("seam_filter", SEAM_FILTERS, ids=SEAM_FILTER_IDS)
+def test_reading_at_a_partition_seam_returns_the_boundary_rows(store, seam_filter):
+    # Arrange
+    original_df = make_table(default_index, astype="pandas")
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+
+    rows, _ = seam_filter(partition_layout(table))
+    _, expected = split_table(original_df, rows=rows)
+    # Act
+    df = table.read_pandas(rows=rows)
+    # Assert
+    assert_df_equals(df, expected)
+
+
+@pytest.mark.parametrize("seam_filter", SEAM_FILTERS, ids=SEAM_FILTER_IDS)
+def test_reading_at_a_partition_seam_prunes_to_the_matching_partitions(
+    store, seam_filter
+):
+    # Arrange
+    original_df = make_table(default_index, astype="pandas")
+    partition_size = get_partition_size(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size)
+
+    rows, expected = seam_filter(partition_layout(table))
+    # Act
+    pruned = pruned_partitions(table, rows)
+    # Assert
+    assert pruned == partition_names(expected)
 
 
 def _invalid_table_dtype():
