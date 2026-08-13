@@ -82,6 +82,8 @@ Enhancements:
 
 Bugfixes:
 
+* CI `ruff` steps now check lint and formatting instead of auto-fixing, so
+  style drift fails the job
 * Fixed store and table names such as ``..``, ``.``, and names containing
   path separators escaping the database directory; delete operations now
   resolve paths before checking they lie inside the database

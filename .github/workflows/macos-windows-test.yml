@@ -1,6 +1,6 @@
 # This workflow will install Python dependencies and run tests on recent
 # Python versions with the newest allowed dependencies on MacOS and Windows.
-# Mirrors: task test:all, task lint:fix
+# Mirrors: task test:all, task lint:check
 
 name: MacOS and Windows Tests
 
@@ -39,5 +39,5 @@ jobs:
       run: powershell -NoProfile -File .scripts/tests/run_all_tests.ps1
     - name: Lint with ruff
       run: |
-        uv run ruff check --fix featherstore tests
-        uv run ruff format featherstore tests
+        uv run ruff check featherstore tests
+        uv run ruff format --check featherstore tests
