@@ -5,11 +5,11 @@ per-class documentation.
 """
 
 
-class FeatherStoreException(Exception):
+class FeatherStoreError(Exception):
     """Base class for all FeatherStore domain errors."""
 
 
-class TableError(FeatherStoreException):
+class TableError(FeatherStoreError):
     """Base class for table-related errors."""
 
 
@@ -22,7 +22,7 @@ class TableAlreadyExistsError(TableError):
 
 
 class ForbiddenTableNameError(TableError):
-    """Raised when a table name is reserved."""
+    """Raised when a table name is reserved or not a valid path name."""
 
 
 class CannotDropAllRowsError(TableError):
@@ -37,7 +37,7 @@ class PartitionCountMismatchError(TableError):
     """Raised when partition count does not match partition names."""
 
 
-class StoreError(FeatherStoreException):
+class StoreError(FeatherStoreError):
     """Base class for store-related errors."""
 
 
@@ -50,14 +50,14 @@ class StoreAlreadyExistsError(StoreError):
 
 
 class ForbiddenStoreNameError(StoreError):
-    """Raised when a store name is reserved."""
+    """Raised when a store name is reserved or not a valid path name."""
 
 
 class StoreNotEmptyError(StoreError):
     """Raised when deleting a store that still contains tables."""
 
 
-class ColumnError(FeatherStoreException):
+class ColumnError(FeatherStoreError):
     """Base class for column-related errors."""
 
 
@@ -89,7 +89,7 @@ class MultiTypeColumnError(ColumnError):
     """Raised when a column contains multiple dtypes."""
 
 
-class RowError(FeatherStoreException):
+class RowError(FeatherStoreError):
     """Base class for row-related errors."""
 
 
@@ -105,7 +105,7 @@ class AppendIndexError(RowError):
     """Raised when append index is not strictly after stored data."""
 
 
-class IndexSchemaError(FeatherStoreException):
+class IndexSchemaError(FeatherStoreError):
     """Base class for index schema errors."""
 
 
@@ -141,7 +141,7 @@ class MissingIndexError(IndexSchemaError):
     """Raised when an index is required but not provided."""
 
 
-class DatabaseConnectionError(FeatherStoreException):
+class DatabaseConnectionError(FeatherStoreError):
     """Base class for database connection errors."""
 
 
@@ -165,7 +165,7 @@ class IncompatibleDatabaseVersionError(DatabaseConnectionError):
     """Raised when the database format versions are incompatible with this FeatherStore install."""
 
 
-class SnapshotError(FeatherStoreException):
+class SnapshotError(FeatherStoreError):
     """Base class for snapshot errors."""
 
 
@@ -181,7 +181,7 @@ class SnapshotTargetNotFoundError(SnapshotError):
     """Raised when the snapshot source path does not exist."""
 
 
-class PathError(FeatherStoreException):
+class PathError(FeatherStoreError):
     """Base class for path safety errors."""
 
 

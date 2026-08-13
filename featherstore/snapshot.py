@@ -4,6 +4,7 @@ import tarfile
 from datetime import UTC, datetime
 
 from featherstore import _utils
+from featherstore._table._raise_if import table_name_is_forbidden
 from featherstore.connection import Connection, current_db
 from featherstore.exceptions import (
     InvalidSnapshotError,
@@ -42,14 +43,18 @@ def restore_table(store_name, source, *, errors="raise"):
         If FeatherStore is not connected to a database.
     StoreNotFoundError
         If the target store does not exist.
+    ForbiddenStoreNameError
+        If ``store_name`` is reserved or not a valid path name.
     SnapshotNotFoundError
         If the snapshot file does not exist.
     InvalidSnapshotError
         If the file is not a snapshot of a table.
     TableAlreadyExistsError
         If ``errors='raise'`` and the table already exists.
+    ForbiddenTableNameError
+        If the archived table name is reserved or not a valid path name.
     TypeError
-        If ``store`` or ``source`` is not a str.
+        If ``store_name`` or ``source`` is not a str.
     ValueError
         If ``errors`` is not ``'raise'`` or ``'ignore'``.
     """
@@ -86,6 +91,8 @@ def restore_store(source, *, errors="raise"):
         If the file is not a snapshot of a store.
     StoreAlreadyExistsError
         If ``errors='raise'`` and the store already exists.
+    ForbiddenStoreNameError
+        If the archived store name is reserved or not a valid path name.
     TypeError
         If ``source`` is not a str.
     ValueError
@@ -121,11 +128,12 @@ def _extract_tar_member(tar, member, output_path):
 def _can_restore_table(store, source, errors):
     Connection._raise_if_not_connected()
     _utils.raise_if_errors_argument_is_not_valid(errors)
-    __raise_if_store_is_not_str(store)
+    _utils.raise_if_store_name_is_invalid(store)
     __raise_if_store_doesnt_exist(store)
     __raise_if_source_path_is_not_str(source)
     __raise_if_snapshot_not_found(source)
     __raise_if_not_snapshot_of_table(source)
+    __raise_if_archived_table_name_is_forbidden(source)
     __raise_if_table_already_exists(store, source, errors)
 
 
@@ -135,12 +143,20 @@ def _can_restore_store(source, errors):
     __raise_if_source_path_is_not_str(source)
     __raise_if_snapshot_not_found(source)
     __raise_if_not_snapshot_of_store(source)
+    __raise_if_archived_store_name_is_forbidden(source)
     __raise_if_store_already_exists(source, errors)
 
 
-def __raise_if_store_is_not_str(store):
-    if not isinstance(store, str):
-        raise TypeError(f"'store' must be of type str (is type {type(store)})")
+def __raise_if_archived_table_name_is_forbidden(source):
+    if ".tar.xz" not in source:
+        source = f"{source}.tar.xz"
+    table_name_is_forbidden(__get_name(source))
+
+
+def __raise_if_archived_store_name_is_forbidden(source):
+    if ".tar.xz" not in source:
+        source = f"{source}.tar.xz"
+    _utils.raise_if_store_name_is_invalid(__get_name(source))
 
 
 def __raise_if_store_doesnt_exist(store):

@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 
 from featherstore._windows_posix import _remove_path_posix
-from featherstore.exceptions import UnsafeDeletePathError
+from featherstore.exceptions import ForbiddenStoreNameError, UnsafeDeletePathError
 
 DB_MARKER_NAME = ".featherstore"
 METADATA_SCHEMA_VERSION = 1
@@ -40,9 +40,20 @@ def delete_folder_tree(path, db_path):
 
 
 def _is_in_database(path, db_path):
-    path = Path(path)
-    db_path = Path(db_path)
-    return db_path in path.parents or path == db_path
+    path = Path(path).resolve()
+    db_path = Path(db_path).resolve()
+    return path == db_path or db_path in path.parents
+
+
+def raise_if_store_name_is_invalid(store_name):
+    if not isinstance(store_name, str):
+        raise TypeError(f"'store_name' must be a str, is type {type(store_name)}")
+    if store_name == DB_MARKER_NAME or _is_unsafe_path_name(store_name):
+        raise ForbiddenStoreNameError(f"Store name {store_name!r} is forbidden")
+
+
+def _is_unsafe_path_name(name):
+    return name in {"", ".", ".."} or "/" in name or "\\" in name
 
 
 def __delete_folder_tree(path):

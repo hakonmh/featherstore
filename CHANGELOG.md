@@ -38,7 +38,7 @@ Enhancements:
   memory-mapped files on overwrite)
 * Broadened supported index types (decimal, float, uint, binary, duration, and
   more) with stricter validation in `_raise_if` and `_table_utils`
-* Added a hierarchical exception tree rooted at ``FeatherStoreException``,
+* Added a hierarchical exception tree rooted at ``FeatherStoreError``,
   with category bases (``TableError``, ``StoreError``, ``ColumnError``,
   ``RowError``, ``IndexSchemaError``, ``DatabaseConnectionError``,
   ``SnapshotError``, ``PathError``) and specific leaf exceptions such as
@@ -82,8 +82,9 @@ Enhancements:
 
 Bugfixes:
 
-* Fixed ``create_database(..., errors="ignore")`` rewriting an existing
-  ``.featherstore`` marker (PermissionError on Windows when the marker is hidden)
+* Fixed store and table names such as ``..``, ``.``, and names containing
+  path separators escaping the database directory; delete operations now
+  resolve paths before checking they lie inside the database
 * Fixed silent data loss on repeated mid-table ``insert_rows`` caused by
   lossy partition-ID round-trips (fractional IDs collapsed when generating
   new mid-gap partition names)

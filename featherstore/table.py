@@ -51,7 +51,7 @@ class Table:
         StoreNotFoundError
             If the store does not exist.
         ForbiddenTableNameError
-            If ``table_name`` is reserved.
+            If ``table_name`` is reserved or not a valid path name.
         TypeError
             If ``table_name`` is not a str.
         """
@@ -847,7 +847,7 @@ class Table:
         NotConnectedError
             If FeatherStore is not connected to a database.
         ForbiddenTableNameError
-            If ``to`` is reserved.
+            If ``to`` is reserved or not a valid path name.
         TableAlreadyExistsError
             If a table with the new name already exists.
         TypeError

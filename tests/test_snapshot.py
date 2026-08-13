@@ -3,7 +3,11 @@ import os
 import pytest
 
 import featherstore as fs
-from featherstore.exceptions import StoreAlreadyExistsError, TableAlreadyExistsError
+from featherstore.exceptions import (
+    ForbiddenStoreNameError,
+    StoreAlreadyExistsError,
+    TableAlreadyExistsError,
+)
 
 from .fixtures import (
     DB_PATH,
@@ -111,6 +115,19 @@ def test_restoring_snapshot_overwrites_existing_table(store, paths):
     table = store.select_table(TABLE_NAME)
     assert_table_equals(table, original_df)
     _assert_no_orphan_partitions(table)
+    # Teardown
+    paths.remove(SNAPSHOT_PATH)
+
+
+def test_restore_table_rejects_forbidden_store_name(store, paths):
+    # Arrange
+    original_df = make_table(astype="pandas")
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df)
+    table.create_snapshot(SNAPSHOT_PATH)
+    # Act / Assert
+    with pytest.raises(ForbiddenStoreNameError):
+        fs.snapshot.restore_table("..", SNAPSHOT_PATH)
     # Teardown
     paths.remove(SNAPSHOT_PATH)
 

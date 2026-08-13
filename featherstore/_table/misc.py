@@ -6,7 +6,7 @@ from featherstore._table import _raise_if
 
 def can_init_table(table_name, store_name):
     _raise_if.not_connected()
-    store._raise_if_store_name_is_str(store_name)
+    _utils.raise_if_store_name_is_invalid(store_name)
     store._raise_if_store_not_exists(store_name)
 
     _raise_if.table_name_is_not_str(table_name)

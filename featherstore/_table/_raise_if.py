@@ -8,6 +8,7 @@ import pyarrow as pa
 from featherstore._metadata import METADATA_FOLDER_NAME
 from featherstore._table import _table_utils, common
 from featherstore._table._indexers import ColIndexer, RowIndexer
+from featherstore._utils import _is_unsafe_path_name
 from featherstore.connection import Connection
 from featherstore.exceptions import (
     ColumnAlreadyExistsError,
@@ -51,10 +52,8 @@ def table_name_is_not_str(table_name):
 
 
 def table_name_is_forbidden(table_name):
-    if table_name == METADATA_FOLDER_NAME:
-        raise ForbiddenTableNameError(
-            f"Table name '{METADATA_FOLDER_NAME}' is forbidden"
-        )
+    if table_name == METADATA_FOLDER_NAME or _is_unsafe_path_name(table_name):
+        raise ForbiddenTableNameError(f"Table name {table_name!r} is forbidden")
 
 
 def df_is_not_table_type(df, allowed_types):
