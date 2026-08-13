@@ -865,6 +865,8 @@ class Table:
 
         os.rename(self._table_path, new_path)
         self._table_path = new_path
+        self._table_data = Metadata(self._table_path, "table")
+        self._partition_data = Metadata(self._table_path, "partition")
 
     def drop_table(self, *, warnings="warn"):
         """Deletes the current table

@@ -29,6 +29,19 @@ def test_rename_table(store):
     assert table_names == [NEW_TABLE_NAME]
 
 
+def test_rename_table_keeps_same_instance_readable(store):
+    # Arrange
+    NEW_TABLE_NAME = "new_table_name"
+    df = make_table()
+    table = store.select_table(TABLE_NAME)
+    table.write(df)
+    # Act
+    table.rename_table(to=NEW_TABLE_NAME)
+    # Assert
+    assert table.name == NEW_TABLE_NAME
+    assert_table_equals(table, df)
+
+
 def test_cannot_rename_table_to_forbidden_name(store):
     # Arrange
     df = make_table()

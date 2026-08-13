@@ -116,6 +116,8 @@ Bugfixes:
   which caused later reads to drop the index and replace it with ``0..n-1``
 * Fixed ``astype`` leaving ``has_default_index`` set after casting the index
   to a non-default type, so later reads dropped the converted index values
+* Fixed ``Table.rename_table`` leaving Metadata pointing at the old path, so
+  a later read on the same instance raised ``FileNotFoundError``
 
 0.2.1
 -----
