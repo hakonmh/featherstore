@@ -19,6 +19,15 @@ from . import _utils
 
 RANDS_CHARS = np.array(list(ascii_letters + " "))
 TIME32_INDEX_NAME = "Time"
+LARGE_BINARY_INDEX_NAME = "LargeBinary"
+FIXED_SIZE_BINARY_INDEX_NAME = "FixedSizeBinary"
+FIXED_SIZE_BINARY_WIDTH = 2
+
+_INDEX_ARROW_CASTS = {
+    TIME32_INDEX_NAME: pa.time32("ms"),
+    LARGE_BINARY_INDEX_NAME: pa.large_binary(),
+    FIXED_SIZE_BINARY_INDEX_NAME: pa.binary(FIXED_SIZE_BINARY_WIDTH),
+}
 
 
 def make_table(
@@ -119,7 +128,7 @@ def _convert_df_to(df, *, to):
     if backend != "pandas":
         df = pa.Table.from_pandas(df)
         df = _utils.format_arrow_table(df)
-        df = _cast_time32_index_if_needed(df)
+        df = _cast_index_if_needed(df)
     if backend == "polars":
         df = pl.from_arrow(df)
     if as_series:
@@ -252,6 +261,22 @@ def sorted_binary_index(rows):
     return index.sort_values()
 
 
+def sorted_large_binary_index(rows):
+    index = pd.Index(
+        [bytes(f"{idx:02d}", "ascii") for idx in range(rows)],
+        name=LARGE_BINARY_INDEX_NAME,
+    )
+    return index.sort_values()
+
+
+def sorted_fixed_size_binary_index(rows):
+    index = pd.Index(
+        [idx.to_bytes(FIXED_SIZE_BINARY_WIDTH, "big") for idx in range(rows)],
+        name=FIXED_SIZE_BINARY_INDEX_NAME,
+    )
+    return index.sort_values()
+
+
 def sorted_large_string_index(rows):
     index = pd.Index(
         pd.array([f"idx_{idx:04d}" for idx in range(rows)], dtype="string"),
@@ -260,11 +285,13 @@ def sorted_large_string_index(rows):
     return index.sort_values()
 
 
-def _cast_time32_index_if_needed(df):
+def _cast_index_if_needed(df):
     index_name = df.schema.pandas_metadata["index_columns"][0]
-    if index_name != TIME32_INDEX_NAME:
+    if not isinstance(index_name, str):
+        return df
+    target_type = _INDEX_ARROW_CASTS.get(index_name)
+    if target_type is None:
         return df
 
     col_idx = df.column_names.index(index_name)
-    index_col = df[index_name].cast(pa.time32("ms"))
-    return df.set_column(col_idx, index_name, index_col)
+    return df.set_column(col_idx, index_name, df[index_name].cast(target_type))

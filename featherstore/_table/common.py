@@ -213,6 +213,8 @@ def __categorical_num_categories(column):
 
 
 def _arrow_type_to_numpy_type(dtype):
+    if pa.types.is_fixed_size_binary(dtype):
+        return "object"
     arrow_type = str(dtype)
     mapping = {
         "double": "float64",

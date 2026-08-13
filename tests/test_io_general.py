@@ -32,7 +32,9 @@ from .fixtures import (
     sorted_date32_index,
     sorted_datetime_index,
     sorted_decimal_index,
+    sorted_fixed_size_binary_index,
     sorted_float_index,
+    sorted_large_binary_index,
     sorted_large_string_index,
     sorted_time32_index,
     sorted_timedelta_index,
@@ -73,6 +75,8 @@ EXOTIC_INDEX_ASTYPES = [
     (sorted_uint_index, "pandas[series]"),
     (sorted_decimal_index, "pandas[series]"),
     (sorted_binary_index, "pandas[series]"),
+    (sorted_large_binary_index, "arrow"),
+    (sorted_fixed_size_binary_index, "arrow"),
     (sorted_large_string_index, "arrow"),
 ]
 

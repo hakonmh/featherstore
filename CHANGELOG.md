@@ -118,6 +118,8 @@ Bugfixes:
   to a non-default type, so later reads dropped the converted index values
 * Fixed ``Table.rename_table`` leaving Metadata pointing at the old path, so
   a later read on the same instance raised ``FileNotFoundError``
+* Allowed ``large_binary`` and ``fixed_size_binary`` table indexes; both are
+  Arrow-sortable, matching ``binary`` and ``large_string``
 
 0.2.1
 -----
