@@ -108,6 +108,9 @@ Bugfixes:
 * Fixed SQL ``LIKE`` patterns treating regex metacharacters as special and
   crashing on empty patterns
 * Fixed snapshot restore accepting invalid ``errors`` values
+* Fixed ``connect()`` replacing the live connection before validation, so a
+  failed connect or reconnect left ``is_connected()`` raising
+  ``AttributeError`` and made ``disconnect()`` unusable
 
 0.2.1
 -----
