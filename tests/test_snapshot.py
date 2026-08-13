@@ -19,7 +19,7 @@ from .fixtures import (
 SNAPSHOT_PATH = os.path.join(DB_PATH, "table_snapshot.tar.xz")
 
 
-def test_table_snapshot(store):
+def test_table_snapshot(store, paths):
     # Arrange
     original_df = make_table(astype="pandas")
     partition_size = get_partition_size(original_df)
@@ -33,10 +33,10 @@ def test_table_snapshot(store):
     table = store.select_table(table_name)
     assert_table_equals(table, original_df)
     # Teardown
-    os.remove(SNAPSHOT_PATH)
+    paths.remove(SNAPSHOT_PATH)
 
 
-def test_store_snapshot(store):
+def test_store_snapshot(store, paths):
     # Arrange
     store_name = store.name
     original_df1 = make_table(astype="pandas")
@@ -52,7 +52,7 @@ def test_store_snapshot(store):
     # Assert
     _assert_store_equal(store_name, f"{store_name}2")
     # Teardown
-    os.remove(SNAPSHOT_PATH)
+    paths.remove(SNAPSHOT_PATH)
 
 
 def _assert_store_equal(store_name1, store_name2):
@@ -93,7 +93,7 @@ def test_that_restoring_snapshot_cannot_overwrite_existing_store(store):
         fs.snapshot.restore_store(SNAPSHOT_PATH)
 
 
-def test_restoring_snapshot_overwrites_existing_table(store):
+def test_restoring_snapshot_overwrites_existing_table(store, paths):
     # Arrange
     original_df = make_table(rows=2, cols=2, astype="pandas")
     larger_df = make_table(rows=50, cols=2, astype="pandas")
@@ -112,10 +112,10 @@ def test_restoring_snapshot_overwrites_existing_table(store):
     assert_table_equals(table, original_df)
     _assert_no_orphan_partitions(table)
     # Teardown
-    os.remove(SNAPSHOT_PATH)
+    paths.remove(SNAPSHOT_PATH)
 
 
-def test_that_restoring_snapshot_rejects_invalid_errors_argument(store):
+def test_that_restoring_snapshot_rejects_invalid_errors_argument(store, paths):
     # Arrange
     original_df = make_table(astype="pandas")
     table = store.select_table(TABLE_NAME)
@@ -125,7 +125,7 @@ def test_that_restoring_snapshot_rejects_invalid_errors_argument(store):
     with pytest.raises(ValueError):
         fs.snapshot.restore_table(STORE_NAME, SNAPSHOT_PATH, errors="invalid")
     # Teardown
-    os.remove(SNAPSHOT_PATH)
+    paths.remove(SNAPSHOT_PATH)
 
 
 def _assert_no_orphan_partitions(table):

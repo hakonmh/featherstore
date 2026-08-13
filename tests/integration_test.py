@@ -1,12 +1,25 @@
+import os
+import platform
+
 import pytest
 
+import featherstore as fs
+from featherstore.exceptions import NotConnectedError
+
 from .fixtures import (
+    DB_PATH,
     TABLE_NAME,
+    TABLE_PATH,
     assert_df_equals,
+    assert_table_equals,
     get_partition_size,
     make_table,
+    regenerate_values,
     split_table,
+    update_table,
 )
+from .fixtures.database import remove_database_marker
+from .fixtures.file_in_use import hold_partition_files
 
 
 @pytest.mark.integration
@@ -29,6 +42,27 @@ def test_windows_permission_error(store):
 
 
 @pytest.mark.integration
+@pytest.mark.skipif(platform.system() != "Windows", reason="Windows file locking")
+def test_drop_table_while_another_process_holds_partitions(store):
+    # Arrange
+    df = make_table(rows=200, astype="arrow")
+    partition_size = get_partition_size(df, num_partitions=20)
+    table = store.select_table(TABLE_NAME)
+    table.write(df, partition_size=partition_size)
+
+    # Act: drop (and recreate) while another process still holds the partition files
+    with hold_partition_files(TABLE_PATH):
+        table.drop_table()
+        assert not table.exists()
+        assert not os.path.exists(TABLE_PATH)
+        table.write(df, partition_size=partition_size)
+
+    # Assert: names were unlinked under the held handles, so recreate succeeded
+    assert_table_equals(table, df)
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(platform.system() != "Linux", reason="Linux memory mapping")
 def test_linux_memory_mapping(store):
     """Tests that altering an array doesn't change the underlying file"""
     # Arrange
@@ -44,3 +78,55 @@ def test_linux_memory_mapping(store):
     # Assert
     assert_df_equals(df, original_df)
     assert df != df1
+
+
+@pytest.mark.integration
+def test_table_data_survives_disconnect_reconnect_and_update(store):
+    # Arrange
+    original_df = make_table(astype="pandas")
+    _, update_df = split_table(
+        original_df, rows=[10, 13, 14, 21], cols=["c1", "c3", "c2"]
+    )
+    update_df = regenerate_values(update_df)
+    expected_df = update_table(original_df, update_df)
+    store.write_table(TABLE_NAME, original_df)
+
+    # Act
+    fs.disconnect()
+    fs.connect(DB_PATH)
+    after_reconnect = fs.Store(store.name).read_pandas(TABLE_NAME)
+    fs.Store(store.name).select_table(TABLE_NAME).update(update_df)
+    fs.disconnect()
+    fs.connect(DB_PATH)
+    after_update_reconnect = fs.Store(store.name).read_pandas(TABLE_NAME)
+
+    # Assert
+    assert_df_equals(after_reconnect, original_df)
+    assert_df_equals(after_update_reconnect, expected_df)
+
+
+@pytest.mark.integration
+def test_removing_database_marker_while_connected_makes_is_connected_false(create_db):
+    # Arrange
+    fs.connect(DB_PATH)
+    remove_database_marker(DB_PATH)
+    # Act
+    connected = fs.is_connected()
+    # Assert
+    assert not connected
+    # Teardown
+    fs.create_database(DB_PATH, errors="ignore", connect=True)
+    fs.disconnect()
+
+
+@pytest.mark.integration
+def test_removing_database_marker_while_connected_raises_not_connected(create_db):
+    # Arrange
+    fs.connect(DB_PATH)
+    remove_database_marker(DB_PATH)
+    # Act / Assert
+    with pytest.raises(NotConnectedError):
+        fs.current_db()
+    # Teardown
+    fs.create_database(DB_PATH, errors="ignore", connect=True)
+    fs.disconnect()

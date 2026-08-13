@@ -62,6 +62,8 @@ Hierarchy
     * :class:`~featherstore.exceptions.NotConnectedError`
     * :class:`~featherstore.exceptions.NotADatabaseError`
     * :class:`~featherstore.exceptions.PopulatedDirectoryError`
+    * :class:`~featherstore.exceptions.DatabaseNotEmptyError`
+    * :class:`~featherstore.exceptions.IncompatibleDatabaseVersionError`
 
   * :class:`~featherstore.exceptions.SnapshotError`
 

@@ -125,17 +125,7 @@ def list_stores(*, like=None):
         A list of the tables in the store
     """
     _can_list(like)
-
-    db_content = os.listdir(current_db())
-    if like:
-        pattern = like
-        db_content = _utils.filter_items_like_pattern(db_content, like=pattern)
-    stores = []
-    for item in db_content:
-        path = os.path.join(current_db(), item)
-        if os.path.isdir(path):
-            stores.append(item)
-    stores.sort()
+    stores = _utils.list_stores(current_db, like=like)
     return stores
 
 

@@ -4,11 +4,29 @@ Put small, standalone utilities here only when no other fixture module is
 a better home.
 """
 
+import os
+
 import pandas as pd
 import polars as pl
 import pyarrow as pa
 
+from featherstore import _utils
 from featherstore.table import DEFAULT_PARTITION_SIZE
+
+
+class Paths:
+    """Entry point for deleting files and trees via the production deletion stack."""
+
+    def remove(self, path):
+        _utils._remove_path(str(path))
+
+    def rmtree(self, path):
+        path = str(path)
+        if os.path.exists(path):
+            _utils.rmtree(path)
+
+
+paths = Paths()
 
 
 def get_partition_size(df, num_partitions=5):

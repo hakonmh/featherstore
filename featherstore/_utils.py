@@ -5,9 +5,13 @@ import re
 import time
 from pathlib import Path
 
+from featherstore._windows_posix import _remove_path_posix
 from featherstore.exceptions import UnsafeDeletePathError
 
 DB_MARKER_NAME = ".featherstore"
+METADATA_SCHEMA_VERSION = 1
+PARTITION_LAYOUT_VERSION = 1
+
 DEFAULT_ARROW_INDEX_NAME = "__index_level_0__"
 
 _WINDOWS_DELETE_RETRIES = 10
@@ -51,7 +55,7 @@ def __delete_folder_tree(path):
 def _remove_path(path):
     for attempt in range(_WINDOWS_DELETE_RETRIES):
         try:
-            os.remove(path)
+            _remove_path_posix(path)
             return
         except FileNotFoundError:
             return
@@ -78,6 +82,19 @@ def __isfile(path):
 
 def expand_home_dir_modifier(path):
     return os.path.expanduser(path)
+
+
+def list_stores(current_db, like=None):
+    db_content = os.listdir(current_db())
+    if like:
+        db_content = filter_items_like_pattern(db_content, like=like)
+    stores = []
+    for item in db_content:
+        path = os.path.join(current_db(), item)
+        if os.path.isdir(path):
+            stores.append(item)
+    stores.sort()
+    return stores
 
 
 def filter_items_like_pattern(items, *, like):

@@ -265,4 +265,4 @@ def __write_snapshot(output_path, input_path, metadata_path):
 
 
 def __delete_snapshot_metadata_file(metadata_path):
-    os.remove(metadata_path)
+    _utils._remove_path(metadata_path)

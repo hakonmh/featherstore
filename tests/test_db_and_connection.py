@@ -1,15 +1,22 @@
 import os
-import shutil
 import warnings
 
 import pytest
 
 import featherstore as fs
+from featherstore.exceptions import (
+    DatabaseNotEmptyError,
+    IncompatibleDatabaseVersionError,
+    NotADatabaseError,
+    NotConnectedError,
+    PopulatedDirectoryError,
+    StoreNotEmptyError,
+)
 
-from .fixtures import DB_PATH
+from .fixtures import DB_PATH, TABLE_NAME, make_table
 
 
-def test_create_database():
+def test_create_database(paths):
     # Arrange
     before_create_db = os.path.exists(DB_PATH)
     # Act
@@ -20,7 +27,7 @@ def test_create_database():
     assert db_exists_after_create_db and not before_create_db
     assert db_folder_is_db
     # Teardown
-    shutil.rmtree(DB_PATH)
+    paths.rmtree(DB_PATH)
 
 
 def test_database_exists(create_db):
@@ -28,12 +35,11 @@ def test_database_exists(create_db):
     assert not fs.database_exists(os.path.join(DB_PATH, "missing"))
 
 
-def test_database_exists_expands_home_dir_modifier():
+def test_database_exists_expands_home_dir_modifier(paths):
     # Arrange
     path = os.path.join("~", ".featherstore_test_db_exists")
     expanded = os.path.expanduser(path)
-    if os.path.exists(expanded):
-        shutil.rmtree(expanded)
+    paths.rmtree(expanded)
     fs.create_database(path, connect=False)
     # Act
     exists_with_modifier = fs.database_exists(path)
@@ -42,7 +48,7 @@ def test_database_exists_expands_home_dir_modifier():
     assert exists_with_modifier
     assert exists_expanded
     # Teardown
-    shutil.rmtree(expanded)
+    paths.rmtree(expanded)
 
 
 def test_connect(create_db):
@@ -69,6 +75,96 @@ def test_disconnect(create_db, connect_to_db):
     assert not is_connected
     # Teardown
     fs.connect(DB_PATH)
+
+
+def test_disconnect_raises_when_not_connected(create_db):
+    # Act / Assert
+    with pytest.raises(NotConnectedError):
+        fs.disconnect()
+
+
+def test_current_db_raises_when_not_connected(create_db):
+    # Act / Assert
+    with pytest.raises(NotConnectedError):
+        fs.current_db()
+
+
+def test_list_stores_raises_when_not_connected(create_db):
+    # Act / Assert
+    with pytest.raises(NotConnectedError):
+        fs.list_stores()
+
+
+def test_create_database_raises_when_directory_is_populated(empty_directory):
+    # Arrange
+    with open(os.path.join(DB_PATH, "dummy.txt"), "w", encoding="utf-8") as f:
+        f.write("x")
+    # Act / Assert
+    with pytest.raises(PopulatedDirectoryError):
+        fs.create_database(DB_PATH, connect=False)
+
+
+def test_create_database_can_ignore_populated_directory(empty_directory):
+    # Arrange
+    with open(os.path.join(DB_PATH, "dummy.txt"), "w", encoding="utf-8") as f:
+        f.write("x")
+    # Act
+    fs.create_database(DB_PATH, errors="ignore", connect=False)
+    # Assert
+    assert fs.database_exists(DB_PATH)
+
+
+def test_create_database_ignore_does_not_rewrite_existing_marker(create_db):
+    # Arrange
+    marker = os.path.join(DB_PATH, ".featherstore")
+    mtime_before = os.stat(marker).st_mtime_ns
+    # Act
+    fs.create_database(DB_PATH, errors="ignore", connect=False)
+    # Assert
+    assert os.stat(marker).st_mtime_ns == mtime_before
+
+
+def test_create_database_rejects_invalid_errors_argument():
+    # Act / Assert
+    with pytest.raises(ValueError, match="'errors' must be either"):
+        fs.create_database(DB_PATH, errors="invalid", connect=False)
+
+
+def test_drop_database(create_db, connect_to_db):
+    # Act
+    fs.drop_database(DB_PATH)
+    # Assert
+    assert not fs.is_connected()
+    assert not fs.database_exists(DB_PATH)
+    assert not os.path.exists(DB_PATH)
+
+
+def test_drop_database_raises_when_database_contains_stores(create_db, connect_to_db):
+    # Arrange
+    fs.create_store("test_store")
+    # Act / Assert
+    with pytest.raises(DatabaseNotEmptyError):
+        fs.drop_database(DB_PATH)
+
+
+def test_drop_database_raises_when_not_connected(create_db):
+    # Act / Assert
+    with pytest.raises(NotConnectedError):
+        fs.drop_database(DB_PATH)
+
+
+def test_drop_database_raises_when_path_is_not_current_database(
+    create_db, connect_to_db
+):
+    # Act / Assert
+    with pytest.raises(ValueError, match="currently connected database"):
+        fs.drop_database(os.path.join(DB_PATH, "other"))
+
+
+def test_drop_database_rejects_invalid_warnings_argument(create_db, connect_to_db):
+    # Act / Assert
+    with pytest.raises(ValueError, match="'warnings' must be either"):
+        fs.drop_database(DB_PATH, warnings="invalid")
 
 
 def test_create_store(create_db, connect_to_db):
@@ -124,6 +220,14 @@ def test_drop_store_can_ignore_missing_store_warning(create_db, connect_to_db):
         fs.drop_store("missing_store", warnings="ignore")
 
 
+def test_drop_store_raises_when_store_contains_tables(store):
+    # Arrange
+    store.write_table(TABLE_NAME, make_table(astype="pandas"))
+    # Act / Assert
+    with pytest.raises(StoreNotEmptyError):
+        fs.drop_store(store.name)
+
+
 def test_store_drop(store):
     # Act
     store.drop()
@@ -171,3 +275,65 @@ def test_list_stores(create_db, connect_to_db):
     stores = fs.list_stores(like="sto%")
     # Assert
     assert stores == ["stocks", "store"]
+
+
+def test_create_database_allows_connect(paths):
+    # Arrange
+    paths.rmtree(DB_PATH)
+    # Act
+    fs.create_database(DB_PATH)
+    # Assert
+    assert fs.is_connected()
+    assert fs.database_exists(DB_PATH)
+    # Teardown
+    fs.disconnect()
+    paths.rmtree(DB_PATH)
+
+
+@pytest.mark.parametrize(
+    "incompatible_database",
+    [
+        "empty_legacy_marker",
+        "invalid_json",
+        "missing_metadata_schema_version",
+        "non_integer_metadata_schema_version",
+        "outdated_metadata_schema",
+        "outdated_partition_layout",
+        "newer_metadata_schema",
+        "newer_partition_layout",
+    ],
+    indirect=True,
+)
+def test_connect_rejects_incompatible_database(incompatible_database):
+    # Act / Assert
+    with pytest.raises(IncompatibleDatabaseVersionError):
+        fs.connect(DB_PATH)
+
+
+@pytest.mark.parametrize(
+    "incompatible_database", ["empty_legacy_marker"], indirect=True
+)
+def test_database_exists_does_not_verify_format_compatibility(incompatible_database):
+    # Act
+    exists = fs.database_exists(DB_PATH)
+    # Assert
+    assert exists
+
+
+def test_connect_rejects_directory_without_database_marker(empty_directory):
+    # Act / Assert
+    with pytest.raises(NotADatabaseError):
+        fs.connect(DB_PATH)
+
+
+@pytest.mark.parametrize("incompatible_database", ["outdated_format"], indirect=True)
+def test_connect_reports_stored_and_expected_versions_on_mismatch(
+    incompatible_database,
+):
+    # Act / Assert
+    with pytest.raises(IncompatibleDatabaseVersionError) as exc_info:
+        fs.connect(DB_PATH)
+    message = str(exc_info.value)
+    assert "metadata_schema_version" in message
+    assert "partition_layout_version" in message
+    assert "expected" in message
