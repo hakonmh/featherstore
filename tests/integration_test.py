@@ -1,3 +1,6 @@
+import os
+import platform
+
 import pytest
 
 import featherstore as fs
@@ -6,7 +9,9 @@ from featherstore.exceptions import NotConnectedError
 from .fixtures import (
     DB_PATH,
     TABLE_NAME,
+    TABLE_PATH,
     assert_df_equals,
+    assert_table_equals,
     get_partition_size,
     make_table,
     regenerate_values,
@@ -14,6 +19,7 @@ from .fixtures import (
     update_table,
 )
 from .fixtures.database import remove_database_marker
+from .fixtures.file_in_use import hold_partition_files
 
 
 @pytest.mark.integration
@@ -36,6 +42,27 @@ def test_windows_permission_error(store):
 
 
 @pytest.mark.integration
+@pytest.mark.skipif(platform.system() != "Windows", reason="Windows file locking")
+def test_drop_table_while_another_process_holds_partitions(store):
+    # Arrange
+    df = make_table(rows=200, astype="arrow")
+    partition_size = get_partition_size(df, num_partitions=20)
+    table = store.select_table(TABLE_NAME)
+    table.write(df, partition_size=partition_size)
+
+    # Act: drop (and recreate) while another process still holds the partition files
+    with hold_partition_files(TABLE_PATH):
+        table.drop_table()
+        assert not table.exists()
+        assert not os.path.exists(TABLE_PATH)
+        table.write(df, partition_size=partition_size)
+
+    # Assert: names were unlinked under the held handles, so recreate succeeded
+    assert_table_equals(table, df)
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(platform.system() != "Linux", reason="Linux memory mapping")
 def test_linux_memory_mapping(store):
     """Tests that altering an array doesn't change the underlying file"""
     # Arrange

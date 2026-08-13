@@ -82,12 +82,17 @@ Enhancements:
 
 Bugfixes:
 
+* Fixed ``create_database(..., errors="ignore")`` rewriting an existing
+  ``.featherstore`` marker (PermissionError on Windows when the marker is hidden)
 * Fixed silent data loss on repeated mid-table ``insert_rows`` caused by
   lossy partition-ID round-trips (fractional IDs collapsed when generating
   new mid-gap partition names)
 * Fixed intermittent `PermissionError` (WinError 32) on Windows when deleting
   partition files during bulk cleanup (e.g. `drop_table()`); file removal now
-  retries `os.remove` instead of shelling out to `del`
+  uses runtime-probed POSIX delete semantics on Windows 10+ (including
+  Windows 11 and later) via ``SetFileInformationByHandle``, falling back to
+  ``os.remove`` only when the API or filesystem reports the operation as
+  unsupported, with the existing short retry loop kept as secondary protection
 * Fixed snapshot restore with ``errors="ignore"`` leaving orphan partition
   files or tables behind
 * Fixed ``astype`` not refreshing ``index_dtype`` metadata when casting the

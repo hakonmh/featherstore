@@ -1,12 +1,11 @@
 import os
-import shutil
 
 from featherstore._metadata import METADATA_FOLDER_NAME, Metadata
 
 from .fixtures import DB_PATH
 
 
-def test_create():
+def test_create(paths):
     # Arrange
     MD_PATH = os.path.join(DB_PATH, METADATA_FOLDER_NAME)
     metadata = Metadata(DB_PATH, METADATA_FOLDER_NAME)
@@ -15,7 +14,7 @@ def test_create():
     # Assert
     assert os.path.exists(MD_PATH)
     # Teardown
-    shutil.rmtree(DB_PATH, ignore_errors=False)
+    paths.rmtree(DB_PATH)
 
 
 def test_io(metadata):

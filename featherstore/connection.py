@@ -70,7 +70,8 @@ def create_database(path, *, errors="raise", connect=True):
     path = expand_home_dir_modifier(path)
     if not os.path.exists(path):
         os.mkdir(path)
-    write_database_marker(path)
+    if not (errors == "ignore" and database_exists(path)):
+        write_database_marker(path)
     if connect:
         Connection(path)
 

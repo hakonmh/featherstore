@@ -3,6 +3,8 @@ import os
 
 import featherstore as fs
 
+from .misc import paths
+
 
 def _marker_path(db_path):
     for name in os.listdir(db_path):
@@ -14,7 +16,7 @@ def _marker_path(db_path):
 
 def remove_database_marker(db_path):
     """Delete the database marker file from ``db_path``."""
-    os.remove(_marker_path(db_path))
+    paths.remove(_marker_path(db_path))
 
 
 def _read_marker(db_path):
@@ -24,7 +26,7 @@ def _read_marker(db_path):
 
 def _replace_marker(db_path, content):
     marker_file = _marker_path(db_path)
-    os.remove(marker_file)
+    paths.remove(marker_file)
     with open(marker_file, "w", encoding="utf-8") as f:
         if isinstance(content, dict):
             json.dump(content, f)

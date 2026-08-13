@@ -34,7 +34,7 @@ from .make_table import (
     unsorted_int_index,
     unsorted_string_index,
 )
-from .misc import get_partition_size
+from .misc import get_partition_size, paths
 from .partitions import (
     assert_partition_bounds_are_ordered,
     assert_partition_metadata_matches_files,
@@ -75,6 +75,7 @@ __all__ = [
     "make_table",
     "partition_layout",
     "partition_names",
+    "paths",
     "pruned_partitions",
     "regenerate_values",
     "shuffle_cols",

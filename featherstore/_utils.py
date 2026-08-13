@@ -5,6 +5,7 @@ import re
 import time
 from pathlib import Path
 
+from featherstore._windows_posix import _remove_path_posix
 from featherstore.exceptions import UnsafeDeletePathError
 
 DB_MARKER_NAME = ".featherstore"
@@ -54,7 +55,7 @@ def __delete_folder_tree(path):
 def _remove_path(path):
     for attempt in range(_WINDOWS_DELETE_RETRIES):
         try:
-            os.remove(path)
+            _remove_path_posix(path)
             return
         except FileNotFoundError:
             return

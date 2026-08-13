@@ -68,7 +68,7 @@ class Metadata:
     def _compact(self):
         if len(self) > len(self.index) * 2:
             items = self.read()
-            os.remove(self._db_path)
+            _utils._remove_path(self._db_path)
             self.index._db_size = 0
             self.write(items)
 

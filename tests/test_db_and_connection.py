@@ -1,5 +1,4 @@
 import os
-import shutil
 import warnings
 
 import pytest
@@ -17,7 +16,7 @@ from featherstore.exceptions import (
 from .fixtures import DB_PATH, TABLE_NAME, make_table
 
 
-def test_create_database():
+def test_create_database(paths):
     # Arrange
     before_create_db = os.path.exists(DB_PATH)
     # Act
@@ -28,7 +27,7 @@ def test_create_database():
     assert db_exists_after_create_db and not before_create_db
     assert db_folder_is_db
     # Teardown
-    shutil.rmtree(DB_PATH)
+    paths.rmtree(DB_PATH)
 
 
 def test_database_exists(create_db):
@@ -36,12 +35,11 @@ def test_database_exists(create_db):
     assert not fs.database_exists(os.path.join(DB_PATH, "missing"))
 
 
-def test_database_exists_expands_home_dir_modifier():
+def test_database_exists_expands_home_dir_modifier(paths):
     # Arrange
     path = os.path.join("~", ".featherstore_test_db_exists")
     expanded = os.path.expanduser(path)
-    if os.path.exists(expanded):
-        shutil.rmtree(expanded)
+    paths.rmtree(expanded)
     fs.create_database(path, connect=False)
     # Act
     exists_with_modifier = fs.database_exists(path)
@@ -50,7 +48,7 @@ def test_database_exists_expands_home_dir_modifier():
     assert exists_with_modifier
     assert exists_expanded
     # Teardown
-    shutil.rmtree(expanded)
+    paths.rmtree(expanded)
 
 
 def test_connect(create_db):
@@ -114,6 +112,16 @@ def test_create_database_can_ignore_populated_directory(empty_directory):
     fs.create_database(DB_PATH, errors="ignore", connect=False)
     # Assert
     assert fs.database_exists(DB_PATH)
+
+
+def test_create_database_ignore_does_not_rewrite_existing_marker(create_db):
+    # Arrange
+    marker = os.path.join(DB_PATH, ".featherstore")
+    mtime_before = os.stat(marker).st_mtime_ns
+    # Act
+    fs.create_database(DB_PATH, errors="ignore", connect=False)
+    # Assert
+    assert os.stat(marker).st_mtime_ns == mtime_before
 
 
 def test_create_database_rejects_invalid_errors_argument():
@@ -269,10 +277,9 @@ def test_list_stores(create_db, connect_to_db):
     assert stores == ["stocks", "store"]
 
 
-def test_create_database_allows_connect():
+def test_create_database_allows_connect(paths):
     # Arrange
-    if os.path.exists(DB_PATH):
-        shutil.rmtree(DB_PATH)
+    paths.rmtree(DB_PATH)
     # Act
     fs.create_database(DB_PATH)
     # Assert
@@ -280,7 +287,7 @@ def test_create_database_allows_connect():
     assert fs.database_exists(DB_PATH)
     # Teardown
     fs.disconnect()
-    shutil.rmtree(DB_PATH)
+    paths.rmtree(DB_PATH)
 
 
 @pytest.mark.parametrize(
