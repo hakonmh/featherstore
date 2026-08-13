@@ -111,6 +111,11 @@ Bugfixes:
 * Fixed ``connect()`` replacing the live connection before validation, so a
   failed connect or reconnect left ``is_connected()`` raising
   ``AttributeError`` and made ``disconnect()`` unusable
+* Fixed ``insert_rows`` keeping ``has_default_index`` when new ids are
+  consecutive with each other but leave a gap after the last stored value,
+  which caused later reads to drop the index and replace it with ``0..n-1``
+* Fixed ``astype`` leaving ``has_default_index`` set after casting the index
+  to a non-default type, so later reads dropped the converted index values
 
 0.2.1
 -----

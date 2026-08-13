@@ -45,14 +45,13 @@ def has_still_default_index(table, df):
 
     index_name = table._table_data["index_name"]
     rows = df[index_name]
+    if len(rows) == 0:
+        return True
+
     last_stored_value = _partitions.get_last_stored_index_value(table._partition_data)
     first_row_value = rows[0].as_py()
-
     rows_are_continuous = all(
         a.as_py() + 1 == b.as_py() for a, b in itertools.pairwise(rows)
     )
-    if first_row_value > last_stored_value and rows_are_continuous or len(rows) == 0:
-        _has_still_default_index = True
-    else:
-        _has_still_default_index = False
-    return _has_still_default_index
+    starts_immediately_after = first_row_value == last_stored_value + 1
+    return starts_immediately_after and rows_are_continuous

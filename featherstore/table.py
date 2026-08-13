@@ -820,12 +820,17 @@ class Table:
 
         df = astype.change_type(df, astype_mapping)
         df = common.format_table(df, index_name=index_name, warnings=False)
+        has_default_index = astype.has_still_default_index(self, df)
 
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
         partitions = astype.create_partitions(df, rows_per_partition, partition_names)
 
         metadata = common.update_metadata(
-            self, partitions, partition_names, rows_per_partition=rows_per_partition
+            self,
+            partitions,
+            partition_names,
+            rows_per_partition=rows_per_partition,
+            has_default_index=has_default_index,
         )
 
         partitions_to_drop = astype.get_partitions_to_drop(partitions, partition_names)

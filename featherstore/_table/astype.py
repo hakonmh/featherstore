@@ -55,6 +55,13 @@ def change_type(df, cols):
     return df
 
 
+def has_still_default_index(table, df):
+    if not table._table_data["has_default_index"]:
+        return False
+    index_name = table._table_data["index_name"]
+    return pa.types.is_integer(df[index_name].type)
+
+
 def _convert_to_pa_dtype(dtype):
     if __is_valid_dtype(dtype):
         dtype = pa.from_numpy_dtype(dtype)
