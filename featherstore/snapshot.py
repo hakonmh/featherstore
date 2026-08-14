@@ -16,6 +16,7 @@ from featherstore.exceptions import (
 )
 
 METADATA_FILE_NAME = "metadata.pkl"
+_SNAPSHOT_ARCHIVE_SUFFIX = ".tar.xz"
 
 
 def restore_table(store_name, source, *, errors="raise"):
@@ -104,8 +105,7 @@ def restore_store(source, *, errors="raise"):
 
 
 def _extract_snapshot(output_path, source):
-    if ".tar.xz" not in source:
-        source = f"{source}.tar.xz"
+    source = __with_snapshot_suffix(source)
     with tarfile.open(source, "r") as tar:
         members = tar.getnames()
         members.remove(METADATA_FILE_NAME)
@@ -129,57 +129,59 @@ def _can_restore_table(store, source, errors):
     Connection._raise_if_not_connected()
     _utils.raise_if_errors_argument_is_not_valid(errors)
     _utils.raise_if_store_name_is_invalid(store)
-    __raise_if_store_doesnt_exist(store)
-    __raise_if_source_path_is_not_str(source)
-    __raise_if_snapshot_not_found(source)
-    __raise_if_not_snapshot_of_table(source)
-    __raise_if_archived_table_name_is_forbidden(source)
-    __raise_if_table_already_exists(store, source, errors)
+    _raise_if_store_doesnt_exist(store)
+    _raise_if_source_path_is_not_str(source)
+    _raise_if_snapshot_not_found(source)
+    _raise_if_not_snapshot_of_table(source)
+    _raise_if_archived_table_name_is_forbidden(source)
+    _raise_if_table_already_exists(store, source, errors)
 
 
 def _can_restore_store(source, errors):
     Connection._raise_if_not_connected()
     _utils.raise_if_errors_argument_is_not_valid(errors)
-    __raise_if_source_path_is_not_str(source)
-    __raise_if_snapshot_not_found(source)
-    __raise_if_not_snapshot_of_store(source)
-    __raise_if_archived_store_name_is_forbidden(source)
-    __raise_if_store_already_exists(source, errors)
+    _raise_if_source_path_is_not_str(source)
+    _raise_if_snapshot_not_found(source)
+    _raise_if_not_snapshot_of_store(source)
+    _raise_if_archived_store_name_is_forbidden(source)
+    _raise_if_store_already_exists(source, errors)
 
 
-def __raise_if_archived_table_name_is_forbidden(source):
-    if ".tar.xz" not in source:
-        source = f"{source}.tar.xz"
+def _raise_if_archived_table_name_is_forbidden(source):
+    source = __with_snapshot_suffix(source)
     table_name_is_forbidden(__get_name(source))
 
 
-def __raise_if_archived_store_name_is_forbidden(source):
-    if ".tar.xz" not in source:
-        source = f"{source}.tar.xz"
+def __with_snapshot_suffix(path):
+    if path.endswith(_SNAPSHOT_ARCHIVE_SUFFIX):
+        return path
+    return f"{path}{_SNAPSHOT_ARCHIVE_SUFFIX}"
+
+
+def _raise_if_archived_store_name_is_forbidden(source):
+    source = __with_snapshot_suffix(source)
     _utils.raise_if_store_name_is_invalid(__get_name(source))
 
 
-def __raise_if_store_doesnt_exist(store):
+def _raise_if_store_doesnt_exist(store):
     store_path = os.path.join(current_db(), store)
     if not os.path.exists(store_path):
         raise StoreNotFoundError(f"'store' not found (store={store!r})")
 
 
-def __raise_if_source_path_is_not_str(source):
+def _raise_if_source_path_is_not_str(source):
     if not isinstance(source, str):
         raise TypeError(f"'source' must be of type str (is type {type(source)})")
 
 
-def __raise_if_snapshot_not_found(source):
-    if ".tar.xz" not in source:
-        source = f"{source}.tar.xz"
+def _raise_if_snapshot_not_found(source):
+    source = __with_snapshot_suffix(source)
     if not os.path.exists(source):
         raise SnapshotNotFoundError(f"Snapshot not found (source={source!r})")
 
 
-def __raise_if_not_snapshot_of_table(source):
-    if ".tar.xz" not in source:
-        source = f"{source}.tar.xz"
+def _raise_if_not_snapshot_of_table(source):
+    source = __with_snapshot_suffix(source)
 
     with tarfile.open(source, "r") as tar:
         metadata = tar.extractfile(METADATA_FILE_NAME).read()
@@ -190,12 +192,11 @@ def __raise_if_not_snapshot_of_table(source):
         )
 
 
-def __raise_if_table_already_exists(store, source, errors):
+def _raise_if_table_already_exists(store, source, errors):
     if errors == "raise":
         store_path = os.path.join(current_db(), store)
 
-        if ".tar.xz" not in source:
-            source = f"{source}.tar.xz"
+        source = __with_snapshot_suffix(source)
         table_name = __get_name(source)
 
         if table_name in os.listdir(store_path):
@@ -204,18 +205,16 @@ def __raise_if_table_already_exists(store, source, errors):
             )
 
 
-def __raise_if_store_already_exists(source, errors):
-    if ".tar.xz" not in source:
-        source = f"{source}.tar.xz"
+def _raise_if_store_already_exists(source, errors):
+    source = __with_snapshot_suffix(source)
     store_name = __get_name(source)
 
     if store_name in os.listdir(current_db()) and errors == "raise":
         raise StoreAlreadyExistsError(f"A store with name {store_name} already exists")
 
 
-def __raise_if_not_snapshot_of_store(source):
-    if ".tar.xz" not in source:
-        source = f"{source}.tar.xz"
+def _raise_if_not_snapshot_of_store(source):
+    source = __with_snapshot_suffix(source)
 
     with tarfile.open(source, "r") as tar:
         metadata = tar.extractfile(METADATA_FILE_NAME).read()
@@ -247,19 +246,19 @@ def _create_snapshot(output_path, input_path, input_type):
 
 def _can_create_snapshot(output_path, input_path, input_type):
     Connection._raise_if_not_connected()
-    __raise_if_source_path_is_not_str(output_path)
-    __raise_if_input_doesnt_exists(input_path)
-    __raise_if_input_type_is_not_valid(input_type)
+    _raise_if_source_path_is_not_str(output_path)
+    _raise_if_input_doesnt_exists(input_path)
+    _raise_if_input_type_is_not_valid(input_type)
 
 
-def __raise_if_input_doesnt_exists(input_path):
+def _raise_if_input_doesnt_exists(input_path):
     if not os.path.exists(input_path):
         raise SnapshotTargetNotFoundError(
             f"Snapshot target not found (input_path={input_path!r})"
         )
 
 
-def __raise_if_input_type_is_not_valid(input_type):
+def _raise_if_input_type_is_not_valid(input_type):
     if input_type not in ("table", "store"):
         raise ValueError("Input type should be either 'table' or 'store")
 
@@ -272,8 +271,7 @@ def __create_snapshot_metadata(metadata_path, source_type):
 
 
 def __write_snapshot(output_path, input_path, metadata_path):
-    if "tar.xz" not in output_path:
-        output_path = f"{output_path}.tar.xz"
+    output_path = __with_snapshot_suffix(output_path)
 
     with tarfile.open(output_path, "w:xz") as tar:
         tar.add(input_path, arcname=os.path.basename(input_path))

@@ -83,6 +83,10 @@ Enhancements:
 
 Bugfixes:
 
+* Snapshot paths only skip appending ``.tar.xz`` when they already end with
+  that suffix (substring matches such as ``backup.tar.xz.old`` no longer
+  skip it)
+* Windows CI now runs Python 3.13 as well as 3.11, 3.12, and 3.14
 * Corrected documentation drift: Sphinx ``release`` tracks
   ``featherstore.__version__``, write/index docs list the supported index
   types, ``list_stores`` / ``drop_columns`` copy-paste errors are fixed,
