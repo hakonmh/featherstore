@@ -5,6 +5,8 @@ Put dtype-change helpers that operate on in-memory Arrow tables here.
 
 import pyarrow as pa
 
+from . import _utils
+
 
 def change_dtype(df, to, index_name="index", cols=None):
     target_dtype = to_arrow_dtype(to)
@@ -13,6 +15,19 @@ def change_dtype(df, to, index_name="index", cols=None):
     schema = _replace_column_dtypes(df.schema, target_dtype, cols_to_cast, index_name)
     df = df.cast(schema)
     return _drop_pandas_metadata(df)
+
+
+def cast_timestamp_index(df, *, unit=None, tz=None):
+    index_name = _utils.get_index_name(df)
+    current_type = df.field(index_name).type
+    if unit is None:
+        unit = current_type.unit
+    if tz is None:
+        tz = current_type.tz
+    col_idx = df.column_names.index(index_name)
+    return df.set_column(
+        col_idx, index_name, df[index_name].cast(pa.timestamp(unit, tz=tz))
+    )
 
 
 def _replace_column_dtypes(schema, dtype, cols, index_name):

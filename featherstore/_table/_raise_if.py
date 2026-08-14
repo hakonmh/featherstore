@@ -352,8 +352,22 @@ def _normalize_index_dtype(dtype):
     if dtype in _STRING_ARROW_TYPES:
         return "string"
     if dtype.startswith("timestamp"):
-        return "timestamp"
+        return _normalize_timestamp_dtype(dtype)
     return dtype
+
+
+def _normalize_timestamp_dtype(dtype):
+    tz = _timestamp_tz(dtype)
+    if tz is None:
+        return "timestamp[ns]"
+    return f"timestamp[ns, tz={tz}]"
+
+
+def _timestamp_tz(dtype):
+    marker = ", tz="
+    if marker not in dtype:
+        return None
+    return dtype.split(marker, 1)[1].removesuffix("]")
 
 
 def index_name_not_same_as_stored_index(df, table_data):

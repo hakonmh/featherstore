@@ -185,7 +185,7 @@ def __get_numpy_dtype_info(dtype, column=None):
         numpy_dtype = f"datetime64[{resolution}]"
         tz = getattr(dtype, "tz", None)
         if tz is not None:
-            extra_metadata = {"timezone": pa.lib.tzinfo_to_string(tz)}
+            extra_metadata = {"timezone": _timezone_to_string(tz)}
         else:
             extra_metadata = None
     elif pd_dtype[:4] == "list":
@@ -322,10 +322,17 @@ def _compute_table_metadata_update(table, new_partitions_data, dropped_partition
 
 
 def _arrow_temporal_resolution(dtype):
-    resolution = str(dtype).split("[")[-1].split("]")[0]
+    inner = str(dtype).split("[")[-1].split("]")[0]
+    resolution = inner.split(",", 1)[0]
     if resolution == "day":
         resolution = "D"
     return resolution
+
+
+def _timezone_to_string(tz):
+    if isinstance(tz, str):
+        return tz
+    return pa.lib.tzinfo_to_string(tz)
 
 
 def _get_dropped_partitions_data(partition_data, partition_names):

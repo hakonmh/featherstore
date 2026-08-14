@@ -79,9 +79,13 @@ Enhancements:
   to `tests/fixtures`
 * Applied ruff formatting across `featherstore`, `tests`, and `benchmarks`
 * Internal benchmark logs now write to `.dev/bmarks`
+* Timezone-aware timestamp indexes can be written; pandas metadata now
+  accepts Arrow's string ``tz`` and uses only the time unit as resolution
 
 Bugfixes:
 
+* Timestamp index comparison still treats units as ns, but now keeps the
+  timezone so naive and tz-aware indexes (and different zones) mismatch
 * CI `ruff` steps now check lint and formatting instead of auto-fixing, so
   style drift fails the job
 * Fixed store and table names such as ``..``, ``.``, and names containing

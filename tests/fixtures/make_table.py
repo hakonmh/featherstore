@@ -41,7 +41,7 @@ def make_table(
         index = None
     if index is not None:
         df.index = index(rows, **kwargs)
-    df = _convert_df_to(df, to=astype)
+    df = _convert_df_to(df, to=astype, index_factory=index)
     return df
 
 
@@ -123,12 +123,12 @@ def _make_bool_column(rows, rng=None):
     return rng.integers(0, 2, size=rows, dtype=bool)
 
 
-def _convert_df_to(df, *, to):
+def _convert_df_to(df, *, to, index_factory=None):
     backend, as_series = _utils.parse_astype(to)
     if backend != "pandas":
         df = pa.Table.from_pandas(df)
         df = _utils.format_arrow_table(df)
-        df = _cast_index_if_needed(df)
+        df = _cast_index_if_needed(df, index_factory)
     if backend == "polars":
         df = pl.from_arrow(df)
     if as_series:
@@ -177,6 +177,15 @@ def continuous_datetime_index(rows):
     index = pd.Index(index)
     index.name = "Date"
     return index
+
+
+def timestamp_index(*, unit="ns", tz=None, start="2021-01-01"):
+    def factory(rows, **_kwargs):
+        values = pd.date_range(start, periods=rows, freq="D", tz=tz)
+        return pd.Index(values, name="Date")
+
+    factory.arrow_type = pa.timestamp(unit, tz=tz)
+    return factory
 
 
 def continuous_string_index(rows, size=2):
@@ -285,11 +294,13 @@ def sorted_large_string_index(rows):
     return index.sort_values()
 
 
-def _cast_index_if_needed(df):
+def _cast_index_if_needed(df, index_factory=None):
     index_name = df.schema.pandas_metadata["index_columns"][0]
     if not isinstance(index_name, str):
         return df
-    target_type = _INDEX_ARROW_CASTS.get(index_name)
+    target_type = getattr(index_factory, "arrow_type", None)
+    if target_type is None:
+        target_type = _INDEX_ARROW_CASTS.get(index_name)
     if target_type is None:
         return df
 
