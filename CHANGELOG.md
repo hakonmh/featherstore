@@ -88,6 +88,8 @@ Bugfixes:
   timezone so naive and tz-aware indexes (and different zones) mismatch
 * CI `ruff` steps now check lint and formatting instead of auto-fixing, so
   style drift fails the job
+* ``run_all_tests.sh`` no longer uses bash 4 associative arrays, so
+  ``task test:all`` and the macOS CI job work on macOS system bash 3.2
 * Fixed store and table names such as ``..``, ``.``, and names containing
   path separators escaping the database directory; delete operations now
   resolve paths before checking they lie inside the database
