@@ -17,6 +17,7 @@ from .fixtures import (
     assert_partition_bounds_are_ordered,
     assert_partition_metadata_matches_files,
     assert_table_equals,
+    cast_timestamp_index,
     convert_table,
     default_index,
     get_index_name,
@@ -30,6 +31,7 @@ from .fixtures import (
     sorted_datetime_index,
     sorted_string_index,
     split_table,
+    timestamp_index,
 )
 
 
@@ -226,4 +228,39 @@ def test_can_append_table(store, append_df, exception):
     table.write(original_df)
     # Act and Assert
     with pytest.raises(exception):
+        table.append(append_df)
+
+
+@pytest.mark.parametrize("tz", [None, "UTC"])
+def test_append_allows_timestamp_unit_mismatch_when_timezones_match(store, tz):
+    # Arrange
+    expected = make_table(timestamp_index(tz=tz), astype="arrow")
+    original_df, append_df = split_table(expected, rows={"after": 20}, iloc=True)
+    append_df = cast_timestamp_index(append_df, unit="us")
+
+    partition_size = get_partition_size(original_df)
+    index_name = get_index_name(original_df)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, partition_size=partition_size, index=index_name)
+    # Act
+    table.append(append_df, warnings="ignore")
+    # Assert
+    assert_table_equals(table, expected)
+
+
+@pytest.mark.parametrize(
+    ("stored_tz", "append_tz"),
+    [(None, "UTC"), ("UTC", "Europe/Oslo")],
+)
+def test_append_rejects_timestamp_index_when_timezones_differ(
+    store, stored_tz, append_tz
+):
+    # Arrange
+    df = make_table(timestamp_index(tz=stored_tz), astype="arrow")
+    original_df, append_df = split_table(df, rows={"after": 20}, iloc=True)
+    append_df = cast_timestamp_index(append_df, tz=append_tz)
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df, index=get_index_name(original_df))
+    # Act and Assert
+    with pytest.raises(IndexTypeMismatchError):
         table.append(append_df)

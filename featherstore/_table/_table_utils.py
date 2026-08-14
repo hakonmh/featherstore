@@ -194,6 +194,8 @@ def _pa_index_type_is_supported(dtype):
             pa.types.is_floating,
             pa.types.is_decimal,
             pa.types.is_binary,
+            pa.types.is_large_binary,
+            pa.types.is_fixed_size_binary,
             pa.types.is_string,
             pa.types.is_large_string,
             pa.types.is_temporal,

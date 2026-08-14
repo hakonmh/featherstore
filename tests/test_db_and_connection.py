@@ -6,6 +6,7 @@ import pytest
 import featherstore as fs
 from featherstore.exceptions import (
     DatabaseNotEmptyError,
+    ForbiddenStoreNameError,
     IncompatibleDatabaseVersionError,
     NotADatabaseError,
     NotConnectedError,
@@ -275,6 +276,66 @@ def test_list_stores(create_db, connect_to_db):
     stores = fs.list_stores(like="sto%")
     # Assert
     assert stores == ["stocks", "store"]
+
+
+FORBIDDEN_STORE_NAMES = (
+    "",
+    ".",
+    "..",
+    "../outside_target",
+    "..\\outside_target",
+    "foo/bar",
+    "foo\\bar",
+    ".featherstore",
+)
+
+
+@pytest.mark.parametrize("store_name", FORBIDDEN_STORE_NAMES, ids=repr)
+def test_create_store_rejects_forbidden_name(create_db, connect_to_db, store_name):
+    # Act / Assert
+    with pytest.raises(ForbiddenStoreNameError):
+        fs.create_store(store_name)
+
+
+@pytest.mark.parametrize("store_name", FORBIDDEN_STORE_NAMES, ids=repr)
+def test_store_init_rejects_forbidden_name(create_db, connect_to_db, store_name):
+    # Act / Assert
+    with pytest.raises(ForbiddenStoreNameError):
+        fs.Store(store_name)
+
+
+@pytest.mark.parametrize("store_name", FORBIDDEN_STORE_NAMES, ids=repr)
+def test_store_exists_rejects_forbidden_name(create_db, connect_to_db, store_name):
+    # Act / Assert
+    with pytest.raises(ForbiddenStoreNameError):
+        fs.store_exists(store_name)
+
+
+@pytest.mark.parametrize("store_name", FORBIDDEN_STORE_NAMES, ids=repr)
+def test_drop_store_rejects_forbidden_name(create_db, connect_to_db, store_name):
+    # Act / Assert
+    with pytest.raises(ForbiddenStoreNameError):
+        fs.drop_store(store_name)
+
+
+@pytest.mark.parametrize("store_name", FORBIDDEN_STORE_NAMES, ids=repr)
+def test_rename_store_rejects_forbidden_name(store, store_name):
+    # Act / Assert
+    with pytest.raises(ForbiddenStoreNameError):
+        store.rename(to=store_name)
+
+
+def test_create_store_allows_name_containing_double_dot(create_db, connect_to_db):
+    # Act
+    fs.create_store("foo..bar")
+    # Assert
+    assert fs.list_stores() == ["foo..bar"]
+
+
+def test_table_rejects_forbidden_store_name(store):
+    # Act / Assert
+    with pytest.raises(ForbiddenStoreNameError):
+        fs.Table("table_name", "..")
 
 
 def test_create_database_allows_connect(paths):

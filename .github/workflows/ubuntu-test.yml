@@ -1,6 +1,6 @@
 # This workflow will install Python dependencies, run tests and lint on Python 3.11
 # with the minimum versions of the dependencies on Ubuntu.
-# Mirrors: task test:all, task lint:fix, task docs:lint
+# Mirrors: task test:all, task lint:check, task docs:lint
 
 name: Ubuntu Tests
 
@@ -31,8 +31,8 @@ jobs:
       run: bash .scripts/tests/run_all_tests.sh
     - name: Lint with ruff
       run: |
-        uv run ruff check --fix featherstore tests
-        uv run ruff format featherstore tests
+        uv run ruff check featherstore tests
+        uv run ruff format --check featherstore tests
     - name: Lint docs
       working-directory: docs
       run: uv run doc8 --ignore-path _build/html --ignore D000,D004,D005 --max-line-length 120

@@ -103,7 +103,16 @@ def test_insert_series(store, index, row_indices):
     assert_table_equals(table, expected)
 
 
-@pytest.mark.parametrize("row_indices", ([-2, -1], [30, 33], [33, 30, 32, 31]))
+@pytest.mark.parametrize(
+    "row_indices",
+    (
+        [-2, -1],
+        [30, 33],
+        [33, 30, 32, 31],
+        [32, 33],
+        [30, 31],
+    ),
+)
 def test_default_index_behavior_when_inserting(store, row_indices):
     # Arrange
     original_df = make_table(default_index, rows=30, astype="pandas")

@@ -9,7 +9,7 @@ includes:
 tasks:
   uv-sync: uv sync --all-groups --all-extras
   pre-commit:
-    desc: Run the same checks as GitHub Actions (tests, lint fix, docs lint)
+    desc: Run tests, auto-fix lint/format, and lint docs (CI uses lint:check)
     cmds:
       - task: test:all
       - task: lint:fix

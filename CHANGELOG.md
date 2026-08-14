@@ -27,8 +27,8 @@ Enhancements:
   ``Table.insert()`` accept Pandas DataFrame/Series, Polars DataFrame, and
   PyArrow Table input (Polars Series is not supported for these edit APIs)
 * Re-added `Table.insert()` as a convenience method that dispatches to
-  `insert_rows()` or `insert_columns()` based on the number of columns in
-  the input data
+  `insert_rows()` or `insert_columns()` based on whether the input column
+  names match the stored table
 * `Table.insert_columns()` and `Table.insert()` accept a sequence of column
   positions for `idx` (one position per new column)
 * ``Table.insert_rows()``, ``Table.insert_columns()``, and ``Table.insert()``
@@ -38,7 +38,7 @@ Enhancements:
   memory-mapped files on overwrite)
 * Broadened supported index types (decimal, float, uint, binary, duration, and
   more) with stricter validation in `_raise_if` and `_table_utils`
-* Added a hierarchical exception tree rooted at ``FeatherStoreException``,
+* Added a hierarchical exception tree rooted at ``FeatherStoreError``,
   with category bases (``TableError``, ``StoreError``, ``ColumnError``,
   ``RowError``, ``IndexSchemaError``, ``DatabaseConnectionError``,
   ``SnapshotError``, ``PathError``) and specific leaf exceptions such as
@@ -60,8 +60,8 @@ Enhancements:
 * Added ``Raises`` sections to public method and function docstrings for
   ``Table``, ``Store``, ``connection``, and ``snapshot``
 * Migrated packaging to `pyproject.toml`; removed `setup.py`,
-  `requirements.txt`, `pytest.ini`, and `.flake8` (pytest and flake8 config
-  now live in `pyproject.toml`)
+  `requirements.txt`, `pytest.ini`, and `.flake8` (pytest config now lives
+  in `pyproject.toml`; linting uses ruff)
 * CI and Read the Docs install via `pip install -e ".[dev]"`; PyPI publish
   builds with `python -m build`
 * Snapshot extraction passes `filter='data'` on Python 3.12+
@@ -72,18 +72,37 @@ Enhancements:
   module docstrings
 * Added Taskfile benchmark tasks: `bench:format-comparison`,
   `bench:table-operations`, and `bench:log`
-* Added ``tests/test_exceptions.py`` for hierarchy and message coverage
 * Added e2e workflow test and shared fixtures for astype, expected-table, and
   hardcoded-table scenarios
 * Replaced test-suite star imports with explicit fixture imports; added `__all__`
   to `tests/fixtures`
 * Applied ruff formatting across `featherstore`, `tests`, and `benchmarks`
 * Internal benchmark logs now write to `.dev/bmarks`
+* Timezone-aware timestamp indexes can be written; pandas metadata now
+  accepts Arrow's string ``tz`` and uses only the time unit as resolution
 
 Bugfixes:
 
-* Fixed ``create_database(..., errors="ignore")`` rewriting an existing
-  ``.featherstore`` marker (PermissionError on Windows when the marker is hidden)
+* Snapshot paths only skip appending ``.tar.xz`` when they already end with
+  that suffix (substring matches such as ``backup.tar.xz.old`` no longer
+  skip it)
+* Windows CI now runs Python 3.13 as well as 3.11, 3.12, and 3.14
+* Corrected documentation drift: Sphinx ``release`` tracks
+  ``featherstore.__version__``, write/index docs list the supported index
+  types, ``list_stores`` / ``drop_columns`` copy-paste errors are fixed,
+  ``LIKE`` is documented as case-insensitive, ``Table.shape`` notes that
+  the column count includes the index, GitHub URLs and copyright years are
+  consistent, and the changelog no longer claims a missing
+  ``test_exceptions.py`` or flake8 config in ``pyproject.toml``
+* Timestamp index comparison still treats units as ns, but now keeps the
+  timezone so naive and tz-aware indexes (and different zones) mismatch
+* CI `ruff` steps now check lint and formatting instead of auto-fixing, so
+  style drift fails the job
+* ``run_all_tests.sh`` no longer uses bash 4 associative arrays, so
+  ``task test:all`` and the macOS CI job work on macOS system bash 3.2
+* Fixed store and table names such as ``..``, ``.``, and names containing
+  path separators escaping the database directory; delete operations now
+  resolve paths before checking they lie inside the database
 * Fixed silent data loss on repeated mid-table ``insert_rows`` caused by
   lossy partition-ID round-trips (fractional IDs collapsed when generating
   new mid-gap partition names)
@@ -107,6 +126,20 @@ Bugfixes:
 * Fixed SQL ``LIKE`` patterns treating regex metacharacters as special and
   crashing on empty patterns
 * Fixed snapshot restore accepting invalid ``errors`` values
+* Fixed ``connect()`` replacing the live connection before validation, so a
+  failed connect or reconnect left ``is_connected()`` raising
+  ``AttributeError`` and made ``disconnect()`` unusable
+* Fixed ``insert_rows`` keeping ``has_default_index`` when new ids are
+  consecutive with each other but leave a gap after the last stored value,
+  which caused later reads to drop the index and replace it with ``0..n-1``
+* Fixed ``astype`` leaving ``has_default_index`` set after casting the index
+  to a non-default type, so later reads dropped the converted index values
+* Fixed ``Table.rename_table`` leaving Metadata pointing at the old path, so
+  a later read on the same instance raised ``FileNotFoundError``
+* Allowed ``large_binary`` and ``fixed_size_binary`` table indexes; both are
+  Arrow-sortable, matching ``binary`` and ``large_string``
+* Fixed ``TableAlreadyExistsError`` including the full Windows path instead of
+  the table name (``rsplit("/")`` does not split on backslashes)
 
 0.2.1
 -----

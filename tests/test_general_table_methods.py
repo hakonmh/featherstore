@@ -29,6 +29,19 @@ def test_rename_table(store):
     assert table_names == [NEW_TABLE_NAME]
 
 
+def test_rename_table_keeps_same_instance_readable(store):
+    # Arrange
+    NEW_TABLE_NAME = "new_table_name"
+    df = make_table()
+    table = store.select_table(TABLE_NAME)
+    table.write(df)
+    # Act
+    table.rename_table(to=NEW_TABLE_NAME)
+    # Assert
+    assert table.name == NEW_TABLE_NAME
+    assert_table_equals(table, df)
+
+
 def test_cannot_rename_table_to_forbidden_name(store):
     # Arrange
     df = make_table()
@@ -37,6 +50,45 @@ def test_cannot_rename_table_to_forbidden_name(store):
     # Act and Assert
     with pytest.raises(ForbiddenTableNameError):
         table.rename_table(to=METADATA_FOLDER_NAME)
+
+
+FORBIDDEN_TABLE_NAMES = (
+    "",
+    ".",
+    "..",
+    "../x",
+    "..\\x",
+    "a/b",
+    "a\\b",
+    METADATA_FOLDER_NAME,
+)
+
+
+@pytest.mark.parametrize("table_name", FORBIDDEN_TABLE_NAMES, ids=repr)
+def test_cannot_select_table_with_forbidden_name(store, table_name):
+    # Act / Assert
+    with pytest.raises(ForbiddenTableNameError):
+        store.select_table(table_name)
+
+
+@pytest.mark.parametrize("table_name", FORBIDDEN_TABLE_NAMES, ids=repr)
+def test_cannot_rename_table_to_unsafe_name(store, table_name):
+    # Arrange
+    df = make_table()
+    table = store.select_table(TABLE_NAME)
+    table.write(df)
+    # Act / Assert
+    with pytest.raises(ForbiddenTableNameError):
+        table.rename_table(to=table_name)
+
+
+def test_can_write_table_with_double_dot_in_name(store):
+    # Arrange
+    df = make_table()
+    # Act
+    store.write_table("foo..bar", df)
+    # Assert
+    assert store.list_tables() == ["foo..bar"]
 
 
 def test_drop_table(store):

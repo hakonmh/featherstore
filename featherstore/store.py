@@ -2,10 +2,8 @@ import os
 import warnings as _warnings
 
 from featherstore import _utils
-from featherstore._utils import DB_MARKER_NAME
 from featherstore.connection import Connection, current_db
 from featherstore.exceptions import (
-    ForbiddenStoreNameError,
     StoreAlreadyExistsError,
     StoreNotEmptyError,
     StoreNotFoundError,
@@ -35,7 +33,7 @@ def create_store(store_name, *, warnings="warn"):
     NotConnectedError
         If FeatherStore is not connected to a database.
     ForbiddenStoreNameError
-        If ``store_name`` is reserved.
+        If ``store_name`` is reserved or not a valid path name.
     TypeError
         If ``store_name`` is not a str.
     ValueError
@@ -68,7 +66,7 @@ def rename_store(store_name, *, to):
     StoreAlreadyExistsError
         If the new store name already exists.
     ForbiddenStoreNameError
-        If the new store name is reserved.
+        If the new store name is reserved or not a valid path name.
     TypeError
         If ``store_name`` or ``to`` is not a str.
     """
@@ -95,6 +93,8 @@ def drop_store(store_name, *, warnings="warn"):
         If FeatherStore is not connected to a database.
     StoreNotEmptyError
         If the store still contains tables.
+    ForbiddenStoreNameError
+        If ``store_name`` is reserved or not a valid path name.
     TypeError
         If ``store_name`` is not a str.
     ValueError
@@ -119,10 +119,12 @@ def list_stores(*, like=None):
         - Question mark (`?`) matches any single character
         - The percent sign (`%`) matches any number of any characters
 
+        Matching is case-insensitive.
+
     Returns
     -------
     List
-        A list of the tables in the store
+        A list of the stores in the database
     """
     _can_list(like)
     stores = _utils.list_stores(current_db, like=like)
@@ -130,6 +132,8 @@ def list_stores(*, like=None):
 
 
 def store_exists(store_name):
+    Connection._raise_if_not_connected()
+    _utils.raise_if_store_name_is_invalid(store_name)
     store_path = os.path.join(current_db(), store_name)
     return os.path.exists(store_path)
 
@@ -153,7 +157,7 @@ class Store:
         StoreNotFoundError
             If the store does not exist.
         ForbiddenStoreNameError
-            If ``store_name`` is reserved.
+            If ``store_name`` is reserved or not a valid path name.
         TypeError
             If ``store_name`` is not a str.
         """
@@ -177,7 +181,7 @@ class Store:
         StoreAlreadyExistsError
             If the new store name already exists.
         ForbiddenStoreNameError
-            If the new store name is reserved.
+            If the new store name is reserved or not a valid path name.
         TypeError
             If ``to`` is not a str.
         """
@@ -215,6 +219,8 @@ class Store:
 
             - Question mark (`?`) matches any single character
             - The percent sign (`%`) matches any number of any characters
+
+            Matching is case-insensitive.
 
         Returns
         -------
@@ -260,7 +266,7 @@ class Store:
         StoreNotFoundError
             If the store does not exist.
         ForbiddenTableNameError
-            If ``table_name`` is reserved.
+            If ``table_name`` is reserved or not a valid path name.
         TableNotFoundError
             If the table does not exist.
         ColumnNotFoundError
@@ -303,7 +309,7 @@ class Store:
         StoreNotFoundError
             If the store does not exist.
         ForbiddenTableNameError
-            If ``table_name`` is reserved.
+            If ``table_name`` is reserved or not a valid path name.
         TableNotFoundError
             If the table does not exist.
         ColumnNotFoundError
@@ -346,7 +352,7 @@ class Store:
         StoreNotFoundError
             If the store does not exist.
         ForbiddenTableNameError
-            If ``table_name`` is reserved.
+            If ``table_name`` is reserved or not a valid path name.
         TableNotFoundError
             If the table does not exist.
         ColumnNotFoundError
@@ -375,8 +381,10 @@ class Store:
     ):
         """Writes a DataFrame to the current store as a partitioned table
 
-        The DataFrame index column, if provided, must be either of type int, str,
-        or datetime. FeatherStore sorts the DataFrame by the index before storage.
+        The DataFrame index, if provided, must be a supported type: integer,
+        unsigned integer, float, decimal, string, binary, duration, or temporal
+        (date, time, or timestamp). FeatherStore sorts the DataFrame by the
+        index before storage.
 
         Parameters
         ----------
@@ -389,12 +397,13 @@ class Store:
             Pandas or a standard integer index for Arrow and Polars if `index` not
             provided, by default `None`
         partition_size : int, optional
-            The size of each partition in bytes, by default 128 MB
+            The size of each partition in bytes. A `partition_size` value of `-1`
+            disables partitioning, by default 128 MB
         errors : str, optional
             Whether or not to raise an error if the table already exist. Can be either
             `raise` or `ignore`, `ignore` overwrites existing table, by default `raise`
         warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
+            Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
 
         Raises
@@ -404,19 +413,15 @@ class Store:
         StoreNotFoundError
             If the store does not exist.
         ForbiddenTableNameError
-            If ``table_name`` is reserved.
+            If ``table_name`` is reserved or not a valid path name.
         TableAlreadyExistsError
             If ``errors='raise'`` and the table already exists.
         DuplicateColumnNamesError
             If column names are not unique.
         DuplicateIndexValuesError
             If index values are not unique.
-        IndexNameMismatchError
-            If the index name does not match the stored table.
         IndexNotInColumnsError
             If ``index`` is not among the table columns.
-        IndexTypeMismatchError
-            If the index type does not match the stored table.
         UnsupportedIndexTypeError
             If the index type is not supported.
         MultiTypeColumnError
@@ -444,7 +449,7 @@ class Store:
         df : Pandas DataFrame or Series, Polars DataFrame or Series, or Pyarrow Table
             The data to be appended
         warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
+            Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
 
         Raises
@@ -454,7 +459,7 @@ class Store:
         StoreNotFoundError
             If the store does not exist.
         ForbiddenTableNameError
-            If ``table_name`` is reserved.
+            If ``table_name`` is reserved or not a valid path name.
         TableNotFoundError
             If the table does not exist.
         AppendIndexError
@@ -497,7 +502,7 @@ class Store:
         StoreNotFoundError
             If the store does not exist.
         ForbiddenTableNameError
-            If ``table_name`` or ``to`` is reserved.
+            If ``table_name`` or ``to`` is reserved or not a valid path name.
         TableAlreadyExistsError
             If the new table name already exists.
         TypeError
@@ -559,7 +564,7 @@ class Store:
 def _can_create_store(store_name, warnings):
     Connection._raise_if_not_connected()
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
-    _raise_if_store_name_is_forbidden(store_name)
+    _utils.raise_if_store_name_is_invalid(store_name)
     store_path = os.path.join(current_db(), store_name)
     if os.path.exists(store_path) and warnings == "warn":
         _warnings.warn(f"A store with name {store_name} already exists")
@@ -568,6 +573,7 @@ def _can_create_store(store_name, warnings):
 def _can_drop_store(store_name, warnings):
     Connection._raise_if_not_connected()
     _utils.raise_if_warnings_argument_is_not_valid(warnings)
+    _utils.raise_if_store_name_is_invalid(store_name)
     _raise_if_store_contains_tables(store_name)
     store_path = os.path.join(current_db(), store_name)
     if not os.path.exists(store_path) and warnings == "warn":
@@ -586,26 +592,14 @@ def _raise_if_store_contains_tables(store_name):
 
 def _can_init_store(store_name):
     Connection._raise_if_not_connected()
-    _raise_if_store_name_is_str(store_name)
+    _utils.raise_if_store_name_is_invalid(store_name)
     _raise_if_store_not_exists(store_name)
-    _raise_if_store_name_is_forbidden(store_name)
 
 
 def _can_rename_store(new_store_name):
     Connection._raise_if_not_connected()
-    _raise_if_store_name_is_str(new_store_name)
+    _utils.raise_if_store_name_is_invalid(new_store_name)
     _raise_if_store_already_exists(new_store_name)
-    _raise_if_store_name_is_forbidden(new_store_name)
-
-
-def _raise_if_store_name_is_str(store_name):
-    if not isinstance(store_name, str):
-        raise TypeError(f"'store_name' must be a str, is type {type(store_name)}")
-
-
-def _raise_if_store_name_is_forbidden(store_name):
-    if store_name == DB_MARKER_NAME:
-        raise ForbiddenStoreNameError(f"Store name {DB_MARKER_NAME} is forbidden")
 
 
 def _raise_if_store_not_exists(store_name):

@@ -51,7 +51,7 @@ class Table:
         StoreNotFoundError
             If the store does not exist.
         ForbiddenTableNameError
-            If ``table_name`` is reserved.
+            If ``table_name`` is reserved or not a valid path name.
         TypeError
             If ``table_name`` is not a str.
         """
@@ -186,8 +186,10 @@ class Table:
     ):
         """Writes a DataFrame to the current table.
 
-        The DataFrame index column, if provided, must be either of type int, str,
-        or datetime. FeatherStore sorts the DataFrame by the index before storage.
+        The DataFrame index, if provided, must be a supported type: integer,
+        unsigned integer, float, decimal, string, binary, duration, or temporal
+        (date, time, or timestamp). FeatherStore sorts the DataFrame by the
+        index before storage.
 
         Parameters
         ----------
@@ -204,7 +206,7 @@ class Table:
             Whether or not to raise an error if the table already exist. Can be either
             `raise` or `ignore`, `ignore` overwrites existing table, by default `raise`
         warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
+            Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
 
         Raises
@@ -250,7 +252,7 @@ class Table:
         df : pandas DataFrame or Series, polars DataFrame or Series, or pyarrow Table
             The data to be appended
         warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
+            Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
 
         Raises
@@ -375,7 +377,7 @@ class Table:
             columns. If a sequence is provided, it must have one position per new
             column. Default is to add columns to the end.
         warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
+            Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
 
         Raises
@@ -399,7 +401,7 @@ class Table:
             The data to be inserted. `df` must have the same index and column
             types as the stored data.
         warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
+            Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
 
         Raises
@@ -465,7 +467,7 @@ class Table:
             it must have one position per new column. Default is to add columns to
             the end.
         warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
+            Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
 
         Raises
@@ -607,7 +609,7 @@ class Table:
         write.write_partitions(partitions, self._table_path)
 
     def drop_columns(self, cols):
-        """Drops specified rows from table
+        """Drops specified columns from table
 
         Same as `Table.drop(cols=value)`
 
@@ -820,12 +822,17 @@ class Table:
 
         df = astype.change_type(df, astype_mapping)
         df = common.format_table(df, index_name=index_name, warnings=False)
+        has_default_index = astype.has_still_default_index(self, df)
 
         rows_per_partition = common.compute_rows_per_partition(df, partition_size)
         partitions = astype.create_partitions(df, rows_per_partition, partition_names)
 
         metadata = common.update_metadata(
-            self, partitions, partition_names, rows_per_partition=rows_per_partition
+            self,
+            partitions,
+            partition_names,
+            rows_per_partition=rows_per_partition,
+            has_default_index=has_default_index,
         )
 
         partitions_to_drop = astype.get_partitions_to_drop(partitions, partition_names)
@@ -847,7 +854,7 @@ class Table:
         NotConnectedError
             If FeatherStore is not connected to a database.
         ForbiddenTableNameError
-            If ``to`` is reserved.
+            If ``to`` is reserved or not a valid path name.
         TableAlreadyExistsError
             If a table with the new name already exists.
         TypeError
@@ -860,6 +867,8 @@ class Table:
 
         os.rename(self._table_path, new_path)
         self._table_path = new_path
+        self._table_data = Metadata(self._table_path, "table")
+        self._partition_data = Metadata(self._table_path, "partition")
 
     def drop_table(self, *, warnings="warn"):
         """Deletes the current table
@@ -929,7 +938,7 @@ class Table:
         Returns
         -------
         tuple(int, int)
-            The shape of the table
+            The shape of the table. The column count includes the index column.
         """
         rows = self._table_data["num_rows"]
         cols = self._table_data["num_columns"]

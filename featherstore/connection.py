@@ -62,7 +62,7 @@ def create_database(path, *, errors="raise", connect=True):
     PopulatedDirectoryError
         If ``errors='raise'`` and the directory is not empty.
     TypeError
-        If ``db_path`` is not a str.
+        If ``path`` is not a str.
     ValueError
         If ``errors`` is not ``'raise'`` or ``'ignore'``.
     """
@@ -149,14 +149,11 @@ def database_exists(path):
 
 
 class Connection:
-    def __new__(cls, *args, **kwargs):
-        cls.instance = super().__new__(cls)
-        return cls.instance
-
     def __init__(self, connection_string):
         _can_connect(connection_string)
         path = expand_home_dir_modifier(connection_string)
         self._location = os.path.abspath(path)
+        type(self).instance = self
 
     @classmethod
     def disconnect(cls):

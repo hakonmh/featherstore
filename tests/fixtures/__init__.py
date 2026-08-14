@@ -6,7 +6,7 @@ from featherstore._utils import DEFAULT_ARROW_INDEX_NAME
 
 from ._utils import get_index_name
 from .assertions import assert_df_equals, assert_store_table_equal, assert_table_equals
-from .cast_table import change_dtype, to_arrow_dtype
+from .cast_table import cast_timestamp_index, change_dtype, to_arrow_dtype
 from .convert_table import convert_expected, convert_table
 from .edit_table import (
     insert_column_names_at,
@@ -25,12 +25,15 @@ from .make_table import (
     sorted_date32_index,
     sorted_datetime_index,
     sorted_decimal_index,
+    sorted_fixed_size_binary_index,
     sorted_float_index,
+    sorted_large_binary_index,
     sorted_large_string_index,
     sorted_string_index,
     sorted_time32_index,
     sorted_timedelta_index,
     sorted_uint_index,
+    timestamp_index,
     unsorted_int_index,
     unsorted_string_index,
 )
@@ -62,6 +65,7 @@ __all__ = [
     "assert_partition_metadata_matches_files",
     "assert_store_table_equal",
     "assert_table_equals",
+    "cast_timestamp_index",
     "change_dtype",
     "continuous_datetime_index",
     "continuous_string_index",
@@ -84,13 +88,16 @@ __all__ = [
     "sorted_date32_index",
     "sorted_datetime_index",
     "sorted_decimal_index",
+    "sorted_fixed_size_binary_index",
     "sorted_float_index",
+    "sorted_large_binary_index",
     "sorted_large_string_index",
     "sorted_string_index",
     "sorted_time32_index",
     "sorted_timedelta_index",
     "sorted_uint_index",
     "split_table",
+    "timestamp_index",
     "to_arrow_dtype",
     "unsorted_int_index",
     "unsorted_string_index",

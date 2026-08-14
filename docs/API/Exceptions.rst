@@ -1,7 +1,7 @@
 Exceptions
 ----------
 
-All domain errors inherit from :class:`~featherstore.exceptions.FeatherStoreException`.
+All domain errors inherit from :class:`~featherstore.exceptions.FeatherStoreError`.
 Category bases allow catching related errors together (for example,
 :class:`~featherstore.exceptions.ColumnError` for any column-related failure).
 
@@ -12,7 +12,7 @@ built-in exceptions such as :class:`TypeError`, :class:`ValueError`, and
 Hierarchy
 ^^^^^^^^^
 
-* :class:`~featherstore.exceptions.FeatherStoreException`
+* :class:`~featherstore.exceptions.FeatherStoreError`
 
   * :class:`~featherstore.exceptions.TableError`
 

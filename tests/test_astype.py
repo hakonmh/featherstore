@@ -99,6 +99,19 @@ def test_change_index_dtype(store):
     assert_table_equals(table, expected, astype="all")
 
 
+def test_astype_index_to_string_preserves_index_values_on_read(store):
+    # Arrange
+    original_df = make_table(rows=5, cols=3, astype="pandas")
+    expected_index = [str(i) for i in range(len(original_df))]
+    table = store.select_table(TABLE_NAME)
+    table.write(original_df)
+    # Act
+    table.astype({DEFAULT_ARROW_INDEX_NAME: pa.string()})
+    # Assert
+    df = table.read_arrow()
+    assert df[DEFAULT_ARROW_INDEX_NAME].to_pylist() == expected_index
+
+
 def _get_dtype_str(dtype):
     dtype = to_arrow_dtype(dtype)
     return TYPE_MAP[dtype]

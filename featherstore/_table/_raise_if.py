@@ -8,6 +8,7 @@ import pyarrow as pa
 from featherstore._metadata import METADATA_FOLDER_NAME
 from featherstore._table import _table_utils, common
 from featherstore._table._indexers import ColIndexer, RowIndexer
+from featherstore._utils import _is_unsafe_path_name
 from featherstore.connection import Connection
 from featherstore.exceptions import (
     ColumnAlreadyExistsError,
@@ -38,7 +39,7 @@ def table_not_exists(table):
 
 
 def table_already_exists(table_path):
-    table_name = table_path.rsplit("/")[-1]
+    table_name = os.path.basename(table_path.replace("\\", "/"))
     if os.path.exists(table_path):
         raise TableAlreadyExistsError(
             f"A table with name '{table_name}' already exists"
@@ -51,10 +52,8 @@ def table_name_is_not_str(table_name):
 
 
 def table_name_is_forbidden(table_name):
-    if table_name == METADATA_FOLDER_NAME:
-        raise ForbiddenTableNameError(
-            f"Table name '{METADATA_FOLDER_NAME}' is forbidden"
-        )
+    if table_name == METADATA_FOLDER_NAME or _is_unsafe_path_name(table_name):
+        raise ForbiddenTableNameError(f"Table name {table_name!r} is forbidden")
 
 
 def df_is_not_table_type(df, allowed_types):
@@ -353,8 +352,22 @@ def _normalize_index_dtype(dtype):
     if dtype in _STRING_ARROW_TYPES:
         return "string"
     if dtype.startswith("timestamp"):
-        return "timestamp"
+        return _normalize_timestamp_dtype(dtype)
     return dtype
+
+
+def _normalize_timestamp_dtype(dtype):
+    tz = _timestamp_tz(dtype)
+    if tz is None:
+        return "timestamp[ns]"
+    return f"timestamp[ns, tz={tz}]"
+
+
+def _timestamp_tz(dtype):
+    marker = ", tz="
+    if marker not in dtype:
+        return None
+    return dtype.split(marker, 1)[1].removesuffix("]")
 
 
 def index_name_not_same_as_stored_index(df, table_data):
