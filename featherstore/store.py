@@ -119,10 +119,12 @@ def list_stores(*, like=None):
         - Question mark (`?`) matches any single character
         - The percent sign (`%`) matches any number of any characters
 
+        Matching is case-insensitive.
+
     Returns
     -------
     List
-        A list of the tables in the store
+        A list of the stores in the database
     """
     _can_list(like)
     stores = _utils.list_stores(current_db, like=like)
@@ -217,6 +219,8 @@ class Store:
 
             - Question mark (`?`) matches any single character
             - The percent sign (`%`) matches any number of any characters
+
+            Matching is case-insensitive.
 
         Returns
         -------
@@ -377,8 +381,10 @@ class Store:
     ):
         """Writes a DataFrame to the current store as a partitioned table
 
-        The DataFrame index column, if provided, must be either of type int, str,
-        or datetime. FeatherStore sorts the DataFrame by the index before storage.
+        The DataFrame index, if provided, must be a supported type: integer,
+        unsigned integer, float, decimal, string, binary, duration, or temporal
+        (date, time, or timestamp). FeatherStore sorts the DataFrame by the
+        index before storage.
 
         Parameters
         ----------
@@ -391,12 +397,13 @@ class Store:
             Pandas or a standard integer index for Arrow and Polars if `index` not
             provided, by default `None`
         partition_size : int, optional
-            The size of each partition in bytes, by default 128 MB
+            The size of each partition in bytes. A `partition_size` value of `-1`
+            disables partitioning, by default 128 MB
         errors : str, optional
             Whether or not to raise an error if the table already exist. Can be either
             `raise` or `ignore`, `ignore` overwrites existing table, by default `raise`
         warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
+            Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
 
         Raises
@@ -413,12 +420,8 @@ class Store:
             If column names are not unique.
         DuplicateIndexValuesError
             If index values are not unique.
-        IndexNameMismatchError
-            If the index name does not match the stored table.
         IndexNotInColumnsError
             If ``index`` is not among the table columns.
-        IndexTypeMismatchError
-            If the index type does not match the stored table.
         UnsupportedIndexTypeError
             If the index type is not supported.
         MultiTypeColumnError
@@ -446,7 +449,7 @@ class Store:
         df : Pandas DataFrame or Series, Polars DataFrame or Series, or Pyarrow Table
             The data to be appended
         warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
+            Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
 
         Raises

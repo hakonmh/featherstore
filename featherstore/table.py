@@ -186,8 +186,10 @@ class Table:
     ):
         """Writes a DataFrame to the current table.
 
-        The DataFrame index column, if provided, must be either of type int, str,
-        or datetime. FeatherStore sorts the DataFrame by the index before storage.
+        The DataFrame index, if provided, must be a supported type: integer,
+        unsigned integer, float, decimal, string, binary, duration, or temporal
+        (date, time, or timestamp). FeatherStore sorts the DataFrame by the
+        index before storage.
 
         Parameters
         ----------
@@ -204,7 +206,7 @@ class Table:
             Whether or not to raise an error if the table already exist. Can be either
             `raise` or `ignore`, `ignore` overwrites existing table, by default `raise`
         warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
+            Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
 
         Raises
@@ -250,7 +252,7 @@ class Table:
         df : pandas DataFrame or Series, polars DataFrame or Series, or pyarrow Table
             The data to be appended
         warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
+            Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
 
         Raises
@@ -375,7 +377,7 @@ class Table:
             columns. If a sequence is provided, it must have one position per new
             column. Default is to add columns to the end.
         warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
+            Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
 
         Raises
@@ -399,7 +401,7 @@ class Table:
             The data to be inserted. `df` must have the same index and column
             types as the stored data.
         warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
+            Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
 
         Raises
@@ -465,7 +467,7 @@ class Table:
             it must have one position per new column. Default is to add columns to
             the end.
         warnings : str, optional
-            Whether or not to warn if a unsorted index is about to get sorted.
+            Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
 
         Raises
@@ -607,7 +609,7 @@ class Table:
         write.write_partitions(partitions, self._table_path)
 
     def drop_columns(self, cols):
-        """Drops specified rows from table
+        """Drops specified columns from table
 
         Same as `Table.drop(cols=value)`
 
@@ -936,7 +938,7 @@ class Table:
         Returns
         -------
         tuple(int, int)
-            The shape of the table
+            The shape of the table. The column count includes the index column.
         """
         rows = self._table_data["num_rows"]
         cols = self._table_data["num_columns"]

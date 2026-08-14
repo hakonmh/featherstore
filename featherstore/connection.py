@@ -62,7 +62,7 @@ def create_database(path, *, errors="raise", connect=True):
     PopulatedDirectoryError
         If ``errors='raise'`` and the directory is not empty.
     TypeError
-        If ``db_path`` is not a str.
+        If ``path`` is not a str.
     ValueError
         If ``errors`` is not ``'raise'`` or ``'ignore'``.
     """

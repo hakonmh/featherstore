@@ -1,7 +1,7 @@
 Overview
 ========
 
-FeatherStore is high performance datastore for storing Pandas DataFrames, Polars DataFrames,
+FeatherStore is a high performance datastore for storing Pandas DataFrames, Polars DataFrames,
 and PyArrow Tables. By saving data in the form of partitioned
 `Feather Files <https://arrow.apache.org/docs/python/feather.html>`_, FeatherStore enables
 several operations on the stored tables, optimizing performance by selectively loading only
@@ -57,7 +57,7 @@ Source Code
 +++++++++++
 
 | The source code is currently hosted on GitHub at:
-| https://github.com/Hakonmh/featherstore
+| https://github.com/hakonmh/featherstore
 
 LICENSE
 +++++++

@@ -43,7 +43,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Hakonmh/featherstore"
+Homepage = "https://github.com/hakonmh/featherstore"
 Documentation = "https://featherstore.readthedocs.io/en/stable/"
 
 [tool.setuptools.dynamic]

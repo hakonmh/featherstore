@@ -17,14 +17,16 @@ import warnings
 
 sys.path.insert(0, os.path.abspath(".."))
 
+from featherstore import __version__  # noqa: E402
+
 # -- Project information -----------------------------------------------------
 
 project = "FeatherStore"
-copyright = "2021, Håkon Magne Holmen"
+copyright = "2021-2026, Håkon Magne Holmen"
 author = "Håkon Magne Holmen"
 
 # The full version, including alpha/beta/rc tags
-release = "0.2.1"
+release = __version__
 
 # -- General configuration ---------------------------------------------------
 

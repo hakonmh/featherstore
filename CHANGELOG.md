@@ -27,8 +27,8 @@ Enhancements:
   ``Table.insert()`` accept Pandas DataFrame/Series, Polars DataFrame, and
   PyArrow Table input (Polars Series is not supported for these edit APIs)
 * Re-added `Table.insert()` as a convenience method that dispatches to
-  `insert_rows()` or `insert_columns()` based on the number of columns in
-  the input data
+  `insert_rows()` or `insert_columns()` based on whether the input column
+  names match the stored table
 * `Table.insert_columns()` and `Table.insert()` accept a sequence of column
   positions for `idx` (one position per new column)
 * ``Table.insert_rows()``, ``Table.insert_columns()``, and ``Table.insert()``
@@ -60,8 +60,8 @@ Enhancements:
 * Added ``Raises`` sections to public method and function docstrings for
   ``Table``, ``Store``, ``connection``, and ``snapshot``
 * Migrated packaging to `pyproject.toml`; removed `setup.py`,
-  `requirements.txt`, `pytest.ini`, and `.flake8` (pytest and flake8 config
-  now live in `pyproject.toml`)
+  `requirements.txt`, `pytest.ini`, and `.flake8` (pytest config now lives
+  in `pyproject.toml`; linting uses ruff)
 * CI and Read the Docs install via `pip install -e ".[dev]"`; PyPI publish
   builds with `python -m build`
 * Snapshot extraction passes `filter='data'` on Python 3.12+
@@ -72,7 +72,6 @@ Enhancements:
   module docstrings
 * Added Taskfile benchmark tasks: `bench:format-comparison`,
   `bench:table-operations`, and `bench:log`
-* Added ``tests/test_exceptions.py`` for hierarchy and message coverage
 * Added e2e workflow test and shared fixtures for astype, expected-table, and
   hardcoded-table scenarios
 * Replaced test-suite star imports with explicit fixture imports; added `__all__`
@@ -84,6 +83,13 @@ Enhancements:
 
 Bugfixes:
 
+* Corrected documentation drift: Sphinx ``release`` tracks
+  ``featherstore.__version__``, write/index docs list the supported index
+  types, ``list_stores`` / ``drop_columns`` copy-paste errors are fixed,
+  ``LIKE`` is documented as case-insensitive, ``Table.shape`` notes that
+  the column count includes the index, GitHub URLs and copyright years are
+  consistent, and the changelog no longer claims a missing
+  ``test_exceptions.py`` or flake8 config in ``pyproject.toml``
 * Timestamp index comparison still treats units as ns, but now keeps the
   timezone so naive and tz-aware indexes (and different zones) mismatch
 * CI `ruff` steps now check lint and formatting instead of auto-fixing, so
