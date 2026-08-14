@@ -134,6 +134,8 @@ Bugfixes:
   a later read on the same instance raised ``FileNotFoundError``
 * Allowed ``large_binary`` and ``fixed_size_binary`` table indexes; both are
   Arrow-sortable, matching ``binary`` and ``large_string``
+* Fixed ``TableAlreadyExistsError`` including the full Windows path instead of
+  the table name (``rsplit("/")`` does not split on backslashes)
 
 0.2.1
 -----

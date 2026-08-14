@@ -39,7 +39,7 @@ def table_not_exists(table):
 
 
 def table_already_exists(table_path):
-    table_name = table_path.rsplit("/")[-1]
+    table_name = os.path.basename(table_path.replace("\\", "/"))
     if os.path.exists(table_path):
         raise TableAlreadyExistsError(
             f"A table with name '{table_name}' already exists"
