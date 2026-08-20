@@ -2,7 +2,7 @@ Exceptions
 ----------
 
 All domain errors inherit from :class:`~featherstore.exceptions.FeatherStoreError`.
-Category bases allow catching related errors together (for example,
+Category base classes let you catch related errors together (for example,
 :class:`~featherstore.exceptions.ColumnError` for any column-related failure).
 
 Argument validation (invalid types, missing required arguments) still raises

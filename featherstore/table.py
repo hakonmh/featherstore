@@ -26,8 +26,8 @@ class Table:
     def __init__(self, table_name, store_name):
         """A class for saving and loading DataFrames as partitioned Feather files.
 
-        Tables supports several operations that can be done without loading in the
-        full data:
+        Tables support several operations that can be done without loading the
+        full dataset:
 
         - Partial reading of data
         - Append data
@@ -67,7 +67,7 @@ class Table:
         Parameters
         ----------
         cols : Collection, optional
-            List of column names or, filter-predicates in the form of
+            List of column names or filter predicates in the form of
             `{'like': pattern}`. If not provided, all columns are read.
         rows : Collection, optional
             List of index values or filter-predicates in the form of
@@ -124,7 +124,7 @@ class Table:
         Parameters
         ----------
         cols : Collection, optional
-            List of column names or, filter-predicates in the form of
+            List of column names or filter predicates in the form of
             `{'like': pattern}`. If not provided, all columns are read.
         rows : Collection, optional
             List of index values or filter-predicates in the form of
@@ -152,7 +152,7 @@ class Table:
         Parameters
         ----------
         cols : Collection, optional
-            List of column names or, filter-predicates in the form of
+            List of column names or filter predicates in the form of
             `{'like': pattern}`. If not provided, all columns are read.
         rows : Collection, optional
             List of index values or filter-predicates in the form of
@@ -203,8 +203,9 @@ class Table:
             The size of each partition in bytes. A `partition_size` value of `-1`
             disables partitioning, by default 128 MB
         errors : str, optional
-            Whether or not to raise an error if the table already exist. Can be either
-            `raise` or `ignore`, `ignore` overwrites existing table, by default `raise`
+            Whether to raise an error if the table already exists. Can be either
+            `raise` or `ignore`; `ignore` overwrites the existing table.
+            Default is `raise`.
         warnings : str, optional
             Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
@@ -368,6 +369,9 @@ class Table:
         If ``df`` column names match the stored table, rows are inserted.
         Otherwise, columns are inserted at position ``idx``.
 
+        Also raises the same exceptions as :meth:`insert_rows` and
+        :meth:`insert_columns`.
+
         Parameters
         ----------
         df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
@@ -384,7 +388,6 @@ class Table:
         ------
         TypeError
             If ``idx`` is passed when inserting rows.
-        Same exceptions as :meth:`insert_rows` and :meth:`insert_columns`.
         """
         insert.can_insert(df, self._table_data, idx)
         if insert.cols_matches_table_cols(df, self._table_data):
@@ -529,10 +532,10 @@ class Table:
         Parameters
         ----------
         cols : Collection, optional
-            list of column names or filter-predicates in the form of
+            List of column names or filter predicates in the form of
             `{'like': pattern}`, by default `None`
         rows : Collection, optional
-            list of index values or, filter-predicates in the form of
+            List of index values or filter predicates in the form of
             `{keyword: value}`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
 
@@ -575,7 +578,7 @@ class Table:
         Parameters
         ----------
         rows : Collection, optional
-            list of index values or, filter-predicates in the form of
+            List of index values or filter predicates in the form of
             `{keyword: value}`, where keyword can be either `before`, `after`,
             or `between`, by default `None`
 
@@ -616,7 +619,7 @@ class Table:
         Parameters
         ----------
         cols : Collection, optional
-            list of column names or filter-predicates in the form of
+            List of column names or filter predicates in the form of
             `{'like': pattern}`, by default `None`
 
         Raises
@@ -659,7 +662,7 @@ class Table:
     def rename_columns(self, cols, *, to=None):
         """Rename one or more columns.
 
-        `rename_columns` supports two different call-syntaxes:
+        `rename_columns` supports two different call syntaxes:
 
         - `rename_columns({'c1': 'new_c1', 'c2': 'new_c2'})`
         - `rename_columns(['c1', 'c2'], to=['new_c1', 'new_c2'])`
@@ -723,7 +726,7 @@ class Table:
     def columns(self, cols):
         """Same as `Table.reorder_columns(values)`
 
-        *Note*: You can not use this method to rename columns, use `rename_columns`
+        *Note*: You cannot use this method to rename columns; use `rename_columns`
         instead.
 
         Parameters
@@ -781,7 +784,7 @@ class Table:
     def astype(self, cols, *, to=None):
         """Change data type of one or more columns.
 
-        `astype` supports two different call-syntaxes:
+        `astype` supports two different call syntaxes:
 
         - `astype({'c1': pa.int64(), 'c2': pa.int16()})`
         - `astype(['c1', 'c2'], to=[pa.int64(), pa.int16()])`
@@ -789,9 +792,9 @@ class Table:
         Parameters
         ----------
         cols : Sequence[str] or dict
-            Either a sequence of columns to have its data types changed, or a
+            Either a sequence of columns to have their data types changed, or a
             dict mapping columns to new column data types.
-        to : Sequence[Pyarrow DataType], optional
+        to : Sequence[PyArrow DataType], optional
             New column data types, by default `None`
 
         Raises

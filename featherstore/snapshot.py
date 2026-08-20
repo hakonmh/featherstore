@@ -20,7 +20,7 @@ _SNAPSHOT_ARCHIVE_SUFFIX = ".tar.xz"
 
 
 def restore_table(store_name, source, *, errors="raise"):
-    """Restores a table in to the currently selected db.
+    """Restores a table into the currently connected database.
 
     Parameters
     ----------
@@ -29,9 +29,9 @@ def restore_table(store_name, source, *, errors="raise"):
     source : str
         Path to the snapshot file.
     errors : str
-        Whether or not to raise an error if a table with the same name already
-        exist. Can be either `raise` or `ignore`, `ignore` overwrites existing
-        table, by default `raise`.
+        Whether to raise an error if a table with the same name already
+        exists. Can be either `raise` or `ignore`; `ignore` overwrites the
+        existing table. Default is `raise`.
 
     Returns
     -------
@@ -66,16 +66,16 @@ def restore_table(store_name, source, *, errors="raise"):
 
 
 def restore_store(source, *, errors="raise"):
-    """Restores a store in to the currently selected db.
+    """Restores a store into the currently connected database.
 
     Parameters
     ----------
     source : str
         Path to the snapshot file.
     errors : str
-        Whether or not to raise an error if a store with the same name already
-        exist. Can be either `raise` or `ignore`, `ignore` overwrites existing
-        store, by default `raise`.
+        Whether to raise an error if a store with the same name already
+        exists. Can be either `raise` or `ignore`; `ignore` overwrites the
+        existing store. Default is `raise`.
 
     Returns
     -------

@@ -51,9 +51,9 @@ def create_database(path, *, errors="raise", connect=True):
     path : str
         Where to create the database.
     errors : str, optional
-        Whether or not to raise an error if the database directory already exist.
-        Can be either `raise` or `ignore`, `ignore` tries to create a database
-        in existing directory, by default `raise`
+        Whether to raise an error if the database directory already exists.
+        Can be either `raise` or `ignore`; `ignore` tries to create a database
+        in an existing directory. Default is `raise`.
     connect : bool
         Whether or not to connect to the created database, by default True
 
@@ -79,7 +79,7 @@ def create_database(path, *, errors="raise", connect=True):
 def drop_database(path, *, warnings="warn"):
     """Deletes a database.
 
-    *Warning*: You can not delete a database containing stores. All stores must
+    *Warning*: You cannot delete a database containing stores. All stores must
     be deleted first.
 
     Parameters
