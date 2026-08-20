@@ -1,7 +1,7 @@
 Documentation
 =============
 
-Welcome to the FeatherStore documentation!
+Welcome to the FeatherStore documentation.
 
 Table of Contents
 -----------------

@@ -1,21 +1,20 @@
 Overview
 ========
 
-FeatherStore is high performance datastore for storing Pandas DataFrames, Polars DataFrames,
-and PyArrow Tables. By saving data in the form of partitioned
-`Feather Files <https://arrow.apache.org/docs/python/feather.html>`_, FeatherStore enables
-several operations on the stored tables, optimizing performance by selectively loading only
-the necessary segments of data:
+FeatherStore is a high-performance datastore for Pandas DataFrames, Polars DataFrames,
+and PyArrow Tables. Data is stored as partitioned
+`Feather files <https://arrow.apache.org/docs/python/feather.html>`_, so FeatherStore can
+run several operations on stored tables while loading only the data each operation needs:
 
-* Partial reading of data
-* Append data
-* Insert rows and columns
-* Update data
-* Drop data
-* Read metadata (including column names, indices, table dimensions, etc.)
-* Changing column types
+* Partial reads
+* Appends
+* Row and column inserts (Pandas, Polars, or PyArrow)
+* Updates (Pandas, Polars, or PyArrow)
+* Drops
+* Metadata reads (column names, index, table dimensions, and more)
+* Column type changes
 
-For more information on using FeatherStore, please refer to the
+For more information, see the
 `user guide <Quickstart.html>`_.
 
 Installation
@@ -23,7 +22,7 @@ Installation
 | The project is hosted on PyPI at:
 | https://pypi.org/project/FeatherStore/
 
-| To install FeatherStore, simply use pip
+| To install FeatherStore, use pip:
 
 .. code-block::
 
@@ -40,7 +39,7 @@ Installation
 Python version support
 ----------------------
 
-Officially Python 3.11 and up is supported.
+Python 3.11 and later are officially supported.
 
 Dependency requirements
 -----------------------
@@ -53,13 +52,13 @@ FeatherStore 0.3.0 requires:
 
 These are installed automatically with ``pip install featherstore``.
 
-Source Code
+Source code
 +++++++++++
 
-| The source code is currently hosted on GitHub at:
-| https://github.com/Hakonmh/featherstore
+| The source code is hosted on GitHub at:
+| https://github.com/hakonmh/featherstore
 
-LICENSE
+License
 +++++++
 
 `MIT <https://github.com/hakonmh/featherstore/blob/master/LICENSE>`_
@@ -67,7 +66,7 @@ LICENSE
 Contributions
 +++++++++++++
 
-All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome.
+All contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas are welcome.
 
 | Issues are posted on:
 | https://github.com/hakonmh/featherstore/issues

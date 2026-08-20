@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Table &#8212; FeatherStore 0.2.1 documentation</title>
+    <title>Table &#8212; FeatherStore 0.3.0 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="../_static/documentation_options.js?v=37f418d5"></script>
+    <script src="../_static/documentation_options.js?v=e259d695"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'API/Table';</script>
@@ -122,8 +122,8 @@
       
     
     
-    <img src="../_static/logo-dark.png" class="logo__image only-light" alt="FeatherStore 0.2.1 documentation - Home"/>
-    <img src="../_static/logo-light.png" class="logo__image only-dark pst-js-only" alt="FeatherStore 0.2.1 documentation - Home"/>
+    <img src="../_static/logo-dark.png" class="logo__image only-light" alt="FeatherStore 0.3.0 documentation - Home"/>
+    <img src="../_static/logo-light.png" class="logo__image only-dark pst-js-only" alt="FeatherStore 0.3.0 documentation - Home"/>
   
   
 </a></div>
@@ -414,11 +414,11 @@
 <span id="table"></span><h1>Table<a class="headerlink" href="#module-featherstore.table" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="featherstore.table.Table">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">featherstore.table.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L24-L930"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A class for saving and loading DataFrames as partitioned Feather files.</p>
-<p>Tables supports several operations that can be done without loading in the
-full data:</p>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">featherstore.table.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L25-L1024"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Saves and loads DataFrames as partitioned Feather files.</p>
+<p>Tables support several operations that can be done without loading the
+full dataset:</p>
 <ul class="simple">
 <li><p>Partial reading of data</p></li>
 <li><p>Append data</p></li>
@@ -428,36 +428,44 @@ full data:</p>
 <li><p>Read metadata (column names, index, table shape, etc)</p></li>
 <li><p>Changing column types</p></li>
 </ul>
+<p>The table does not need to exist when this object is created. Call
+<a class="reference internal" href="#featherstore.table.Table.write" title="featherstore.table.Table.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write()</span></code></a> to create it. The store must already exist.</p>
+<p>Selects a table in a store.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>table_name</strong> (<em>str</em>) – The name of the table.</p></li>
-<li><p><strong>store_name</strong> (<em>str</em>) – The name of the store.</p></li>
+<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table.</p></li>
+<li><p><strong>store_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the store.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
-<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved.</p></li>
-<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved or not a valid path name.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> or <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.read_arrow">
-<span class="sig-name descname"><span class="pre">read_arrow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L63-L118"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.read_arrow" title="Link to this definition">#</a></dt>
-<dd><p>Reads the data as a PyArrow Table</p>
+<span class="sig-name descname"><span class="pre">read_arrow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L70-L131"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.read_arrow" title="Link to this definition">#</a></dt>
+<dd><p>Reads the data as a PyArrow Table.</p>
+<p>A named index is returned as a column. A default integer index is
+omitted from the result.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cols</strong> (<em>Collection</em><em>, </em><em>optional</em>) – List of column names or, filter-predicates in the form of
-<cite>{‘like’: pattern}</cite>. If not provided, all columns are read.</p></li>
-<li><p><strong>rows</strong> (<em>Collection</em><em>, </em><em>optional</em>) – List of index values or filter-predicates in the form of
-<cite>{keyword: value}</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
-or <cite>between</cite>. If not provided, all rows are read.</p></li>
-<li><p><strong>mmap</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use memory mapping when opening table on disk, by default <cite>False</cite> on
-Windows and <cite>True</cite> on other systems.</p></li>
+<li><p><strong>cols</strong> (<em>Collection</em><em>, </em><em>optional</em>) – List of column names or a filter predicate <code class="docutils literal notranslate"><span class="pre">{'like':</span> <span class="pre">pattern}</span></code>.
+<code class="docutils literal notranslate"><span class="pre">pattern</span></code> uses SQL wildcards (<code class="docutils literal notranslate"><span class="pre">?</span></code> matches one character, <code class="docutils literal notranslate"><span class="pre">%</span></code>
+matches any number of characters) and is case-insensitive. If not
+provided, all columns are read.</p></li>
+<li><p><strong>rows</strong> (<em>Collection</em><em>, </em><em>optional</em>) – List of index values or a filter predicate <code class="docutils literal notranslate"><span class="pre">{keyword:</span> <span class="pre">value}</span></code>,
+where keyword can be <code class="docutils literal notranslate"><span class="pre">before</span></code>, <code class="docutils literal notranslate"><span class="pre">after</span></code>, or <code class="docutils literal notranslate"><span class="pre">between</span></code>. Range
+bounds are inclusive. For <code class="docutils literal notranslate"><span class="pre">between</span></code>, <code class="docutils literal notranslate"><span class="pre">value</span></code> is a two-element
+sequence <code class="docutils literal notranslate"><span class="pre">[start,</span> <span class="pre">end]</span></code>. If not provided, all rows are read.</p></li>
+<li><p><strong>mmap</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Use memory mapping when opening the table on disk. Default is
+<code class="docutils literal notranslate"><span class="pre">False</span></code> on Windows and <code class="docutils literal notranslate"><span class="pre">True</span></code> on other systems.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -470,8 +478,8 @@ Windows and <cite>True</cite> on other systems.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ColumnNotFoundError" title="featherstore.exceptions.ColumnNotFoundError"><strong>ColumnNotFoundError</strong></a> – If any requested column is not in the table.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.RowNotFoundError" title="featherstore.exceptions.RowNotFoundError"><strong>RowNotFoundError</strong></a> – If any requested row is not in the table.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexTypeMismatchError" title="featherstore.exceptions.IndexTypeMismatchError"><strong>IndexTypeMismatchError</strong></a> – If row values do not match the table index dtype.</p></li>
-<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">cols</span></code> or <code class="docutils literal notranslate"><span class="pre">rows</span></code> has an invalid type.</p></li>
-<li><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">mmap</span></code> is not a bool or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">cols</span></code> or <code class="docutils literal notranslate"><span class="pre">rows</span></code> has an invalid type.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">mmap</span></code> is not a bool or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -479,69 +487,80 @@ Windows and <cite>True</cite> on other systems.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.read_pandas">
-<span class="sig-name descname"><span class="pre">read_pandas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L120-L146"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.read_pandas" title="Link to this definition">#</a></dt>
-<dd><p>Reads the data as a Pandas DataFrame or Series</p>
+<span class="sig-name descname"><span class="pre">read_pandas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L133-L158"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.read_pandas" title="Link to this definition">#</a></dt>
+<dd><p>Reads the data as a pandas DataFrame or Series.</p>
+<p>The stored index is restored as a pandas <code class="docutils literal notranslate"><span class="pre">Index</span></code>. A Series is
+returned when the result has a single data column.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cols</strong> (<em>Collection</em><em>, </em><em>optional</em>) – List of column names or, filter-predicates in the form of
-<cite>{‘like’: pattern}</cite>. If not provided, all columns are read.</p></li>
-<li><p><strong>rows</strong> (<em>Collection</em><em>, </em><em>optional</em>) – List of index values or filter-predicates in the form of
-<cite>{keyword: value}</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
-or <cite>between</cite>. If not provided, all rows are read.</p></li>
-<li><p><strong>mmap</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use memory mapping when opening table on disk, by default <cite>False</cite> on
-Windows and <cite>True</cite> on other systems.</p></li>
+<li><p><strong>cols</strong> (<em>Collection</em><em>, </em><em>optional</em>) – See <a class="reference internal" href="#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_arrow()</span></code></a>.</p></li>
+<li><p><strong>rows</strong> (<em>Collection</em><em>, </em><em>optional</em>) – See <a class="reference internal" href="#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_arrow()</span></code></a>.</p></li>
+<li><p><strong>mmap</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_arrow()</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>pandas.DataFrame or pandas.Series</p>
 </dd>
 </dl>
-<p>:raises Same exceptions as <a class="reference internal" href="#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_arrow()</span></code></a>.:</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_arrow</span></code></a></dt><dd><p>Parameters and exceptions.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.read_polars">
-<span class="sig-name descname"><span class="pre">read_polars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L148-L174"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.read_polars" title="Link to this definition">#</a></dt>
-<dd><p>Reads the data as a Polars DataFrame or Series</p>
+<span class="sig-name descname"><span class="pre">read_polars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L160-L185"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.read_polars" title="Link to this definition">#</a></dt>
+<dd><p>Reads the data as a polars DataFrame or Series.</p>
+<p>A named index is returned as a column. A default integer index is
+omitted. A Series is returned when the result has a single data column.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cols</strong> (<em>Collection</em><em>, </em><em>optional</em>) – List of column names or, filter-predicates in the form of
-<cite>{‘like’: pattern}</cite>. If not provided, all columns are read.</p></li>
-<li><p><strong>rows</strong> (<em>Collection</em><em>, </em><em>optional</em>) – List of index values or filter-predicates in the form of
-<cite>{keyword: value}</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
-or <cite>between</cite>. If not provided, all rows are read.</p></li>
-<li><p><strong>mmap</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use memory mapping when opening table on disk, by default <cite>False</cite> on
-Windows and <cite>True</cite> on other systems.</p></li>
+<li><p><strong>cols</strong> (<em>Collection</em><em>, </em><em>optional</em>) – See <a class="reference internal" href="#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_arrow()</span></code></a>.</p></li>
+<li><p><strong>rows</strong> (<em>Collection</em><em>, </em><em>optional</em>) – See <a class="reference internal" href="#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_arrow()</span></code></a>.</p></li>
+<li><p><strong>mmap</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_arrow()</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>polars.DataFrame or polars.Series</p>
 </dd>
 </dl>
-<p>:raises Same exceptions as <a class="reference internal" href="#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_arrow()</span></code></a>.:</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_arrow</span></code></a></dt><dd><p>Parameters and exceptions.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.write">
-<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">134217728</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L176-L242"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.write" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">134217728</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L187-L257"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.write" title="Link to this definition">#</a></dt>
 <dd><p>Writes a DataFrame to the current table.</p>
-<p>The DataFrame index column, if provided, must be either of type int, str,
-or datetime. FeatherStore sorts the DataFrame by the index before storage.</p>
+<p>The DataFrame index, if provided, must be a supported type: integer,
+unsigned integer, float, decimal, string, binary, duration, or temporal
+(date, time, or timestamp). FeatherStore sorts the DataFrame by the
+index before storage.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<em>pandas DataFrame</em><em> or </em><em>Series</em><em>, </em><em>polars DataFrame</em><em> or </em><em>Series</em><em>, or </em><em>pyarrow Table</em>) – The DataFrame to be stored</p></li>
-<li><p><strong>index</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the column to be used as index. Uses current index for
-Pandas or a standard integer index for Arrow and Polars if <cite>index</cite> not
-provided, by default <cite>None</cite></p></li>
-<li><p><strong>partition_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The size of each partition in bytes. A <cite>partition_size</cite> value of <cite>-1</cite>
-disables partitioning, by default 128 MB</p></li>
-<li><p><strong>errors</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to raise an error if the table already exist. Can be either
-<cite>raise</cite> or <cite>ignore</cite>, <cite>ignore</cite> overwrites existing table, by default <cite>raise</cite></p></li>
-<li><p><strong>warnings</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to warn if a unsorted index is about to get sorted.
-Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</cite></p></li>
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em><em> or </em><em>pandas.Series</em><em>, </em><em>polars.DataFrame</em><em> or </em><em>polars.Series</em><em>, or </em><em>pyarrow.Table</em>) – The DataFrame to be stored.</p></li>
+<li><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The name of the column to be used as index. Uses the current index
+for pandas, or a standard integer index for Arrow and Polars, if
+<code class="docutils literal notranslate"><span class="pre">index</span></code> is not provided. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>partition_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The size of each partition in bytes. <code class="docutils literal notranslate"><span class="pre">-1</span></code> disables partitioning.
+Default is 128 MB.</p></li>
+<li><p><strong>errors</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to raise an error if the table already exists. Can be
+<code class="docutils literal notranslate"><span class="pre">'raise'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>; <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code> overwrites the existing
+table. Default is <code class="docutils literal notranslate"><span class="pre">'raise'</span></code>.</p></li>
+<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if an unsorted index is about to get sorted. Can be
+<code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">'warn'</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -553,8 +572,9 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexNotInColumnsError" title="featherstore.exceptions.IndexNotInColumnsError"><strong>IndexNotInColumnsError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">index</span></code> is not among the table columns.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.UnsupportedIndexTypeError" title="featherstore.exceptions.UnsupportedIndexTypeError"><strong>UnsupportedIndexTypeError</strong></a> – If the index type is not supported.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.MultiTypeColumnError" title="featherstore.exceptions.MultiTypeColumnError"><strong>MultiTypeColumnError</strong></a> – If a column contains multiple dtypes.</p></li>
-<li><p><strong>TypeError</strong> – If arguments have invalid types.</p></li>
-<li><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">errors</span></code> or <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is invalid.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If arguments have invalid types.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">errors</span></code> is not <code class="docutils literal notranslate"><span class="pre">'raise'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>, or <code class="docutils literal notranslate"><span class="pre">warnings</span></code>
+    is not <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -562,14 +582,14 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.append">
-<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L244-L307"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.append" title="Link to this definition">#</a></dt>
-<dd><p>Appends data to the current table</p>
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L259-L322"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.append" title="Link to this definition">#</a></dt>
+<dd><p>Appends data to the current table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<em>pandas DataFrame</em><em> or </em><em>Series</em><em>, </em><em>polars DataFrame</em><em> or </em><em>Series</em><em>, or </em><em>pyarrow Table</em>) – The data to be appended</p></li>
-<li><p><strong>warnings</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to warn if a unsorted index is about to get sorted.
-Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</cite></p></li>
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em><em> or </em><em>pandas.Series</em><em>, </em><em>polars.DataFrame</em><em> or </em><em>polars.Series</em><em>, or </em><em>pyarrow.Table</em>) – The data to be appended.</p></li>
+<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if an unsorted index is about to get sorted. Can be
+<code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">'warn'</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -584,8 +604,8 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexNameMismatchError" title="featherstore.exceptions.IndexNameMismatchError"><strong>IndexNameMismatchError</strong></a> – If the index name does not match the stored table.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexTypeMismatchError" title="featherstore.exceptions.IndexTypeMismatchError"><strong>IndexTypeMismatchError</strong></a> – If the index type does not match the stored table.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.MissingIndexError" title="featherstore.exceptions.MissingIndexError"><strong>MissingIndexError</strong></a> – If an index is required but not provided.</p></li>
-<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">df</span></code> has an invalid type.</p></li>
-<li><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is invalid.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">df</span></code> has an invalid type.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is not <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -593,15 +613,15 @@ Can be either <cite>warn</cite> or <cite>ignore</cite>, by default <cite>warn</c
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.update">
-<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L309-L360"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.update" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L324-L375"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.update" title="Link to this definition">#</a></dt>
 <dd><p>Updates data in the current table.</p>
-<p><em>Note</em>: You can’t use this method to update index values. Updating index
+<p><em>Note</em>: You cannot use this method to update index values. Updating index
 values can be accomplished by deleting the old records and inserting new
 ones with the updated index values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Pandas Series</em>) – The updated data. The index of <cite>df</cite> is the rows to be updated, while
-the columns of <cite>df</cite> are the new values.</p>
+<dd class="field-odd"><p><strong>df</strong> (<em>pandas.DataFrame</em><em> or </em><em>pandas.Series</em><em>, </em><em>polars.DataFrame</em><em>, or </em><em>pyarrow.Table</em>) – The updated data. The index of <code class="docutils literal notranslate"><span class="pre">df</span></code> is the rows to be updated, while
+the columns of <code class="docutils literal notranslate"><span class="pre">df</span></code> are the new values.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
@@ -614,7 +634,7 @@ the columns of <cite>df</cite> are the new values.</p>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexNameMismatchError" title="featherstore.exceptions.IndexNameMismatchError"><strong>IndexNameMismatchError</strong></a> – If the index name does not match the stored table.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexTypeMismatchError" title="featherstore.exceptions.IndexTypeMismatchError"><strong>IndexTypeMismatchError</strong></a> – If the index type does not match the stored table.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.RowNotFoundError" title="featherstore.exceptions.RowNotFoundError"><strong>RowNotFoundError</strong></a> – If any row is not in the stored table.</p></li>
-<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">df</span></code> is not a Pandas DataFrame or Series.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">df</span></code> is not a supported table type.</p></li>
 </ul>
 </dd>
 </dl>
@@ -622,31 +642,43 @@ the columns of <cite>df</cite> are the new values.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.insert">
-<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L362-L384"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.insert" title="Link to this definition">#</a></dt>
-<dd><p>Insert one or more rows or columns into the current table.</p>
-<p>If <code class="docutils literal notranslate"><span class="pre">df</span></code> has the same number of columns as the table, rows are inserted.
+<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L377-L409"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.insert" title="Link to this definition">#</a></dt>
+<dd><p>Inserts one or more rows or columns into the current table.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">df</span></code> column names match the stored table, rows are inserted.
 Otherwise, columns are inserted at position <code class="docutils literal notranslate"><span class="pre">idx</span></code>.</p>
+<p>Also raises the same exceptions as <a class="reference internal" href="#featherstore.table.Table.insert_rows" title="featherstore.table.Table.insert_rows"><code class="xref py py-meth docutils literal notranslate"><span class="pre">insert_rows()</span></code></a> and
+<a class="reference internal" href="#featherstore.table.Table.insert_columns" title="featherstore.table.Table.insert_columns"><code class="xref py py-meth docutils literal notranslate"><span class="pre">insert_columns()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Pandas Series</em>) – The data to be inserted.</p></li>
-<li><p><strong>idx</strong> (<em>int</em><em> or </em><em>Sequence</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – The position(s) to insert new column(s). Only used when inserting columns.
-If a sequence is provided, it must have one position per new column.
-Default is to add columns to the end.</p></li>
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em><em> or </em><em>pandas.Series</em><em>, </em><em>polars.DataFrame</em><em>, or </em><em>pyarrow.Table</em>) – The data to be inserted.</p></li>
+<li><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – The position(s) to insert new column(s), 0-based among data
+columns (the index is not counted). <code class="docutils literal notranslate"><span class="pre">0</span></code> inserts as the first
+data column. Only valid when inserting columns. If a sequence is
+provided, it must have one position per new column. Default is to
+add columns to the end.</p></li>
+<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if an unsorted index is about to get sorted. Can be
+<code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">'warn'</span></code>.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">idx</span></code> is passed when inserting rows.</p>
+</dd>
 </dl>
-<p>:raises Same exceptions as <a class="reference internal" href="#featherstore.table.Table.insert_rows" title="featherstore.table.Table.insert_rows"><code class="xref py py-meth docutils literal notranslate"><span class="pre">insert_rows()</span></code></a> and <a class="reference internal" href="#featherstore.table.Table.insert_columns" title="featherstore.table.Table.insert_columns"><code class="xref py py-meth docutils literal notranslate"><span class="pre">insert_columns()</span></code></a>.:</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.insert_rows">
-<span class="sig-name descname"><span class="pre">insert_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L386-L443"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.insert_rows" title="Link to this definition">#</a></dt>
-<dd><p>Insert one or more rows into the current table.</p>
+<span class="sig-name descname"><span class="pre">insert_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L411-L472"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.insert_rows" title="Link to this definition">#</a></dt>
+<dd><p>Inserts one or more rows into the current table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Pandas Series</em>) – The data to be inserted. <cite>df</cite> must have the same index and column
-types as the stored data.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em><em> or </em><em>pandas.Series</em><em>, </em><em>polars.DataFrame</em><em>, or </em><em>pyarrow.Table</em>) – The data to be inserted. <code class="docutils literal notranslate"><span class="pre">df</span></code> must have the same index and column
+types as the stored data.</p></li>
+<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if an unsorted index is about to get sorted. Can be
+<code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">'warn'</span></code>.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
@@ -659,7 +691,8 @@ types as the stored data.</p>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexNameMismatchError" title="featherstore.exceptions.IndexNameMismatchError"><strong>IndexNameMismatchError</strong></a> – If the index name does not match the stored table.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexTypeMismatchError" title="featherstore.exceptions.IndexTypeMismatchError"><strong>IndexTypeMismatchError</strong></a> – If the index type does not match the stored table.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.RowAlreadyExistsError" title="featherstore.exceptions.RowAlreadyExistsError"><strong>RowAlreadyExistsError</strong></a> – If any row already exists in the stored table.</p></li>
-<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">df</span></code> is not a Pandas DataFrame or Series.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">df</span></code> is not a supported table type.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is not <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -667,15 +700,19 @@ types as the stored data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.insert_columns">
-<span class="sig-name descname"><span class="pre">insert_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L445-L506"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.insert_columns" title="Link to this definition">#</a></dt>
-<dd><p>Insert one or more columns into the current table.</p>
+<span class="sig-name descname"><span class="pre">insert_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L474-L542"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.insert_columns" title="Link to this definition">#</a></dt>
+<dd><p>Inserts one or more columns into the current table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<em>Pandas DataFrame</em><em> or </em><em>Pandas Series</em>) – The data to be inserted. <cite>df</cite> must have the same index as the stored data.</p></li>
-<li><p><strong>idx</strong> (<em>int</em><em> or </em><em>Sequence</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – The position(s) to insert the new column(s). If a sequence is provided,
-it must have one position per new column. Default is to add columns to
-the end.</p></li>
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em><em> or </em><em>pandas.Series</em><em>, </em><em>polars.DataFrame</em><em>, or </em><em>pyarrow.Table</em>) – The data to be inserted. <code class="docutils literal notranslate"><span class="pre">df</span></code> must have the same index as the
+stored data.</p></li>
+<li><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – The position(s) to insert the new column(s), 0-based among data
+columns (the index is not counted). <code class="docutils literal notranslate"><span class="pre">0</span></code> inserts as the first
+data column. If a sequence is provided, it must have one position
+per new column. Default is to add columns to the end.</p></li>
+<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if an unsorted index is about to get sorted. Can be
+<code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">'warn'</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -688,8 +725,9 @@ the end.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexMismatchError" title="featherstore.exceptions.IndexMismatchError"><strong>IndexMismatchError</strong></a> – If indices do not match the stored table.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexNameInColumnsError" title="featherstore.exceptions.IndexNameInColumnsError"><strong>IndexNameInColumnsError</strong></a> – If a new column uses the index name.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexTypeMismatchError" title="featherstore.exceptions.IndexTypeMismatchError"><strong>IndexTypeMismatchError</strong></a> – If the index type does not match the stored table.</p></li>
-<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">df</span></code> or <code class="docutils literal notranslate"><span class="pre">idx</span></code> has an invalid type.</p></li>
-<li><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">idx</span></code> length does not match the number of new columns.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">df</span></code> or <code class="docutils literal notranslate"><span class="pre">idx</span></code> has an invalid type.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">idx</span></code> length does not match the number of new columns, or
+    <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is not <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -697,21 +735,24 @@ the end.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.drop">
-<span class="sig-name descname"><span class="pre">drop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L508-L550"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop" title="Link to this definition">#</a></dt>
-<dd><p>Drop specified labels from rows or columns.</p>
+<span class="sig-name descname"><span class="pre">drop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L544-L590"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop" title="Link to this definition">#</a></dt>
+<dd><p>Drops specified labels from rows or columns.</p>
+<p>Both <code class="docutils literal notranslate"><span class="pre">rows</span></code> and <code class="docutils literal notranslate"><span class="pre">cols</span></code> may be provided in the same call.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cols</strong> (<em>Collection</em><em>, </em><em>optional</em>) – list of column names or filter-predicates in the form of
-<cite>{‘like’: pattern}</cite>, by default <cite>None</cite></p></li>
-<li><p><strong>rows</strong> (<em>Collection</em><em>, </em><em>optional</em>) – list of index values or, filter-predicates in the form of
-<cite>{keyword: value}</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
-or <cite>between</cite>, by default <cite>None</cite></p></li>
+<li><p><strong>cols</strong> (<em>Collection</em><em>, </em><em>optional</em>) – List of column names or a filter predicate <code class="docutils literal notranslate"><span class="pre">{'like':</span> <span class="pre">pattern}</span></code>.
+<code class="docutils literal notranslate"><span class="pre">pattern</span></code> uses SQL wildcards (<code class="docutils literal notranslate"><span class="pre">?</span></code> matches one character, <code class="docutils literal notranslate"><span class="pre">%</span></code>
+matches any number of characters) and is case-insensitive.</p></li>
+<li><p><strong>rows</strong> (<em>Collection</em><em>, </em><em>optional</em>) – List of index values or a filter predicate <code class="docutils literal notranslate"><span class="pre">{keyword:</span> <span class="pre">value}</span></code>,
+where keyword can be <code class="docutils literal notranslate"><span class="pre">before</span></code>, <code class="docutils literal notranslate"><span class="pre">after</span></code>, or <code class="docutils literal notranslate"><span class="pre">between</span></code>. Range
+bounds are inclusive. For <code class="docutils literal notranslate"><span class="pre">between</span></code>, <code class="docutils literal notranslate"><span class="pre">value</span></code> is a two-element
+sequence <code class="docutils literal notranslate"><span class="pre">[start,</span> <span class="pre">end]</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>AttributeError</strong> – If neither <code class="docutils literal notranslate"><span class="pre">rows</span></code> nor <code class="docutils literal notranslate"><span class="pre">cols</span></code> is provided.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AttributeError" title="(in Python v3.14)"><strong>AttributeError</strong></a> – If neither <code class="docutils literal notranslate"><span class="pre">rows</span></code> nor <code class="docutils literal notranslate"><span class="pre">cols</span></code> is provided.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.CannotDropAllColumnsError" title="featherstore.exceptions.CannotDropAllColumnsError"><strong>CannotDropAllColumnsError</strong></a> – If dropping all columns.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.CannotDropAllRowsError" title="featherstore.exceptions.CannotDropAllRowsError"><strong>CannotDropAllRowsError</strong></a> – If dropping all rows.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ColumnNotFoundError" title="featherstore.exceptions.ColumnNotFoundError"><strong>ColumnNotFoundError</strong></a> – If any column to drop is not in the table.</p></li>
@@ -720,7 +761,7 @@ or <cite>between</cite>, by default <cite>None</cite></p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.RowNotFoundError" title="featherstore.exceptions.RowNotFoundError"><strong>RowNotFoundError</strong></a> – If any row to drop is not in the table.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.TableNotFoundError" title="featherstore.exceptions.TableNotFoundError"><strong>TableNotFoundError</strong></a> – If the table does not exist.</p></li>
-<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">cols</span></code> or <code class="docutils literal notranslate"><span class="pre">rows</span></code> has an invalid type.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">cols</span></code> or <code class="docutils literal notranslate"><span class="pre">rows</span></code> has an invalid type.</p></li>
 </ul>
 </dd>
 </dl>
@@ -728,60 +769,69 @@ or <cite>between</cite>, by default <cite>None</cite></p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.drop_rows">
-<span class="sig-name descname"><span class="pre">drop_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rows</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L552-L591"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop_rows" title="Link to this definition">#</a></dt>
-<dd><p>Drops specified rows from table</p>
-<p>Same as <cite>Table.drop(rows=value)</cite></p>
+<span class="sig-name descname"><span class="pre">drop_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rows</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L592-L629"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop_rows" title="Link to this definition">#</a></dt>
+<dd><p>Drops specified rows from the table.</p>
+<p>Same as <a class="reference internal" href="#featherstore.table.Table.drop" title="featherstore.table.Table.drop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">drop()</span></code></a> with <code class="docutils literal notranslate"><span class="pre">rows</span></code> set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>rows</strong> (<em>Collection</em><em>, </em><em>optional</em>) – list of index values or, filter-predicates in the form of
-<cite>{keyword: value}</cite>, where keyword can be either <cite>before</cite>, <cite>after</cite>,
-or <cite>between</cite>, by default <cite>None</cite></p>
+<dd class="field-odd"><p><strong>rows</strong> (<em>Collection</em>) – See <a class="reference internal" href="#featherstore.table.Table.drop" title="featherstore.table.Table.drop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">drop()</span></code></a>.</p>
 </dd>
 </dl>
-<p>:raises Same exceptions as <a class="reference internal" href="#featherstore.table.Table.drop" title="featherstore.table.Table.drop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">drop()</span></code></a> when dropping rows.:</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#featherstore.table.Table.drop" title="featherstore.table.Table.drop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop</span></code></a></dt><dd><p>Parameters and exceptions.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.drop_columns">
-<span class="sig-name descname"><span class="pre">drop_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L593-L639"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop_columns" title="Link to this definition">#</a></dt>
-<dd><p>Drops specified rows from table</p>
-<p>Same as <cite>Table.drop(cols=value)</cite></p>
+<span class="sig-name descname"><span class="pre">drop_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L631-L676"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop_columns" title="Link to this definition">#</a></dt>
+<dd><p>Drops specified columns from the table.</p>
+<p>Same as <a class="reference internal" href="#featherstore.table.Table.drop" title="featherstore.table.Table.drop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">drop()</span></code></a> with <code class="docutils literal notranslate"><span class="pre">cols</span></code> set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>cols</strong> (<em>Collection</em><em>, </em><em>optional</em>) – list of column names or filter-predicates in the form of
-<cite>{‘like’: pattern}</cite>, by default <cite>None</cite></p>
+<dd class="field-odd"><p><strong>cols</strong> (<em>Collection</em>) – See <a class="reference internal" href="#featherstore.table.Table.drop" title="featherstore.table.Table.drop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">drop()</span></code></a>.</p>
 </dd>
 </dl>
-<p>:raises Same exceptions as <a class="reference internal" href="#featherstore.table.Table.drop" title="featherstore.table.Table.drop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">drop()</span></code></a> when dropping columns.:</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#featherstore.table.Table.drop" title="featherstore.table.Table.drop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop</span></code></a></dt><dd><p>Parameters and exceptions.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.rename_columns">
-<span class="sig-name descname"><span class="pre">rename_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L641-L691"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.rename_columns" title="Link to this definition">#</a></dt>
-<dd><p>Rename one or more columns.</p>
-<p><cite>rename_columns</cite> supports two different call-syntaxes:</p>
+<span class="sig-name descname"><span class="pre">rename_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L678-L728"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.rename_columns" title="Link to this definition">#</a></dt>
+<dd><p>Renames one or more columns.</p>
+<p><code class="docutils literal notranslate"><span class="pre">rename_columns</span></code> supports two different call syntaxes:</p>
 <ul class="simple">
-<li><p><cite>rename_columns({‘c1’: ‘new_c1’, ‘c2’: ‘new_c2’})</cite></p></li>
-<li><p><cite>rename_columns([‘c1’, ‘c2’], to=[‘new_c1’, ‘new_c2’])</cite></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rename_columns({'c1':</span> <span class="pre">'new_c1',</span> <span class="pre">'c2':</span> <span class="pre">'new_c2'})</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rename_columns(['c1',</span> <span class="pre">'c2'],</span> <span class="pre">to=['new_c1',</span> <span class="pre">'new_c2'])</span></code></p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>cols</strong> (<em>Collection</em>) – Either a list of columns to be renamed, or a dict mapping columns
-to be renamed to new column names</p></li>
-<li><p><strong>to</strong> (<em>Collection</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – New column names, by default <cite>None</cite></p></li>
+to be renamed to new column names.</p></li>
+<li><p><strong>to</strong> (<em>Collection</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – New column names. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.TableNotFoundError" title="featherstore.exceptions.TableNotFoundError"><strong>TableNotFoundError</strong></a> – If the table does not exist.</p></li>
-<li><p><strong>AttributeError</strong> – If <code class="docutils literal notranslate"><span class="pre">to</span></code> is provided twice or not provided when required.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AttributeError" title="(in Python v3.14)"><strong>AttributeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">to</span></code> is provided twice or not provided when required.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ColumnNotFoundError" title="featherstore.exceptions.ColumnNotFoundError"><strong>ColumnNotFoundError</strong></a> – If any column to rename is not in the table.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.DuplicateColumnNamesError" title="featherstore.exceptions.DuplicateColumnNamesError"><strong>DuplicateColumnNamesError</strong></a> – If renamed columns would not be unique.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexNameInColumnsError" title="featherstore.exceptions.IndexNameInColumnsError"><strong>IndexNameInColumnsError</strong></a> – If a column is renamed to the index name.</p></li>
-<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">cols</span></code> or <code class="docutils literal notranslate"><span class="pre">to</span></code> has an invalid type.</p></li>
-<li><p><strong>ValueError</strong> – If the number of columns and new names do not match.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">cols</span></code> or <code class="docutils literal notranslate"><span class="pre">to</span></code> has an invalid type.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the number of columns and new names do not match.</p></li>
 </ul>
 </dd>
 </dl>
@@ -789,26 +839,27 @@ to be renamed to new column names</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.columns">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">columns</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L693-L702"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.columns" title="Link to this definition">#</a></dt>
-<dd><p>Fetches the names of the table columns</p>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">columns</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L730-L741"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.columns" title="Link to this definition">#</a></dt>
+<dd><p>Names of the table columns.</p>
+<p>The table must exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The table columns</p>
+<dd class="field-odd"><p>Column names, including the index column name.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>list</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.reorder_columns">
-<span class="sig-name descname"><span class="pre">reorder_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L724-L748"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.reorder_columns" title="Link to this definition">#</a></dt>
-<dd><p>Reorder the current columns</p>
+<span class="sig-name descname"><span class="pre">reorder_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L763-L787"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.reorder_columns" title="Link to this definition">#</a></dt>
+<dd><p>Reorders the table columns.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>cols</strong> (<em>Sequence</em><em>[</em><em>str</em><em>]</em>) – The new column ordering. The column names provided must be the
-same as the column names used in the table.</p>
+<dd class="field-odd"><p><strong>cols</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – The new column ordering. Must be the table’s data column names
+in the desired order, without the index name.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
@@ -817,7 +868,7 @@ same as the column names used in the table.</p>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ColumnMismatchError" title="featherstore.exceptions.ColumnMismatchError"><strong>ColumnMismatchError</strong></a> – If column names do not match the stored table.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.DuplicateColumnNamesError" title="featherstore.exceptions.DuplicateColumnNamesError"><strong>DuplicateColumnNamesError</strong></a> – If column names are not unique.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IndexNameInColumnsError" title="featherstore.exceptions.IndexNameInColumnsError"><strong>IndexNameInColumnsError</strong></a> – If the index name is included in <code class="docutils literal notranslate"><span class="pre">cols</span></code>.</p></li>
-<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">cols</span></code> has an invalid type.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">cols</span></code> has an invalid type.</p></li>
 </ul>
 </dd>
 </dl>
@@ -825,41 +876,50 @@ same as the column names used in the table.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.index">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">index</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L750-L760"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.index" title="Link to this definition">#</a></dt>
-<dd><p>Fetches the table index</p>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">index</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L789-L803"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.index" title="Link to this definition">#</a></dt>
+<dd><p>The table index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.Index</p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_arrow</span></code></a></dt><dd><p>Exceptions.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.astype">
-<span class="sig-name descname"><span class="pre">astype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L762-L818"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.astype" title="Link to this definition">#</a></dt>
-<dd><p>Change data type of one or more columns.</p>
-<p><cite>astype</cite> supports two different call-syntaxes:</p>
+<span class="sig-name descname"><span class="pre">astype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L805-L870"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.astype" title="Link to this definition">#</a></dt>
+<dd><p>Changes the data type of one or more columns.</p>
+<p><code class="docutils literal notranslate"><span class="pre">astype</span></code> supports two different call syntaxes:</p>
 <ul class="simple">
-<li><p><cite>astype({‘c1’: pa.int64(), ‘c2’: pa.int16()})</cite></p></li>
-<li><p><cite>astype([‘c1’, ‘c2’], to=[pa.int64(), pa.int16()])</cite></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">astype({'c1':</span> <span class="pre">pa.int64(),</span> <span class="pre">'c2':</span> <span class="pre">pa.int16()})</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">astype(['c1',</span> <span class="pre">'c2'],</span> <span class="pre">to=[pa.int64(),</span> <span class="pre">pa.int16()])</span></code></p></li>
 </ul>
+<p>The index can be cast by using the index name as a column.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cols</strong> (<em>Sequence</em><em>[</em><em>str</em><em>] or </em><em>dict</em>) – Either a sequence of columns to have its data types changed, or a
+<li><p><strong>cols</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>] or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Either a sequence of columns to have their data types changed, or a
 dict mapping columns to new column data types.</p></li>
-<li><p><strong>to</strong> (<em>Sequence</em><em>[</em><em>Pyarrow DataType</em><em>]</em><em>, </em><em>optional</em>) – New column data types, by default <cite>None</cite></p></li>
+<li><p><strong>to</strong> (<em>Sequence</em><em>[</em><em>pyarrow.DataType</em><em> or </em><em>numpy.dtype</em><em>]</em><em>, </em><em>optional</em>) – New column data types. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.TableNotFoundError" title="featherstore.exceptions.TableNotFoundError"><strong>TableNotFoundError</strong></a> – If the table does not exist.</p></li>
-<li><p><strong>AttributeError</strong> – If <code class="docutils literal notranslate"><span class="pre">to</span></code> is provided twice or not provided when required.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AttributeError" title="(in Python v3.14)"><strong>AttributeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">to</span></code> is provided twice or not provided when required.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ColumnNotFoundError" title="featherstore.exceptions.ColumnNotFoundError"><strong>ColumnNotFoundError</strong></a> – If any column is not in the table.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.DuplicateColumnNamesError" title="featherstore.exceptions.DuplicateColumnNamesError"><strong>DuplicateColumnNamesError</strong></a> – If column names are not unique.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.UnsupportedIndexTypeError" title="featherstore.exceptions.UnsupportedIndexTypeError"><strong>UnsupportedIndexTypeError</strong></a> – If a forbidden index dtype is requested.</p></li>
-<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">cols</span></code> or <code class="docutils literal notranslate"><span class="pre">to</span></code> has an invalid type.</p></li>
-<li><p><strong>ValueError</strong> – If the number of columns and dtypes do not match.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">cols</span></code> or <code class="docutils literal notranslate"><span class="pre">to</span></code> has an invalid type.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the number of columns and dtypes do not match.</p></li>
 </ul>
 </dd>
 </dl>
@@ -867,18 +927,18 @@ dict mapping columns to new column data types.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.rename_table">
-<span class="sig-name descname"><span class="pre">rename_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L820-L845"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.rename_table" title="Link to this definition">#</a></dt>
-<dd><p>Renames the current table</p>
+<span class="sig-name descname"><span class="pre">rename_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L872-L899"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.rename_table" title="Link to this definition">#</a></dt>
+<dd><p>Renames the current table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>to</strong> (<em>str</em>) – The new name of the table.</p>
+<dd class="field-odd"><p><strong>to</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The new name of the table.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
-<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">to</span></code> is reserved.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">to</span></code> is reserved or not a valid path name.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.TableAlreadyExistsError" title="featherstore.exceptions.TableAlreadyExistsError"><strong>TableAlreadyExistsError</strong></a> – If a table with the new name already exists.</p></li>
-<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">to</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">to</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -886,24 +946,39 @@ dict mapping columns to new column data types.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.drop_table">
-<span class="sig-name descname"><span class="pre">drop_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L847-L853"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop_table" title="Link to this definition">#</a></dt>
-<dd><p>Deletes the current table</p>
+<span class="sig-name descname"><span class="pre">drop_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L901-L922"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.drop_table" title="Link to this definition">#</a></dt>
+<dd><p>Deletes the current table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if the table does not exist. Can be <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or
+<code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">'warn'</span></code>.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is not <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.create_snapshot">
-<span class="sig-name descname"><span class="pre">create_snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L855-L874"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.create_snapshot" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">create_snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L924-L946"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.create_snapshot" title="Link to this definition">#</a></dt>
 <dd><p>Creates a compressed backup of the table.</p>
-<p>The table can later be restored by using <cite>snapshot.restore_table()</cite>.</p>
+<p>The table can later be restored with
+<a class="reference internal" href="Snapshot.html#featherstore.snapshot.restore_table" title="featherstore.snapshot.restore_table"><code class="xref py py-func docutils literal notranslate"><span class="pre">restore_table()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to the snapshot archive.</p>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the snapshot archive. <code class="docutils literal notranslate"><span class="pre">.tar.xz</span></code> is appended unless
+<code class="docutils literal notranslate"><span class="pre">path</span></code> already ends with that suffix. An existing file at the
+resulting path is overwritten.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.SnapshotTargetNotFoundError" title="featherstore.exceptions.SnapshotTargetNotFoundError"><strong>SnapshotTargetNotFoundError</strong></a> – If the table path does not exist.</p></li>
-<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">path</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">path</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -911,53 +986,76 @@ dict mapping columns to new column data types.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.repartition">
-<span class="sig-name descname"><span class="pre">repartition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_partition_size</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L876-L893"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.repartition" title="Link to this definition">#</a></dt>
-<dd><p>Repartitions a table so that each partition is <cite>new_partition_size</cite> big.</p>
+<span class="sig-name descname"><span class="pre">repartition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_partition_size</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L948-L971"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.repartition" title="Link to this definition">#</a></dt>
+<dd><p>Repartitions the table so that each partition is <code class="docutils literal notranslate"><span class="pre">new_partition_size</span></code> bytes.</p>
+<p>This reads the full table into memory and rewrites it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>new_partition_size</strong> (<em>int</em>) – The size of each partition in bytes. A <cite>new_partition_size</cite> value of <cite>-1</cite>
-disables partitioning</p>
+<dd class="field-odd"><p><strong>new_partition_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The size of each partition in bytes. <code class="docutils literal notranslate"><span class="pre">-1</span></code> disables partitioning.</p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_arrow</span></code></a></dt><dd><p>Exceptions when reading.</p>
+</dd>
+<dt><a class="reference internal" href="#featherstore.table.Table.write" title="featherstore.table.Table.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a></dt><dd><p>Exceptions when rewriting.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.shape">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">shape</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L895-L906"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.shape" title="Link to this definition">#</a></dt>
-<dd><p>Fetches the shape of the stored table as <cite>(rows, columns)</cite>.</p>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">shape</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L973-L986"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.shape" title="Link to this definition">#</a></dt>
+<dd><p>Shape of the stored table as <code class="docutils literal notranslate"><span class="pre">(rows,</span> <span class="pre">columns)</span></code>.</p>
+<p>The table must exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The shape of the table</p>
+<dd class="field-odd"><p>The shape of the table. The column count includes the index column.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>tuple(int, int)</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.partition_size">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">partition_size</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L908-L917"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.partition_size" title="Link to this definition">#</a></dt>
-<dd><p>Fetches the table partition size in bytes.</p>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">partition_size</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L988-L999"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.partition_size" title="Link to this definition">#</a></dt>
+<dd><p>Partition size in bytes.</p>
+<p>The table must exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The partition size in bytes.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>int</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="featherstore.table.Table.exists">
-<span class="sig-name descname"><span class="pre">exists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L919-L920"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.exists" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">exists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L1001-L1008"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.exists" title="Link to this definition">#</a></dt>
+<dd><p>Returns whether the table exists on disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="featherstore.table.Table.name">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L922-L925"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.name" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/table.py#L1010-L1019"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.table.Table.name" title="Link to this definition">#</a></dt>
+<dd><p>The table name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -1066,7 +1164,7 @@ disables partitioning</p>
 
   <p class="copyright">
     
-      © Copyright 2021, Håkon Magne Holmen.
+      © Copyright 2021-2026, Håkon Magne Holmen.
       <br/>
     
   </p>

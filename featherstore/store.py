@@ -15,28 +15,33 @@ from featherstore.table import DEFAULT_PARTITION_SIZE, Table
 def create_store(store_name, *, warnings="warn"):
     """Creates a new store.
 
+    If a store with that name already exists, a warning is issued unless
+    ``warnings='ignore'``, and the existing store is returned. This method
+    does not raise :exc:`~featherstore.exceptions.StoreAlreadyExistsError`.
+
     Parameters
     ----------
     store_name : str
-        The name of the store to be created
+        The name of the store to be created.
     warnings : str, optional
-        Whether to warn if the store already exists. Can be either
-        `warn` or `ignore`; `ignore` passes silently if the store already
-        exists. Default is `warn`.
+        Whether to warn if the store already exists. Can be ``'warn'`` or
+        ``'ignore'``; ``'ignore'`` passes silently if the store already
+        exists. Default is ``'warn'``.
 
     Returns
     -------
     Store
+        The new or existing store.
 
     Raises
     ------
-    NotConnectedError
+    :exc:`~featherstore.exceptions.NotConnectedError`
         If FeatherStore is not connected to a database.
-    ForbiddenStoreNameError
+    :exc:`~featherstore.exceptions.ForbiddenStoreNameError`
         If ``store_name`` is reserved or not a valid path name.
-    TypeError
+    :exc:`TypeError`
         If ``store_name`` is not a str.
-    ValueError
+    :exc:`ValueError`
         If ``warnings`` is not ``'warn'`` or ``'ignore'``.
     """
     _can_create_store(store_name, warnings)
@@ -48,7 +53,7 @@ def create_store(store_name, *, warnings="warn"):
 
 
 def rename_store(store_name, *, to):
-    """Renames a store
+    """Renames a store.
 
     Parameters
     ----------
@@ -59,22 +64,22 @@ def rename_store(store_name, *, to):
 
     Raises
     ------
-    NotConnectedError
+    :exc:`~featherstore.exceptions.NotConnectedError`
         If FeatherStore is not connected to a database.
-    StoreNotFoundError
+    :exc:`~featherstore.exceptions.StoreNotFoundError`
         If the store does not exist.
-    StoreAlreadyExistsError
+    :exc:`~featherstore.exceptions.StoreAlreadyExistsError`
         If the new store name already exists.
-    ForbiddenStoreNameError
+    :exc:`~featherstore.exceptions.ForbiddenStoreNameError`
         If the new store name is reserved or not a valid path name.
-    TypeError
+    :exc:`TypeError`
         If ``store_name`` or ``to`` is not a str.
     """
     Store(store_name).rename(to=to)
 
 
 def drop_store(store_name, *, warnings="warn"):
-    """Deletes a store
+    """Deletes a store.
 
     *Warning*: You cannot delete a store containing tables. All tables must
     be deleted first.
@@ -82,22 +87,22 @@ def drop_store(store_name, *, warnings="warn"):
     Parameters
     ----------
     store_name : str
-        The name of the store to be deleted
+        The name of the store to be deleted.
     warnings : str, optional
-        Whether or not to warn if the store doesn't exist. Can be either
-        `warn` or `ignore`, by default `warn`
+        Whether to warn if the store does not exist. Can be ``'warn'`` or
+        ``'ignore'``. Default is ``'warn'``.
 
     Raises
     ------
-    NotConnectedError
+    :exc:`~featherstore.exceptions.NotConnectedError`
         If FeatherStore is not connected to a database.
-    StoreNotEmptyError
+    :exc:`~featherstore.exceptions.StoreNotEmptyError`
         If the store still contains tables.
-    ForbiddenStoreNameError
+    :exc:`~featherstore.exceptions.ForbiddenStoreNameError`
         If ``store_name`` is reserved or not a valid path name.
-    TypeError
+    :exc:`TypeError`
         If ``store_name`` is not a str.
-    ValueError
+    :exc:`ValueError`
         If ``warnings`` is not ``'warn'`` or ``'ignore'``.
     """
     _can_drop_store(store_name, warnings)
@@ -107,24 +112,26 @@ def drop_store(store_name, *, warnings="warn"):
 
 
 def list_stores(*, like=None):
-    """Lists stores in database
+    """Lists stores in the database.
 
     Parameters
     ----------
     like : str, optional
-        Filters out stores not matching string pattern, by default `None`.
-
-        There are two wildcards that can be used in conjunction with `like`:
-
-        - Question mark (`?`) matches any single character
-        - The percent sign (`%`) matches any number of any characters
-
-        Matching is case-insensitive.
+        Filters store names with SQL wildcards. ``?`` matches one character
+        and ``%`` matches any number of characters. Matching is
+        case-insensitive. Default is ``None``.
 
     Returns
     -------
-    List
-        A list of the stores in the database
+    list
+        A list of the stores in the database.
+
+    Raises
+    ------
+    :exc:`~featherstore.exceptions.NotConnectedError`
+        If FeatherStore is not connected to a database.
+    :exc:`TypeError`
+        If ``like`` is not a str or ``None``.
     """
     _can_list(like)
     stores = _utils.list_stores(current_db, like=like)
@@ -132,6 +139,26 @@ def list_stores(*, like=None):
 
 
 def store_exists(store_name):
+    """Returns whether a store exists in the current database.
+
+    Parameters
+    ----------
+    store_name : str
+        The name of the store.
+
+    Returns
+    -------
+    bool
+
+    Raises
+    ------
+    :exc:`~featherstore.exceptions.NotConnectedError`
+        If FeatherStore is not connected to a database.
+    :exc:`~featherstore.exceptions.ForbiddenStoreNameError`
+        If ``store_name`` is reserved or not a valid path name.
+    :exc:`TypeError`
+        If ``store_name`` is not a str.
+    """
     Connection._raise_if_not_connected()
     _utils.raise_if_store_name_is_invalid(store_name)
     store_path = os.path.join(current_db(), store_name)
@@ -139,26 +166,34 @@ def store_exists(store_name):
 
 
 class Store:
-    def __init__(self, store_name):
-        """A class for common table operations within a store.
+    """Provides common table operations within a store.
 
-        Stores are directories for organizing data in logical groups
-        within your FeatherStore database.
+    Stores are directories for organizing data in logical groups
+    within your FeatherStore database.
+
+    Attributes
+    ----------
+    name : str
+        The name of the store. Updated when the store is renamed.
+    """
+
+    def __init__(self, store_name):
+        """Selects an existing store.
 
         Parameters
         ----------
         store_name : str
-            The name of the store to be selected
+            The name of the store to be selected.
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        StoreNotFoundError
+        :exc:`~featherstore.exceptions.StoreNotFoundError`
             If the store does not exist.
-        ForbiddenStoreNameError
+        :exc:`~featherstore.exceptions.ForbiddenStoreNameError`
             If ``store_name`` is reserved or not a valid path name.
-        TypeError
+        :exc:`TypeError`
             If ``store_name`` is not a str.
         """
         _can_init_store(store_name)
@@ -167,7 +202,7 @@ class Store:
         self._store_path = os.path.join(current_db(), store_name)
 
     def rename(self, *, to):
-        """Renames the current store
+        """Renames the current store.
 
         Parameters
         ----------
@@ -176,13 +211,13 @@ class Store:
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        StoreAlreadyExistsError
+        :exc:`~featherstore.exceptions.StoreAlreadyExistsError`
             If the new store name already exists.
-        ForbiddenStoreNameError
+        :exc:`~featherstore.exceptions.ForbiddenStoreNameError`
             If the new store name is reserved or not a valid path name.
-        TypeError
+        :exc:`TypeError`
             If ``to`` is not a str.
         """
         new_store_name = to
@@ -194,7 +229,7 @@ class Store:
         self._store_path = new_path
 
     def drop(self, *, warnings="warn"):
-        """Deletes the current store
+        """Deletes the current store.
 
         *Warning*: You cannot delete a store containing tables. All tables must
         be deleted first.
@@ -202,30 +237,45 @@ class Store:
         Parameters
         ----------
         warnings : str, optional
-            Whether or not to warn if the store doesn't exist. Can be either
-            `warn` or `ignore`, by default `warn`
+            Whether to warn if the store does not exist. Can be ``'warn'`` or
+            ``'ignore'``. Default is ``'warn'``.
+
+        Raises
+        ------
+        :exc:`~featherstore.exceptions.NotConnectedError`
+            If FeatherStore is not connected to a database.
+        :exc:`~featherstore.exceptions.StoreNotEmptyError`
+            If the store still contains tables.
+        :exc:`~featherstore.exceptions.ForbiddenStoreNameError`
+            If the store name is reserved or not a valid path name.
+        :exc:`TypeError`
+            If the store name is not a str.
+        :exc:`ValueError`
+            If ``warnings`` is not ``'warn'`` or ``'ignore'``.
         """
         drop_store(self.name, warnings=warnings)
 
     def list_tables(self, *, like=None):
-        """Lists tables in store
+        """Lists tables in the store.
 
         Parameters
         ----------
         like : str, optional
-            Filters out tables not matching string pattern, by default None.
-
-            There are two wildcards that can be used in conjunction with `like`:
-
-            - Question mark (`?`) matches any single character
-            - The percent sign (`%`) matches any number of any characters
-
-            Matching is case-insensitive.
+            Filters table names with SQL wildcards. ``?`` matches one character
+            and ``%`` matches any number of characters. Matching is
+            case-insensitive. Default is ``None``.
 
         Returns
         -------
-        List
-            A list of the tables in the store
+        list
+            A list of the tables in the store.
+
+        Raises
+        ------
+        :exc:`~featherstore.exceptions.NotConnectedError`
+            If FeatherStore is not connected to a database.
+        :exc:`TypeError`
+            If ``like`` is not a str or ``None``.
         """
         _can_list(like)
 
@@ -237,23 +287,47 @@ class Store:
         return tables
 
     def table_exists(self, table_name):
-        return Table(table_name, self.name).exists()
-
-    def read_arrow(self, table_name, *, cols=None, rows=None, mmap=None):
-        """Reads PyArrow Table from store
+        """Returns whether a table exists in this store.
 
         Parameters
         ----------
+        table_name : str
+            The name of the table.
+
+        Returns
+        -------
+        bool
+
+        Raises
+        ------
+        :exc:`~featherstore.exceptions.NotConnectedError`
+            If FeatherStore is not connected to a database.
+        :exc:`~featherstore.exceptions.StoreNotFoundError`
+            If the store does not exist.
+        :exc:`~featherstore.exceptions.ForbiddenTableNameError`
+            If ``table_name`` is reserved or not a valid path name.
+        :exc:`TypeError`
+            If ``table_name`` is not a str.
+
+        See Also
+        --------
+        :meth:`~featherstore.table.Table.exists`
+        """
+        return Table(table_name, self.name).exists()
+
+    def read_arrow(self, table_name, *, cols=None, rows=None, mmap=None):
+        """Reads a table as a PyArrow Table.
+
+        Parameters
+        ----------
+        table_name : str
+            The name of the table to read.
         cols : Collection, optional
-            List of column names or filter predicates in the form of
-            `{'like': pattern}`. If not provided, all columns are read.
+            See :meth:`~featherstore.table.Table.read_arrow`.
         rows : Collection, optional
-            List of index values or filter-predicates in the form of
-            `{keyword: value}`, where keyword can be either `before`, `after`,
-            or `between`. If not provided, all rows are read.
-        mmap: bool, optional
-            Use memory mapping when opening table on disk, by default `False` on
-            Windows and `True` on other systems.
+            See :meth:`~featherstore.table.Table.read_arrow`.
+        mmap : bool, optional
+            See :meth:`~featherstore.table.Table.read_arrow`.
 
         Returns
         -------
@@ -261,42 +335,32 @@ class Store:
 
         Raises
         ------
-        NotConnectedError
-            If FeatherStore is not connected to a database.
-        StoreNotFoundError
+        :exc:`~featherstore.exceptions.StoreNotFoundError`
             If the store does not exist.
-        ForbiddenTableNameError
+        :exc:`~featherstore.exceptions.ForbiddenTableNameError`
             If ``table_name`` is reserved or not a valid path name.
-        TableNotFoundError
-            If the table does not exist.
-        ColumnNotFoundError
-            If any requested column is not in the table.
-        RowNotFoundError
-            If any requested row is not in the table.
-        IndexTypeMismatchError
-            If row values do not match the table index dtype.
-        TypeError
-            If ``table_name``, ``cols``, or ``rows`` has an invalid type.
-        ValueError
-            If ``mmap`` is not a bool or ``None``.
+        :exc:`TypeError`
+            If ``table_name`` is not a str.
+
+        See Also
+        --------
+        :meth:`~featherstore.table.Table.read_arrow`
         """
         return Table(table_name, self.name).read_arrow(cols=cols, rows=rows, mmap=mmap)
 
     def read_pandas(self, table_name, *, cols=None, rows=None, mmap=None):
-        """Reads Pandas DataFrame or Series from store
+        """Reads a table as a pandas DataFrame or Series.
 
         Parameters
         ----------
+        table_name : str
+            The name of the table to read.
         cols : Collection, optional
-            List of column names or filter predicates in the form of
-            `{'like': pattern}`. If not provided, all columns are read.
+            See :meth:`~featherstore.table.Table.read_pandas`.
         rows : Collection, optional
-            List of index values or filter-predicates in the form of
-            `{keyword: value}`, where keyword can be either `before`, `after`,
-            or `between`. If not provided, all rows are read.
-        mmap: bool, optional
-            Use memory mapping when opening table on disk, by default `False` on
-            Windows and `True` on other systems.
+            See :meth:`~featherstore.table.Table.read_pandas`.
+        mmap : bool, optional
+            See :meth:`~featherstore.table.Table.read_pandas`.
 
         Returns
         -------
@@ -304,42 +368,32 @@ class Store:
 
         Raises
         ------
-        NotConnectedError
-            If FeatherStore is not connected to a database.
-        StoreNotFoundError
+        :exc:`~featherstore.exceptions.StoreNotFoundError`
             If the store does not exist.
-        ForbiddenTableNameError
+        :exc:`~featherstore.exceptions.ForbiddenTableNameError`
             If ``table_name`` is reserved or not a valid path name.
-        TableNotFoundError
-            If the table does not exist.
-        ColumnNotFoundError
-            If any requested column is not in the table.
-        RowNotFoundError
-            If any requested row is not in the table.
-        IndexTypeMismatchError
-            If row values do not match the table index dtype.
-        TypeError
-            If ``table_name``, ``cols``, or ``rows`` has an invalid type.
-        ValueError
-            If ``mmap`` is not a bool or ``None``.
+        :exc:`TypeError`
+            If ``table_name`` is not a str.
+
+        See Also
+        --------
+        :meth:`~featherstore.table.Table.read_pandas`
         """
         return Table(table_name, self.name).read_pandas(cols=cols, rows=rows, mmap=mmap)
 
     def read_polars(self, table_name, *, cols=None, rows=None, mmap=None):
-        """Reads Polars DataFrame or Series from store
+        """Reads a table as a polars DataFrame or Series.
 
         Parameters
         ----------
+        table_name : str
+            The name of the table to read.
         cols : Collection, optional
-            List of column names or filter predicates in the form of
-            `{'like': pattern}`. If not provided, all columns are read.
+            See :meth:`~featherstore.table.Table.read_polars`.
         rows : Collection, optional
-            List of index values or filter-predicates in the form of
-            `{keyword: value}`, where keyword can be either `before`, `after`,
-            or `between`. If not provided, all rows are read.
-        mmap: bool, optional
-            Use memory mapping when opening table on disk, by default `False` on
-            Windows and `True` on other systems.
+            See :meth:`~featherstore.table.Table.read_polars`.
+        mmap : bool, optional
+            See :meth:`~featherstore.table.Table.read_polars`.
 
         Returns
         -------
@@ -347,24 +401,16 @@ class Store:
 
         Raises
         ------
-        NotConnectedError
-            If FeatherStore is not connected to a database.
-        StoreNotFoundError
+        :exc:`~featherstore.exceptions.StoreNotFoundError`
             If the store does not exist.
-        ForbiddenTableNameError
+        :exc:`~featherstore.exceptions.ForbiddenTableNameError`
             If ``table_name`` is reserved or not a valid path name.
-        TableNotFoundError
-            If the table does not exist.
-        ColumnNotFoundError
-            If any requested column is not in the table.
-        RowNotFoundError
-            If any requested row is not in the table.
-        IndexTypeMismatchError
-            If row values do not match the table index dtype.
-        TypeError
-            If ``table_name``, ``cols``, or ``rows`` has an invalid type.
-        ValueError
-            If ``mmap`` is not a bool or ``None``.
+        :exc:`TypeError`
+            If ``table_name`` is not a str.
+
+        See Also
+        --------
+        :meth:`~featherstore.table.Table.read_polars`
         """
         return Table(table_name, self.name).read_polars(cols=cols, rows=rows, mmap=mmap)
 
@@ -379,58 +425,35 @@ class Store:
         errors="raise",
         warnings="warn",
     ):
-        """Writes a DataFrame to the current store as a partitioned table
-
-        The DataFrame index, if provided, must be a supported type: integer,
-        unsigned integer, float, decimal, string, binary, duration, or temporal
-        (date, time, or timestamp). FeatherStore sorts the DataFrame by the
-        index before storage.
+        """Writes a DataFrame to the current store as a partitioned table.
 
         Parameters
         ----------
         table_name : str
-            The name of the table the DataFrame will be stored as
-        df : pandas DataFrame or Series, polars DataFrame or Series, or pyarrow Table
-            The DataFrame to be stored
+            The name of the table the DataFrame will be stored as.
+        df : pandas.DataFrame or pandas.Series, polars.DataFrame or polars.Series, or pyarrow.Table
+            See :meth:`~featherstore.table.Table.write`.
         index : str, optional
-            The name of the column to be used as index. Uses current index for
-            Pandas or a standard integer index for Arrow and Polars if `index` not
-            provided, by default `None`
+            See :meth:`~featherstore.table.Table.write`.
         partition_size : int, optional
-            The size of each partition in bytes. A `partition_size` value of `-1`
-            disables partitioning, by default 128 MB
+            See :meth:`~featherstore.table.Table.write`.
         errors : str, optional
-            Whether to raise an error if the table already exists. Can be either
-            `raise` or `ignore`; `ignore` overwrites the existing table.
-            Default is `raise`.
+            See :meth:`~featherstore.table.Table.write`.
         warnings : str, optional
-            Whether or not to warn if an unsorted index is about to get sorted.
-            Can be either `warn` or `ignore`, by default `warn`
+            See :meth:`~featherstore.table.Table.write`.
 
         Raises
         ------
-        NotConnectedError
-            If FeatherStore is not connected to a database.
-        StoreNotFoundError
+        :exc:`~featherstore.exceptions.StoreNotFoundError`
             If the store does not exist.
-        ForbiddenTableNameError
+        :exc:`~featherstore.exceptions.ForbiddenTableNameError`
             If ``table_name`` is reserved or not a valid path name.
-        TableAlreadyExistsError
-            If ``errors='raise'`` and the table already exists.
-        DuplicateColumnNamesError
-            If column names are not unique.
-        DuplicateIndexValuesError
-            If index values are not unique.
-        IndexNotInColumnsError
-            If ``index`` is not among the table columns.
-        UnsupportedIndexTypeError
-            If the index type is not supported.
-        MultiTypeColumnError
-            If a column contains multiple dtypes.
-        TypeError
-            If arguments have invalid types.
-        ValueError
-            If ``errors`` or ``warnings`` is invalid.
+        :exc:`TypeError`
+            If ``table_name`` is not a str.
+
+        See Also
+        --------
+        :meth:`~featherstore.table.Table.write`
         """
         Table(table_name, self.name).write(
             df,
@@ -441,86 +464,88 @@ class Store:
         )
 
     def append_table(self, table_name, df, *, warnings="warn"):
-        """Appends data to a table
+        """Appends data to a table.
 
         Parameters
         ----------
         table_name : str
-            The name of the table you want to append to
-        df : Pandas DataFrame or Series, Polars DataFrame or Series, or PyArrow Table
-            The data to be appended
+            The name of the table to append to.
+        df : pandas.DataFrame or pandas.Series, polars.DataFrame or polars.Series, or pyarrow.Table
+            See :meth:`~featherstore.table.Table.append`.
         warnings : str, optional
-            Whether or not to warn if an unsorted index is about to get sorted.
-            Can be either `warn` or `ignore`, by default `warn`
+            See :meth:`~featherstore.table.Table.append`.
 
         Raises
         ------
-        NotConnectedError
-            If FeatherStore is not connected to a database.
-        StoreNotFoundError
+        :exc:`~featherstore.exceptions.StoreNotFoundError`
             If the store does not exist.
-        ForbiddenTableNameError
+        :exc:`~featherstore.exceptions.ForbiddenTableNameError`
             If ``table_name`` is reserved or not a valid path name.
-        TableNotFoundError
-            If the table does not exist.
-        AppendIndexError
-            If append index is not strictly after stored data.
-        ColumnDtypeMismatchError
-            If column dtypes are incompatible.
-        ColumnMismatchError
-            If column names do not match the stored table.
-        DuplicateColumnNamesError
-            If column names are not unique.
-        DuplicateIndexValuesError
-            If index values are not unique.
-        IndexNameMismatchError
-            If the index name does not match the stored table.
-        IndexTypeMismatchError
-            If the index type does not match the stored table.
-        MissingIndexError
-            If an index is required but not provided.
-        TypeError
-            If arguments have invalid types.
-        ValueError
-            If ``warnings`` is invalid.
+        :exc:`TypeError`
+            If ``table_name`` is not a str.
+
+        See Also
+        --------
+        :meth:`~featherstore.table.Table.append`
         """
         Table(table_name, self.name).append(df, warnings=warnings)
 
     def rename_table(self, table_name, *, to):
-        """Renames a table
+        """Renames a table.
 
         Parameters
         ----------
         table_name : str
-            The name of the table to be renamed
+            The name of the table to be renamed.
         to : str
             The new name of the table.
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        StoreNotFoundError
+        :exc:`~featherstore.exceptions.StoreNotFoundError`
             If the store does not exist.
-        ForbiddenTableNameError
+        :exc:`~featherstore.exceptions.ForbiddenTableNameError`
             If ``table_name`` or ``to`` is reserved or not a valid path name.
-        TableAlreadyExistsError
+        :exc:`~featherstore.exceptions.TableAlreadyExistsError`
             If the new table name already exists.
-        TypeError
+        :exc:`TypeError`
             If ``table_name`` or ``to`` is not a str.
+
+        See Also
+        --------
+        :meth:`~featherstore.table.Table.rename_table`
         """
         Table(table_name, self.name).rename_table(to=to)
 
     def drop_table(self, table_name, *, warnings="warn"):
-        """Deletes a table
+        """Deletes a table.
 
         Parameters
         ----------
         table_name : str
-            The name of the table to be deleted
+            The name of the table to be deleted.
         warnings : str, optional
-            Whether or not to warn if the table doesn't exist. Can be either
-            `warn` or `ignore`, by default `warn`
+            Whether to warn if the table does not exist. Can be ``'warn'`` or
+            ``'ignore'``. Default is ``'warn'``.
+
+        Raises
+        ------
+        :exc:`~featherstore.exceptions.NotConnectedError`
+            If FeatherStore is not connected to a database.
+        :exc:`~featherstore.exceptions.StoreNotFoundError`
+            If the store does not exist.
+        :exc:`~featherstore.exceptions.ForbiddenTableNameError`
+            If ``table_name`` is reserved or not a valid path name.
+        :exc:`TypeError`
+            If ``table_name`` is not a str.
+        :exc:`ValueError`
+            If ``warnings`` is not ``'warn'`` or ``'ignore'``.
+
+        See Also
+        --------
+        :meth:`~featherstore.table.Table.drop_table`
         """
         Table(table_name, self.name).drop_table(warnings=warnings)
 
@@ -532,31 +557,49 @@ class Store:
         Parameters
         ----------
         table_name : str
-            The name of the table to be returned
+            The name of the table to return.
 
         Returns
         -------
         Table
+
+        Raises
+        ------
+        :exc:`~featherstore.exceptions.NotConnectedError`
+            If FeatherStore is not connected to a database.
+        :exc:`~featherstore.exceptions.StoreNotFoundError`
+            If the store does not exist.
+        :exc:`~featherstore.exceptions.ForbiddenTableNameError`
+            If ``table_name`` is reserved or not a valid path name.
+        :exc:`TypeError`
+            If ``table_name`` is not a str.
+
+        See Also
+        --------
+        :class:`~featherstore.table.Table`
         """
         return Table(table_name, self.name)
 
     def create_snapshot(self, path):
         """Creates a compressed backup of the store.
 
-        The store can later be restored by using `snapshot.restore_store()`.
+        The store can later be restored with
+        :func:`~featherstore.snapshot.restore_store`.
 
         Parameters
         ----------
         path : str
-            The path to the snapshot archive.
+            Path to the snapshot archive. ``.tar.xz`` is appended unless
+            ``path`` already ends with that suffix. An existing file at the
+            resulting path is overwritten.
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        SnapshotTargetNotFoundError
+        :exc:`~featherstore.exceptions.SnapshotTargetNotFoundError`
             If the store path does not exist.
-        TypeError
+        :exc:`TypeError`
             If ``path`` is not a str.
         """
         _create_snapshot(path, self._store_path, "store")

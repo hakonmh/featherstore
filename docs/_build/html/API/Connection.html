@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Database and Connection &#8212; FeatherStore 0.2.1 documentation</title>
+    <title>Database and Connection &#8212; FeatherStore 0.3.0 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="../_static/documentation_options.js?v=37f418d5"></script>
+    <script src="../_static/documentation_options.js?v=e259d695"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'API/Connection';</script>
@@ -122,8 +122,8 @@
       
     
     
-    <img src="../_static/logo-dark.png" class="logo__image only-light" alt="FeatherStore 0.2.1 documentation - Home"/>
-    <img src="../_static/logo-light.png" class="logo__image only-dark pst-js-only" alt="FeatherStore 0.2.1 documentation - Home"/>
+    <img src="../_static/logo-dark.png" class="logo__image only-light" alt="FeatherStore 0.3.0 documentation - Home"/>
+    <img src="../_static/logo-light.png" class="logo__image only-dark pst-js-only" alt="FeatherStore 0.3.0 documentation - Home"/>
   
   
 </a></div>
@@ -414,16 +414,19 @@
 <span id="database-and-connection"></span><h1>Database and Connection<a class="headerlink" href="#module-featherstore.connection" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.connection.connect">
-<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection_string</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L12-L27"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.connect" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection_string</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L15-L35"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.connect" title="Link to this definition">#</a></dt>
 <dd><p>Connects to a database.</p>
+<p>If a connection is already open, it is replaced.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>connection_string</strong> (<em>str</em>) – Path to the database directory</p>
+<dd class="field-odd"><p><strong>connection_string</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the database directory. <code class="docutils literal notranslate"><span class="pre">~</span></code> is expanded to the user home
+directory.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotADatabaseError" title="featherstore.exceptions.NotADatabaseError"><strong>NotADatabaseError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">connection_string</span></code> is not a FeatherStore database.</p></li>
-<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">connection_string</span></code> is not a str.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.IncompatibleDatabaseVersionError" title="featherstore.exceptions.IncompatibleDatabaseVersionError"><strong>IncompatibleDatabaseVersionError</strong></a> – If the database format versions are incompatible with this install.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">connection_string</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -431,7 +434,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.connection.disconnect">
-<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L30-L38"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.disconnect" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L38-L46"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.disconnect" title="Link to this definition">#</a></dt>
 <dd><p>Disconnects from the current database.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
@@ -442,23 +445,53 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.connection.create_database">
-<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">create_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L41-L70"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.create_database" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">create_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L49-L81"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.create_database" title="Link to this definition">#</a></dt>
 <dd><p>Creates a new database.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<em>str</em>) – Where to create the database.</p></li>
-<li><p><strong>errors</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether or not to raise an error if the database directory already exist.
-Can be either <cite>raise</cite> or <cite>ignore</cite>, <cite>ignore</cite> tries to create a database
-in existing directory, by default <cite>raise</cite></p></li>
-<li><p><strong>connect</strong> (<em>bool</em>) – Whether or not to connect to the created database, by default True</p></li>
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Where to create the database. <code class="docutils literal notranslate"><span class="pre">~</span></code> is expanded to the user home
+directory.</p></li>
+<li><p><strong>errors</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to raise an error if the database directory already exists.
+Can be <code class="docutils literal notranslate"><span class="pre">'raise'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>; <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code> tries to create a
+database in an existing directory. Default is <code class="docutils literal notranslate"><span class="pre">'raise'</span></code>.</p></li>
+<li><p><strong>connect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to connect to the created database. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.
+A new connection replaces any existing connection.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.PopulatedDirectoryError" title="featherstore.exceptions.PopulatedDirectoryError"><strong>PopulatedDirectoryError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">errors='raise'</span></code> and the directory is not empty.</p></li>
-<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">db_path</span></code> is not a str.</p></li>
-<li><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">errors</span></code> is not <code class="docutils literal notranslate"><span class="pre">'raise'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">path</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">errors</span></code> is not <code class="docutils literal notranslate"><span class="pre">'raise'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="featherstore.connection.drop_database">
+<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">drop_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L84-L117"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.drop_database" title="Link to this definition">#</a></dt>
+<dd><p>Deletes a database.</p>
+<p><em>Warning</em>: You cannot delete a database containing stores. All stores must
+be deleted first.</p>
+<p>On success, FeatherStore disconnects from the deleted database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the database directory. Must be the currently connected
+database. <code class="docutils literal notranslate"><span class="pre">~</span></code> is expanded to the user home directory.</p></li>
+<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if the database does not exist. Can be <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or
+<code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">'warn'</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
+<li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.DatabaseNotEmptyError" title="featherstore.exceptions.DatabaseNotEmptyError"><strong>DatabaseNotEmptyError</strong></a> – If the database still contains stores.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">path</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is not <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>, or if <code class="docutils literal notranslate"><span class="pre">path</span></code> is
+    not the currently connected database.</p></li>
 </ul>
 </dd>
 </dl>
@@ -466,14 +499,14 @@ in existing directory, by default <cite>raise</cite></p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.connection.current_db">
-<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">current_db</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L80-L93"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.current_db" title="Link to this definition">#</a></dt>
-<dd><p>Fetches the active database.</p>
+<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">current_db</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L120-L133"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.current_db" title="Link to this definition">#</a></dt>
+<dd><p>Returns the path of the active database.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The current database directory</p>
+<dd class="field-odd"><p>The current database directory.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>str</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p>
@@ -483,46 +516,31 @@ in existing directory, by default <cite>raise</cite></p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.connection.is_connected">
-<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">is_connected</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L96-L98"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.is_connected" title="Link to this definition">#</a></dt>
-<dd><p>Checks if FeatherStore is connected to a database.</p>
+<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">is_connected</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L136-L143"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.is_connected" title="Link to this definition">#</a></dt>
+<dd><p>Returns whether FeatherStore is connected to a database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="featherstore.connection.database_exists">
-<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">database_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L101-L115"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.database_exists" title="Link to this definition">#</a></dt>
-<dd><p>Checks whether a directory is a FeatherStore database.</p>
+<span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">database_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L146-L162"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.database_exists" title="Link to this definition">#</a></dt>
+<dd><p>Returns whether a directory is a FeatherStore database.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – Path to the directory to check.</p>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the directory to check. <code class="docutils literal notranslate"><span class="pre">~</span></code> is expanded to the user home
+directory.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the directory contains a FeatherStore database marker.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="featherstore.connection.Connection">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">featherstore.connection.</span></span><span class="sig-name descname"><span class="pre">Connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L118-L149"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.Connection" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="featherstore.connection.Connection.disconnect">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L128-L131"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.Connection.disconnect" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="featherstore.connection.Connection.location">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">location</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L133-L136"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.Connection.location" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="featherstore.connection.Connection.is_connected">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_connected</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/connection.py#L138-L144"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.connection.Connection.is_connected" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 </section>
@@ -577,15 +595,10 @@ in existing directory, by default <cite>raise</cite></p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.connection.connect"><code class="docutils literal notranslate"><span class="pre">connect()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.connection.disconnect"><code class="docutils literal notranslate"><span class="pre">disconnect()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.connection.create_database"><code class="docutils literal notranslate"><span class="pre">create_database()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.connection.drop_database"><code class="docutils literal notranslate"><span class="pre">drop_database()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.connection.current_db"><code class="docutils literal notranslate"><span class="pre">current_db()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.connection.is_connected"><code class="docutils literal notranslate"><span class="pre">is_connected()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.connection.database_exists"><code class="docutils literal notranslate"><span class="pre">database_exists()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.connection.Connection"><code class="docutils literal notranslate"><span class="pre">Connection</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.connection.Connection.disconnect"><code class="docutils literal notranslate"><span class="pre">Connection.disconnect()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.connection.Connection.location"><code class="docutils literal notranslate"><span class="pre">Connection.location()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featherstore.connection.Connection.is_connected"><code class="docutils literal notranslate"><span class="pre">Connection.is_connected()</span></code></a></li>
-</ul>
-</li>
 </ul>
   </nav></div>
 
@@ -614,7 +627,7 @@ in existing directory, by default <cite>raise</cite></p></li>
 
   <p class="copyright">
     
-      © Copyright 2021, Håkon Magne Holmen.
+      © Copyright 2021-2026, Håkon Magne Holmen.
       <br/>
     
   </p>

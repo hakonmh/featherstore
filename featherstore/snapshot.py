@@ -22,41 +22,45 @@ _SNAPSHOT_ARCHIVE_SUFFIX = ".tar.xz"
 def restore_table(store_name, source, *, errors="raise"):
     """Restores a table into the currently connected database.
 
+    The table is restored under the name stored in the snapshot. ``store_name``
+    selects only the destination store.
+
     Parameters
     ----------
     store_name : str
         The name of the store to restore the table into.
     source : str
-        Path to the snapshot file.
-    errors : str
+        Path to the snapshot file. ``.tar.xz`` is appended unless ``source``
+        already ends with that suffix.
+    errors : str, optional
         Whether to raise an error if a table with the same name already
-        exists. Can be either `raise` or `ignore`; `ignore` overwrites the
-        existing table. Default is `raise`.
+        exists. Can be ``'raise'`` or ``'ignore'``; ``'ignore'`` overwrites the
+        existing table. Default is ``'raise'``.
 
     Returns
     -------
     str
-        The name of the table restored.
+        The table name from the snapshot archive.
 
     Raises
     ------
-    NotConnectedError
+    :exc:`~featherstore.exceptions.NotConnectedError`
         If FeatherStore is not connected to a database.
-    StoreNotFoundError
+    :exc:`~featherstore.exceptions.StoreNotFoundError`
         If the target store does not exist.
-    ForbiddenStoreNameError
+    :exc:`~featherstore.exceptions.ForbiddenStoreNameError`
         If ``store_name`` is reserved or not a valid path name.
-    SnapshotNotFoundError
+    :exc:`~featherstore.exceptions.SnapshotNotFoundError`
         If the snapshot file does not exist.
-    InvalidSnapshotError
+    :exc:`~featherstore.exceptions.InvalidSnapshotError`
         If the file is not a snapshot of a table.
-    TableAlreadyExistsError
+    :exc:`~featherstore.exceptions.TableAlreadyExistsError`
         If ``errors='raise'`` and the table already exists.
-    ForbiddenTableNameError
+    :exc:`~featherstore.exceptions.ForbiddenTableNameError`
         If the archived table name is reserved or not a valid path name.
-    TypeError
+    :exc:`TypeError`
         If ``store_name`` or ``source`` is not a str.
-    ValueError
+    :exc:`ValueError`
         If ``errors`` is not ``'raise'`` or ``'ignore'``.
     """
     _can_restore_table(store_name, source, errors)
@@ -68,35 +72,38 @@ def restore_table(store_name, source, *, errors="raise"):
 def restore_store(source, *, errors="raise"):
     """Restores a store into the currently connected database.
 
+    The store is restored under the name stored in the snapshot.
+
     Parameters
     ----------
     source : str
-        Path to the snapshot file.
-    errors : str
+        Path to the snapshot file. ``.tar.xz`` is appended unless ``source``
+        already ends with that suffix.
+    errors : str, optional
         Whether to raise an error if a store with the same name already
-        exists. Can be either `raise` or `ignore`; `ignore` overwrites the
-        existing store. Default is `raise`.
+        exists. Can be ``'raise'`` or ``'ignore'``; ``'ignore'`` overwrites the
+        existing store. Default is ``'raise'``.
 
     Returns
     -------
     str
-        The name of the store restored.
+        The store name from the snapshot archive.
 
     Raises
     ------
-    NotConnectedError
+    :exc:`~featherstore.exceptions.NotConnectedError`
         If FeatherStore is not connected to a database.
-    SnapshotNotFoundError
+    :exc:`~featherstore.exceptions.SnapshotNotFoundError`
         If the snapshot file does not exist.
-    InvalidSnapshotError
+    :exc:`~featherstore.exceptions.InvalidSnapshotError`
         If the file is not a snapshot of a store.
-    StoreAlreadyExistsError
+    :exc:`~featherstore.exceptions.StoreAlreadyExistsError`
         If ``errors='raise'`` and the store already exists.
-    ForbiddenStoreNameError
+    :exc:`~featherstore.exceptions.ForbiddenStoreNameError`
         If the archived store name is reserved or not a valid path name.
-    TypeError
+    :exc:`TypeError`
         If ``source`` is not a str.
-    ValueError
+    :exc:`ValueError`
         If ``errors`` is not ``'raise'`` or ``'ignore'``.
     """
     _can_restore_store(source, errors)

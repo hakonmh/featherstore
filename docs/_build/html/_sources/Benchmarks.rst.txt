@@ -1,27 +1,28 @@
 Benchmarks
 ==========
 
-In this benchmark we'll compare how well FeatherStore, Feather, Parquet, CSV,
-Pickle and DuckDB perform when reading and writing Pandas DataFrames.
+This page compares FeatherStore, Feather, Parquet, CSV, Pickle, and DuckDB
+when reading and writing Pandas DataFrames.
 
-The benchmark ran on the following computer:
+The benchmarks were run on the following hardware:
 
 * CPU: Intel© Core™ i5-11600
 * RAM: 48 GB DDR4 (3200 MHz)
-* SSD: 1 TB M.2 NVMe (3470/3000 Read/Write MBps)
-* GPU: NVIDIA GeForce GTX 1060 6GB (Not used during the benchmark)
+* SSD: 1 TB M.2 NVMe (3470/3000 MB/s read/write)
+* GPU: NVIDIA GeForce GTX 1060 6GB (not used during the benchmark)
 
-VS Other Libraries
-++++++++++++++++++
+Compared with other libraries
++++++++++++++++++++++++++++++
 
-The code used for these benchmarks can be found `here <https://github.com/hakonmh/featherstore/blob/master/benchmarks/format_comparison.py>`_.
+The code for the format comparison is in
+`benchmarks/format_comparison.py <https://github.com/hakonmh/featherstore/blob/master/benchmarks/format_comparison.py>`_.
 
-First Dataset
---------------
+First dataset
+-------------
 
-Let's start small, the first dataset is made up of 6,000 fields of random
-data with the shape of 1,000 rows and 6 columns. The data consists of strings,
-ints, uints, bools, floats, and datetime, with one column of each data type.
+The first dataset is small: 6,000 random fields in a table of 1,000 rows and 6
+columns. It includes strings, ints, uints, bools, floats, and datetimes, with
+one column of each type.
 
 .. image:: images/write_first.png
     :width: 750
@@ -31,16 +32,15 @@ ints, uints, bools, floats, and datetime, with one column of each data type.
     :width: 750
     :align: center
 
-As you can see, for small DataFrames, Pickle is the fastest solution. While
-FeatherStore is around the middle of the pack for both reads and writes.
+For small DataFrames, Pickle is the fastest option. FeatherStore is neither
+the fastest nor the slowest for reads or writes.
 
-Second Dataset
+Second dataset
 --------------
 
-The second dataset is made up of 600 million fields of random data in the shape
-10 million rows and 60 columns (Approx. 6.4 Gb of data when stored as CSV).
-The data consists of strings, ints, uints, bools, floats, and datetimes, with
-10 columns of each data type.
+The second dataset has 600 million random fields: 10 million rows and 60 columns
+(about 6.4 GB when stored as CSV). It includes strings, ints, uints, bools,
+floats, and datetimes, with 10 columns of each type.
 
 .. image:: images/write_second.png
     :width: 750
@@ -53,23 +53,22 @@ The data consists of strings, ints, uints, bools, floats, and datetimes, with
 Here's where FeatherStore really shines, matching Pickle on read speed and
 Feather on write speed.
 
-Table Operation Benchmarks
+Table operation benchmarks
 ++++++++++++++++++++++++++
 
-The code used for these (and other) benchmarks can be found `here <https://github.com/hakonmh/featherstore/blob/master/benchmarks/table_operations.py>`_.
+The code for the table-operation benchmarks is in
+`benchmarks/table_operations.py <https://github.com/hakonmh/featherstore/blob/master/benchmarks/table_operations.py>`_.
 
 Pandas vs Polars and Arrow
 --------------------------
 
-In addition to supporting reading and writing Pandas DataFrames, FeatherStore
-also supports reading and writing Polars DataFrames and PyArrow Tables.
-These two data structures use the Apache Arrow Columnar Format as a memory
-model, allowing reads and writes without serializing and deserializing to and
-from Pandas.
+In addition to Pandas DataFrames, FeatherStore can read and write Polars
+DataFrames and PyArrow Tables. These two structures use the Apache Arrow
+Columnar Format as a memory model, so reads and writes can skip serializing and
+deserializing through Pandas.
 
-We will benchmark using the second dataset, comparing reading and writing
-the dataset as Pandas DataFrame, Polars DataFrame, and PyArrow Table
-using FeatherStore.
+The charts below use the second dataset and compare reading and writing it as a
+Pandas DataFrame, a Polars DataFrame, and a PyArrow Table with FeatherStore.
 
 .. image:: images/write_internal.png
     :width: 750
@@ -79,34 +78,33 @@ using FeatherStore.
     :width: 750
     :align: center
 
-Skipping serialization makes FeatherStore extremely fast when reading to Arrow
-and Polars. It's not easy to see based on the chart, but read Arrow is clocking
-in at just 4.36 ms, while read Polars takes 362 ms.
+Skipping serialization makes FeatherStore very fast when reading to Arrow and
+Polars. Reading to Arrow takes 4.36 ms; reading to Polars takes 362 ms. The
+chart scale makes that difference hard to see.
 
-Predicate Filtering
+Predicate filtering
 -------------------
 
-In addition to the performance given to us by the underlying Feather files,
-FeatherStore partitions our data into multiple files. This allows us to read
-parts of the data without reading the full table, saving both time and memory
-usage.
+On top of the performance of the underlying Feather files, FeatherStore
+partitions data into multiple files. That lets you read part of a table without
+loading all of it, which saves both time and memory.
 
 .. image:: images/read_cols_internal.png
     :width: 750
     :align: center
 
-Reading 25 % of the columns cuts the time to read Pandas from 11.5 s to 4.8 s.
-Similar improvements can also be seen when reading Polars.
+Reading 25% of the columns cuts Pandas read time from 11.5 s to 4.8 s. Polars
+reads improve by a similar amount.
 
 .. image:: images/read_rows_internal.png
     :width: 750
     :align: center
 
-Reading 25 % of the rows takes between 3.5 s and 5.0 s when reading Pandas,
-dependent on how you read them (list of rows vs range query).
+Reading 25% of the rows takes between 3.5 s and 5.0 s for Pandas, depending on
+whether you pass a list of rows or a range query.
 
 It should be noted that the performance when filtering rows is dependent
 on the partition size used. Smaller partitions allow us to skip more rows
 when reading, with the trade-off being slower performance when doing full table
-reads and writes. In these benchmarks, the default 128 Mb was used as the
+reads and writes. In these benchmarks, the default 128 MB was used as the
 partition size.

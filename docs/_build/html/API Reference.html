@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>API Reference &#8212; FeatherStore 0.2.1 documentation</title>
+    <title>API Reference &#8212; FeatherStore 0.3.0 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="_static/documentation_options.js?v=37f418d5"></script>
+    <script src="_static/documentation_options.js?v=e259d695"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'API Reference';</script>
@@ -122,8 +122,8 @@
       
     
     
-    <img src="_static/logo-dark.png" class="logo__image only-light" alt="FeatherStore 0.2.1 documentation - Home"/>
-    <img src="_static/logo-light.png" class="logo__image only-dark pst-js-only" alt="FeatherStore 0.2.1 documentation - Home"/>
+    <img src="_static/logo-dark.png" class="logo__image only-light" alt="FeatherStore 0.3.0 documentation - Home"/>
+    <img src="_static/logo-light.png" class="logo__image only-dark pst-js-only" alt="FeatherStore 0.3.0 documentation - Home"/>
   
   
 </a></div>
@@ -405,22 +405,17 @@
                   
   <section id="api-reference">
 <h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">#</a></h1>
-<p>This page gives an overview of all public FeatherStore objects, functions and methods.</p>
+<p>This page gives an overview of all public FeatherStore objects, functions, and methods.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="API/Connection.html">Database and Connection</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="API/Connection.html#featherstore.connection.connect"><code class="docutils literal notranslate"><span class="pre">connect()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="API/Connection.html#featherstore.connection.disconnect"><code class="docutils literal notranslate"><span class="pre">disconnect()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="API/Connection.html#featherstore.connection.create_database"><code class="docutils literal notranslate"><span class="pre">create_database()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="API/Connection.html#featherstore.connection.drop_database"><code class="docutils literal notranslate"><span class="pre">drop_database()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="API/Connection.html#featherstore.connection.current_db"><code class="docutils literal notranslate"><span class="pre">current_db()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="API/Connection.html#featherstore.connection.is_connected"><code class="docutils literal notranslate"><span class="pre">is_connected()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="API/Connection.html#featherstore.connection.database_exists"><code class="docutils literal notranslate"><span class="pre">database_exists()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="API/Connection.html#featherstore.connection.Connection"><code class="docutils literal notranslate"><span class="pre">Connection</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="API/Connection.html#featherstore.connection.Connection.disconnect"><code class="docutils literal notranslate"><span class="pre">Connection.disconnect()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="API/Connection.html#featherstore.connection.Connection.location"><code class="docutils literal notranslate"><span class="pre">Connection.location()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="API/Connection.html#featherstore.connection.Connection.is_connected"><code class="docutils literal notranslate"><span class="pre">Connection.is_connected()</span></code></a></li>
-</ul>
-</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="API/Store.html">Store</a><ul>
@@ -430,6 +425,7 @@
 <li class="toctree-l2"><a class="reference internal" href="API/Store.html#featherstore.store.list_stores"><code class="docutils literal notranslate"><span class="pre">list_stores()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="API/Store.html#featherstore.store.store_exists"><code class="docutils literal notranslate"><span class="pre">store_exists()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="API/Store.html#featherstore.store.Store"><code class="docutils literal notranslate"><span class="pre">Store</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="API/Store.html#featherstore.store.Store.name"><code class="docutils literal notranslate"><span class="pre">Store.name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="API/Store.html#featherstore.store.Store.rename"><code class="docutils literal notranslate"><span class="pre">Store.rename()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="API/Store.html#featherstore.store.Store.drop"><code class="docutils literal notranslate"><span class="pre">Store.drop()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="API/Store.html#featherstore.store.Store.list_tables"><code class="docutils literal notranslate"><span class="pre">Store.list_tables()</span></code></a></li>
@@ -486,7 +482,7 @@
 <li class="toctree-l1"><a class="reference internal" href="API/Exceptions.html">Exceptions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="API/Exceptions.html#hierarchy">Hierarchy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="API/Exceptions.html#module-featherstore.exceptions">Exception reference</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="API/Exceptions.html#featherstore.exceptions.FeatherStoreException"><code class="docutils literal notranslate"><span class="pre">FeatherStoreException</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="API/Exceptions.html#featherstore.exceptions.FeatherStoreError"><code class="docutils literal notranslate"><span class="pre">FeatherStoreError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="API/Exceptions.html#featherstore.exceptions.TableError"><code class="docutils literal notranslate"><span class="pre">TableError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="API/Exceptions.html#featherstore.exceptions.TableNotFoundError"><code class="docutils literal notranslate"><span class="pre">TableNotFoundError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="API/Exceptions.html#featherstore.exceptions.TableAlreadyExistsError"><code class="docutils literal notranslate"><span class="pre">TableAlreadyExistsError</span></code></a></li>
@@ -524,6 +520,8 @@
 <li class="toctree-l3"><a class="reference internal" href="API/Exceptions.html#featherstore.exceptions.NotConnectedError"><code class="docutils literal notranslate"><span class="pre">NotConnectedError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="API/Exceptions.html#featherstore.exceptions.NotADatabaseError"><code class="docutils literal notranslate"><span class="pre">NotADatabaseError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="API/Exceptions.html#featherstore.exceptions.PopulatedDirectoryError"><code class="docutils literal notranslate"><span class="pre">PopulatedDirectoryError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="API/Exceptions.html#featherstore.exceptions.DatabaseNotEmptyError"><code class="docutils literal notranslate"><span class="pre">DatabaseNotEmptyError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="API/Exceptions.html#featherstore.exceptions.IncompatibleDatabaseVersionError"><code class="docutils literal notranslate"><span class="pre">IncompatibleDatabaseVersionError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="API/Exceptions.html#featherstore.exceptions.SnapshotError"><code class="docutils literal notranslate"><span class="pre">SnapshotError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="API/Exceptions.html#featherstore.exceptions.SnapshotNotFoundError"><code class="docutils literal notranslate"><span class="pre">SnapshotNotFoundError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="API/Exceptions.html#featherstore.exceptions.InvalidSnapshotError"><code class="docutils literal notranslate"><span class="pre">InvalidSnapshotError</span></code></a></li>
@@ -596,7 +594,7 @@
 
   <p class="copyright">
     
-      © Copyright 2021, Håkon Magne Holmen.
+      © Copyright 2021-2026, Håkon Magne Holmen.
       <br/>
     
   </p>

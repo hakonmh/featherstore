@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Overview &#8212; FeatherStore 0.2.1 documentation</title>
+    <title>Overview &#8212; FeatherStore 0.3.0 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="_static/documentation_options.js?v=37f418d5"></script>
+    <script src="_static/documentation_options.js?v=e259d695"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'Overview';</script>
@@ -122,8 +122,8 @@
       
     
     
-    <img src="_static/logo-dark.png" class="logo__image only-light" alt="FeatherStore 0.2.1 documentation - Home"/>
-    <img src="_static/logo-light.png" class="logo__image only-dark pst-js-only" alt="FeatherStore 0.2.1 documentation - Home"/>
+    <img src="_static/logo-dark.png" class="logo__image only-light" alt="FeatherStore 0.3.0 documentation - Home"/>
+    <img src="_static/logo-light.png" class="logo__image only-dark pst-js-only" alt="FeatherStore 0.3.0 documentation - Home"/>
   
   
 </a></div>
@@ -402,21 +402,20 @@
                   
   <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h1>
-<p>FeatherStore is high performance datastore for storing Pandas DataFrames, Polars DataFrames,
-and PyArrow Tables. By saving data in the form of partitioned
-<a class="reference external" href="https://arrow.apache.org/docs/python/feather.html">Feather Files</a>, FeatherStore enables
-several operations on the stored tables, optimizing performance by selectively loading only
-the necessary segments of data:</p>
+<p>FeatherStore is a high-performance datastore for Pandas DataFrames, Polars DataFrames,
+and PyArrow Tables. Data is stored as partitioned
+<a class="reference external" href="https://arrow.apache.org/docs/python/feather.html">Feather files</a>, so FeatherStore can
+run several operations on stored tables while loading only the data each operation needs:</p>
 <ul class="simple">
-<li><p>Partial reading of data</p></li>
-<li><p>Append data</p></li>
-<li><p>Insert rows and columns</p></li>
-<li><p>Update data</p></li>
-<li><p>Drop data</p></li>
-<li><p>Read metadata (including column names, indices, table dimensions, etc.)</p></li>
-<li><p>Changing column types</p></li>
+<li><p>Partial reads</p></li>
+<li><p>Appends</p></li>
+<li><p>Row and column inserts (Pandas, Polars, or PyArrow)</p></li>
+<li><p>Updates (Pandas, Polars, or PyArrow)</p></li>
+<li><p>Drops</p></li>
+<li><p>Metadata reads (column names, index, table dimensions, and more)</p></li>
+<li><p>Column type changes</p></li>
 </ul>
-<p>For more information on using FeatherStore, please refer to the
+<p>For more information, see the
 <a class="reference external" href="Quickstart.html">user guide</a>.</p>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
@@ -425,7 +424,7 @@ the necessary segments of data:</p>
 <div class="line"><a class="reference external" href="https://pypi.org/project/FeatherStore/">https://pypi.org/project/FeatherStore/</a></div>
 </div>
 <div class="line-block">
-<div class="line">To install FeatherStore, simply use pip</div>
+<div class="line">To install FeatherStore, use pip:</div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">featherstore</span>
 </pre></div>
@@ -441,7 +440,7 @@ the necessary segments of data:</p>
 </div>
 <section id="python-version-support">
 <h3>Python version support<a class="headerlink" href="#python-version-support" title="Link to this heading">#</a></h3>
-<p>Officially Python 3.11 and up is supported.</p>
+<p>Python 3.11 and later are officially supported.</p>
 </section>
 <section id="dependency-requirements">
 <h3>Dependency requirements<a class="headerlink" href="#dependency-requirements" title="Link to this heading">#</a></h3>
@@ -455,19 +454,19 @@ the necessary segments of data:</p>
 </section>
 </section>
 <section id="source-code">
-<h2>Source Code<a class="headerlink" href="#source-code" title="Link to this heading">#</a></h2>
+<h2>Source code<a class="headerlink" href="#source-code" title="Link to this heading">#</a></h2>
 <div class="line-block">
-<div class="line">The source code is currently hosted on GitHub at:</div>
-<div class="line"><a class="github reference external" href="https://github.com/Hakonmh/featherstore">Hakonmh/featherstore</a></div>
+<div class="line">The source code is hosted on GitHub at:</div>
+<div class="line"><a class="github reference external" href="https://github.com/hakonmh/featherstore">hakonmh/featherstore</a></div>
 </div>
 </section>
 <section id="license">
-<h2>LICENSE<a class="headerlink" href="#license" title="Link to this heading">#</a></h2>
+<h2>License<a class="headerlink" href="#license" title="Link to this heading">#</a></h2>
 <p><a class="reference external" href="https://github.com/hakonmh/featherstore/blob/master/LICENSE">MIT</a></p>
 </section>
 <section id="contributions">
 <h2>Contributions<a class="headerlink" href="#contributions" title="Link to this heading">#</a></h2>
-<p>All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome.</p>
+<p>All contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas are welcome.</p>
 <div class="line-block">
 <div class="line">Issues are posted on:</div>
 <div class="line"><a class="github reference external" href="https://github.com/hakonmh/featherstore/issues">hakonmh/featherstore#issues</a></div>
@@ -527,8 +526,8 @@ the necessary segments of data:</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dependency-requirements">Dependency requirements</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-code">Source Code</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">LICENSE</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-code">Source code</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">License</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributions">Contributions</a></li>
 </ul>
   </nav></div>
@@ -558,7 +557,7 @@ the necessary segments of data:</p>
 
   <p class="copyright">
     
-      © Copyright 2021, Håkon Magne Holmen.
+      © Copyright 2021-2026, Håkon Magne Holmen.
       <br/>
     
   </p>
