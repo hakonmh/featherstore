@@ -14,7 +14,8 @@ The benchmarks were run on the following hardware:
 Compared with other libraries
 +++++++++++++++++++++++++++++
 
-The code used for these benchmarks can be found `here <https://github.com/hakonmh/featherstore/blob/master/benchmarks/format_comparison.py>`_.
+The code for the format comparison is in
+`benchmarks/format_comparison.py <https://github.com/hakonmh/featherstore/blob/master/benchmarks/format_comparison.py>`_.
 
 First dataset
 -------------
@@ -55,7 +56,8 @@ speed.
 Table operation benchmarks
 ++++++++++++++++++++++++++
 
-The code used for these (and other) benchmarks can be found `here <https://github.com/hakonmh/featherstore/blob/master/benchmarks/table_operations.py>`_.
+The code for the table-operation benchmarks is in
+`benchmarks/table_operations.py <https://github.com/hakonmh/featherstore/blob/master/benchmarks/table_operations.py>`_.
 
 Pandas vs Polars and Arrow
 --------------------------

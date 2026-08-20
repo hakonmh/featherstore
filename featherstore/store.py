@@ -401,7 +401,8 @@ class Store:
             disables partitioning, by default 128 MB
         errors : str, optional
             Whether to raise an error if the table already exists. Can be either
-            `raise` or `ignore`; `ignore` overwrites the existing table. Default is `raise`
+            `raise` or `ignore`; `ignore` overwrites the existing table.
+            Default is `raise`.
         warnings : str, optional
             Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`

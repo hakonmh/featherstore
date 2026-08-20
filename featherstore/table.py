@@ -204,7 +204,8 @@ class Table:
             disables partitioning, by default 128 MB
         errors : str, optional
             Whether to raise an error if the table already exists. Can be either
-            `raise` or `ignore`; `ignore` overwrites the existing table. Default is `raise`
+            `raise` or `ignore`; `ignore` overwrites the existing table.
+            Default is `raise`.
         warnings : str, optional
             Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
@@ -368,6 +369,9 @@ class Table:
         If ``df`` column names match the stored table, rows are inserted.
         Otherwise, columns are inserted at position ``idx``.
 
+        Also raises the same exceptions as :meth:`insert_rows` and
+        :meth:`insert_columns`.
+
         Parameters
         ----------
         df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
@@ -384,7 +388,6 @@ class Table:
         ------
         TypeError
             If ``idx`` is passed when inserting rows.
-        Same exceptions as :meth:`insert_rows` and :meth:`insert_columns`.
         """
         insert.can_insert(df, self._table_data, idx)
         if insert.cols_matches_table_cols(df, self._table_data):
