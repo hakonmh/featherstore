@@ -50,8 +50,8 @@ floats, and datetimes, with 10 columns of each type.
     :width: 750
     :align: center
 
-On this dataset, FeatherStore matches Pickle on read speed and Feather on write
-speed.
+Here's where FeatherStore really shines, matching Pickle on read speed and
+Feather on write speed.
 
 Table operation benchmarks
 ++++++++++++++++++++++++++
