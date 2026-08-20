@@ -1,8 +1,8 @@
 Quickstart
 ==========
 
-This is a short introduction to using FeatherStore and an overview of its basic functionality.
-For a complete guide to FeatherStores classes, functions, and methods please visit the
+This is a short introduction to FeatherStore and its basic features.
+For a complete guide to FeatherStore's classes, functions, and methods, see the
 `API reference <API%20Reference.html>`_.
 
 | The project is hosted on PyPI at:
@@ -11,7 +11,7 @@ For a complete guide to FeatherStores classes, functions, and methods please vis
 Installation
 ++++++++++++
 
-| To install FeatherStore, simply use pip
+| To install FeatherStore, use pip:
 
 .. code-block::
 
@@ -34,14 +34,14 @@ FeatherStore 0.3.0 requires Python 3.11 or newer and the following packages:
 * polars[timezone] >= 1.21.0
 * pyarrow >= 14.0.0
 
-Starting Up
------------
+Getting started
+---------------
 
 .. code-block:: python
 
     import featherstore as fs
 
-To create and connect to a new database simply use:
+To create and connect to a new database, use:
 
 .. code-block:: python
 
@@ -49,13 +49,13 @@ To create and connect to a new database simply use:
     fs.connect('/path/to/database_folder')
 
 You can check whether a path is already a database with ``fs.database_exists()``.
-You can later disconnect from the database by using ``fs.disconnect()``
+You can later disconnect from the database with ``fs.disconnect()``.
 
-Working with Stores
+Working with stores
 -------------------
 
-A database consists of one or more stores. A store is the basic unit for organization
-and where you can store your tables.
+A database contains one or more stores. A store groups tables and is the main
+unit of organization.
 
 .. code-block:: python
 
@@ -69,16 +69,16 @@ and where you can store your tables.
 
     fs.drop_store('store_2')
     fs.rename_store('store_1', to='example_store')
-    # Connect to store
+    # Connect to the store
     store = fs.Store('example_store')
 
-Reading and Writing Tables
+Reading and writing tables
 --------------------------
 
-FeatherStore supports reading and writing of Pandas DataFrames/Series, Polars
-DataFrames/Series and PyArrow tables.
+FeatherStore can read and write Pandas DataFrames and Series, Polars DataFrames
+and Series, and PyArrow Tables.
 
-First lets create a DataFrame to store.
+First, let's create a DataFrame to store.
 
 .. code-block:: python
 
@@ -96,8 +96,8 @@ First lets create a DataFrame to store.
     2021-01-04 -0.835711 -0.575801 -0.650543 -0.411509
     2021-01-05 -0.649335 -0.830602  1.191749  0.396745
 
-FeatherStore stores the tables as partitioned Feather files. The size of each partition
-is defined by using the ``partition_size`` parameter when writing a table.
+FeatherStore stores tables as partitioned Feather files. Set the size of each
+partition with the ``partition_size`` parameter when writing a table.
 
 .. code-block:: python
 
@@ -107,27 +107,28 @@ is defined by using the ``partition_size`` parameter when writing a table.
 
     >> ['example_table']
 
-The advantage with using partitioned Feather files that you can do different operations
-without loading in the full data.
+Partitioned Feather files let you run many operations without loading the full
+dataset.
 
 .. code-block:: python
 
-    # Creating a new DataFrame
+    # Create a new DataFrame
     new_dates = pd.date_range("2021-01-06", periods=1)
     df1 = pd.DataFrame(randn(1, 4), index=new_dates, columns=list("ABCD"))
-    # Appending to a FeatherStore table only loads in the last partition
+    # Appending to a FeatherStore table only loads the last partition
     store.append_table('example_table', df1)
 
-FeatherStore uses sorted indices to keep track of which partitions to open during
-a given operation.
+FeatherStore uses sorted indices to decide which partitions to open for a given
+operation.
 
-We can now read the stored data as Pandas DataFrame, Polars DataFrame or PyArrow Tables.
+You can read the stored data as a Pandas DataFrame, a Polars DataFrame, or a
+PyArrow Table.
 
 .. code-block:: python
 
     store.read_pandas('example_table')
-    # store.read_arrow('example_table') for reading to Arrow Tables
-    # store.read_polars('example_table') for reading to Polars DataFrames
+    # store.read_arrow('example_table') for Arrow Tables
+    # store.read_polars('example_table') for Polars DataFrames
 
     >>                 A         B         C         D
     2021-01-01  0.402138 -0.016436 -0.565256  0.520086
@@ -137,11 +138,11 @@ We can now read the stored data as Pandas DataFrame, Polars DataFrame or PyArrow
     2021-01-05 -0.649335 -0.830602  1.191749  0.396745
     2021-01-06 -0.408125 -0.420920  0.632606  0.606950
 
-We can also query parts of the data. FeatherStore uses predicate filtering to
-only load the partitions and columns specified by the query.
+You can also query parts of the data. FeatherStore uses predicate filtering to
+load only the partitions and columns specified by the query.
 
-By using sorted indices, FeatherStore allows for range-queries on rows by using
-``{'before': end}``, ``{'after': start}`` and ``{'between': [start, end]}``
+Sorted indices also allow range queries on rows with
+``{'before': end}``, ``{'after': start}``, and ``{'between': [start, end]}``.
 
 .. code-block:: python
 
@@ -152,10 +153,10 @@ By using sorted indices, FeatherStore allows for range-queries on rows by using
     2021-01-05  0.396745 -0.649335
     2021-01-06  0.606950  0.408125
 
-Inserting, Updating and Deleting Data
--------------------------------------
+Inserting, updating, and deleting data
+--------------------------------------
 
-First, let's create a new table to work with:
+First, create a new table to work with:
 
 .. code-block:: python
 
@@ -169,8 +170,8 @@ First, let's create a new table to work with:
     5 -0.353684  1.550073
     6  1.275938  1.054702
 
-We can use ``Store.select_table()`` to select a ``Table`` object, which contains
-more features for working with tables.
+Use ``Store.select_table()`` to select a ``Table`` object, which includes more
+methods for working with tables.
 
 .. code-block:: python
 
@@ -181,20 +182,19 @@ more features for working with tables.
 
     >> True
 
-One of those features is ``Table.insert()``, which inserts rows or columns
+One of those methods is ``Table.insert()``, which inserts rows or columns
 depending on the column names of the input data. If the input column names
 match the stored table, rows are inserted; otherwise columns are inserted.
 
 ``Table.update()``, ``Table.insert_rows()``, ``Table.insert_columns()``, and
-``Table.insert()`` accept Pandas DataFrames/Series, Polars DataFrames, and
+``Table.insert()`` accept Pandas DataFrames and Series, Polars DataFrames, and
 PyArrow Tables as input. Polars Series is not supported for these edit APIs.
 
 You can also call ``Table.insert_rows()`` or ``Table.insert_columns()`` directly
 when you want to be explicit about the operation.
 
 Pass ``warnings='ignore'`` to suppress sorting warnings when inserting rows or
-columns with an unsorted index (default is ``warnings='warn'``).
-
+columns with an unsorted index (the default is ``warnings='warn'``).
 
 .. code-block:: python
 
@@ -202,7 +202,7 @@ columns with an unsorted index (default is ``warnings='warn'``).
     table.insert(df2)  # matching column names -> inserts rows
     table.read_pandas()
 
-    # The data will be inserted into its sorted index position
+    # The data is inserted at its sorted index position
     >>        A         B
     1 -0.041727  0.957139
     2  2.163615 -0.708871
@@ -212,7 +212,7 @@ columns with an unsorted index (default is ``warnings='warn'``).
     6  1.275938  1.054702
 
 To add columns, pass data whose column names are not already in the table.
-Use ``idx`` to control where the new column(s) are placed. A single integer
+Use ``idx`` to control where the new columns are placed. A single integer
 inserts a block of columns at that position; a sequence places each column
 individually.
 
@@ -225,17 +225,18 @@ individually.
     # Append a single column to the end
     table.insert_columns(pd.DataFrame({'E': randn(6)}, index=index), idx=-1)
 
-Other features include ``Table.update()`` and ``Table.drop()`` which updates and deletes data.
+Other methods include ``Table.update()`` and ``Table.drop()``, which update and
+delete data.
 
 .. code-block:: python
 
-    df3 = pd.DataFrame([[0, 2], [1, 3]], index=[1, 2], columns=list("AB"))
+    df3 = pd.DataFrame([[0, 1], [2, 3]], index=[1, 2], columns=list("AB"))
     #    A  B
     # 1  0  1
     # 2  2  3
     table.update(df3)
     table.drop(rows={'after': 5})
-    # You can also drop columns using table.drop(cols=['col1', 'col2'])
+    # You can also drop columns with table.drop(cols=['col1', 'col2'])
 
     >>        A         B
     1  0.000000  1.000000

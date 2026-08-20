@@ -20,9 +20,9 @@ def create_store(store_name, *, warnings="warn"):
     store_name : str
         The name of the store to be created
     warnings : str, optional
-        Whether or not to warn if the store already exist. Can be either
-        `warn` or `ignore`, `ignore` passes silently if the store already
-        exists, by default `warn`
+        Whether to warn if the store already exists. Can be either
+        `warn` or `ignore`; `ignore` passes silently if the store already
+        exists. Default is `warn`.
 
     Returns
     -------
@@ -76,7 +76,7 @@ def rename_store(store_name, *, to):
 def drop_store(store_name, *, warnings="warn"):
     """Deletes a store
 
-    *Warning*: You can not delete a store containing tables. All tables must
+    *Warning*: You cannot delete a store containing tables. All tables must
     be deleted first.
 
     Parameters
@@ -140,7 +140,7 @@ def store_exists(store_name):
 
 class Store:
     def __init__(self, store_name):
-        """A class for doing basic tasks with tables within a store.
+        """A class for common table operations within a store.
 
         Stores are directories for organizing data in logical groups
         within your FeatherStore database.
@@ -196,7 +196,7 @@ class Store:
     def drop(self, *, warnings="warn"):
         """Deletes the current store
 
-        *Warning*: You can not delete a store containing tables. All tables must
+        *Warning*: You cannot delete a store containing tables. All tables must
         be deleted first.
 
         Parameters
@@ -245,7 +245,7 @@ class Store:
         Parameters
         ----------
         cols : Collection, optional
-            List of column names or, filter-predicates in the form of
+            List of column names or filter predicates in the form of
             `{'like': pattern}`. If not provided, all columns are read.
         rows : Collection, optional
             List of index values or filter-predicates in the form of
@@ -288,7 +288,7 @@ class Store:
         Parameters
         ----------
         cols : Collection, optional
-            List of column names or, filter-predicates in the form of
+            List of column names or filter predicates in the form of
             `{'like': pattern}`. If not provided, all columns are read.
         rows : Collection, optional
             List of index values or filter-predicates in the form of
@@ -331,7 +331,7 @@ class Store:
         Parameters
         ----------
         cols : Collection, optional
-            List of column names or, filter-predicates in the form of
+            List of column names or filter predicates in the form of
             `{'like': pattern}`. If not provided, all columns are read.
         rows : Collection, optional
             List of index values or filter-predicates in the form of
@@ -400,8 +400,8 @@ class Store:
             The size of each partition in bytes. A `partition_size` value of `-1`
             disables partitioning, by default 128 MB
         errors : str, optional
-            Whether or not to raise an error if the table already exist. Can be either
-            `raise` or `ignore`, `ignore` overwrites existing table, by default `raise`
+            Whether to raise an error if the table already exists. Can be either
+            `raise` or `ignore`; `ignore` overwrites the existing table. Default is `raise`
         warnings : str, optional
             Whether or not to warn if an unsorted index is about to get sorted.
             Can be either `warn` or `ignore`, by default `warn`
@@ -446,7 +446,7 @@ class Store:
         ----------
         table_name : str
             The name of the table you want to append to
-        df : Pandas DataFrame or Series, Polars DataFrame or Series, or Pyarrow Table
+        df : Pandas DataFrame or Series, Polars DataFrame or Series, or PyArrow Table
             The data to be appended
         warnings : str, optional
             Whether or not to warn if an unsorted index is about to get sorted.

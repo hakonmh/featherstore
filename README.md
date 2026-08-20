@@ -7,23 +7,22 @@
 [![Dev Status](https://img.shields.io/pypi/status/featherstore?color=important)](https://pypi.org/project/FeatherStore/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/hakonmh/featherstore/blob/master/LICENSE)
 
-## High performance datastore built upon Apache Arrow & Feather
+## High-performance datastore built on Apache Arrow and Feather
 
-FeatherStore is a high performance datastore for storing Pandas DataFrames, Polars DataFrames,
-and PyArrow Tables. By saving data in the form of partitioned
-[Feather Files](https://arrow.apache.org/docs/python/feather.html), FeatherStore enables
-several operations on the stored tables, optimizing performance by selectively loading only
-the necessary segments of data:
+FeatherStore is a high-performance datastore for Pandas DataFrames, Polars DataFrames,
+and PyArrow Tables. Data is stored as partitioned
+[Feather files](https://arrow.apache.org/docs/python/feather.html), so FeatherStore can
+run several operations on stored tables while loading only the data each operation needs:
 
-* Partial reading of data
-* Append data
-* Insert rows and columns (Pandas, Polars DataFrame, or PyArrow Table)
-* Update data (Pandas, Polars DataFrame, or PyArrow Table)
-* Drop data
-* Read metadata (including column names, index, table dimensions, etc.)
-* Changing column types
+* Partial reads
+* Appends
+* Row and column inserts (Pandas, Polars, or PyArrow)
+* Updates (Pandas, Polars, or PyArrow)
+* Drops
+* Metadata reads (column names, index, table dimensions, and more)
+* Column type changes
 
-For more information on using FeatherStore, please refer to the
+For more information, see the
 [documentation](https://featherstore.readthedocs.io/en/stable/Quickstart.html).
 
 ## Using FeatherStore
@@ -48,27 +47,27 @@ df = pd.DataFrame(randn(5, 4), index=dates, columns=list("ABCD"))
 fs.create_database('path/to/db')
 fs.connect('path/to/db')
 fs.database_exists('path/to/db')  # True
-# Creates a data store
+# Create a store
 fs.create_store('example_store')
-# List existing stores in current database
+# List existing stores in the current database
 fs.list_stores()
 
 ['example_store']
 
->>> # Connects to store
+>>> # Connect to the store
 store = fs.Store('example_store')
-# Saves table to store; partition size defines the size of each partition in bytes
+# Save the table to the store; partition_size is the size of each partition in bytes
 PARTITION_SIZE = 128  # bytes
 store.write_table('example_table', df, partition_size=PARTITION_SIZE)
-# Lists existing tables in current store
+# List existing tables in the current store
 store.list_tables()
 
 ['example_table']
 
->>> # FeatherStore can read tables as Arrow Tables, Pandas DataFrames or Polars DataFrames
+>>> # FeatherStore can read tables as Arrow Tables, Pandas DataFrames, or Polars DataFrames
 store.read_pandas('example_table')
-# store.read_arrow('example_table') for reading to Arrow Tables
-# store.read_polars('example_table') for reading to Polars DataFrames
+# store.read_arrow('example_table') for Arrow Tables
+# store.read_polars('example_table') for Polars DataFrames
 
                    A         B         C         D
 2021-01-01  0.402138 -0.016436 -0.565256  0.520086
@@ -77,13 +76,13 @@ store.read_pandas('example_table')
 2021-01-04 -0.835711 -0.575801 -0.650543 -0.411509
 2021-01-05 -0.649335 -0.830602  1.191749  0.396745
 
->>> # FeatherStore supports appending data without loading in the full table
+>>> # FeatherStore can append data without loading the full table
 new_dates = pd.date_range("2021-01-06", periods=1)
 df1 = pd.DataFrame(randn(1, 4), index=new_dates, columns=list("ABCD"))
 store.append_table('example_table', df1)
 
->>> # Insert rows or columns via Table.insert() (dispatches on column names).
-# update / insert_* also accept Polars DataFrames and PyArrow Tables.
+>>> # Insert rows or columns with Table.insert(), which dispatches based on column names.
+# Table.update() and the insert methods also accept Polars DataFrames and PyArrow Tables.
 table = store.select_table('example_table')
 new_rows = pd.DataFrame(randn(1, 4), index=[pd.Timestamp("2021-01-07")], columns=list("ABCD"))
 table.insert(new_rows)  # matching column names -> inserts rows
@@ -91,7 +90,7 @@ table.insert(new_rows)  # matching column names -> inserts rows
 new_col = pd.DataFrame({'E': randn(7)}, index=table.read_pandas().index)
 table.insert(new_col, idx=4)  # new column name -> inserts column at position 4
 
->>> # It also supports querying parts of the data
+>>> # Query parts of the data
 store.read_pandas('example_table', rows={'after': '2021-01-05'}, cols=['D', 'A'])
 
                    D         A
@@ -102,13 +101,13 @@ store.read_pandas('example_table', rows={'after': '2021-01-05'}, cols=['D', 'A']
 
 ## Performance
 
-FeatherStore is very fast, and in fact is one of the best performing solutions available.
-See the full performance benchmark in the [documentation](https://featherstore.readthedocs.io/en/stable/Benchmarks.html).
+FeatherStore is fast on both small and large tables.
+See the full comparison in the [documentation](https://featherstore.readthedocs.io/en/stable/Benchmarks.html).
 
 ## Installation
 
-FeatherStore can be installed by using `$ pip install featherstore` or directly from
-source by using `$ pip install git+https://github.com/hakonmh/featherstore.git`
+Install FeatherStore with `$ pip install featherstore`, or from source with
+`$ pip install git+https://github.com/hakonmh/featherstore.git`.
 
 ## Requirements
 
@@ -123,4 +122,4 @@ These are installed automatically with `pip install featherstore`.
 
 ## Documentation
 
-Want to know about all the features FeatherStore support? [Read the docs!](https://featherstore.readthedocs.io/en/stable/index.html)
+See the [documentation](https://featherstore.readthedocs.io/en/stable/index.html) for the full API and feature set.
