@@ -103,6 +103,8 @@ reads improve by a similar amount.
 Reading 25% of the rows takes between 3.5 s and 5.0 s for Pandas, depending on
 whether you pass a list of rows or a range query.
 
-Row-filtering performance depends on partition size. Smaller partitions skip
-more rows when reading, at the cost of slower full-table reads and writes.
-These benchmarks used the default partition size of 128 MB.
+It should be noted that the performance when filtering rows is dependent
+on the partition size used. Smaller partitions allow us to skip more rows
+when reading, with the trade-off being slower performance when doing full table
+reads and writes. In these benchmarks, the default 128 MB was used as the
+partition size.
