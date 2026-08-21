@@ -18,7 +18,7 @@ Each table is a folder of partitioned Feather files plus metadata:
 
     path/to/db/          # database
         weather/         # store
-            oslo/        # table
+            bergen/        # table
                 ...      # Feather partitions and metadata
 
 What you can do

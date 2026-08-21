@@ -122,18 +122,18 @@ across partitions. Pass ``-1`` to disable partitioning.
 
 .. code-block:: python
 
-    store.write_table("oslo", df, partition_size=128)
+    store.write_table("bergen", df, partition_size=128)
     print(store.list_tables())
 
 .. code-block:: text
 
-    ['oslo']
+    ['bergen']
 
 Read the table back as a Pandas DataFrame, a Polars DataFrame, or a PyArrow Table:
 
 .. code-block:: python
 
-    print(store.read_pandas("oslo"))
+    print(store.read_pandas("bergen"))
 
 .. code-block:: text
 
@@ -146,7 +146,7 @@ Read the table back as a Pandas DataFrame, a Polars DataFrame, or a PyArrow Tabl
 
 .. code-block:: python
 
-    print(store.read_polars("oslo"))
+    print(store.read_polars("bergen"))
 
 .. code-block:: text
 
@@ -162,7 +162,7 @@ Read the table back as a Pandas DataFrame, a Polars DataFrame, or a PyArrow Tabl
     │ 2024-01-05 00:00:00 ┆ 3.2         ┆ 74       ┆ 0.3      │
     └─────────────────────┴─────────────┴──────────┴──────────┘
 
-``store.read_arrow("oslo")`` returns the same data as a PyArrow Table. Pandas keeps a
+``store.read_arrow("bergen")`` returns the same data as a PyArrow Table. Pandas keeps a
 named index as the DataFrame index; Polars and PyArrow return it as a column. A
 default integer index is omitted from Arrow and Polars results.
 
@@ -174,7 +174,7 @@ index:
     import datetime as dt
     import polars as pl
 
-    bergen = pl.DataFrame(
+    trondheim = pl.DataFrame(
         {
             "date": [dt.datetime(2024, 1, 1), dt.datetime(2024, 1, 2)],
             "temperature": [1.8, 0.6],
@@ -182,7 +182,7 @@ index:
             "rainfall": [6.4, 0.2],
         }
     )
-    store.write_table("bergen", bergen, index="date")
+    store.write_table("trondheim", trondheim, index="date")
 
 Querying rows and columns
 -------------------------
@@ -194,7 +194,7 @@ All three are inclusive.
 
 .. code-block:: python
 
-    print(store.read_pandas("oslo", rows={"after": "2024-01-02"}, cols=["rainfall", "temperature"]))
+    print(store.read_pandas("bergen", rows={"after": "2024-01-02"}, cols=["rainfall", "temperature"]))
 
 .. code-block:: text
 
@@ -209,8 +209,8 @@ wildcards (``%`` for any number of characters, ``?`` for a single character):
 
 .. code-block:: python
 
-    store.read_pandas("oslo", rows={"between": ["2024-01-02", "2024-01-04"]})
-    store.read_pandas("oslo", cols={"like": "temp%"})
+    store.read_pandas("bergen", rows={"between": ["2024-01-02", "2024-01-04"]})
+    store.read_pandas("bergen", cols={"like": "temp%"})
 
 Appending data
 --------------
@@ -224,8 +224,8 @@ last partition is loaded.
         {"temperature": [1.9], "humidity": [83], "rainfall": [2.6]},
         index=pd.DatetimeIndex(["2024-01-06"], name="date"),
     )
-    store.append_table("oslo", new_day)
-    print(store.read_pandas("oslo"))
+    store.append_table("bergen", new_day)
+    print(store.read_pandas("bergen"))
 
 .. code-block:: text
 
@@ -247,7 +247,7 @@ and dropping data.
 
 .. code-block:: python
 
-    table = store.select_table("oslo")
+    table = store.select_table("bergen")
     print(table.exists())
 
 .. code-block:: text
@@ -402,10 +402,10 @@ The table or store is restored under the name stored in the snapshot.
 
     from featherstore import snapshot
 
-    table.create_snapshot("path/to/oslo_backup")
+    table.create_snapshot("path/to/bergen_backup")
     # store.create_snapshot("path/to/weather_backup")
 
-    snapshot.restore_table("weather", "path/to/oslo_backup")
+    snapshot.restore_table("weather", "path/to/bergen_backup")
     # snapshot.restore_store("path/to/weather_backup")
 
 See the :doc:`API/Snapshot` page for details.

@@ -496,15 +496,15 @@ duration, or temporal). FeatherStore sorts rows by the index before writing.</p>
 <p><code class="docutils literal notranslate"><span class="pre">partition_size</span></code> is the size of each partition in bytes. The default is 128 MB,
 which suits large tables. The examples use a tiny value so a few rows still split
 across partitions. Pass <code class="docutils literal notranslate"><span class="pre">-1</span></code> to disable partitioning.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span><span class="s2">"oslo"</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">partition_size</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span><span class="s2">"bergen"</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">partition_size</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">list_tables</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>['oslo']
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>['bergen']
 </pre></div>
 </div>
 <p>Read the table back as a Pandas DataFrame, a Polars DataFrame, or a PyArrow Table:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">read_pandas</span><span class="p">(</span><span class="s2">"oslo"</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">read_pandas</span><span class="p">(</span><span class="s2">"bergen"</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>            temperature  humidity  rainfall
@@ -515,7 +515,7 @@ date
 2024-01-05          3.2        74       0.3
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">read_polars</span><span class="p">(</span><span class="s2">"oslo"</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">read_polars</span><span class="p">(</span><span class="s2">"bergen"</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>shape: (4, 4)
@@ -531,7 +531,7 @@ date
 └─────────────────────┴─────────────┴──────────┴──────────┘
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">store.read_arrow(&quot;oslo&quot;)</span></code> returns the same data as a PyArrow Table. Pandas keeps a
+<p><code class="docutils literal notranslate"><span class="pre">store.read_arrow(&quot;bergen&quot;)</span></code> returns the same data as a PyArrow Table. Pandas keeps a
 named index as the DataFrame index; Polars and PyArrow return it as a column. A
 default integer index is omitted from Arrow and Polars results.</p>
 <p>Polars and PyArrow have no index, so pass the column that should become the stored
@@ -539,7 +539,7 @@ index:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
 
-<span class="n">bergen</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="n">trondheim</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
     <span class="p">{</span>
         <span class="s2">"date"</span><span class="p">:</span> <span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)],</span>
         <span class="s2">"temperature"</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.8</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">],</span>
@@ -547,7 +547,7 @@ index:</p>
         <span class="s2">"rainfall"</span><span class="p">:</span> <span class="p">[</span><span class="mf">6.4</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span>
     <span class="p">}</span>
 <span class="p">)</span>
-<span class="n">store</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span><span class="s2">"bergen"</span><span class="p">,</span> <span class="n">bergen</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">"date"</span><span class="p">)</span>
+<span class="n">store</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span><span class="s2">"trondheim"</span><span class="p">,</span> <span class="n">trondheim</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">"date"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -557,7 +557,7 @@ index:</p>
 query needs. Range filters on the sorted index are
 <code class="docutils literal notranslate"><span class="pre">{&quot;before&quot;:</span> <span class="pre">end}</span></code>, <code class="docutils literal notranslate"><span class="pre">{&quot;after&quot;:</span> <span class="pre">start}</span></code>, and <code class="docutils literal notranslate"><span class="pre">{&quot;between&quot;:</span> <span class="pre">[start,</span> <span class="pre">end]}</span></code>.
 All three are inclusive.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">read_pandas</span><span class="p">(</span><span class="s2">"oslo"</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="p">{</span><span class="s2">"after"</span><span class="p">:</span> <span class="s2">"2024-01-02"</span><span class="p">},</span> <span class="n">cols</span><span class="o">=</span><span class="p">[</span><span class="s2">"rainfall"</span><span class="p">,</span> <span class="s2">"temperature"</span><span class="p">]))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">read_pandas</span><span class="p">(</span><span class="s2">"bergen"</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="p">{</span><span class="s2">"after"</span><span class="p">:</span> <span class="s2">"2024-01-02"</span><span class="p">},</span> <span class="n">cols</span><span class="o">=</span><span class="p">[</span><span class="s2">"rainfall"</span><span class="p">,</span> <span class="s2">"temperature"</span><span class="p">]))</span>
 </pre></div>
 </div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>            rainfall  temperature
@@ -569,8 +569,8 @@ date
 </div>
 <p>You can also pass explicit row labels, or filter column names with SQL-style
 wildcards (<code class="docutils literal notranslate"><span class="pre">%</span></code> for any number of characters, <code class="docutils literal notranslate"><span class="pre">?</span></code> for a single character):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">read_pandas</span><span class="p">(</span><span class="s2">"oslo"</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="p">{</span><span class="s2">"between"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"2024-01-02"</span><span class="p">,</span> <span class="s2">"2024-01-04"</span><span class="p">]})</span>
-<span class="n">store</span><span class="o">.</span><span class="n">read_pandas</span><span class="p">(</span><span class="s2">"oslo"</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="p">{</span><span class="s2">"like"</span><span class="p">:</span> <span class="s2">"temp%"</span><span class="p">})</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">store</span><span class="o">.</span><span class="n">read_pandas</span><span class="p">(</span><span class="s2">"bergen"</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="p">{</span><span class="s2">"between"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"2024-01-02"</span><span class="p">,</span> <span class="s2">"2024-01-04"</span><span class="p">]})</span>
+<span class="n">store</span><span class="o">.</span><span class="n">read_pandas</span><span class="p">(</span><span class="s2">"bergen"</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="p">{</span><span class="s2">"like"</span><span class="p">:</span> <span class="s2">"temp%"</span><span class="p">})</span>
 </pre></div>
 </div>
 </section>
@@ -582,8 +582,8 @@ last partition is loaded.</p>
     <span class="p">{</span><span class="s2">"temperature"</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.9</span><span class="p">],</span> <span class="s2">"humidity"</span><span class="p">:</span> <span class="p">[</span><span class="mi">83</span><span class="p">],</span> <span class="s2">"rainfall"</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.6</span><span class="p">]},</span>
     <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">([</span><span class="s2">"2024-01-06"</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">"date"</span><span class="p">),</span>
 <span class="p">)</span>
-<span class="n">store</span><span class="o">.</span><span class="n">append_table</span><span class="p">(</span><span class="s2">"oslo"</span><span class="p">,</span> <span class="n">new_day</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">read_pandas</span><span class="p">(</span><span class="s2">"oslo"</span><span class="p">))</span>
+<span class="n">store</span><span class="o">.</span><span class="n">append_table</span><span class="p">(</span><span class="s2">"bergen"</span><span class="p">,</span> <span class="n">new_day</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">read_pandas</span><span class="p">(</span><span class="s2">"bergen"</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>            temperature  humidity  rainfall
@@ -602,7 +602,7 @@ date
 <a class="reference internal" href="API/Store.html#featherstore.store.Store.select_table" title="featherstore.store.Store.select_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">select_table()</span></code></a> returns a
 <a class="reference internal" href="API/Table.html#featherstore.table.Table" title="featherstore.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> with additional methods for inserting, updating,
 and dropping data.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">select_table</span><span class="p">(</span><span class="s2">"oslo"</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">select_table</span><span class="p">(</span><span class="s2">"bergen"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">exists</span><span class="p">())</span>
 </pre></div>
 </div>
@@ -735,10 +735,10 @@ The table or store is restored under the name stored in the snapshot.
 <code class="docutils literal notranslate"><span class="pre">.tar.xz</span></code> is appended to the path unless it already has that suffix.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">featherstore</span><span class="w"> </span><span class="kn">import</span> <span class="n">snapshot</span>
 
-<span class="n">table</span><span class="o">.</span><span class="n">create_snapshot</span><span class="p">(</span><span class="s2">"path/to/oslo_backup"</span><span class="p">)</span>
+<span class="n">table</span><span class="o">.</span><span class="n">create_snapshot</span><span class="p">(</span><span class="s2">"path/to/bergen_backup"</span><span class="p">)</span>
 <span class="c1"># store.create_snapshot("path/to/weather_backup")</span>
 
-<span class="n">snapshot</span><span class="o">.</span><span class="n">restore_table</span><span class="p">(</span><span class="s2">"weather"</span><span class="p">,</span> <span class="s2">"path/to/oslo_backup"</span><span class="p">)</span>
+<span class="n">snapshot</span><span class="o">.</span><span class="n">restore_table</span><span class="p">(</span><span class="s2">"weather"</span><span class="p">,</span> <span class="s2">"path/to/bergen_backup"</span><span class="p">)</span>
 <span class="c1"># snapshot.restore_store("path/to/weather_backup")</span>
 </pre></div>
 </div>

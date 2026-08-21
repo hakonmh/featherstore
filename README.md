@@ -48,9 +48,9 @@ df = pd.DataFrame(
         name="date",
     ),
 )
-store.write_table("oslo", df)
+store.write_table("bergen", df)
 
-print(store.read_pandas("oslo"))
+print(store.read_pandas("bergen"))
 #             temperature  humidity  rainfall
 # date
 # 2024-01-01          2.1        88       4.2
@@ -63,10 +63,10 @@ new_day = pd.DataFrame(
     {"temperature": [1.9], "humidity": [83], "rainfall": [2.6]},
     index=pd.DatetimeIndex(["2024-01-06"], name="date"),
 )
-store.append_table("oslo", new_day)
+store.append_table("bergen", new_day)
 
 # Insert, update, and drop with a Table object
-table = store.select_table("oslo")
+table = store.select_table("bergen")
 delayed = pd.DataFrame(
     {"temperature": [-0.3], "humidity": [85], "rainfall": [1.1]},
     index=pd.DatetimeIndex(["2024-01-03"], name="date"),
@@ -74,7 +74,7 @@ delayed = pd.DataFrame(
 table.insert(delayed)  # matching column names -> inserts rows
 
 # Query only the partitions and columns you need
-print(store.read_pandas("oslo", rows={"after": "2024-01-04"}, cols=["rainfall", "temperature"]))
+print(store.read_pandas("bergen", rows={"after": "2024-01-04"}, cols=["rainfall", "temperature"]))
 #             rainfall  temperature
 # date
 # 2024-01-04       0.0          0.8
