@@ -59,6 +59,8 @@ Enhancements:
   one sample dataset, printed example output, and coverage of databases,
   stores, reads and writes, partial queries, appends, edits, metadata,
   and snapshots
+* Documented `uv add featherstore` alongside pip in Getting started, Overview,
+  and the README
 * Added an Exceptions page to the API reference with a nested hierarchy list
   and per-class documentation
 * Added ``Raises`` sections to public method and function docstrings for

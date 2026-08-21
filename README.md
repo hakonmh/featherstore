@@ -91,8 +91,19 @@ See the full comparison in the [documentation](https://featherstore.readthedocs.
 
 ## Installation
 
-Install FeatherStore with `$ pip install featherstore`, or from source with
-`$ pip install git+https://github.com/hakonmh/featherstore.git`.
+Install FeatherStore with pip or uv:
+
+```
+pip install featherstore
+uv add featherstore
+```
+
+Or from source:
+
+```
+pip install git+https://github.com/hakonmh/featherstore.git
+uv add git+https://github.com/hakonmh/featherstore.git
+```
 
 ## Requirements
 
@@ -103,7 +114,7 @@ FeatherStore 0.3.0 requires:
 * polars[timezone] >= 1.21.0
 * pyarrow >= 14.0.0
 
-These are installed automatically with `pip install featherstore`.
+These are installed automatically with `pip install featherstore` or `uv add featherstore`.
 
 ## Documentation
 

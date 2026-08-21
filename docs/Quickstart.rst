@@ -10,17 +10,25 @@ you can follow them in order. For the full API, see the
 Installing FeatherStore
 -----------------------
 
-Install FeatherStore from PyPI:
+Install FeatherStore from PyPI with pip or uv:
 
 .. code-block:: bash
 
     pip install featherstore
+
+.. code-block:: bash
+
+    uv add featherstore
 
 Or install the latest version from GitHub:
 
 .. code-block:: bash
 
     pip install git+https://github.com/hakonmh/featherstore.git
+
+.. code-block:: bash
+
+    uv add git+https://github.com/hakonmh/featherstore.git
 
 FeatherStore requires Python 3.11 or newer. pandas, Polars, and PyArrow are
 installed automatically.

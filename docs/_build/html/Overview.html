@@ -434,11 +434,18 @@ Each table is a folder of partitioned Feather files plus metadata:</p>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
 <p>The project is hosted on PyPI at <a class="reference external" href="https://pypi.org/project/FeatherStore/">https://pypi.org/project/FeatherStore/</a>.</p>
+<p>Install with pip or uv:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>featherstore
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>add<span class="w"> </span>featherstore
 </pre></div>
 </div>
 <p>Or install the latest version from GitHub:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/hakonmh/featherstore.git
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>add<span class="w"> </span>git+https://github.com/hakonmh/featherstore.git
 </pre></div>
 </div>
 <section id="python-version-support">
@@ -453,7 +460,8 @@ Each table is a folder of partitioned Feather files plus metadata:</p>
 <li><p>polars[timezone] &gt;= 1.21.0</p></li>
 <li><p>pyarrow &gt;= 14.0.0</p></li>
 </ul>
-<p>These are installed automatically with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">featherstore</span></code>.</p>
+<p>These are installed automatically with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">featherstore</span></code> or
+<code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">add</span> <span class="pre">featherstore</span></code>.</p>
 </section>
 </section>
 <section id="source-code">

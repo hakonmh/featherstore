@@ -38,15 +38,25 @@ Installation
 
 The project is hosted on PyPI at https://pypi.org/project/FeatherStore/.
 
+Install with pip or uv:
+
 .. code-block:: bash
 
     pip install featherstore
+
+.. code-block:: bash
+
+    uv add featherstore
 
 Or install the latest version from GitHub:
 
 .. code-block:: bash
 
     pip install git+https://github.com/hakonmh/featherstore.git
+
+.. code-block:: bash
+
+    uv add git+https://github.com/hakonmh/featherstore.git
 
 Python version support
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -62,7 +72,8 @@ FeatherStore 0.3.0 requires:
 * polars[timezone] >= 1.21.0
 * pyarrow >= 14.0.0
 
-These are installed automatically with ``pip install featherstore``.
+These are installed automatically with ``pip install featherstore`` or
+``uv add featherstore``.
 
 Source code
 -----------
