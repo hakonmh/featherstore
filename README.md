@@ -22,82 +22,67 @@ run several operations on stored tables while loading only the data each operati
 * Metadata reads (column names, index, table dimensions, and more)
 * Column type changes
 
-For more information, see the
-[documentation](https://featherstore.readthedocs.io/en/stable/Quickstart.html).
+A database is a directory on disk. Stores group related tables, and each table is
+stored as partitioned Feather files.
+
+For a full walkthrough, see the
+[getting started guide](https://featherstore.readthedocs.io/en/stable/Quickstart.html).
 
 ## Using FeatherStore
 
 ```python
->>> # Create a Pandas DataFrame
 import pandas as pd
-from numpy.random import randn
 import featherstore as fs
 
-dates = pd.date_range("2021-01-01", periods=5)
-df = pd.DataFrame(randn(5, 4), index=dates, columns=list("ABCD"))
+fs.create_database("path/to/db")
+store = fs.create_store("weather")
 
-                   A         B         C         D
-2021-01-01  0.402138 -0.016436 -0.565256  0.520086
-2021-01-02 -1.071026 -0.326358 -0.692681  1.188319
-2021-01-03  0.777777 -0.665146  1.017527 -0.064830
-2021-01-04 -0.835711 -0.575801 -0.650543 -0.411509
-2021-01-05 -0.649335 -0.830602  1.191749  0.396745
+df = pd.DataFrame(
+    {
+        "temperature": [2.1, 1.4, 0.8, 3.2],
+        "humidity": [88, 91, 79, 74],
+        "rainfall": [4.2, 0.0, 0.0, 0.3],
+    },
+    index=pd.DatetimeIndex(
+        ["2024-01-01", "2024-01-02", "2024-01-04", "2024-01-05"],
+        name="date",
+    ),
+)
+store.write_table("bergen", df)
 
->>> # Create a database folder at the given path
-fs.create_database('path/to/db')
-fs.connect('path/to/db')
-fs.database_exists('path/to/db')  # True
-# Create a store
-fs.create_store('example_store')
-# List existing stores in the current database
-fs.list_stores()
+print(store.read_pandas("bergen"))
+#             temperature  humidity  rainfall
+# date
+# 2024-01-01          2.1        88       4.2
+# 2024-01-02          1.4        91       0.0
+# 2024-01-04          0.8        79       0.0
+# 2024-01-05          3.2        74       0.3
 
-['example_store']
+# Append without loading the full table
+new_day = pd.DataFrame(
+    {"temperature": [1.9], "humidity": [83], "rainfall": [2.6]},
+    index=pd.DatetimeIndex(["2024-01-06"], name="date"),
+)
+store.append_table("bergen", new_day)
 
->>> # Connect to the store
-store = fs.Store('example_store')
-# Save the table to the store; partition_size is the size of each partition in bytes
-PARTITION_SIZE = 128  # bytes
-store.write_table('example_table', df, partition_size=PARTITION_SIZE)
-# List existing tables in the current store
-store.list_tables()
+# Insert, update, and drop with a Table object
+table = store.select_table("bergen")
+delayed = pd.DataFrame(
+    {"temperature": [-0.3], "humidity": [85], "rainfall": [1.1]},
+    index=pd.DatetimeIndex(["2024-01-03"], name="date"),
+)
+table.insert(delayed)  # matching column names -> inserts rows
 
-['example_table']
-
->>> # FeatherStore can read tables as Arrow Tables, Pandas DataFrames, or Polars DataFrames
-store.read_pandas('example_table')
-# store.read_arrow('example_table') for Arrow Tables
-# store.read_polars('example_table') for Polars DataFrames
-
-                   A         B         C         D
-2021-01-01  0.402138 -0.016436 -0.565256  0.520086
-2021-01-02 -1.071026 -0.326358 -0.692681  1.188319
-2021-01-03  0.777777 -0.665146  1.017527 -0.064830
-2021-01-04 -0.835711 -0.575801 -0.650543 -0.411509
-2021-01-05 -0.649335 -0.830602  1.191749  0.396745
-
->>> # FeatherStore can append data without loading the full table
-new_dates = pd.date_range("2021-01-06", periods=1)
-df1 = pd.DataFrame(randn(1, 4), index=new_dates, columns=list("ABCD"))
-store.append_table('example_table', df1)
-
->>> # Insert rows or columns with Table.insert(), which dispatches based on column names.
-# Table.update() and the insert methods also accept Polars DataFrames and PyArrow Tables.
-table = store.select_table('example_table')
-new_rows = pd.DataFrame(randn(1, 4), index=[pd.Timestamp("2021-01-07")], columns=list("ABCD"))
-table.insert(new_rows)  # matching column names -> inserts rows
-
-new_col = pd.DataFrame({'E': randn(7)}, index=table.read_pandas().index)
-table.insert(new_col, idx=4)  # new column name -> inserts column at position 4
-
->>> # Query parts of the data
-store.read_pandas('example_table', rows={'after': '2021-01-05'}, cols=['D', 'A'])
-
-                   D         A
-2021-01-05  0.396745 -0.649335
-2021-01-06  0.606950  0.408125
-
+# Query only the partitions and columns you need
+print(store.read_pandas("bergen", rows={"after": "2024-01-04"}, cols=["rainfall", "temperature"]))
+#             rainfall  temperature
+# date
+# 2024-01-04       0.0          0.8
+# 2024-01-05       0.3          3.2
+# 2024-01-06       2.6          1.9
 ```
+
+Tables can also be read with `store.read_polars()` and `store.read_arrow()`.
 
 ## Performance
 
@@ -106,8 +91,19 @@ See the full comparison in the [documentation](https://featherstore.readthedocs.
 
 ## Installation
 
-Install FeatherStore with `$ pip install featherstore`, or from source with
-`$ pip install git+https://github.com/hakonmh/featherstore.git`.
+Install FeatherStore with pip or uv:
+
+```
+pip install featherstore
+uv add featherstore
+```
+
+Or from source:
+
+```
+pip install git+https://github.com/hakonmh/featherstore.git
+uv add git+https://github.com/hakonmh/featherstore.git
+```
 
 ## Requirements
 
@@ -118,7 +114,7 @@ FeatherStore 0.3.0 requires:
 * polars[timezone] >= 1.21.0
 * pyarrow >= 14.0.0
 
-These are installed automatically with `pip install featherstore`.
+These are installed automatically with `pip install featherstore` or `uv add featherstore`.
 
 ## Documentation
 

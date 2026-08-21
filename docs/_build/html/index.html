@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Documentation &#8212; FeatherStore 0.2.1 documentation</title>
+    <title>Documentation &#8212; FeatherStore 0.3.0 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="_static/documentation_options.js?v=37f418d5"></script>
+    <script src="_static/documentation_options.js?v=e259d695"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
@@ -121,8 +121,8 @@
       
     
     
-    <img src="_static/logo-dark.png" class="logo__image only-light" alt="FeatherStore 0.2.1 documentation - Home"/>
-    <img src="_static/logo-light.png" class="logo__image only-dark pst-js-only" alt="FeatherStore 0.2.1 documentation - Home"/>
+    <img src="_static/logo-dark.png" class="logo__image only-light" alt="FeatherStore 0.3.0 documentation - Home"/>
+    <img src="_static/logo-light.png" class="logo__image only-dark pst-js-only" alt="FeatherStore 0.3.0 documentation - Home"/>
   
   
 </a></div>
@@ -146,7 +146,7 @@
 
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="Quickstart.html">
-    Quickstart
+    Getting started
   </a>
 </li>
 
@@ -270,7 +270,7 @@
 
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="Quickstart.html">
-    Quickstart
+    Getting started
   </a>
 </li>
 
@@ -362,20 +362,35 @@
                   
   <section id="documentation">
 <h1>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">#</a></h1>
-<p>Welcome to the FeatherStore documentation!</p>
+<p>Welcome to the FeatherStore documentation.</p>
+<p>FeatherStore is a high-performance datastore for Pandas, Polars, and PyArrow
+tables. New users should start with the <a class="reference internal" href="Quickstart.html"><span class="doc">Getting started</span></a>.</p>
 <section id="table-of-contents">
 <h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Link to this heading">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Overview.html#the-core-idea">The core idea</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Overview.html#how-data-is-organized">How data is organized</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Overview.html#what-this-makes-cheap">What this makes cheap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Overview.html#when-to-use-it">When to use it</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Overview.html#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Overview.html#source-code">Source Code</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Overview.html#license">LICENSE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Overview.html#source-code">Source code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Overview.html#license">License</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Overview.html#contributions">Contributions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="Quickstart.html">Quickstart</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Quickstart.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Quickstart.html">Getting started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Quickstart.html#installing-featherstore">Installing FeatherStore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Quickstart.html#connecting-to-a-database">Connecting to a database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Quickstart.html#stores">Stores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Quickstart.html#reading-and-writing">Reading and writing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Quickstart.html#querying-rows-and-columns">Querying rows and columns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Quickstart.html#appending-data">Appending data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Quickstart.html#editing-tables">Editing tables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Quickstart.html#table-metadata">Table metadata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Quickstart.html#snapshots">Snapshots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Quickstart.html#next-steps">Next steps</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="API%20Reference.html">API Reference</a><ul>
@@ -387,8 +402,8 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Benchmarks.html">Benchmarks</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Benchmarks.html#vs-other-libraries">VS Other Libraries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Benchmarks.html#table-operation-benchmarks">Table Operation Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Benchmarks.html#compared-with-other-libraries">Compared with other libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Benchmarks.html#table-operation-benchmarks">Table operation benchmarks</a></li>
 </ul>
 </li>
 </ul>
@@ -472,7 +487,7 @@
 
   <p class="copyright">
     
-      © Copyright 2021, Håkon Magne Holmen.
+      © Copyright 2021-2026, Håkon Magne Holmen.
       <br/>
     
   </p>

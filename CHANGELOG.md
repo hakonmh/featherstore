@@ -55,6 +55,14 @@ Enhancements:
 * Documentation updated for 0.3.0 (`rename_store(..., to=...)`,
   `table.exists()`, `insert()`, `insert_rows()`, `insert_columns()`,
   multi-backend edit APIs, `warnings=`, and dependency requirements)
+* Rewrote the getting started guide in the style of the Polars tutorial:
+  one sample dataset, printed example output, and coverage of databases,
+  stores, reads and writes, partial queries, appends, edits, metadata,
+  and snapshots
+* Documented `uv add featherstore` alongside pip in Getting started, Overview,
+  and the README
+* Rewrote the Overview around Feather's layout plus partitions and a sorted
+  index, including which operations skip untouched partitions
 * Added an Exceptions page to the API reference with a nested hierarchy list
   and per-class documentation
 * Added ``Raises`` sections to public method and function docstrings for

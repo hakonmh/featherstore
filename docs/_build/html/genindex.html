@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; FeatherStore 0.2.1 documentation</title>
+    <title>Index &#8212; FeatherStore 0.3.0 documentation</title>
   
   
   
@@ -37,7 +37,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="_static/documentation_options.js?v=37f418d5"></script>
+    <script src="_static/documentation_options.js?v=e259d695"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
@@ -119,8 +119,8 @@
       
     
     
-    <img src="_static/logo-dark.png" class="logo__image only-light" alt="FeatherStore 0.2.1 documentation - Home"/>
-    <img src="_static/logo-light.png" class="logo__image only-dark pst-js-only" alt="FeatherStore 0.2.1 documentation - Home"/>
+    <img src="_static/logo-dark.png" class="logo__image only-light" alt="FeatherStore 0.3.0 documentation - Home"/>
+    <img src="_static/logo-light.png" class="logo__image only-dark pst-js-only" alt="FeatherStore 0.3.0 documentation - Home"/>
   
   
 </a></div>
@@ -144,7 +144,7 @@
 
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="Quickstart.html">
-    Quickstart
+    Getting started
   </a>
 </li>
 
@@ -264,7 +264,7 @@
 
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="Quickstart.html">
-    Quickstart
+    Getting started
   </a>
 </li>
 
@@ -408,15 +408,13 @@
 </li>
       <li><a href="API/Exceptions.html#featherstore.exceptions.ColumnMismatchError">ColumnMismatchError</a>
 </li>
-      <li><a href="API/Exceptions.html#featherstore.exceptions.ColumnNotFoundError">ColumnNotFoundError</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="API/Exceptions.html#featherstore.exceptions.ColumnNotFoundError">ColumnNotFoundError</a>
+</li>
       <li><a href="API/Table.html#featherstore.table.Table.columns">columns (featherstore.table.Table property)</a>
 </li>
       <li><a href="API/Connection.html#featherstore.connection.connect">connect() (in module featherstore.connection)</a>
-</li>
-      <li><a href="API/Connection.html#featherstore.connection.Connection">Connection (class in featherstore.connection)</a>
 </li>
       <li><a href="API/Connection.html#featherstore.connection.create_database">create_database() (in module featherstore.connection)</a>
 </li>
@@ -440,21 +438,21 @@
 </li>
       <li><a href="API/Exceptions.html#featherstore.exceptions.DatabaseConnectionError">DatabaseConnectionError</a>
 </li>
-      <li><a href="API/Connection.html#featherstore.connection.Connection.disconnect">disconnect() (featherstore.connection.Connection class method)</a>
-
-      <ul>
-        <li><a href="API/Connection.html#featherstore.connection.disconnect">(in module featherstore.connection)</a>
+      <li><a href="API/Exceptions.html#featherstore.exceptions.DatabaseNotEmptyError">DatabaseNotEmptyError</a>
 </li>
-      </ul></li>
+      <li><a href="API/Connection.html#featherstore.connection.disconnect">disconnect() (in module featherstore.connection)</a>
+</li>
       <li><a href="API/Store.html#featherstore.store.Store.drop">drop() (featherstore.store.Store method)</a>
 
       <ul>
         <li><a href="API/Table.html#featherstore.table.Table.drop">(featherstore.table.Table method)</a>
 </li>
       </ul></li>
+      <li><a href="API/Table.html#featherstore.table.Table.drop_columns">drop_columns() (featherstore.table.Table method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/Table.html#featherstore.table.Table.drop_columns">drop_columns() (featherstore.table.Table method)</a>
+      <li><a href="API/Connection.html#featherstore.connection.drop_database">drop_database() (in module featherstore.connection)</a>
 </li>
       <li><a href="API/Table.html#featherstore.table.Table.drop_rows">drop_rows() (featherstore.table.Table method)</a>
 </li>
@@ -521,7 +519,7 @@
         <li><a href="API/Table.html#module-featherstore.table">module</a>
 </li>
       </ul></li>
-      <li><a href="API/Exceptions.html#featherstore.exceptions.FeatherStoreException">FeatherStoreException</a>
+      <li><a href="API/Exceptions.html#featherstore.exceptions.FeatherStoreError">FeatherStoreError</a>
 </li>
       <li><a href="API/Exceptions.html#featherstore.exceptions.ForbiddenStoreNameError">ForbiddenStoreNameError</a>
 </li>
@@ -533,6 +531,8 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="API/Exceptions.html#featherstore.exceptions.IncompatibleDatabaseVersionError">IncompatibleDatabaseVersionError</a>
+</li>
       <li><a href="API/Table.html#featherstore.table.Table.index">index (featherstore.table.Table property)</a>
 </li>
       <li><a href="API/Exceptions.html#featherstore.exceptions.IndexMismatchError">IndexMismatchError</a>
@@ -543,10 +543,10 @@
 </li>
       <li><a href="API/Exceptions.html#featherstore.exceptions.IndexNotInColumnsError">IndexNotInColumnsError</a>
 </li>
-      <li><a href="API/Exceptions.html#featherstore.exceptions.IndexSchemaError">IndexSchemaError</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="API/Exceptions.html#featherstore.exceptions.IndexSchemaError">IndexSchemaError</a>
+</li>
       <li><a href="API/Exceptions.html#featherstore.exceptions.IndexTypeMismatchError">IndexTypeMismatchError</a>
 </li>
       <li><a href="API/Table.html#featherstore.table.Table.insert">insert() (featherstore.table.Table method)</a>
@@ -557,12 +557,8 @@
 </li>
       <li><a href="API/Exceptions.html#featherstore.exceptions.InvalidSnapshotError">InvalidSnapshotError</a>
 </li>
-      <li><a href="API/Connection.html#featherstore.connection.Connection.is_connected">is_connected() (featherstore.connection.Connection class method)</a>
-
-      <ul>
-        <li><a href="API/Connection.html#featherstore.connection.is_connected">(in module featherstore.connection)</a>
+      <li><a href="API/Connection.html#featherstore.connection.is_connected">is_connected() (in module featherstore.connection)</a>
 </li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -574,8 +570,6 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="API/Store.html#featherstore.store.Store.list_tables">list_tables() (featherstore.store.Store method)</a>
-</li>
-      <li><a href="API/Connection.html#featherstore.connection.Connection.location">location() (featherstore.connection.Connection class method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -610,8 +604,12 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="API/Table.html#featherstore.table.Table.name">name (featherstore.table.Table property)</a>
+      <li><a href="API/Store.html#featherstore.store.Store.name">name (featherstore.store.Store attribute)</a>
+
+      <ul>
+        <li><a href="API/Table.html#featherstore.table.Table.name">(featherstore.table.Table property)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="API/Exceptions.html#featherstore.exceptions.NotADatabaseError">NotADatabaseError</a>
@@ -804,7 +802,7 @@
 
   <p class="copyright">
     
-      © Copyright 2021, Håkon Magne Holmen.
+      © Copyright 2021-2026, Håkon Magne Holmen.
       <br/>
     
   </p>
