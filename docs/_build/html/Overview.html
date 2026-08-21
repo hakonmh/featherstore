@@ -46,7 +46,7 @@
     <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Quickstart" href="Quickstart.html" />
+    <link rel="next" title="Getting started" href="Quickstart.html" />
     <link rel="prev" title="Documentation" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -147,7 +147,7 @@
 
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="Quickstart.html">
-    Quickstart
+    Getting started
   </a>
 </li>
 
@@ -269,7 +269,7 @@
 
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="Quickstart.html">
-    Quickstart
+    Getting started
   </a>
 </li>
 
@@ -405,7 +405,21 @@
 <p>FeatherStore is a high-performance datastore for Pandas DataFrames, Polars DataFrames,
 and PyArrow Tables. Data is stored as partitioned
 <a class="reference external" href="https://arrow.apache.org/docs/python/feather.html">Feather files</a>, so FeatherStore can
-run several operations on stored tables while loading only the data each operation needs:</p>
+run several operations on stored tables while loading only the data each operation needs.</p>
+<p>To start using it, follow the <a class="reference internal" href="Quickstart.html"><span class="doc">Getting started</span></a>.</p>
+<section id="how-data-is-organized">
+<h2>How data is organized<a class="headerlink" href="#how-data-is-organized" title="Link to this heading">#</a></h2>
+<p>A <strong>database</strong> is a directory on disk. Inside it, <strong>stores</strong> group related <strong>tables</strong>.
+Each table is a folder of partitioned Feather files plus metadata:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>path/to/db/          # database
+    weather/         # store
+        oslo/        # table
+            ...      # Feather partitions and metadata
+</pre></div>
+</div>
+</section>
+<section id="what-you-can-do">
+<h2>What you can do<a class="headerlink" href="#what-you-can-do" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Partial reads</p></li>
 <li><p>Appends</p></li>
@@ -414,29 +428,18 @@ run several operations on stored tables while loading only the data each operati
 <li><p>Drops</p></li>
 <li><p>Metadata reads (column names, index, table dimensions, and more)</p></li>
 <li><p>Column type changes</p></li>
+<li><p>Table and store snapshots</p></li>
 </ul>
-<p>For more information, see the
-<a class="reference external" href="Quickstart.html">user guide</a>.</p>
+</section>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
-<div class="line-block">
-<div class="line">The project is hosted on PyPI at:</div>
-<div class="line"><a class="reference external" href="https://pypi.org/project/FeatherStore/">https://pypi.org/project/FeatherStore/</a></div>
-</div>
-<div class="line-block">
-<div class="line">To install FeatherStore, use pip:</div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">featherstore</span>
+<p>The project is hosted on PyPI at <a class="reference external" href="https://pypi.org/project/FeatherStore/">https://pypi.org/project/FeatherStore/</a>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>featherstore
 </pre></div>
 </div>
-<div class="line-block">
-<div class="line">or</div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">hakonmh</span><span class="o">/</span><span class="n">featherstore</span><span class="o">.</span><span class="n">git</span>
+<p>Or install the latest version from GitHub:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/hakonmh/featherstore.git
 </pre></div>
-</div>
-<div class="line-block">
-<div class="line">to install the latest version from GitHub.</div>
 </div>
 <section id="python-version-support">
 <h3>Python version support<a class="headerlink" href="#python-version-support" title="Link to this heading">#</a></h3>
@@ -455,10 +458,7 @@ run several operations on stored tables while loading only the data each operati
 </section>
 <section id="source-code">
 <h2>Source code<a class="headerlink" href="#source-code" title="Link to this heading">#</a></h2>
-<div class="line-block">
-<div class="line">The source code is hosted on GitHub at:</div>
-<div class="line"><a class="github reference external" href="https://github.com/hakonmh/featherstore">hakonmh/featherstore</a></div>
-</div>
+<p>The source code is hosted on GitHub at <a class="github reference external" href="https://github.com/hakonmh/featherstore">hakonmh/featherstore</a>.</p>
 </section>
 <section id="license">
 <h2>License<a class="headerlink" href="#license" title="Link to this heading">#</a></h2>
@@ -467,10 +467,7 @@ run several operations on stored tables while loading only the data each operati
 <section id="contributions">
 <h2>Contributions<a class="headerlink" href="#contributions" title="Link to this heading">#</a></h2>
 <p>All contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas are welcome.</p>
-<div class="line-block">
-<div class="line">Issues are posted on:</div>
-<div class="line"><a class="github reference external" href="https://github.com/hakonmh/featherstore/issues">hakonmh/featherstore#issues</a></div>
-</div>
+<p>Issues are posted on <a class="github reference external" href="https://github.com/hakonmh/featherstore/issues">hakonmh/featherstore#issues</a>.</p>
 </section>
 </section>
 
@@ -498,7 +495,7 @@ run several operations on stored tables while loading only the data each operati
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Quickstart</p>
+        <p class="prev-next-title">Getting started</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -521,6 +518,8 @@ run several operations on stored tables while loading only the data each operati
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-data-is-organized">How data is organized</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-can-do">What you can do</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python-version-support">Python version support</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dependency-requirements">Dependency requirements</a></li>
