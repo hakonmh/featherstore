@@ -61,6 +61,8 @@ Enhancements:
   and snapshots
 * Documented `uv add featherstore` alongside pip in Getting started, Overview,
   and the README
+* Rewrote the Overview around Feather's layout plus partitions and a sorted
+  index, including which operations skip untouched partitions
 * Added an Exceptions page to the API reference with a nested hierarchy list
   and per-class documentation
 * Added ``Raises`` sections to public method and function docstrings for

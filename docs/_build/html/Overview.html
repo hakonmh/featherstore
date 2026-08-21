@@ -402,34 +402,86 @@
                   
   <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h1>
-<p>FeatherStore is a high-performance datastore for Pandas DataFrames, Polars DataFrames,
-and PyArrow Tables. Data is stored as partitioned
-<a class="reference external" href="https://arrow.apache.org/docs/python/feather.html">Feather files</a>, so FeatherStore can
-run several operations on stored tables while loading only the data each operation needs.</p>
-<p>To start using it, follow the <a class="reference internal" href="Quickstart.html"><span class="doc">Getting started</span></a>.</p>
+<p>FeatherStore is a datastore for Pandas DataFrames, Polars DataFrames, and
+PyArrow Tables. It is built for the machine you already have: a standard
+consumer PC or laptop, not a cluster.</p>
+<p>The usual way to persist a DataFrame is to write the whole object to a file
+(Feather, Parquet, Pickle) and read the whole object back. That is simple, and
+it is fast when the table is small. It gets expensive when the table grows and
+you only need yesterday’s rows, two columns, or to append today’s batch.</p>
+<p>FeatherStore’s goal is to be the fastest local datastore for that workload:
+repeated reads, range queries, appends, and row edits on tables that live on
+disk and may be larger than you want to load at once.</p>
+<section id="the-core-idea">
+<h2>The core idea<a class="headerlink" href="#the-core-idea" title="Link to this heading">#</a></h2>
+<p>Feather already gives you a strong on-disk layout. Files are <strong>columnar</strong>, so
+you can read a subset of columns. They support <strong>memory mapping</strong> and
+<strong>zero-copy</strong> access into Arrow, so you avoid serialize/deserialize round-trips
+when you stay in Polars or PyArrow.</p>
+<p>FeatherStore keeps that layout and adds two things:</p>
+<ul class="simple">
+<li><p><strong>Partitions</strong> — a table is split into several Feather files of a chosen size
+(128 MB by default).</p></li>
+<li><p><strong>A sorted unique index</strong> — rows are stored in index order, so FeatherStore
+knows which partitions overlap a query or a row edit.</p></li>
+</ul>
+<p>Together, those are what make partial work cheap. A range query opens only the
+partitions that overlap the requested index values, and only the columns you
+ask for. An append rewrites the last partition, not the whole table. A row
+update, insert, or drop rewrites only the partitions whose index range is
+touched. Metadata (column names, shape, index) can be read without scanning
+the data files.</p>
+<p>Column inserts and drops still rewrite every partition, because a column lives
+in all of them.</p>
+<p>You keep working with the DataFrames you already use. FeatherStore is a store
+for those objects, not a query engine and not a database server.</p>
+</section>
 <section id="how-data-is-organized">
 <h2>How data is organized<a class="headerlink" href="#how-data-is-organized" title="Link to this heading">#</a></h2>
-<p>A <strong>database</strong> is a directory on disk. Inside it, <strong>stores</strong> group related <strong>tables</strong>.
-Each table is a folder of partitioned Feather files plus metadata:</p>
+<p>A <strong>database</strong> is a directory on disk. Inside it, <strong>stores</strong> group related
+<strong>tables</strong>. Each table is a folder of partitioned Feather files plus metadata:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>path/to/db/          # database
     weather/         # store
-        bergen/        # table
+        bergen/      # table
             ...      # Feather partitions and metadata
 </pre></div>
 </div>
+<p>There is no daemon to start. Point FeatherStore at a folder and read or write.</p>
 </section>
-<section id="what-you-can-do">
-<h2>What you can do<a class="headerlink" href="#what-you-can-do" title="Link to this heading">#</a></h2>
+<section id="what-this-makes-cheap">
+<h2>What this makes cheap<a class="headerlink" href="#what-this-makes-cheap" title="Link to this heading">#</a></h2>
+<p>Because tables are partitioned Feather files with a sorted index, FeatherStore
+can run several operations while loading only the partitions each operation
+needs:</p>
 <ul class="simple">
-<li><p>Partial reads</p></li>
-<li><p>Appends</p></li>
-<li><p>Row and column inserts (Pandas, Polars, or PyArrow)</p></li>
-<li><p>Updates (Pandas, Polars, or PyArrow)</p></li>
-<li><p>Drops</p></li>
+<li><p>Partial reads (rows by label or range, columns by name or pattern)</p></li>
+<li><p>Appends (last partition only)</p></li>
+<li><p>Row inserts, updates, and drops (only partitions that overlap the affected
+index range)</p></li>
 <li><p>Metadata reads (column names, index, table dimensions, and more)</p></li>
-<li><p>Column type changes</p></li>
+</ul>
+<p>These still rewrite the full table, because they change every partition:</p>
+<ul class="simple">
+<li><p>Column inserts and drops</p></li>
+<li><p>Column type changes and column renames</p></li>
+</ul>
+<p>Also supported:</p>
+<ul class="simple">
 <li><p>Table and store snapshots</p></li>
 </ul>
+<p>On small tables, a single Pickle or Feather file can still be faster to read or
+write in full. FeatherStore is aimed at the case where the table is large
+enough, or queried often enough, that loading everything is the wrong default.
+See the <a class="reference internal" href="Benchmarks.html"><span class="doc">Benchmarks</span></a> for full-table read and write numbers, and the
+<a class="reference internal" href="Quickstart.html"><span class="doc">Getting started</span></a> for the operations that skip most of the file.</p>
+</section>
+<section id="when-to-use-it">
+<h2>When to use it<a class="headerlink" href="#when-to-use-it" title="Link to this heading">#</a></h2>
+<p>FeatherStore fits local, DataFrame-shaped work: time series that grow every
+day, keyed tables you slice by index, notebooks and apps that should not stand
+up a database. It is not a warehouse, not SQL, and not a replacement for
+DuckDB when you want ad-hoc queries over many files.</p>
+<p>To start using it, follow the <a class="reference internal" href="Quickstart.html"><span class="doc">Getting started</span></a>.</p>
 </section>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
@@ -474,7 +526,8 @@ Each table is a folder of partitioned Feather files plus metadata:</p>
 </section>
 <section id="contributions">
 <h2>Contributions<a class="headerlink" href="#contributions" title="Link to this heading">#</a></h2>
-<p>All contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas are welcome.</p>
+<p>All contributions, bug reports, bug fixes, documentation improvements,
+enhancements, and ideas are welcome.</p>
 <p>Issues are posted on <a class="github reference external" href="https://github.com/hakonmh/featherstore/issues">hakonmh/featherstore#issues</a>.</p>
 </section>
 </section>
@@ -526,8 +579,10 @@ Each table is a folder of partitioned Feather files plus metadata:</p>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-core-idea">The core idea</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-data-is-organized">How data is organized</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-can-do">What you can do</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-makes-cheap">What this makes cheap</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#when-to-use-it">When to use it</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python-version-support">Python version support</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dependency-requirements">Dependency requirements</a></li>
