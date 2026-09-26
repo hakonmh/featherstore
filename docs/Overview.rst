@@ -83,7 +83,7 @@ On small tables, a single Pickle or Feather file can still be faster to read or
 write in full. FeatherStore is aimed at the case where the table is large
 enough, or queried often enough, that loading everything is the wrong default.
 See the :doc:`Benchmarks` for full-table read and write numbers, and the
-:doc:`Quickstart` for the operations that skip most of the file.
+:doc:`user_guide/10min` for the operations that skip most of the file.
 
 When to use it
 --------------
@@ -93,7 +93,7 @@ day, keyed tables you slice by index, notebooks and apps that should not stand
 up a database. It is not a warehouse, not SQL, and not a replacement for
 DuckDB when you want ad-hoc queries over many files.
 
-To start using it, follow the :doc:`Quickstart`.
+To start using it, follow the :doc:`user_guide/10min`.
 
 Installation
 ------------

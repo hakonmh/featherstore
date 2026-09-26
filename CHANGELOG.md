@@ -23,6 +23,11 @@ Changelog
 
 Enhancements:
 
+* Added a new User Guide under ``docs/user_guide/`` covering the full
+  public surface by topic (data model, databases, stores, tables, IO, backends,
+  indexing, index rules, append/insert/update/drop, columns, metadata,
+  partitioning, snapshots, errors, and gotchas). Moved the getting started tour
+  to ``user_guide/10min`` and removed ``Quickstart.rst``
 * ``Table.update()``, ``Table.insert_rows()``, ``Table.insert_columns()``, and
   ``Table.insert()`` accept Pandas DataFrame/Series, Polars DataFrame, and
   PyArrow Table input (Polars Series is not supported for these edit APIs)

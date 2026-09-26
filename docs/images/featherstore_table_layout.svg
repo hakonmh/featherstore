@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 910" role="img" aria-labelledby="title desc">
+  <title id="title">FeatherStore table layout</title>
+  <desc id="desc">A FeatherStore table is a folder with a .metadata directory and a series of Feather partition files sorted by a unique index. A range read uses the partition metadata to open only the overlapping partitions and only the requested columns. Appends, row edits and metadata reads touch few or no partitions, while column changes rewrite every partition.</desc>
+  <style>
+    text { font-family: "Segoe UI", Helvetica, Arial, sans-serif; fill: #1f2933; font-size: 15px; }
+    .title { font-size: 22px; font-weight: 650; }
+    .subtitle { font-size: 14px; fill: #52606d; }
+    .bold { font-weight: 650; }
+    .muted { fill: #52606d; }
+    .mono { font-family: Consolas, "Courier New", monospace; font-size: 12px; }
+    .code { font-family: Consolas, "Courier New", monospace; font-size: 14px; }
+    .center { text-anchor: middle; }
+    .end { text-anchor: end; }
+    .panel { fill: #f7f8fa; stroke: #7b8794; stroke-width: 1.5; }
+    .file { fill: #ffffff; stroke: #9aa5b1; stroke-width: 1.2; }
+    .card { fill: #ffffff; stroke: #9aa5b1; stroke-width: 1.5; }
+    .hit { stroke: #2c9c8f; stroke-width: 3.5; }
+    .faded { opacity: 0.3; }
+    .cell { stroke: #3e4c59; stroke-width: 1; }
+    .index { fill: #d9b8ff; }
+    .temp { fill: #9ecbff; }
+    .rain { fill: #b6e3b8; }
+    .read { fill: #7fd1c7; stroke: #2c9c8f; }
+    .rewrite { fill: #f6ad55; stroke: #c05621; }
+    .empty { fill: #ffffff; stroke: #cbd2d9; }
+    .teal-text { fill: #1d7a70; }
+    .query { fill: #effaf8; stroke: #2c9c8f; stroke-width: 2; }
+    .lookup { stroke: #2c9c8f; stroke-width: 2; fill: none; marker-end: url(#teal-head); }
+    .axis { stroke: #52606d; stroke-width: 1.5; fill: none; marker-end: url(#gray-head); }
+  </style>
+  <defs>
+    <marker id="teal-head" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#2c9c8f"/>
+    </marker>
+    <marker id="gray-head" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#52606d"/>
+    </marker>
+    <pattern id="value-rows" width="52" height="19" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="18.5" x2="52" y2="18.5" stroke="#3e4c59" stroke-opacity="0.3"/>
+    </pattern>
+    <g id="strip">
+      <rect class="cell" width="52" height="190"/>
+      <rect width="52" height="190" fill="url(#value-rows)"/>
+    </g>
+    <g id="column-labels">
+      <text class="center" x="48" y="74">index</text>
+      <text class="center" x="108" y="74">temp</text>
+      <text class="center" x="168" y="74">rain</text>
+    </g>
+  </defs>
+
+  <text class="title" x="40" y="36">FeatherStore table: weather/bergen/</text>
+  <text class="subtitle" x="40" y="58">A folder of Feather partitions sorted by index, plus small metadata files</text>
+
+  <rect class="panel" x="40" y="72" width="920" height="96" rx="6"/>
+  <text class="bold" x="56" y="94">.metadata/</text>
+  <rect class="file" x="60" y="104" width="430" height="52" rx="4"/>
+  <text class="bold" x="76" y="126">table.db</text>
+  <text class="muted" x="76" y="146">columns, dtypes, row count, partition size</text>
+  <rect class="file" x="510" y="104" width="430" height="52" rx="4"/>
+  <text class="bold" x="526" y="126">partition.db</text>
+  <text class="muted" x="526" y="146">min / max index + row count per partition</text>
+
+  <path class="lookup" d="M700,158 C700,195 392,180 392,210"/>
+  <path class="lookup" d="M740,158 C740,190 627,185 627,210"/>
+  <text class="teal-text" x="760" y="200">min / max lookup picks the files</text>
+
+  <g transform="translate(40, 215)" class="faded">
+    <rect class="card" width="215" height="290" rx="6"/>
+    <text class="mono" x="12" y="24">00000001000000.feather</text>
+    <text class="bold end" x="203" y="24">P1</text>
+    <text class="muted center" x="107" y="48">Jan 01 &#8211; Jan 31</text>
+    <use href="#column-labels"/>
+    <use href="#strip" class="index" x="22" y="84"/>
+    <use href="#strip" class="temp" x="82" y="84"/>
+    <use href="#strip" class="rain" x="142" y="84"/>
+  </g>
+
+  <g transform="translate(275, 215)">
+    <rect class="card hit" width="215" height="290" rx="6"/>
+    <text class="mono" x="12" y="24">00000002000000.feather</text>
+    <text class="bold end" x="203" y="24">P2</text>
+    <text class="muted center" x="107" y="48">Feb 01 &#8211; Feb 29</text>
+    <use href="#column-labels"/>
+    <use href="#strip" class="index" x="22" y="84"/>
+    <use href="#strip" class="temp" x="82" y="84"/>
+    <use href="#strip" class="rain faded" x="142" y="84"/>
+  </g>
+
+  <g transform="translate(510, 215)">
+    <rect class="card hit" width="215" height="290" rx="6"/>
+    <text class="mono" x="12" y="24">00000003000000.feather</text>
+    <text class="bold end" x="203" y="24">P3</text>
+    <text class="muted center" x="107" y="48">Mar 01 &#8211; Mar 31</text>
+    <use href="#column-labels"/>
+    <use href="#strip" class="index" x="22" y="84"/>
+    <use href="#strip" class="temp" x="82" y="84"/>
+    <use href="#strip" class="rain faded" x="142" y="84"/>
+  </g>
+
+  <g transform="translate(745, 215)" class="faded">
+    <rect class="card" width="215" height="290" rx="6"/>
+    <text class="mono" x="12" y="24">00000004000000.feather</text>
+    <text class="bold end" x="203" y="24">P4</text>
+    <text class="muted center" x="107" y="48">Apr 01 &#8211; Apr 30</text>
+    <use href="#column-labels"/>
+    <use href="#strip" class="index" x="22" y="84"/>
+    <use href="#strip" class="temp" x="82" y="84"/>
+    <use href="#strip" class="rain" x="142" y="84"/>
+  </g>
+
+  <path class="axis" d="M40,523 L958,523"/>
+  <text class="muted center" x="500" y="546">Rows sorted by a unique index, split into partitions of about partition_size (128 MB by default)</text>
+
+  <rect class="query" x="40" y="562" width="920" height="80" rx="6"/>
+  <text class="code" x="60" y="592">store.read_pandas("bergen", rows={"between": ["2024-02-15", "2024-03-10"]}, cols=["temp"])</text>
+  <text class="bold teal-text" x="60" y="622">Opens 2 of 4 partitions and touches only the index + temp buffers (when memory-mapped)</text>
+
+  <text class="bold" x="40" y="690" style="font-size:17px">Which partitions each operation touches</text>
+  <rect class="read" x="660" y="676" width="18" height="18"/>
+  <text x="686" y="690">read</text>
+  <rect class="rewrite" x="740" y="676" width="18" height="18"/>
+  <text x="766" y="690">rewritten</text>
+
+  <text class="bold center" x="580" y="716">P1</text>
+  <text class="bold center" x="660" y="716">P2</text>
+  <text class="bold center" x="740" y="716">P3</text>
+  <text class="bold center" x="820" y="716">P4</text>
+
+  <text x="40" y="743">Read Feb 15 &#8211; Mar 10, column temp</text>
+  <rect class="empty" x="548" y="726" width="64" height="26" rx="3"/>
+  <rect class="read" x="628" y="726" width="64" height="26" rx="3"/>
+  <rect class="read" x="708" y="726" width="64" height="26" rx="3"/>
+  <rect class="empty" x="788" y="726" width="64" height="26" rx="3"/>
+
+  <text x="40" y="777">Append rows after Apr 30</text>
+  <rect class="empty" x="548" y="760" width="64" height="26" rx="3"/>
+  <rect class="empty" x="628" y="760" width="64" height="26" rx="3"/>
+  <rect class="empty" x="708" y="760" width="64" height="26" rx="3"/>
+  <rect class="rewrite" x="788" y="760" width="64" height="26" rx="3"/>
+
+  <text x="40" y="811">Insert, update or drop rows in February</text>
+  <rect class="empty" x="548" y="794" width="64" height="26" rx="3"/>
+  <rect class="rewrite" x="628" y="794" width="64" height="26" rx="3"/>
+  <rect class="empty" x="708" y="794" width="64" height="26" rx="3"/>
+  <rect class="empty" x="788" y="794" width="64" height="26" rx="3"/>
+
+  <text x="40" y="845">Read column names, shape, index length</text>
+  <text class="teal-text center" x="700" y="845" style="font-style:italic">only .metadata/ is read</text>
+
+  <text class="muted" x="40" y="879">Insert, drop, rename or retype a column</text>
+  <rect class="rewrite faded" x="548" y="862" width="64" height="26" rx="3"/>
+  <rect class="rewrite faded" x="628" y="862" width="64" height="26" rx="3"/>
+  <rect class="rewrite faded" x="708" y="862" width="64" height="26" rx="3"/>
+  <rect class="rewrite faded" x="788" y="862" width="64" height="26" rx="3"/>
+</svg>
