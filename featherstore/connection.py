@@ -15,18 +15,21 @@ from featherstore.exceptions import (
 def connect(connection_string):
     """Connects to a database.
 
+    If a connection is already open, it is replaced.
+
     Parameters
     ----------
     connection_string : str
-        Path to the database directory
+        Path to the database directory. ``~`` is expanded to the user home
+        directory.
 
     Raises
     ------
-    NotADatabaseError
+    :exc:`~featherstore.exceptions.NotADatabaseError`
         If ``connection_string`` is not a FeatherStore database.
-    IncompatibleDatabaseVersionError
+    :exc:`~featherstore.exceptions.IncompatibleDatabaseVersionError`
         If the database format versions are incompatible with this install.
-    TypeError
+    :exc:`TypeError`
         If ``connection_string`` is not a str.
     """
     Connection(connection_string)
@@ -37,7 +40,7 @@ def disconnect():
 
     Raises
     ------
-    NotConnectedError
+    :exc:`~featherstore.exceptions.NotConnectedError`
         If FeatherStore is not connected to a database.
     """
     Connection.disconnect()
@@ -49,21 +52,23 @@ def create_database(path, *, errors="raise", connect=True):
     Parameters
     ----------
     path : str
-        Where to create the database.
+        Where to create the database. ``~`` is expanded to the user home
+        directory.
     errors : str, optional
         Whether to raise an error if the database directory already exists.
-        Can be either `raise` or `ignore`; `ignore` tries to create a database
-        in an existing directory. Default is `raise`.
-    connect : bool
-        Whether or not to connect to the created database, by default True
+        Can be ``'raise'`` or ``'ignore'``; ``'ignore'`` tries to create a
+        database in an existing directory. Default is ``'raise'``.
+    connect : bool, optional
+        Whether to connect to the created database. Default is ``True``.
+        A new connection replaces any existing connection.
 
     Raises
     ------
-    PopulatedDirectoryError
+    :exc:`~featherstore.exceptions.PopulatedDirectoryError`
         If ``errors='raise'`` and the directory is not empty.
-    TypeError
+    :exc:`TypeError`
         If ``path`` is not a str.
-    ValueError
+    :exc:`ValueError`
         If ``errors`` is not ``'raise'`` or ``'ignore'``.
     """
     _can_create_database(path, errors)
@@ -82,23 +87,26 @@ def drop_database(path, *, warnings="warn"):
     *Warning*: You cannot delete a database containing stores. All stores must
     be deleted first.
 
+    On success, FeatherStore disconnects from the deleted database.
+
     Parameters
     ----------
     path : str
-        Path to the database directory. Must be the currently connected database.
+        Path to the database directory. Must be the currently connected
+        database. ``~`` is expanded to the user home directory.
     warnings : str, optional
-        Whether or not to warn if the database doesn't exist. Can be either
-        `warn` or `ignore`, by default `warn`
+        Whether to warn if the database does not exist. Can be ``'warn'`` or
+        ``'ignore'``. Default is ``'warn'``.
 
     Raises
     ------
-    NotConnectedError
+    :exc:`~featherstore.exceptions.NotConnectedError`
         If FeatherStore is not connected to a database.
-    DatabaseNotEmptyError
+    :exc:`~featherstore.exceptions.DatabaseNotEmptyError`
         If the database still contains stores.
-    TypeError
+    :exc:`TypeError`
         If ``path`` is not a str.
-    ValueError
+    :exc:`ValueError`
         If ``warnings`` is not ``'warn'`` or ``'ignore'``, or if ``path`` is
         not the currently connected database.
     """
@@ -110,33 +118,39 @@ def drop_database(path, *, warnings="warn"):
 
 
 def current_db():
-    """Fetches the active database.
+    """Returns the path of the active database.
 
     Returns
     -------
     str
-        The current database directory
+        The current database directory.
 
     Raises
     ------
-    NotConnectedError
+    :exc:`~featherstore.exceptions.NotConnectedError`
         If FeatherStore is not connected to a database.
     """
     return Connection.location()
 
 
 def is_connected():
-    """Checks if FeatherStore is connected to a database."""
+    """Returns whether FeatherStore is connected to a database.
+
+    Returns
+    -------
+    bool
+    """
     return Connection.is_connected()
 
 
 def database_exists(path):
-    """Checks whether a directory is a FeatherStore database.
+    """Returns whether a directory is a FeatherStore database.
 
     Parameters
     ----------
     path : str
-        Path to the directory to check.
+        Path to the directory to check. ``~`` is expanded to the user home
+        directory.
 
     Returns
     -------

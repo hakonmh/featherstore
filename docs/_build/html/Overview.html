@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Overview &#8212; FeatherStore 0.2.1 documentation</title>
+    <title>Overview &#8212; FeatherStore 0.3.0 documentation</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="_static/documentation_options.js?v=37f418d5"></script>
+    <script src="_static/documentation_options.js?v=e259d695"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'Overview';</script>
@@ -46,7 +46,7 @@
     <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Quickstart" href="Quickstart.html" />
+    <link rel="next" title="Getting started" href="Quickstart.html" />
     <link rel="prev" title="Documentation" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -122,8 +122,8 @@
       
     
     
-    <img src="_static/logo-dark.png" class="logo__image only-light" alt="FeatherStore 0.2.1 documentation - Home"/>
-    <img src="_static/logo-light.png" class="logo__image only-dark pst-js-only" alt="FeatherStore 0.2.1 documentation - Home"/>
+    <img src="_static/logo-dark.png" class="logo__image only-light" alt="FeatherStore 0.3.0 documentation - Home"/>
+    <img src="_static/logo-light.png" class="logo__image only-dark pst-js-only" alt="FeatherStore 0.3.0 documentation - Home"/>
   
   
 </a></div>
@@ -147,7 +147,7 @@
 
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="Quickstart.html">
-    Quickstart
+    Getting started
   </a>
 </li>
 
@@ -269,7 +269,7 @@
 
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="Quickstart.html">
-    Quickstart
+    Getting started
   </a>
 </li>
 
@@ -402,46 +402,107 @@
                   
   <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h1>
-<p>FeatherStore is high performance datastore for storing Pandas DataFrames, Polars DataFrames,
-and PyArrow Tables. By saving data in the form of partitioned
-<a class="reference external" href="https://arrow.apache.org/docs/python/feather.html">Feather Files</a>, FeatherStore enables
-several operations on the stored tables, optimizing performance by selectively loading only
-the necessary segments of data:</p>
+<p>FeatherStore is a datastore for Pandas DataFrames, Polars DataFrames, and
+PyArrow Tables. It is built for the machine you already have: a standard
+consumer PC or laptop, not a cluster.</p>
+<p>The usual way to persist a DataFrame is to write the whole object to a file
+(Feather, Parquet, Pickle) and read the whole object back. That is simple, and
+it is fast when the table is small. It gets expensive when the table grows and
+you only need yesterday’s rows, two columns, or to append today’s batch.</p>
+<p>FeatherStore’s goal is to be the fastest local datastore for that workload:
+repeated reads, range queries, appends, and row edits on tables that live on
+disk and may be larger than you want to load at once.</p>
+<section id="the-core-idea">
+<h2>The core idea<a class="headerlink" href="#the-core-idea" title="Link to this heading">#</a></h2>
+<p>Feather already gives you a strong on-disk layout. Files are <strong>columnar</strong>, so
+you can read a subset of columns. They support <strong>memory mapping</strong> and
+<strong>zero-copy</strong> access into Arrow, so you avoid serialize/deserialize round-trips
+when you stay in Polars or PyArrow.</p>
+<p>FeatherStore keeps that layout and adds two things:</p>
 <ul class="simple">
-<li><p>Partial reading of data</p></li>
-<li><p>Append data</p></li>
-<li><p>Insert rows and columns</p></li>
-<li><p>Update data</p></li>
-<li><p>Drop data</p></li>
-<li><p>Read metadata (including column names, indices, table dimensions, etc.)</p></li>
-<li><p>Changing column types</p></li>
+<li><p><strong>Partitions</strong> — a table is split into several Feather files of a chosen size
+(128 MB by default).</p></li>
+<li><p><strong>A sorted unique index</strong> — rows are stored in index order, so FeatherStore
+knows which partitions overlap a query or a row edit.</p></li>
 </ul>
-<p>For more information on using FeatherStore, please refer to the
-<a class="reference external" href="Quickstart.html">user guide</a>.</p>
+<p>Together, those are what make partial work cheap. A range query opens only the
+partitions that overlap the requested index values, and only the columns you
+ask for. An append rewrites the last partition, not the whole table. A row
+update, insert, or drop rewrites only the partitions whose index range is
+touched. Metadata (column names, shape, index) can be read without scanning
+the data files.</p>
+<p>Column inserts and drops still rewrite every partition, because a column lives
+in all of them.</p>
+<p>You keep working with the DataFrames you already use. FeatherStore is a store
+for those objects, not a query engine and not a database server.</p>
+</section>
+<section id="how-data-is-organized">
+<h2>How data is organized<a class="headerlink" href="#how-data-is-organized" title="Link to this heading">#</a></h2>
+<p>A <strong>database</strong> is a directory on disk. Inside it, <strong>stores</strong> group related
+<strong>tables</strong>. Each table is a folder of partitioned Feather files plus metadata:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>path/to/db/          # database
+    weather/         # store
+        bergen/      # table
+            ...      # Feather partitions and metadata
+</pre></div>
+</div>
+<p>There is no daemon to start. Point FeatherStore at a folder and read or write.</p>
+</section>
+<section id="what-this-makes-cheap">
+<h2>What this makes cheap<a class="headerlink" href="#what-this-makes-cheap" title="Link to this heading">#</a></h2>
+<p>Because tables are partitioned Feather files with a sorted index, FeatherStore
+can run several operations while loading only the partitions each operation
+needs:</p>
+<ul class="simple">
+<li><p>Partial reads (rows by label or range, columns by name or pattern)</p></li>
+<li><p>Appends (last partition only)</p></li>
+<li><p>Row inserts, updates, and drops (only partitions that overlap the affected
+index range)</p></li>
+<li><p>Metadata reads (column names, index, table dimensions, and more)</p></li>
+</ul>
+<p>These still rewrite the full table, because they change every partition:</p>
+<ul class="simple">
+<li><p>Column inserts and drops</p></li>
+<li><p>Column type changes and column renames</p></li>
+</ul>
+<p>Also supported:</p>
+<ul class="simple">
+<li><p>Table and store snapshots</p></li>
+</ul>
+<p>On small tables, a single Pickle or Feather file can still be faster to read or
+write in full. FeatherStore is aimed at the case where the table is large
+enough, or queried often enough, that loading everything is the wrong default.
+See the <a class="reference internal" href="Benchmarks.html"><span class="doc">Benchmarks</span></a> for full-table read and write numbers, and the
+<a class="reference internal" href="Quickstart.html"><span class="doc">Getting started</span></a> for the operations that skip most of the file.</p>
+</section>
+<section id="when-to-use-it">
+<h2>When to use it<a class="headerlink" href="#when-to-use-it" title="Link to this heading">#</a></h2>
+<p>FeatherStore fits local, DataFrame-shaped work: time series that grow every
+day, keyed tables you slice by index, notebooks and apps that should not stand
+up a database. It is not a warehouse, not SQL, and not a replacement for
+DuckDB when you want ad-hoc queries over many files.</p>
+<p>To start using it, follow the <a class="reference internal" href="Quickstart.html"><span class="doc">Getting started</span></a>.</p>
+</section>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
-<div class="line-block">
-<div class="line">The project is hosted on PyPI at:</div>
-<div class="line"><a class="reference external" href="https://pypi.org/project/FeatherStore/">https://pypi.org/project/FeatherStore/</a></div>
-</div>
-<div class="line-block">
-<div class="line">To install FeatherStore, simply use pip</div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">featherstore</span>
+<p>The project is hosted on PyPI at <a class="reference external" href="https://pypi.org/project/FeatherStore/">https://pypi.org/project/FeatherStore/</a>.</p>
+<p>Install with pip or uv:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>featherstore
 </pre></div>
 </div>
-<div class="line-block">
-<div class="line">or</div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">hakonmh</span><span class="o">/</span><span class="n">featherstore</span><span class="o">.</span><span class="n">git</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>add<span class="w"> </span>featherstore
 </pre></div>
 </div>
-<div class="line-block">
-<div class="line">to install the latest version from GitHub.</div>
+<p>Or install the latest version from GitHub:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/hakonmh/featherstore.git
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>add<span class="w"> </span>git+https://github.com/hakonmh/featherstore.git
+</pre></div>
 </div>
 <section id="python-version-support">
 <h3>Python version support<a class="headerlink" href="#python-version-support" title="Link to this heading">#</a></h3>
-<p>Officially Python 3.11 and up is supported.</p>
+<p>Python 3.11 and later are officially supported.</p>
 </section>
 <section id="dependency-requirements">
 <h3>Dependency requirements<a class="headerlink" href="#dependency-requirements" title="Link to this heading">#</a></h3>
@@ -451,27 +512,23 @@ the necessary segments of data:</p>
 <li><p>polars[timezone] &gt;= 1.21.0</p></li>
 <li><p>pyarrow &gt;= 14.0.0</p></li>
 </ul>
-<p>These are installed automatically with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">featherstore</span></code>.</p>
+<p>These are installed automatically with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">featherstore</span></code> or
+<code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">add</span> <span class="pre">featherstore</span></code>.</p>
 </section>
 </section>
 <section id="source-code">
-<h2>Source Code<a class="headerlink" href="#source-code" title="Link to this heading">#</a></h2>
-<div class="line-block">
-<div class="line">The source code is currently hosted on GitHub at:</div>
-<div class="line"><a class="github reference external" href="https://github.com/Hakonmh/featherstore">Hakonmh/featherstore</a></div>
-</div>
+<h2>Source code<a class="headerlink" href="#source-code" title="Link to this heading">#</a></h2>
+<p>The source code is hosted on GitHub at <a class="github reference external" href="https://github.com/hakonmh/featherstore">hakonmh/featherstore</a>.</p>
 </section>
 <section id="license">
-<h2>LICENSE<a class="headerlink" href="#license" title="Link to this heading">#</a></h2>
+<h2>License<a class="headerlink" href="#license" title="Link to this heading">#</a></h2>
 <p><a class="reference external" href="https://github.com/hakonmh/featherstore/blob/master/LICENSE">MIT</a></p>
 </section>
 <section id="contributions">
 <h2>Contributions<a class="headerlink" href="#contributions" title="Link to this heading">#</a></h2>
-<p>All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome.</p>
-<div class="line-block">
-<div class="line">Issues are posted on:</div>
-<div class="line"><a class="github reference external" href="https://github.com/hakonmh/featherstore/issues">hakonmh/featherstore#issues</a></div>
-</div>
+<p>All contributions, bug reports, bug fixes, documentation improvements,
+enhancements, and ideas are welcome.</p>
+<p>Issues are posted on <a class="github reference external" href="https://github.com/hakonmh/featherstore/issues">hakonmh/featherstore#issues</a>.</p>
 </section>
 </section>
 
@@ -499,7 +556,7 @@ the necessary segments of data:</p>
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Quickstart</p>
+        <p class="prev-next-title">Getting started</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -522,13 +579,17 @@ the necessary segments of data:</p>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-core-idea">The core idea</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-data-is-organized">How data is organized</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-makes-cheap">What this makes cheap</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#when-to-use-it">When to use it</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python-version-support">Python version support</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dependency-requirements">Dependency requirements</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-code">Source Code</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">LICENSE</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-code">Source code</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">License</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributions">Contributions</a></li>
 </ul>
   </nav></div>
@@ -558,7 +619,7 @@ the necessary segments of data:</p>
 
   <p class="copyright">
     
-      © Copyright 2021, Håkon Magne Holmen.
+      © Copyright 2021-2026, Håkon Magne Holmen.
       <br/>
     
   </p>

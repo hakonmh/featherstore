@@ -22,7 +22,11 @@ class TableAlreadyExistsError(TableError):
 
 
 class ForbiddenTableNameError(TableError):
-    """Raised when a table name is reserved or not a valid path name."""
+    """Raised when a table name is reserved or not a valid path name.
+
+    Reserved and invalid names include ``.metadata``, ``""``, ``"."``,
+    ``".."``, and names containing ``/`` or ``\\``.
+    """
 
 
 class CannotDropAllRowsError(TableError):
@@ -50,7 +54,11 @@ class StoreAlreadyExistsError(StoreError):
 
 
 class ForbiddenStoreNameError(StoreError):
-    """Raised when a store name is reserved or not a valid path name."""
+    """Raised when a store name is reserved or not a valid path name.
+
+    Reserved and invalid names include ``.featherstore``, ``""``, ``"."``,
+    ``".."``, and names containing ``/`` or ``\\``.
+    """
 
 
 class StoreNotEmptyError(StoreError):

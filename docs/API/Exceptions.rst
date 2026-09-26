@@ -80,5 +80,4 @@ Exception reference
 
 .. automodule:: featherstore.exceptions
    :members:
-   :undoc-members:
    :show-inheritance:

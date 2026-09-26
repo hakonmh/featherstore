@@ -1,245 +1,418 @@
-Quickstart
-==========
+Getting started
+===============
 
-This is a short introduction to FeatherStore and its basic features.
-For a complete guide to FeatherStore's classes, functions, and methods, see the
-`API reference <API%20Reference.html>`_.
+This page walks through FeatherStore from installation to the operations you will
+use most often: writing and reading tables, querying a subset of rows and columns,
+appending data, and editing stored tables. The examples share one small dataset so
+you can follow them in order. For the full API, see the
+:doc:`API Reference`.
 
-| The project is hosted on PyPI at:
-| https://pypi.org/project/FeatherStore/
+Installing FeatherStore
+-----------------------
 
-Installation
-++++++++++++
+Install FeatherStore from PyPI with pip or uv:
 
-| To install FeatherStore, use pip:
-
-.. code-block::
+.. code-block:: bash
 
     pip install featherstore
 
-| or
+.. code-block:: bash
 
-.. code-block::
+    uv add featherstore
+
+Or install the latest version from GitHub:
+
+.. code-block:: bash
 
     pip install git+https://github.com/hakonmh/featherstore.git
 
-| to install the latest version from GitHub.
+.. code-block:: bash
 
-Requirements
-------------
+    uv add git+https://github.com/hakonmh/featherstore.git
 
-FeatherStore 0.3.0 requires Python 3.11 or newer and the following packages:
+FeatherStore requires Python 3.11 or newer. pandas, Polars, and PyArrow are
+installed automatically.
 
-* pandas >= 2.2.0
-* polars[timezone] >= 1.21.0
-* pyarrow >= 14.0.0
+Connecting to a database
+------------------------
 
-Getting started
----------------
+A FeatherStore database is a directory on disk. ``create_database`` creates that
+directory and connects to it:
 
 .. code-block:: python
 
     import featherstore as fs
 
-To create and connect to a new database, use:
+    fs.create_database("path/to/db")
+
+Use ``connect`` when the database already exists:
 
 .. code-block:: python
 
-    fs.create_database('/path/to/database_folder')
-    fs.connect('/path/to/database_folder')
+    fs.connect("path/to/db")
 
-You can check whether a path is already a database with ``fs.database_exists()``.
-You can later disconnect from the database with ``fs.disconnect()``.
+You can check a path with ``fs.database_exists()``, see the active directory with
+``fs.current_db()``, and leave the database with ``fs.disconnect()``.
 
-Working with stores
+Stores
+------
+
+A database contains one or more stores. A store is a named folder that groups
+related tables.
+
+.. code-block:: python
+
+    store = fs.create_store("weather")
+    print(fs.list_stores())
+
+.. code-block:: text
+
+    ['weather']
+
+``create_store`` returns a :class:`~featherstore.store.Store`. If the store already
+exists, FeatherStore warns (unless ``warnings="ignore"``) and returns it. To open an
+existing store later, use ``fs.Store("weather")``.
+
+You can rename a store with ``fs.rename_store("weather", to="obs")`` and delete an
+empty store with ``fs.drop_store("obs")``. A store that still contains tables cannot
+be dropped.
+
+Reading and writing
 -------------------
 
-A database contains one or more stores. A store groups tables and is the main
-unit of organization.
+FeatherStore stores Pandas DataFrames and Series, Polars DataFrames and Series, and
+PyArrow Tables as partitioned Feather files.
 
-.. code-block:: python
-
-    fs.create_store('store_1')
-    fs.create_store('store_2')
-    fs.list_stores()
-
-    >> ['store_1', 'store_2']
-
-.. code-block:: python
-
-    fs.drop_store('store_2')
-    fs.rename_store('store_1', to='example_store')
-    # Connect to the store
-    store = fs.Store('example_store')
-
-Reading and writing tables
---------------------------
-
-FeatherStore can read and write Pandas DataFrames and Series, Polars DataFrames
-and Series, and PyArrow Tables.
-
-First, let's create a DataFrame to store.
+The examples below use a few days of weather observations. January 3 is missing on
+purpose; we will insert it later.
 
 .. code-block:: python
 
     import pandas as pd
-    from numpy.random import randn
 
-    dates = pd.date_range("2021-01-01", periods=5)
-    df = pd.DataFrame(randn(5, 4), index=dates, columns=list("ABCD"))
-    df
+    df = pd.DataFrame(
+        {
+            "temperature": [2.1, 1.4, 0.8, 3.2],
+            "humidity": [88, 91, 79, 74],
+            "rainfall": [4.2, 0.0, 0.0, 0.3],
+        },
+        index=pd.DatetimeIndex(
+            ["2024-01-01", "2024-01-02", "2024-01-04", "2024-01-05"],
+            name="date",
+        ),
+    )
+    print(df)
 
-    >>                 A         B         C         D
-    2021-01-01  0.402138 -0.016436 -0.565256  0.520086
-    2021-01-02 -1.071026 -0.326358 -0.692681  1.188319
-    2021-01-03  0.777777 -0.665146  1.017527 -0.064830
-    2021-01-04 -0.835711 -0.575801 -0.650543 -0.411509
-    2021-01-05 -0.649335 -0.830602  1.191749  0.396745
+.. code-block:: text
 
-FeatherStore stores tables as partitioned Feather files. Set the size of each
-partition with the ``partition_size`` parameter when writing a table.
+                temperature  humidity  rainfall
+    date
+    2024-01-01          2.1        88       4.2
+    2024-01-02          1.4        91       0.0
+    2024-01-04          0.8        79       0.0
+    2024-01-05          3.2        74       0.3
 
-.. code-block:: python
+If the DataFrame has an index, FeatherStore uses it. The index must be unique and
+of a supported type (integer, unsigned integer, float, decimal, string, binary,
+duration, or temporal). FeatherStore sorts rows by the index before writing.
 
-    PARTITION_SIZE = 128  # bytes
-    store.write_table('example_table', df, partition_size=PARTITION_SIZE)
-    store.list_tables()
-
-    >> ['example_table']
-
-Partitioned Feather files let you run many operations without loading the full
-dataset.
-
-.. code-block:: python
-
-    # Create a new DataFrame
-    new_dates = pd.date_range("2021-01-06", periods=1)
-    df1 = pd.DataFrame(randn(1, 4), index=new_dates, columns=list("ABCD"))
-    # Appending to a FeatherStore table only loads the last partition
-    store.append_table('example_table', df1)
-
-FeatherStore uses sorted indices to decide which partitions to open for a given
-operation.
-
-You can read the stored data as a Pandas DataFrame, a Polars DataFrame, or a
-PyArrow Table.
+``partition_size`` is the size of each partition in bytes. The default is 128 MB,
+which suits large tables. The examples use a tiny value so a few rows still split
+across partitions. Pass ``-1`` to disable partitioning.
 
 .. code-block:: python
 
-    store.read_pandas('example_table')
-    # store.read_arrow('example_table') for Arrow Tables
-    # store.read_polars('example_table') for Polars DataFrames
+    store.write_table("bergen", df, partition_size=128)
+    print(store.list_tables())
 
-    >>                 A         B         C         D
-    2021-01-01  0.402138 -0.016436 -0.565256  0.520086
-    2021-01-02 -1.071026 -0.326358 -0.692681  1.188319
-    2021-01-03  0.777777 -0.665146  1.017527 -0.064830
-    2021-01-04 -0.835711 -0.575801 -0.650543 -0.411509
-    2021-01-05 -0.649335 -0.830602  1.191749  0.396745
-    2021-01-06 -0.408125 -0.420920  0.632606  0.606950
+.. code-block:: text
 
-You can also query parts of the data. FeatherStore uses predicate filtering to
-load only the partitions and columns specified by the query.
+    ['bergen']
 
-Sorted indices also allow range queries on rows with
-``{'before': end}``, ``{'after': start}``, and ``{'between': [start, end]}``.
+Read the table back as a Pandas DataFrame, a Polars DataFrame, or a PyArrow Table:
 
 .. code-block:: python
 
-    store.read_pandas('example_table', rows={'after': '2021-01-05'}, cols=['D', 'A'])
+    print(store.read_pandas("bergen"))
 
-    # All range queries are inclusive
-    >>                 D         A
-    2021-01-05  0.396745 -0.649335
-    2021-01-06  0.606950  0.408125
+.. code-block:: text
 
-Inserting, updating, and deleting data
---------------------------------------
-
-First, create a new table to work with:
-
-.. code-block:: python
-
-    index = [1, 3, 5, 6]
-    df = pd.DataFrame(randn(4, 2), index=index, columns=list("AB"))
-    df
-
-    >>        A         B
-    1 -0.041727  0.957139
-    3 -0.272294 -1.758717
-    5 -0.353684  1.550073
-    6  1.275938  1.054702
-
-Use ``Store.select_table()`` to select a ``Table`` object, which includes more
-methods for working with tables.
+                temperature  humidity  rainfall
+    date
+    2024-01-01          2.1        88       4.2
+    2024-01-02          1.4        91       0.0
+    2024-01-04          0.8        79       0.0
+    2024-01-05          3.2        74       0.3
 
 .. code-block:: python
 
-    table = store.select_table('example_table2')
-    table.exists()  # False
-    table.write(df)
-    table.exists()
+    print(store.read_polars("bergen"))
 
-    >> True
+.. code-block:: text
 
-One of those methods is ``Table.insert()``, which inserts rows or columns
-depending on the column names of the input data. If the input column names
-match the stored table, rows are inserted; otherwise columns are inserted.
+    shape: (4, 4)
+    ┌─────────────────────┬─────────────┬──────────┬──────────┐
+    │ date                ┆ temperature ┆ humidity ┆ rainfall │
+    │ ---                 ┆ ---         ┆ ---      ┆ ---      │
+    │ datetime[μs]        ┆ f64         ┆ i64      ┆ f64      │
+    ╞═════════════════════╪═════════════╪══════════╪══════════╡
+    │ 2024-01-01 00:00:00 ┆ 2.1         ┆ 88       ┆ 4.2      │
+    │ 2024-01-02 00:00:00 ┆ 1.4         ┆ 91       ┆ 0.0      │
+    │ 2024-01-04 00:00:00 ┆ 0.8         ┆ 79       ┆ 0.0      │
+    │ 2024-01-05 00:00:00 ┆ 3.2         ┆ 74       ┆ 0.3      │
+    └─────────────────────┴─────────────┴──────────┴──────────┘
 
-``Table.update()``, ``Table.insert_rows()``, ``Table.insert_columns()``, and
-``Table.insert()`` accept Pandas DataFrames and Series, Polars DataFrames, and
-PyArrow Tables as input. Polars Series is not supported for these edit APIs.
+``store.read_arrow("bergen")`` returns the same data as a PyArrow Table. Pandas keeps a
+named index as the DataFrame index; Polars and PyArrow return it as a column. A
+default integer index is omitted from Arrow and Polars results.
 
-You can also call ``Table.insert_rows()`` or ``Table.insert_columns()`` directly
-when you want to be explicit about the operation.
-
-Pass ``warnings='ignore'`` to suppress sorting warnings when inserting rows or
-columns with an unsorted index (the default is ``warnings='warn'``).
+Polars and PyArrow have no index, so pass the column that should become the stored
+index:
 
 .. code-block:: python
 
-    df2 = pd.DataFrame(randn(2, 2), index=[4, 2], columns=list("AB"))
-    table.insert(df2)  # matching column names -> inserts rows
-    table.read_pandas()
+    import datetime as dt
+    import polars as pl
 
-    # The data is inserted at its sorted index position
-    >>        A         B
-    1 -0.041727  0.957139
-    2  2.163615 -0.708871
-    3 -0.272294 -1.758717
-    4 -1.263981 -0.961670
-    5 -0.353684  1.550073
-    6  1.275938  1.054702
+    trondheim = pl.DataFrame(
+        {
+            "date": [dt.datetime(2024, 1, 1), dt.datetime(2024, 1, 2)],
+            "temperature": [1.8, 0.6],
+            "humidity": [92, 87],
+            "rainfall": [6.4, 0.2],
+        }
+    )
+    store.write_table("trondheim", trondheim, index="date")
 
-To add columns, pass data whose column names are not already in the table.
-Use ``idx`` to control where the new columns are placed. A single integer
-inserts a block of columns at that position; a sequence places each column
-individually.
+Querying rows and columns
+-------------------------
+
+Partitioned Feather files let FeatherStore load only the partitions and columns a
+query needs. Range filters on the sorted index are
+``{"before": end}``, ``{"after": start}``, and ``{"between": [start, end]}``.
+All three are inclusive.
+
+.. code-block:: python
+
+    print(store.read_pandas("bergen", rows={"after": "2024-01-02"}, cols=["rainfall", "temperature"]))
+
+.. code-block:: text
+
+                rainfall  temperature
+    date
+    2024-01-02       0.0          1.4
+    2024-01-04       0.0          0.8
+    2024-01-05       0.3          3.2
+
+You can also pass explicit row labels, or filter column names with SQL-style
+wildcards (``%`` for any number of characters, ``?`` for a single character):
+
+.. code-block:: python
+
+    store.read_pandas("bergen", rows={"between": ["2024-01-02", "2024-01-04"]})
+    store.read_pandas("bergen", cols={"like": "temp%"})
+
+Appending data
+--------------
+
+``append_table`` adds rows whose index values fall after the stored data. Only the
+last partition is loaded.
+
+.. code-block:: python
+
+    new_day = pd.DataFrame(
+        {"temperature": [1.9], "humidity": [83], "rainfall": [2.6]},
+        index=pd.DatetimeIndex(["2024-01-06"], name="date"),
+    )
+    store.append_table("bergen", new_day)
+    print(store.read_pandas("bergen"))
+
+.. code-block:: text
+
+                temperature  humidity  rainfall
+    date
+    2024-01-01          2.1        88       4.2
+    2024-01-02          1.4        91       0.0
+    2024-01-04          0.8        79       0.0
+    2024-01-05          3.2        74       0.3
+    2024-01-06          1.9        83       2.6
+
+Editing tables
+--------------
+
+:class:`~featherstore.store.Store` covers write, read, and append.
+:meth:`~featherstore.store.Store.select_table` returns a
+:class:`~featherstore.table.Table` with additional methods for inserting, updating,
+and dropping data.
+
+.. code-block:: python
+
+    table = store.select_table("bergen")
+    print(table.exists())
+
+.. code-block:: text
+
+    True
+
+``Table.update()``, ``Table.insert()``, ``Table.insert_rows()``, and
+``Table.insert_columns()`` accept Pandas DataFrames and Series, Polars DataFrames,
+and PyArrow Tables. Polars Series is not supported for these edit methods.
+
+Inserting rows
+^^^^^^^^^^^^^^
+
+``Table.insert()`` looks at column names. If they match the stored table, rows are
+inserted at their sorted index positions; otherwise columns are inserted.
+
+.. code-block:: python
+
+    delayed = pd.DataFrame(
+        {"temperature": [-0.3], "humidity": [85], "rainfall": [1.1]},
+        index=pd.DatetimeIndex(["2024-01-03"], name="date"),
+    )
+    table.insert(delayed)  # matching column names -> inserts rows
+    print(table.read_pandas())
+
+.. code-block:: text
+
+                temperature  humidity  rainfall
+    date
+    2024-01-01          2.1        88       4.2
+    2024-01-02          1.4        91       0.0
+    2024-01-03         -0.3        85       1.1
+    2024-01-04          0.8        79       0.0
+    2024-01-05          3.2        74       0.3
+    2024-01-06          1.9        83       2.6
+
+Call ``Table.insert_rows()`` or ``Table.insert_columns()`` when you want the
+operation to be explicit. Pass ``warnings="ignore"`` to suppress sorting warnings
+when the input index is unsorted (the default is ``warnings="warn"``).
+
+Inserting columns
+^^^^^^^^^^^^^^^^^
+
+To add columns, pass data whose column names are not already in the table. ``idx``
+controls where they are placed: a single integer inserts a block of columns at that
+position, and a sequence places each new column individually. The default is to
+append columns at the end (``idx=-1``).
 
 .. code-block:: python
 
     index = table.read_pandas().index
-    new_cols = pd.DataFrame(randn(6, 2), index=index, columns=['C', 'D'])
-    table.insert(new_cols, idx=[1, 3])
+    wind = pd.DataFrame(
+        {"wind_speed": [4.5, 6.1, 3.2, 5.8, 2.0, 7.4]},
+        index=index,
+    )
+    table.insert(wind, idx=2)
+    print(table.read_pandas())
 
-    # Append a single column to the end
-    table.insert_columns(pd.DataFrame({'E': randn(6)}, index=index), idx=-1)
+.. code-block:: text
 
-Other methods include ``Table.update()`` and ``Table.drop()``, which update and
-delete data.
+                temperature  humidity  wind_speed  rainfall
+    date
+    2024-01-01          2.1        88         4.5       4.2
+    2024-01-02          1.4        91         6.1       0.0
+    2024-01-03         -0.3        85         3.2       1.1
+    2024-01-04          0.8        79         5.8       0.0
+    2024-01-05          3.2        74         2.0       0.3
+    2024-01-06          1.9        83         7.4       2.6
+
+Updating data
+^^^^^^^^^^^^^
+
+``Table.update()`` overwrites stored values for the given index labels and columns.
+Index values themselves cannot be updated this way; drop the old rows and insert
+new ones instead.
 
 .. code-block:: python
 
-    df3 = pd.DataFrame([[0, 1], [2, 3]], index=[1, 2], columns=list("AB"))
-    #    A  B
-    # 1  0  1
-    # 2  2  3
-    table.update(df3)
-    table.drop(rows={'after': 5})
-    # You can also drop columns with table.drop(cols=['col1', 'col2'])
+    correction = pd.DataFrame(
+        {"temperature": [2.4], "rainfall": [3.8]},
+        index=pd.DatetimeIndex(["2024-01-01"], name="date"),
+    )
+    table.update(correction)
+    print(table.read_pandas())
 
-    >>        A         B
-    1  0.000000  1.000000
-    2  2.000000  3.000000
-    3 -0.272294 -1.758717
-    4 -1.263981 -0.961670
+.. code-block:: text
+
+                temperature  humidity  wind_speed  rainfall
+    date
+    2024-01-01          2.4        88         4.5       3.8
+    2024-01-02          1.4        91         6.1       0.0
+    2024-01-03         -0.3        85         3.2       1.1
+    2024-01-04          0.8        79         5.8       0.0
+    2024-01-05          3.2        74         2.0       0.3
+    2024-01-06          1.9        83         7.4       2.6
+
+Dropping rows and columns
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``Table.drop()`` removes rows and/or columns. Row filters use the same predicates
+as reads.
+
+.. code-block:: python
+
+    table.drop(rows=["2024-01-06"])
+    print(table.read_pandas())
+
+.. code-block:: text
+
+                temperature  humidity  wind_speed  rainfall
+    date
+    2024-01-01          2.4        88         4.5       3.8
+    2024-01-02          1.4        91         6.1       0.0
+    2024-01-03         -0.3        85         3.2       1.1
+    2024-01-04          0.8        79         5.8       0.0
+    2024-01-05          3.2        74         2.0       0.3
+
+Drop columns with ``table.drop(cols=["humidity"])``. You can also call
+``Table.drop_rows()`` and ``Table.drop_columns()`` directly.
+
+Table metadata
+--------------
+
+Several methods inspect a table without loading the full dataset:
+
+.. code-block:: python
+
+    print(table.columns)
+    print(table.shape)
+    print(table.index)
+
+.. code-block:: text
+
+    ['date', 'temperature', 'humidity', 'wind_speed', 'rainfall']
+    (5, 5)
+    DatetimeIndex(['2024-01-01', '2024-01-02', '2024-01-03', '2024-01-04',
+                   '2024-01-05'],
+                  dtype='datetime64[us]', name='date', freq=None)
+
+``shape`` is ``(rows, columns)`` and includes the index column. Other useful
+methods include ``table.partition_size``, ``table.rename_columns()``,
+``table.reorder_columns()``, ``table.astype()``, and ``table.repartition()``.
+
+Snapshots
+---------
+
+Create a compressed backup of a table or a whole store, then restore it later.
+The table or store is restored under the name stored in the snapshot.
+``.tar.xz`` is appended to the path unless it already has that suffix.
+
+.. code-block:: python
+
+    from featherstore import snapshot
+
+    table.create_snapshot("path/to/bergen_backup")
+    # store.create_snapshot("path/to/weather_backup")
+
+    snapshot.restore_table("weather", "path/to/bergen_backup")
+    # snapshot.restore_store("path/to/weather_backup")
+
+See the :doc:`API/Snapshot` page for details.
+
+Next steps
+----------
+
+* :doc:`API Reference` — every class, function, and method
+* :doc:`Benchmarks` — read and write performance compared with other formats
+* :doc:`Overview` — requirements, source code, and contributing

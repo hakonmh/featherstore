@@ -23,19 +23,25 @@ DEFAULT_PARTITION_SIZE = 128 * 1024**2
 
 
 class Table:
+    """Saves and loads DataFrames as partitioned Feather files.
+
+    Tables support several operations that can be done without loading the
+    full dataset:
+
+    - Partial reading of data
+    - Append data
+    - Insert rows and columns
+    - Update data
+    - Drop data
+    - Read metadata (column names, index, table shape, etc)
+    - Changing column types
+
+    The table does not need to exist when this object is created. Call
+    :meth:`write` to create it. The store must already exist.
+    """
+
     def __init__(self, table_name, store_name):
-        """A class for saving and loading DataFrames as partitioned Feather files.
-
-        Tables support several operations that can be done without loading the
-        full dataset:
-
-        - Partial reading of data
-        - Append data
-        - Insert rows and columns
-        - Update data
-        - Drop data
-        - Read metadata (column names, index, table shape, etc)
-        - Changing column types
+        """Selects a table in a store.
 
         Parameters
         ----------
@@ -46,14 +52,14 @@ class Table:
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        StoreNotFoundError
+        :exc:`~featherstore.exceptions.StoreNotFoundError`
             If the store does not exist.
-        ForbiddenTableNameError
+        :exc:`~featherstore.exceptions.ForbiddenTableNameError`
             If ``table_name`` is reserved or not a valid path name.
-        TypeError
-            If ``table_name`` is not a str.
+        :exc:`TypeError`
+            If ``table_name`` or ``store_name`` is not a str.
         """
         misc.can_init_table(table_name, store_name)
 
@@ -62,20 +68,26 @@ class Table:
         self._partition_data = Metadata(self._table_path, "partition")
 
     def read_arrow(self, *, cols=None, rows=None, mmap=None):
-        """Reads the data as a PyArrow Table
+        """Reads the data as a PyArrow Table.
+
+        A named index is returned as a column. A default integer index is
+        omitted from the result.
 
         Parameters
         ----------
         cols : Collection, optional
-            List of column names or filter predicates in the form of
-            `{'like': pattern}`. If not provided, all columns are read.
+            List of column names or a filter predicate ``{'like': pattern}``.
+            ``pattern`` uses SQL wildcards (``?`` matches one character, ``%``
+            matches any number of characters) and is case-insensitive. If not
+            provided, all columns are read.
         rows : Collection, optional
-            List of index values or filter-predicates in the form of
-            `{keyword: value}`, where keyword can be either `before`, `after`,
-            or `between`. If not provided, all rows are read.
-        mmap: bool, optional
-            Use memory mapping when opening table on disk, by default `False` on
-            Windows and `True` on other systems.
+            List of index values or a filter predicate ``{keyword: value}``,
+            where keyword can be ``before``, ``after``, or ``between``. Range
+            bounds are inclusive. For ``between``, ``value`` is a two-element
+            sequence ``[start, end]``. If not provided, all rows are read.
+        mmap : bool, optional
+            Use memory mapping when opening the table on disk. Default is
+            ``False`` on Windows and ``True`` on other systems.
 
         Returns
         -------
@@ -83,19 +95,19 @@ class Table:
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        TableNotFoundError
+        :exc:`~featherstore.exceptions.TableNotFoundError`
             If the table does not exist.
-        ColumnNotFoundError
+        :exc:`~featherstore.exceptions.ColumnNotFoundError`
             If any requested column is not in the table.
-        RowNotFoundError
+        :exc:`~featherstore.exceptions.RowNotFoundError`
             If any requested row is not in the table.
-        IndexTypeMismatchError
+        :exc:`~featherstore.exceptions.IndexTypeMismatchError`
             If row values do not match the table index dtype.
-        TypeError
+        :exc:`TypeError`
             If ``cols`` or ``rows`` has an invalid type.
-        ValueError
+        :exc:`ValueError`
             If ``mmap`` is not a bool or ``None``.
         """
         read.can_read_table(self, cols, rows, mmap)
@@ -119,56 +131,54 @@ class Table:
         return df
 
     def read_pandas(self, *, cols=None, rows=None, mmap=None):
-        """Reads the data as a Pandas DataFrame or Series
+        """Reads the data as a pandas DataFrame or Series.
+
+        The stored index is restored as a pandas ``Index``. A Series is
+        returned when the result has a single data column.
 
         Parameters
         ----------
         cols : Collection, optional
-            List of column names or filter predicates in the form of
-            `{'like': pattern}`. If not provided, all columns are read.
+            See :meth:`read_arrow`.
         rows : Collection, optional
-            List of index values or filter-predicates in the form of
-            `{keyword: value}`, where keyword can be either `before`, `after`,
-            or `between`. If not provided, all rows are read.
-        mmap: bool, optional
-            Use memory mapping when opening table on disk, by default `False` on
-            Windows and `True` on other systems.
+            See :meth:`read_arrow`.
+        mmap : bool, optional
+            See :meth:`read_arrow`.
 
         Returns
         -------
         pandas.DataFrame or pandas.Series
 
-        Raises
-        ------
-        Same exceptions as :meth:`read_arrow`.
+        See Also
+        --------
+        read_arrow : Parameters and exceptions.
         """
         df = self.read_arrow(cols=cols, rows=rows, mmap=mmap)
         df = read.convert_table_to_pandas(df)
         return df
 
     def read_polars(self, *, cols=None, rows=None, mmap=None):
-        """Reads the data as a Polars DataFrame or Series
+        """Reads the data as a polars DataFrame or Series.
+
+        A named index is returned as a column. A default integer index is
+        omitted. A Series is returned when the result has a single data column.
 
         Parameters
         ----------
         cols : Collection, optional
-            List of column names or filter predicates in the form of
-            `{'like': pattern}`. If not provided, all columns are read.
+            See :meth:`read_arrow`.
         rows : Collection, optional
-            List of index values or filter-predicates in the form of
-            `{keyword: value}`, where keyword can be either `before`, `after`,
-            or `between`. If not provided, all rows are read.
-        mmap: bool, optional
-            Use memory mapping when opening table on disk, by default `False` on
-            Windows and `True` on other systems.
+            See :meth:`read_arrow`.
+        mmap : bool, optional
+            See :meth:`read_arrow`.
 
         Returns
         -------
         polars.DataFrame or polars.Series
 
-        Raises
-        ------
-        Same exceptions as :meth:`read_arrow`.
+        See Also
+        --------
+        read_arrow : Parameters and exceptions.
         """
         df = self.read_arrow(cols=cols, rows=rows, mmap=mmap)
         df = read.convert_table_to_polars(df)
@@ -193,43 +203,44 @@ class Table:
 
         Parameters
         ----------
-        df : pandas DataFrame or Series, polars DataFrame or Series, or pyarrow Table
-            The DataFrame to be stored
+        df : pandas.DataFrame or pandas.Series, polars.DataFrame or polars.Series, or pyarrow.Table
+            The DataFrame to be stored.
         index : str, optional
-            The name of the column to be used as index. Uses current index for
-            Pandas or a standard integer index for Arrow and Polars if `index` not
-            provided, by default `None`
+            The name of the column to be used as index. Uses the current index
+            for pandas, or a standard integer index for Arrow and Polars, if
+            ``index`` is not provided. Default is ``None``.
         partition_size : int, optional
-            The size of each partition in bytes. A `partition_size` value of `-1`
-            disables partitioning, by default 128 MB
+            The size of each partition in bytes. ``-1`` disables partitioning.
+            Default is 128 MB.
         errors : str, optional
-            Whether to raise an error if the table already exists. Can be either
-            `raise` or `ignore`; `ignore` overwrites the existing table.
-            Default is `raise`.
+            Whether to raise an error if the table already exists. Can be
+            ``'raise'`` or ``'ignore'``; ``'ignore'`` overwrites the existing
+            table. Default is ``'raise'``.
         warnings : str, optional
-            Whether or not to warn if an unsorted index is about to get sorted.
-            Can be either `warn` or `ignore`, by default `warn`
+            Whether to warn if an unsorted index is about to get sorted. Can be
+            ``'warn'`` or ``'ignore'``. Default is ``'warn'``.
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        TableAlreadyExistsError
+        :exc:`~featherstore.exceptions.TableAlreadyExistsError`
             If ``errors='raise'`` and the table already exists.
-        DuplicateColumnNamesError
+        :exc:`~featherstore.exceptions.DuplicateColumnNamesError`
             If column names are not unique.
-        DuplicateIndexValuesError
+        :exc:`~featherstore.exceptions.DuplicateIndexValuesError`
             If index values are not unique.
-        IndexNotInColumnsError
+        :exc:`~featherstore.exceptions.IndexNotInColumnsError`
             If ``index`` is not among the table columns.
-        UnsupportedIndexTypeError
+        :exc:`~featherstore.exceptions.UnsupportedIndexTypeError`
             If the index type is not supported.
-        MultiTypeColumnError
+        :exc:`~featherstore.exceptions.MultiTypeColumnError`
             If a column contains multiple dtypes.
-        TypeError
+        :exc:`TypeError`
             If arguments have invalid types.
-        ValueError
-            If ``errors`` or ``warnings`` is invalid.
+        :exc:`ValueError`
+            If ``errors`` is not ``'raise'`` or ``'ignore'``, or ``warnings``
+            is not ``'warn'`` or ``'ignore'``.
         """
         write.can_write_table(self, df, index, partition_size, errors, warnings)
 
@@ -246,42 +257,42 @@ class Table:
         write.write_partitions(partitions, self._table_path)
 
     def append(self, df, *, warnings="warn"):
-        """Appends data to the current table
+        """Appends data to the current table.
 
         Parameters
         ----------
-        df : pandas DataFrame or Series, polars DataFrame or Series, or pyarrow Table
-            The data to be appended
+        df : pandas.DataFrame or pandas.Series, polars.DataFrame or polars.Series, or pyarrow.Table
+            The data to be appended.
         warnings : str, optional
-            Whether or not to warn if an unsorted index is about to get sorted.
-            Can be either `warn` or `ignore`, by default `warn`
+            Whether to warn if an unsorted index is about to get sorted. Can be
+            ``'warn'`` or ``'ignore'``. Default is ``'warn'``.
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        TableNotFoundError
+        :exc:`~featherstore.exceptions.TableNotFoundError`
             If the table does not exist.
-        AppendIndexError
+        :exc:`~featherstore.exceptions.AppendIndexError`
             If append index is not strictly after stored data.
-        ColumnDtypeMismatchError
+        :exc:`~featherstore.exceptions.ColumnDtypeMismatchError`
             If column dtypes are incompatible.
-        ColumnMismatchError
+        :exc:`~featherstore.exceptions.ColumnMismatchError`
             If column names do not match the stored table.
-        DuplicateColumnNamesError
+        :exc:`~featherstore.exceptions.DuplicateColumnNamesError`
             If column names are not unique.
-        DuplicateIndexValuesError
+        :exc:`~featherstore.exceptions.DuplicateIndexValuesError`
             If index values are not unique.
-        IndexNameMismatchError
+        :exc:`~featherstore.exceptions.IndexNameMismatchError`
             If the index name does not match the stored table.
-        IndexTypeMismatchError
+        :exc:`~featherstore.exceptions.IndexTypeMismatchError`
             If the index type does not match the stored table.
-        MissingIndexError
+        :exc:`~featherstore.exceptions.MissingIndexError`
             If an index is required but not provided.
-        TypeError
+        :exc:`TypeError`
             If ``df`` has an invalid type.
-        ValueError
-            If ``warnings`` is invalid.
+        :exc:`ValueError`
+            If ``warnings`` is not ``'warn'`` or ``'ignore'``.
         """
         append.can_append_table(self, df, warnings)
 
@@ -313,37 +324,37 @@ class Table:
     def update(self, df):
         """Updates data in the current table.
 
-        *Note*: You can't use this method to update index values. Updating index
+        *Note*: You cannot use this method to update index values. Updating index
         values can be accomplished by deleting the old records and inserting new
         ones with the updated index values.
 
         Parameters
         ----------
-        df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
-            The updated data. The index of `df` is the rows to be updated, while
-            the columns of `df` are the new values.
+        df : pandas.DataFrame or pandas.Series, polars.DataFrame, or pyarrow.Table
+            The updated data. The index of ``df`` is the rows to be updated, while
+            the columns of ``df`` are the new values.
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        TableNotFoundError
+        :exc:`~featherstore.exceptions.TableNotFoundError`
             If the table does not exist.
-        ColumnDtypeMismatchError
+        :exc:`~featherstore.exceptions.ColumnDtypeMismatchError`
             If column dtypes are incompatible.
-        ColumnNotFoundError
+        :exc:`~featherstore.exceptions.ColumnNotFoundError`
             If any column is not in the stored table.
-        DuplicateColumnNamesError
+        :exc:`~featherstore.exceptions.DuplicateColumnNamesError`
             If column names are not unique.
-        DuplicateIndexValuesError
+        :exc:`~featherstore.exceptions.DuplicateIndexValuesError`
             If index values are not unique.
-        IndexNameMismatchError
+        :exc:`~featherstore.exceptions.IndexNameMismatchError`
             If the index name does not match the stored table.
-        IndexTypeMismatchError
+        :exc:`~featherstore.exceptions.IndexTypeMismatchError`
             If the index type does not match the stored table.
-        RowNotFoundError
+        :exc:`~featherstore.exceptions.RowNotFoundError`
             If any row is not in the stored table.
-        TypeError
+        :exc:`TypeError`
             If ``df`` is not a supported table type.
         """
         update.can_update_table(self, df)
@@ -364,7 +375,7 @@ class Table:
         write.write_partitions(partitions, self._table_path)
 
     def insert(self, df, *, idx=-1, warnings="warn"):
-        """Insert one or more rows or columns into the current table.
+        """Inserts one or more rows or columns into the current table.
 
         If ``df`` column names match the stored table, rows are inserted.
         Otherwise, columns are inserted at position ``idx``.
@@ -374,19 +385,21 @@ class Table:
 
         Parameters
         ----------
-        df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
+        df : pandas.DataFrame or pandas.Series, polars.DataFrame, or pyarrow.Table
             The data to be inserted.
         idx : int or Sequence[int], optional
-            The position(s) to insert new column(s). Only valid when inserting
-            columns. If a sequence is provided, it must have one position per new
-            column. Default is to add columns to the end.
+            The position(s) to insert new column(s), 0-based among data
+            columns (the index is not counted). ``0`` inserts as the first
+            data column. Only valid when inserting columns. If a sequence is
+            provided, it must have one position per new column. Default is to
+            add columns to the end.
         warnings : str, optional
-            Whether or not to warn if an unsorted index is about to get sorted.
-            Can be either `warn` or `ignore`, by default `warn`
+            Whether to warn if an unsorted index is about to get sorted. Can be
+            ``'warn'`` or ``'ignore'``. Default is ``'warn'``.
 
         Raises
         ------
-        TypeError
+        :exc:`TypeError`
             If ``idx`` is passed when inserting rows.
         """
         insert.can_insert(df, self._table_data, idx)
@@ -396,41 +409,41 @@ class Table:
             self.insert_columns(df, idx=idx, warnings=warnings)
 
     def insert_rows(self, df, *, warnings="warn"):
-        """Insert one or more rows into the current table.
+        """Inserts one or more rows into the current table.
 
         Parameters
         ----------
-        df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
-            The data to be inserted. `df` must have the same index and column
+        df : pandas.DataFrame or pandas.Series, polars.DataFrame, or pyarrow.Table
+            The data to be inserted. ``df`` must have the same index and column
             types as the stored data.
         warnings : str, optional
-            Whether or not to warn if an unsorted index is about to get sorted.
-            Can be either `warn` or `ignore`, by default `warn`
+            Whether to warn if an unsorted index is about to get sorted. Can be
+            ``'warn'`` or ``'ignore'``. Default is ``'warn'``.
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        TableNotFoundError
+        :exc:`~featherstore.exceptions.TableNotFoundError`
             If the table does not exist.
-        ColumnDtypeMismatchError
+        :exc:`~featherstore.exceptions.ColumnDtypeMismatchError`
             If column dtypes are incompatible.
-        ColumnMismatchError
+        :exc:`~featherstore.exceptions.ColumnMismatchError`
             If column names do not match the stored table.
-        DuplicateColumnNamesError
+        :exc:`~featherstore.exceptions.DuplicateColumnNamesError`
             If column names are not unique.
-        DuplicateIndexValuesError
+        :exc:`~featherstore.exceptions.DuplicateIndexValuesError`
             If index values are not unique.
-        IndexNameMismatchError
+        :exc:`~featherstore.exceptions.IndexNameMismatchError`
             If the index name does not match the stored table.
-        IndexTypeMismatchError
+        :exc:`~featherstore.exceptions.IndexTypeMismatchError`
             If the index type does not match the stored table.
-        RowAlreadyExistsError
+        :exc:`~featherstore.exceptions.RowAlreadyExistsError`
             If any row already exists in the stored table.
-        TypeError
+        :exc:`TypeError`
             If ``df`` is not a supported table type.
-        ValueError
-            If ``warnings`` is invalid.
+        :exc:`ValueError`
+            If ``warnings`` is not ``'warn'`` or ``'ignore'``.
         """
         insert_rows.can_insert_rows(self, df, warnings)
 
@@ -459,43 +472,45 @@ class Table:
         write.write_partitions(partitions, self._table_path)
 
     def insert_columns(self, df, *, idx=-1, warnings="warn"):
-        """Insert one or more columns into the current table.
+        """Inserts one or more columns into the current table.
 
         Parameters
         ----------
-        df : pandas DataFrame or Series, polars DataFrame, or pyarrow Table
-            The data to be inserted. `df` must have the same index as the stored data.
+        df : pandas.DataFrame or pandas.Series, polars.DataFrame, or pyarrow.Table
+            The data to be inserted. ``df`` must have the same index as the
+            stored data.
         idx : int or Sequence[int], optional
-            The position(s) to insert the new column(s). If a sequence is provided,
-            it must have one position per new column. Default is to add columns to
-            the end.
+            The position(s) to insert the new column(s), 0-based among data
+            columns (the index is not counted). ``0`` inserts as the first
+            data column. If a sequence is provided, it must have one position
+            per new column. Default is to add columns to the end.
         warnings : str, optional
-            Whether or not to warn if an unsorted index is about to get sorted.
-            Can be either `warn` or `ignore`, by default `warn`
+            Whether to warn if an unsorted index is about to get sorted. Can be
+            ``'warn'`` or ``'ignore'``. Default is ``'warn'``.
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        TableNotFoundError
+        :exc:`~featherstore.exceptions.TableNotFoundError`
             If the table does not exist.
-        ColumnAlreadyExistsError
+        :exc:`~featherstore.exceptions.ColumnAlreadyExistsError`
             If a new column name already exists.
-        ColumnLengthMismatchError
+        :exc:`~featherstore.exceptions.ColumnLengthMismatchError`
             If new column length does not match stored row count.
-        DuplicateColumnNamesError
+        :exc:`~featherstore.exceptions.DuplicateColumnNamesError`
             If column names are not unique.
-        IndexMismatchError
+        :exc:`~featherstore.exceptions.IndexMismatchError`
             If indices do not match the stored table.
-        IndexNameInColumnsError
+        :exc:`~featherstore.exceptions.IndexNameInColumnsError`
             If a new column uses the index name.
-        IndexTypeMismatchError
+        :exc:`~featherstore.exceptions.IndexTypeMismatchError`
             If the index type does not match the stored table.
-        TypeError
+        :exc:`TypeError`
             If ``df`` or ``idx`` has an invalid type.
-        ValueError
+        :exc:`ValueError`
             If ``idx`` length does not match the number of new columns, or
-            ``warnings`` is invalid.
+            ``warnings`` is not ``'warn'`` or ``'ignore'``.
         """
         insert_cols.can_insert_columns(self, df, idx, warnings)
 
@@ -527,39 +542,43 @@ class Table:
         write.write_partitions(partitions, self._table_path)
 
     def drop(self, *, cols=None, rows=None):
-        """Drop specified labels from rows or columns.
+        """Drops specified labels from rows or columns.
+
+        Both ``rows`` and ``cols`` may be provided in the same call.
 
         Parameters
         ----------
         cols : Collection, optional
-            List of column names or filter predicates in the form of
-            `{'like': pattern}`, by default `None`
+            List of column names or a filter predicate ``{'like': pattern}``.
+            ``pattern`` uses SQL wildcards (``?`` matches one character, ``%``
+            matches any number of characters) and is case-insensitive.
         rows : Collection, optional
-            List of index values or filter predicates in the form of
-            `{keyword: value}`, where keyword can be either `before`, `after`,
-            or `between`, by default `None`
+            List of index values or a filter predicate ``{keyword: value}``,
+            where keyword can be ``before``, ``after``, or ``between``. Range
+            bounds are inclusive. For ``between``, ``value`` is a two-element
+            sequence ``[start, end]``.
 
         Raises
         ------
-        AttributeError
+        :exc:`AttributeError`
             If neither ``rows`` nor ``cols`` is provided.
-        CannotDropAllColumnsError
+        :exc:`~featherstore.exceptions.CannotDropAllColumnsError`
             If dropping all columns.
-        CannotDropAllRowsError
+        :exc:`~featherstore.exceptions.CannotDropAllRowsError`
             If dropping all rows.
-        ColumnNotFoundError
+        :exc:`~featherstore.exceptions.ColumnNotFoundError`
             If any column to drop is not in the table.
-        IndexNameInColumnsError
+        :exc:`~featherstore.exceptions.IndexNameInColumnsError`
             If attempting to drop the index column.
-        IndexTypeMismatchError
+        :exc:`~featherstore.exceptions.IndexTypeMismatchError`
             If row values do not match the table index dtype.
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        RowNotFoundError
+        :exc:`~featherstore.exceptions.RowNotFoundError`
             If any row to drop is not in the table.
-        TableNotFoundError
+        :exc:`~featherstore.exceptions.TableNotFoundError`
             If the table does not exist.
-        TypeError
+        :exc:`TypeError`
             If ``cols`` or ``rows`` has an invalid type.
         """
         neither_of_rows_and_cols_are_provided = cols is None and rows is None
@@ -571,20 +590,18 @@ class Table:
             self.drop_columns(cols)
 
     def drop_rows(self, rows):
-        """Drops specified rows from table
+        """Drops specified rows from the table.
 
-        Same as `Table.drop(rows=value)`
+        Same as :meth:`drop` with ``rows`` set.
 
         Parameters
         ----------
-        rows : Collection, optional
-            List of index values or filter predicates in the form of
-            `{keyword: value}`, where keyword can be either `before`, `after`,
-            or `between`, by default `None`
+        rows : Collection
+            See :meth:`drop`.
 
-        Raises
-        ------
-        Same exceptions as :meth:`drop` when dropping rows.
+        See Also
+        --------
+        drop : Parameters and exceptions.
         """
         drop.can_drop_rows_from_table(self, rows)
 
@@ -612,19 +629,18 @@ class Table:
         write.write_partitions(partitions, self._table_path)
 
     def drop_columns(self, cols):
-        """Drops specified columns from table
+        """Drops specified columns from the table.
 
-        Same as `Table.drop(cols=value)`
+        Same as :meth:`drop` with ``cols`` set.
 
         Parameters
         ----------
-        cols : Collection, optional
-            List of column names or filter predicates in the form of
-            `{'like': pattern}`, by default `None`
+        cols : Collection
+            See :meth:`drop`.
 
-        Raises
-        ------
-        Same exceptions as :meth:`drop` when dropping columns.
+        See Also
+        --------
+        drop : Parameters and exceptions.
         """
         drop.can_drop_cols_from_table(self, cols)
 
@@ -660,38 +676,38 @@ class Table:
         write.write_partitions(partitions, self._table_path)
 
     def rename_columns(self, cols, *, to=None):
-        """Rename one or more columns.
+        """Renames one or more columns.
 
-        `rename_columns` supports two different call syntaxes:
+        ``rename_columns`` supports two different call syntaxes:
 
-        - `rename_columns({'c1': 'new_c1', 'c2': 'new_c2'})`
-        - `rename_columns(['c1', 'c2'], to=['new_c1', 'new_c2'])`
+        - ``rename_columns({'c1': 'new_c1', 'c2': 'new_c2'})``
+        - ``rename_columns(['c1', 'c2'], to=['new_c1', 'new_c2'])``
 
         Parameters
         ----------
         cols : Collection
             Either a list of columns to be renamed, or a dict mapping columns
-            to be renamed to new column names
+            to be renamed to new column names.
         to : Collection[str], optional
-            New column names, by default `None`
+            New column names. Default is ``None``.
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        TableNotFoundError
+        :exc:`~featherstore.exceptions.TableNotFoundError`
             If the table does not exist.
-        AttributeError
+        :exc:`AttributeError`
             If ``to`` is provided twice or not provided when required.
-        ColumnNotFoundError
+        :exc:`~featherstore.exceptions.ColumnNotFoundError`
             If any column to rename is not in the table.
-        DuplicateColumnNamesError
+        :exc:`~featherstore.exceptions.DuplicateColumnNamesError`
             If renamed columns would not be unique.
-        IndexNameInColumnsError
+        :exc:`~featherstore.exceptions.IndexNameInColumnsError`
             If a column is renamed to the index name.
-        TypeError
+        :exc:`TypeError`
             If ``cols`` or ``to`` has an invalid type.
-        ValueError
+        :exc:`ValueError`
             If the number of columns and new names do not match.
         """
         rename_cols.can_rename_columns(self, cols, to)
@@ -713,105 +729,114 @@ class Table:
 
     @property
     def columns(self):
-        """Fetches the names of the table columns
+        """Names of the table columns.
+
+        The table must exist.
 
         Returns
         -------
         list
-            The table columns
+            Column names, including the index column name.
         """
         return self._table_data["columns"]
 
     @columns.setter
     def columns(self, cols):
-        """Same as `Table.reorder_columns(values)`
+        """Same as :meth:`reorder_columns`.
 
-        *Note*: You cannot use this method to rename columns; use `rename_columns`
-        instead.
+        *Note*: You cannot use this method to rename columns; use
+        :meth:`rename_columns` instead.
 
         Parameters
         ----------
         cols : Sequence[str]
-            The new column ordering. The column names provided must be the
-            same as the column names used in the table.
+            See :meth:`reorder_columns`.
 
-        Raises
-        ------
-        Same exceptions as :meth:`reorder_columns`.
+        See Also
+        --------
+        reorder_columns : Parameters and exceptions.
         """
         misc.can_reorder_columns(self, cols)
         index_name = self._table_data["index_name"]
         self._table_data["columns"] = [index_name, *cols]
 
     def reorder_columns(self, cols):
-        """Reorder the current columns
+        """Reorders the table columns.
 
         Parameters
         ----------
         cols : Sequence[str]
-            The new column ordering. The column names provided must be the
-            same as the column names used in the table.
+            The new column ordering. Must be the table's data column names
+            in the desired order, without the index name.
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        TableNotFoundError
+        :exc:`~featherstore.exceptions.TableNotFoundError`
             If the table does not exist.
-        ColumnMismatchError
+        :exc:`~featherstore.exceptions.ColumnMismatchError`
             If column names do not match the stored table.
-        DuplicateColumnNamesError
+        :exc:`~featherstore.exceptions.DuplicateColumnNamesError`
             If column names are not unique.
-        IndexNameInColumnsError
+        :exc:`~featherstore.exceptions.IndexNameInColumnsError`
             If the index name is included in ``cols``.
-        TypeError
+        :exc:`TypeError`
             If ``cols`` has an invalid type.
         """
         self.columns = cols
 
     @property
     def index(self):
-        """Fetches the table index
+        """The table index.
 
         Returns
         -------
         pandas.Index
+
+        See Also
+        --------
+        read_arrow : Exceptions.
         """
         index = self.read_arrow(cols=[])
         index = index.to_pandas().index
         return index
 
     def astype(self, cols, *, to=None):
-        """Change data type of one or more columns.
+        """Changes the data type of one or more columns.
 
-        `astype` supports two different call syntaxes:
+        ``astype`` supports two different call syntaxes:
 
-        - `astype({'c1': pa.int64(), 'c2': pa.int16()})`
-        - `astype(['c1', 'c2'], to=[pa.int64(), pa.int16()])`
+        - ``astype({'c1': pa.int64(), 'c2': pa.int16()})``
+        - ``astype(['c1', 'c2'], to=[pa.int64(), pa.int16()])``
+
+        The index can be cast by using the index name as a column.
 
         Parameters
         ----------
         cols : Sequence[str] or dict
             Either a sequence of columns to have their data types changed, or a
             dict mapping columns to new column data types.
-        to : Sequence[PyArrow DataType], optional
-            New column data types, by default `None`
+        to : Sequence[pyarrow.DataType or numpy.dtype], optional
+            New column data types. Default is ``None``.
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        TableNotFoundError
+        :exc:`~featherstore.exceptions.TableNotFoundError`
             If the table does not exist.
-        AttributeError
+        :exc:`AttributeError`
             If ``to`` is provided twice or not provided when required.
-        DuplicateColumnNamesError
+        :exc:`~featherstore.exceptions.ColumnNotFoundError`
+            If any column is not in the table.
+        :exc:`~featherstore.exceptions.DuplicateColumnNamesError`
             If column names are not unique.
-        UnsupportedIndexTypeError
+        :exc:`~featherstore.exceptions.UnsupportedIndexTypeError`
             If a forbidden index dtype is requested.
-        TypeError
+        :exc:`TypeError`
             If ``cols`` or ``to`` has an invalid type.
-        ValueError
+        :exc:`ValueError`
             If the number of columns and dtypes do not match.
         """
         astype.can_change_type(self, cols, to)
@@ -845,7 +870,7 @@ class Table:
         write.write_partitions(partitions, self._table_path)
 
     def rename_table(self, *, to):
-        """Renames the current table
+        """Renames the current table.
 
         Parameters
         ----------
@@ -854,13 +879,13 @@ class Table:
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        ForbiddenTableNameError
+        :exc:`~featherstore.exceptions.ForbiddenTableNameError`
             If ``to`` is reserved or not a valid path name.
-        TableAlreadyExistsError
+        :exc:`~featherstore.exceptions.TableAlreadyExistsError`
             If a table with the new name already exists.
-        TypeError
+        :exc:`TypeError`
             If ``to`` is not a str.
         """
         new_table_name = to
@@ -874,17 +899,19 @@ class Table:
         self._partition_data = Metadata(self._table_path, "partition")
 
     def drop_table(self, *, warnings="warn"):
-        """Deletes the current table
+        """Deletes the current table.
 
         Parameters
         ----------
         warnings : str, optional
-            Whether or not to warn if the table doesn't exist. Can be either
-            `warn` or `ignore`, by default `warn`
+            Whether to warn if the table does not exist. Can be ``'warn'`` or
+            ``'ignore'``. Default is ``'warn'``.
 
         Raises
         ------
-        ValueError
+        :exc:`~featherstore.exceptions.NotConnectedError`
+            If FeatherStore is not connected to a database.
+        :exc:`ValueError`
             If ``warnings`` is not ``'warn'`` or ``'ignore'``.
         """
         misc.can_drop_table(self, warnings)
@@ -897,32 +924,41 @@ class Table:
     def create_snapshot(self, path):
         """Creates a compressed backup of the table.
 
-        The table can later be restored by using `snapshot.restore_table()`.
+        The table can later be restored with
+        :func:`~featherstore.snapshot.restore_table`.
 
         Parameters
         ----------
         path : str
-            The path to the snapshot archive.
+            Path to the snapshot archive. ``.tar.xz`` is appended unless
+            ``path`` already ends with that suffix. An existing file at the
+            resulting path is overwritten.
 
         Raises
         ------
-        NotConnectedError
+        :exc:`~featherstore.exceptions.NotConnectedError`
             If FeatherStore is not connected to a database.
-        SnapshotTargetNotFoundError
+        :exc:`~featherstore.exceptions.SnapshotTargetNotFoundError`
             If the table path does not exist.
-        TypeError
+        :exc:`TypeError`
             If ``path`` is not a str.
         """
         _create_snapshot(path, self._table_path, "table")
 
     def repartition(self, new_partition_size):
-        """Repartitions a table so that each partition is `new_partition_size` big.
+        """Repartitions the table so that each partition is ``new_partition_size`` bytes.
+
+        This reads the full table into memory and rewrites it.
 
         Parameters
         ----------
         new_partition_size : int
-            The size of each partition in bytes. A `new_partition_size` value of `-1`
-            disables partitioning
+            The size of each partition in bytes. ``-1`` disables partitioning.
+
+        See Also
+        --------
+        read_arrow : Exceptions when reading.
+        write : Exceptions when rewriting.
         """
         df = self.read_arrow()
         has_default_index = self._table_data["has_default_index"]
@@ -936,11 +972,13 @@ class Table:
 
     @property
     def shape(self):
-        """Fetches the shape of the stored table as `(rows, columns)`.
+        """Shape of the stored table as ``(rows, columns)``.
+
+        The table must exist.
 
         Returns
         -------
-        tuple(int, int)
+        tuple of int
             The shape of the table. The column count includes the index column.
         """
         rows = self._table_data["num_rows"]
@@ -949,7 +987,9 @@ class Table:
 
     @property
     def partition_size(self):
-        """Fetches the table partition size in bytes.
+        """Partition size in bytes.
+
+        The table must exist.
 
         Returns
         -------
@@ -959,10 +999,22 @@ class Table:
         return self._table_data["partition_size"]
 
     def exists(self):
+        """Returns whether the table exists on disk.
+
+        Returns
+        -------
+        bool
+        """
         return os.path.exists(self._table_path)
 
     @property
     def name(self):
+        """The table name.
+
+        Returns
+        -------
+        str
+        """
         table_name = os.path.split(self._table_path)[-1]
         return table_name
 
