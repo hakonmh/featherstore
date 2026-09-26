@@ -4,6 +4,7 @@ includes:
   bench: .tasks/bench.yml
   docs: .tasks/docs.yml
   lint: .tasks/lint.yml
+  pre-publish: .tasks/pre-publish.yml
   test: .tasks/tests.yml
 
 tasks:

@@ -15,6 +15,7 @@ tests/_db
 .env
 
 # Virtual environments
+.tmp/
 .venv/
 venv/
 env/

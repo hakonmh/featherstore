@@ -1,0 +1,18 @@
+version: '3'
+
+tasks:
+  publish:
+    desc: Publish the package to TestPyPI
+    cmds:
+      - uv publish --index testpypi
+  verify:
+    desc: Install the published release from TestPyPI and check the version
+    vars:
+      VERSION:
+        sh: uv run python -c "import featherstore; print(featherstore.__version__, end='')"
+    cmds:
+      - uv venv .tmp/testpypi-verify --clear
+      - uv pip install --python .tmp/testpypi-verify --default-index https://test.pypi.org/simple/ --no-deps FeatherStore=={{.VERSION}}
+      - uv run --no-project --python .tmp/testpypi-verify python -I -c "import importlib.metadata as m; open('.tmp/testpypi-reqs.txt','w',encoding='utf-8').write('\n'.join(r for r in (m.requires('featherstore') or []) if 'extra ==' not in r))"
+      - uv pip install --python .tmp/testpypi-verify -r .tmp/testpypi-reqs.txt
+      - uv run --no-project --python .tmp/testpypi-verify python -I -c "import featherstore; from pathlib import PurePath; assert featherstore.__version__ == '{{.VERSION}}', featherstore.__version__; assert 'site-packages' in PurePath(featherstore.__file__).parts"
