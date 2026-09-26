@@ -4,7 +4,7 @@ Documentation
 Welcome to the FeatherStore documentation.
 
 FeatherStore is a high-performance datastore for Pandas, Polars, and PyArrow
-tables. New users should start with the :doc:`Quickstart`.
+tables. New users should start with :doc:`user_guide/10min`.
 
 Table of Contents
 -----------------
@@ -13,7 +13,7 @@ Table of Contents
    :maxdepth: 2
 
    Overview
-   Quickstart
+   user_guide/index
    API Reference
    Benchmarks
 

@@ -146,8 +146,8 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../Quickstart.html">
-    Getting started
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User Guide
   </a>
 </li>
 
@@ -268,8 +268,8 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../Quickstart.html">
-    Getting started
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User Guide
   </a>
 </li>
 
@@ -422,8 +422,8 @@ does not raise <a class="reference internal" href="Exceptions.html#featherstore.
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>store_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the store to be created.</p></li>
-<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if the store already exists. Can be <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or
+<li><p><strong>store_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the store to be created.</p></li>
+<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if the store already exists. Can be <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or
 <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>; <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code> passes silently if the store already
 exists. Default is <code class="docutils literal notranslate"><span class="pre">'warn'</span></code>.</p></li>
 </ul>
@@ -438,8 +438,8 @@ exists. Default is <code class="docutils literal notranslate"><span class="pre">
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenStoreNameError" title="featherstore.exceptions.ForbiddenStoreNameError"><strong>ForbiddenStoreNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is not a str.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is not <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is not <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -452,8 +452,8 @@ exists. Default is <code class="docutils literal notranslate"><span class="pre">
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>store_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the store to be renamed.</p></li>
-<li><p><strong>to</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The new name of the store.</p></li>
+<li><p><strong>store_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the store to be renamed.</p></li>
+<li><p><strong>to</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The new name of the store.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -462,7 +462,7 @@ exists. Default is <code class="docutils literal notranslate"><span class="pre">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreAlreadyExistsError" title="featherstore.exceptions.StoreAlreadyExistsError"><strong>StoreAlreadyExistsError</strong></a> – If the new store name already exists.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenStoreNameError" title="featherstore.exceptions.ForbiddenStoreNameError"><strong>ForbiddenStoreNameError</strong></a> – If the new store name is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> or <code class="docutils literal notranslate"><span class="pre">to</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> or <code class="docutils literal notranslate"><span class="pre">to</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -477,8 +477,8 @@ be deleted first.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>store_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the store to be deleted.</p></li>
-<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if the store does not exist. Can be <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or
+<li><p><strong>store_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the store to be deleted.</p></li>
+<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if the store does not exist. Can be <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or
 <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">'warn'</span></code>.</p></li>
 </ul>
 </dd>
@@ -487,8 +487,8 @@ be deleted first.</p>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotEmptyError" title="featherstore.exceptions.StoreNotEmptyError"><strong>StoreNotEmptyError</strong></a> – If the store still contains tables.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenStoreNameError" title="featherstore.exceptions.ForbiddenStoreNameError"><strong>ForbiddenStoreNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is not a str.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is not <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is not <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -500,7 +500,7 @@ be deleted first.</p>
 <dd><p>Lists stores in the database.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>like</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Filters store names with SQL wildcards. <code class="docutils literal notranslate"><span class="pre">?</span></code> matches one character
+<dd class="field-odd"><p><strong>like</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Filters store names with SQL wildcards. <code class="docutils literal notranslate"><span class="pre">?</span></code> matches one character
 and <code class="docutils literal notranslate"><span class="pre">%</span></code> matches any number of characters. Matching is
 case-insensitive. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
@@ -508,12 +508,12 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dd class="field-even"><p>A list of the stores in the database.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">like</span></code> is not a str or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">like</span></code> is not a str or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -525,16 +525,16 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dd><p>Returns whether a store exists in the current database.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>store_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the store.</p>
+<dd class="field-odd"><p><strong>store_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the store.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)">bool</a></p>
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenStoreNameError" title="featherstore.exceptions.ForbiddenStoreNameError"><strong>ForbiddenStoreNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -543,7 +543,7 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dl class="py class">
 <dt class="sig sig-object py" id="featherstore.store.Store">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">featherstore.store.</span></span><span class="sig-name descname"><span class="pre">Store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_name</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://www.github.com/hakonmh/featherstore/tree/master/featherstore/store.py#L168-L605"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#featherstore.store.Store" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Provides common table operations within a store.</p>
 <p>Stores are directories for organizing data in logical groups
 within your FeatherStore database.</p>
@@ -553,7 +553,7 @@ within your FeatherStore database.</p>
 <dd><p>The name of the store. Updated when the store is renamed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -561,14 +561,14 @@ within your FeatherStore database.</p>
 <p>Selects an existing store.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>store_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the store to be selected.</p>
+<dd class="field-odd"><p><strong>store_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the store to be selected.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenStoreNameError" title="featherstore.exceptions.ForbiddenStoreNameError"><strong>ForbiddenStoreNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">store_name</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -578,14 +578,14 @@ within your FeatherStore database.</p>
 <dd><p>Renames the current store.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>to</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The new name of the store.</p>
+<dd class="field-odd"><p><strong>to</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The new name of the store.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreAlreadyExistsError" title="featherstore.exceptions.StoreAlreadyExistsError"><strong>StoreAlreadyExistsError</strong></a> – If the new store name already exists.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenStoreNameError" title="featherstore.exceptions.ForbiddenStoreNameError"><strong>ForbiddenStoreNameError</strong></a> – If the new store name is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">to</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">to</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -599,7 +599,7 @@ within your FeatherStore database.</p>
 be deleted first.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if the store does not exist. Can be <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or
+<dd class="field-odd"><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if the store does not exist. Can be <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or
 <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">'warn'</span></code>.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -607,8 +607,8 @@ be deleted first.</p>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotEmptyError" title="featherstore.exceptions.StoreNotEmptyError"><strong>StoreNotEmptyError</strong></a> – If the store still contains tables.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenStoreNameError" title="featherstore.exceptions.ForbiddenStoreNameError"><strong>ForbiddenStoreNameError</strong></a> – If the store name is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If the store name is not a str.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is not <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If the store name is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is not <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -620,7 +620,7 @@ be deleted first.</p>
 <dd><p>Lists tables in the store.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>like</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Filters table names with SQL wildcards. <code class="docutils literal notranslate"><span class="pre">?</span></code> matches one character
+<dd class="field-odd"><p><strong>like</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Filters table names with SQL wildcards. <code class="docutils literal notranslate"><span class="pre">?</span></code> matches one character
 and <code class="docutils literal notranslate"><span class="pre">%</span></code> matches any number of characters. Matching is
 case-insensitive. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
@@ -628,12 +628,12 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dd class="field-even"><p>A list of the tables in the store.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">like</span></code> is not a str or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">like</span></code> is not a str or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -645,17 +645,17 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dd><p>Returns whether a table exists in this store.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table.</p>
+<dd class="field-odd"><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)">bool</a></p>
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -672,10 +672,10 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table to read.</p></li>
+<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table to read.</p></li>
 <li><p><strong>cols</strong> (<em>Collection</em><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_arrow()</span></code></a>.</p></li>
 <li><p><strong>rows</strong> (<em>Collection</em><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_arrow()</span></code></a>.</p></li>
-<li><p><strong>mmap</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_arrow()</span></code></a>.</p></li>
+<li><p><strong>mmap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.read_arrow" title="featherstore.table.Table.read_arrow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_arrow()</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -685,7 +685,7 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dd class="field-odd"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -702,10 +702,10 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table to read.</p></li>
+<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table to read.</p></li>
 <li><p><strong>cols</strong> (<em>Collection</em><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.read_pandas" title="featherstore.table.Table.read_pandas"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_pandas()</span></code></a>.</p></li>
 <li><p><strong>rows</strong> (<em>Collection</em><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.read_pandas" title="featherstore.table.Table.read_pandas"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_pandas()</span></code></a>.</p></li>
-<li><p><strong>mmap</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.read_pandas" title="featherstore.table.Table.read_pandas"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_pandas()</span></code></a>.</p></li>
+<li><p><strong>mmap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.read_pandas" title="featherstore.table.Table.read_pandas"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_pandas()</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -715,7 +715,7 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dd class="field-odd"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -732,10 +732,10 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table to read.</p></li>
+<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table to read.</p></li>
 <li><p><strong>cols</strong> (<em>Collection</em><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.read_polars" title="featherstore.table.Table.read_polars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_polars()</span></code></a>.</p></li>
 <li><p><strong>rows</strong> (<em>Collection</em><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.read_polars" title="featherstore.table.Table.read_polars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_polars()</span></code></a>.</p></li>
-<li><p><strong>mmap</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.read_polars" title="featherstore.table.Table.read_polars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_polars()</span></code></a>.</p></li>
+<li><p><strong>mmap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.read_polars" title="featherstore.table.Table.read_polars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_polars()</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -745,7 +745,7 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dd class="field-odd"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -762,19 +762,19 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table the DataFrame will be stored as.</p></li>
+<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table the DataFrame will be stored as.</p></li>
 <li><p><strong>df</strong> (<em>pandas.DataFrame</em><em> or </em><em>pandas.Series</em><em>, </em><em>polars.DataFrame</em><em> or </em><em>polars.Series</em><em>, or </em><em>pyarrow.Table</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.write" title="featherstore.table.Table.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write()</span></code></a>.</p></li>
-<li><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.write" title="featherstore.table.Table.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write()</span></code></a>.</p></li>
-<li><p><strong>partition_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.write" title="featherstore.table.Table.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write()</span></code></a>.</p></li>
-<li><p><strong>errors</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.write" title="featherstore.table.Table.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write()</span></code></a>.</p></li>
-<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.write" title="featherstore.table.Table.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write()</span></code></a>.</p></li>
+<li><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.write" title="featherstore.table.Table.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write()</span></code></a>.</p></li>
+<li><p><strong>partition_size</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.write" title="featherstore.table.Table.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write()</span></code></a>.</p></li>
+<li><p><strong>errors</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.write" title="featherstore.table.Table.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write()</span></code></a>.</p></li>
+<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.write" title="featherstore.table.Table.write"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write()</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -791,16 +791,16 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table to append to.</p></li>
+<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table to append to.</p></li>
 <li><p><strong>df</strong> (<em>pandas.DataFrame</em><em> or </em><em>pandas.Series</em><em>, </em><em>polars.DataFrame</em><em> or </em><em>polars.Series</em><em>, or </em><em>pyarrow.Table</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.append" title="featherstore.table.Table.append"><code class="xref py py-meth docutils literal notranslate"><span class="pre">append()</span></code></a>.</p></li>
-<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.append" title="featherstore.table.Table.append"><code class="xref py py-meth docutils literal notranslate"><span class="pre">append()</span></code></a>.</p></li>
+<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – See <a class="reference internal" href="Table.html#featherstore.table.Table.append" title="featherstore.table.Table.append"><code class="xref py py-meth docutils literal notranslate"><span class="pre">append()</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -817,8 +817,8 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table to be renamed.</p></li>
-<li><p><strong>to</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The new name of the table.</p></li>
+<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table to be renamed.</p></li>
+<li><p><strong>to</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The new name of the table.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -827,7 +827,7 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> or <code class="docutils literal notranslate"><span class="pre">to</span></code> is reserved or not a valid path name.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.TableAlreadyExistsError" title="featherstore.exceptions.TableAlreadyExistsError"><strong>TableAlreadyExistsError</strong></a> – If the new table name already exists.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> or <code class="docutils literal notranslate"><span class="pre">to</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> or <code class="docutils literal notranslate"><span class="pre">to</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -844,8 +844,8 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table to be deleted.</p></li>
-<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if the table does not exist. Can be <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or
+<li><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table to be deleted.</p></li>
+<li><p><strong>warnings</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Whether to warn if the table does not exist. Can be <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or
 <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">'warn'</span></code>.</p></li>
 </ul>
 </dd>
@@ -854,8 +854,8 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is not <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">warnings</span></code> is not <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> or <code class="docutils literal notranslate"><span class="pre">'ignore'</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -872,7 +872,7 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <p>Table objects have more features for editing stored tables.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table to return.</p>
+<dd class="field-odd"><p><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the table to return.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="Table.html#featherstore.table.Table" title="featherstore.table.Table">Table</a></p>
@@ -882,7 +882,7 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.StoreNotFoundError" title="featherstore.exceptions.StoreNotFoundError"><strong>StoreNotFoundError</strong></a> – If the store does not exist.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.ForbiddenTableNameError" title="featherstore.exceptions.ForbiddenTableNameError"><strong>ForbiddenTableNameError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is reserved or not a valid path name.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">table_name</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -900,7 +900,7 @@ case-insensitive. Default is <code class="docutils literal notranslate"><span cl
 <a class="reference internal" href="Snapshot.html#featherstore.snapshot.restore_store" title="featherstore.snapshot.restore_store"><code class="xref py py-func docutils literal notranslate"><span class="pre">restore_store()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the snapshot archive. <code class="docutils literal notranslate"><span class="pre">.tar.xz</span></code> is appended unless
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the snapshot archive. <code class="docutils literal notranslate"><span class="pre">.tar.xz</span></code> is appended unless
 <code class="docutils literal notranslate"><span class="pre">path</span></code> already ends with that suffix. An existing file at the
 resulting path is overwritten.</p>
 </dd>
@@ -908,7 +908,7 @@ resulting path is overwritten.</p>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.NotConnectedError" title="featherstore.exceptions.NotConnectedError"><strong>NotConnectedError</strong></a> – If FeatherStore is not connected to a database.</p></li>
 <li><p><a class="reference internal" href="Exceptions.html#featherstore.exceptions.SnapshotTargetNotFoundError" title="featherstore.exceptions.SnapshotTargetNotFoundError"><strong>SnapshotTargetNotFoundError</strong></a> – If the store path does not exist.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">path</span></code> is not a str.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">path</span></code> is not a str.</p></li>
 </ul>
 </dd>
 </dl>

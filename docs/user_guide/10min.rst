@@ -1,11 +1,12 @@
-Getting started
-===============
+==========================
+10 minutes to FeatherStore
+==========================
 
 This page walks through FeatherStore from installation to the operations you will
 use most often: writing and reading tables, querying a subset of rows and columns,
 appending data, and editing stored tables. The examples share one small dataset so
-you can follow them in order. For the full API, see the
-:doc:`API Reference`.
+you can follow them in order. For deeper topic pages, see the rest of the
+:doc:`index`. For the full API, see the :doc:`/API Reference`.
 
 Installing FeatherStore
 -----------------------
@@ -81,7 +82,7 @@ Reading and writing
 -------------------
 
 FeatherStore stores Pandas DataFrames and Series, Polars DataFrames and Series, and
-PyArrow Tables as partitioned Feather files.
+PyArrow Tables as Feather files. Large tables are split into partitions.
 
 The examples below use a few days of weather observations. January 3 is missing on
 purpose; we will insert it later.
@@ -112,9 +113,10 @@ purpose; we will insert it later.
     2024-01-04          0.8        79       0.0
     2024-01-05          3.2        74       0.3
 
-If the DataFrame has an index, FeatherStore uses it. The index must be unique and
-of a supported type (integer, unsigned integer, float, decimal, string, binary,
-duration, or temporal). FeatherStore sorts rows by the index before writing.
+When you write a Pandas DataFrame, FeatherStore uses its index. The index must be
+unique and of a supported type (integer, unsigned integer, float, decimal, string,
+binary, duration, or temporal). FeatherStore sorts rows by the index before writing,
+and warns if the input was unsorted.
 
 ``partition_size`` is the size of each partition in bytes. The default is 128 MB,
 which suits large tables. The examples use a tiny value so a few rows still split
@@ -129,7 +131,9 @@ across partitions. Pass ``-1`` to disable partitioning.
 
     ['bergen']
 
-Read the table back as a Pandas DataFrame, a Polars DataFrame, or a PyArrow Table:
+Read the table back as a Pandas DataFrame, a Polars DataFrame, or a PyArrow Table.
+Pandas keeps the index as the DataFrame index. Polars and PyArrow have no index, so
+they return it as a column.
 
 .. code-block:: python
 
@@ -162,12 +166,10 @@ Read the table back as a Pandas DataFrame, a Polars DataFrame, or a PyArrow Tabl
     │ 2024-01-05 00:00:00 ┆ 3.2         ┆ 74       ┆ 0.3      │
     └─────────────────────┴─────────────┴──────────┴──────────┘
 
-``store.read_arrow("bergen")`` returns the same data as a PyArrow Table. Pandas keeps a
-named index as the DataFrame index; Polars and PyArrow return it as a column. A
-default integer index is omitted from Arrow and Polars results.
+``store.read_arrow("bergen")`` returns the same data as a PyArrow Table.
 
-Polars and PyArrow have no index, so pass the column that should become the stored
-index:
+To store a Polars DataFrame or a PyArrow Table, pass the column that should become
+the stored index:
 
 .. code-block:: python
 
@@ -204,7 +206,7 @@ All three are inclusive.
     2024-01-04       0.0          0.8
     2024-01-05       0.3          3.2
 
-You can also pass explicit row labels, or filter column names with SQL-style
+The same range filters work on their own. Column filters can also use SQL-style
 wildcards (``%`` for any number of characters, ``?`` for a single character):
 
 .. code-block:: python
@@ -348,7 +350,7 @@ Dropping rows and columns
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``Table.drop()`` removes rows and/or columns. Row filters use the same predicates
-as reads.
+as reads, and a list of index labels drops those rows.
 
 .. code-block:: python
 
@@ -371,7 +373,9 @@ Drop columns with ``table.drop(cols=["humidity"])``. You can also call
 Table metadata
 --------------
 
-Several methods inspect a table without loading the full dataset:
+Several methods inspect a table without loading the full dataset. ``columns``
+includes the index name, and ``shape`` is ``(rows, columns)``, counting that
+index column:
 
 .. code-block:: python
 
@@ -387,8 +391,7 @@ Several methods inspect a table without loading the full dataset:
                    '2024-01-05'],
                   dtype='datetime64[us]', name='date', freq=None)
 
-``shape`` is ``(rows, columns)`` and includes the index column. Other useful
-methods include ``table.partition_size``, ``table.rename_columns()``,
+Other useful methods include ``table.partition_size``, ``table.rename_columns()``,
 ``table.reorder_columns()``, ``table.astype()``, and ``table.repartition()``.
 
 Snapshots
@@ -408,11 +411,14 @@ The table or store is restored under the name stored in the snapshot.
     snapshot.restore_table("weather", "path/to/bergen_backup")
     # snapshot.restore_store("path/to/weather_backup")
 
-See the :doc:`API/Snapshot` page for details.
+See :doc:`snapshots` for details.
 
 Next steps
 ----------
 
-* :doc:`API Reference` — every class, function, and method
-* :doc:`Benchmarks` — read and write performance compared with other formats
-* :doc:`Overview` — requirements, source code, and contributing
+* :doc:`data_model` — how databases, stores, tables, and partitions fit together
+* :doc:`indexing` — row and column selection in depth
+* :doc:`append` / :doc:`insert` / :doc:`update` / :doc:`drop` — modifying stored data
+* :doc:`/API Reference` — every class, function, and method
+* :doc:`/Benchmarks` — read and write performance compared with other formats
+* :doc:`/Overview` — requirements, source code, and contributing

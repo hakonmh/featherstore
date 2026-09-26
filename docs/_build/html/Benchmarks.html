@@ -145,8 +145,8 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="Quickstart.html">
-    Getting started
+  <a class="nav-link nav-internal" href="user_guide/index.html">
+    User Guide
   </a>
 </li>
 
@@ -267,8 +267,8 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="Quickstart.html">
-    Getting started
+  <a class="nav-link nav-internal" href="user_guide/index.html">
+    User Guide
   </a>
 </li>
 
@@ -402,7 +402,10 @@
   <section id="benchmarks">
 <h1>Benchmarks<a class="headerlink" href="#benchmarks" title="Link to this heading">#</a></h1>
 <p>This page compares FeatherStore, Feather, Parquet, CSV, Pickle, and DuckDB
-when reading and writing Pandas DataFrames.</p>
+when reading and writing Pandas DataFrames, and shows how FeatherStore performs
+across backends and partial reads.</p>
+<section id="test-setup">
+<h2>Test setup<a class="headerlink" href="#test-setup" title="Link to this heading">#</a></h2>
 <p>The benchmarks were run on the following hardware:</p>
 <ul class="simple">
 <li><p>CPU: Intel© Core™ i5-11600</p></li>
@@ -410,6 +413,17 @@ when reading and writing Pandas DataFrames.</p>
 <li><p>SSD: 1 TB M.2 NVMe (3470/3000 MB/s read/write)</p></li>
 <li><p>GPU: NVIDIA GeForce GTX 1060 6GB (not used during the benchmark)</p></li>
 </ul>
+<p>And the following software:</p>
+<ul class="simple">
+<li><p>Windows 11</p></li>
+<li><p>Python 3.14.0</p></li>
+<li><p>FeatherStore 0.3.0, pandas 3.0.5, PyArrow 25.0.0, Polars 1.43.2, DuckDB 1.5.5</p></li>
+</ul>
+<p>Each operation was run 15 times (5 repeats of 3 runs). The charts show the best,
+average, and worst run, and the numbers quoted in the text are the best run.
+FeatherStore used the default partition size of 128 MB and the default
+<code class="docutils literal notranslate"><span class="pre">mmap</span></code> setting, which is off on Windows, unless stated otherwise.</p>
+</section>
 <section id="compared-with-other-libraries">
 <h2>Compared with other libraries<a class="headerlink" href="#compared-with-other-libraries" title="Link to this heading">#</a></h2>
 <p>The code for the format comparison is in
@@ -423,60 +437,71 @@ one column of each type.</p>
 </a>
 <a class="reference internal image-reference" href="_images/read_first.png"><img alt="_images/read_first.png" class="align-center" src="_images/read_first.png" style="width: 750px;" />
 </a>
-<p>For small DataFrames, Pickle is the fastest option. FeatherStore is neither
-the fastest nor the slowest for reads or writes.</p>
+<p>Every format finishes in a few milliseconds, and Pickle is the fastest by a wide
+margin. FeatherStore has the slowest write at 4.5 ms, and its 1.2 ms read is in
+line with Parquet and DuckDB. For tables this small, a single file is the simpler choice.</p>
 </section>
 <section id="second-dataset">
 <h3>Second dataset<a class="headerlink" href="#second-dataset" title="Link to this heading">#</a></h3>
 <p>The second dataset has 600 million random fields: 10 million rows and 60 columns
 (about 6.4 GB when stored as CSV). It includes strings, ints, uints, bools,
 floats, and datetimes, with 10 columns of each type.</p>
+<p>CSV is left out of the charts because it would dwarf the other results: writing
+takes 3 min 27 s and reading takes 5 min 2 s.</p>
 <a class="reference internal image-reference" href="_images/write_second.png"><img alt="_images/write_second.png" class="align-center" src="_images/write_second.png" style="width: 750px;" />
 </a>
 <a class="reference internal image-reference" href="_images/read_second.png"><img alt="_images/read_second.png" class="align-center" src="_images/read_second.png" style="width: 750px;" />
 </a>
-<p>Here’s where FeatherStore really shines, matching Pickle on read speed and
-Feather on write speed.</p>
+<p>This is where FeatherStore is at its best. It is the fastest writer at 1.3 s,
+ahead of Feather (2.5 s), Pickle (3.0 s), Parquet (11.5 s), and DuckDB (42.5 s).
+Reading takes 1.4 s, slightly behind a single Feather file (1.0 s) and ahead of
+Pickle (1.5 s), Parquet (6.2 s), and DuckDB (20.8 s).</p>
 </section>
 </section>
 <section id="table-operation-benchmarks">
 <h2>Table operation benchmarks<a class="headerlink" href="#table-operation-benchmarks" title="Link to this heading">#</a></h2>
 <p>The code for the table-operation benchmarks is in
-<a class="reference external" href="https://github.com/hakonmh/featherstore/blob/master/benchmarks/table_operations.py">benchmarks/table_operations.py</a>.</p>
+<a class="reference external" href="https://github.com/hakonmh/featherstore/blob/master/benchmarks/table_operations.py">benchmarks/table_operations.py</a>.
+All results in this section use the second dataset.</p>
 <section id="pandas-vs-polars-and-arrow">
 <h3>Pandas vs Polars and Arrow<a class="headerlink" href="#pandas-vs-polars-and-arrow" title="Link to this heading">#</a></h3>
 <p>In addition to Pandas DataFrames, FeatherStore can read and write Polars
 DataFrames and PyArrow Tables. These two structures use the Apache Arrow
-Columnar Format as a memory model, so reads and writes can skip serializing and
-deserializing through Pandas.</p>
-<p>The charts below use the second dataset and compare reading and writing it as a
-Pandas DataFrame, a Polars DataFrame, and a PyArrow Table with FeatherStore.</p>
+Columnar Format as a memory model, so reads and writes can skip converting
+to and from Pandas.</p>
 <a class="reference internal image-reference" href="_images/write_internal.png"><img alt="_images/write_internal.png" class="align-center" src="_images/write_internal.png" style="width: 750px;" />
 </a>
+<p>Writing takes 1.2 s from Arrow and 1.4 s from Pandas. Writing from Polars is
+currently much slower at 5.4 s.</p>
 <a class="reference internal image-reference" href="_images/read_internal.png"><img alt="_images/read_internal.png" class="align-center" src="_images/read_internal.png" style="width: 750px;" />
 </a>
-<p>Skipping serialization makes FeatherStore very fast when reading to Arrow and
-Polars. Reading to Arrow takes 4.36 ms; reading to Polars takes 362 ms. The
-chart scale makes that difference hard to see.</p>
+<p>With the Windows default of <code class="docutils literal notranslate"><span class="pre">mmap=False</span></code>, reading into Arrow (1.0 s) and Polars
+(1.2 s) is only slightly faster than reading into Pandas (1.3 s). Passing
+<code class="docutils literal notranslate"><span class="pre">mmap=True</span></code> memory-maps the files instead, which cuts Arrow reads to 0.28 s and
+Polars reads to 0.89 s. Pandas reads do not benefit. On Linux and macOS, <code class="docutils literal notranslate"><span class="pre">mmap</span></code>
+is on by default.</p>
 </section>
 <section id="predicate-filtering">
 <h3>Predicate filtering<a class="headerlink" href="#predicate-filtering" title="Link to this heading">#</a></h3>
 <p>On top of the performance of the underlying Feather files, FeatherStore
 partitions data into multiple files. That lets you read part of a table without
-loading all of it, which saves both time and memory.</p>
-<a class="reference internal image-reference" href="_images/read_cols_internal.png"><img alt="_images/read_cols_internal.png" class="align-center" src="_images/read_cols_internal.png" style="width: 750px;" />
-</a>
-<p>Reading 25% of the columns cuts Pandas read time from 11.5 s to 4.8 s. Polars
-reads improve by a similar amount.</p>
+loading all of it.</p>
 <a class="reference internal image-reference" href="_images/read_rows_internal.png"><img alt="_images/read_rows_internal.png" class="align-center" src="_images/read_rows_internal.png" style="width: 750px;" />
 </a>
-<p>Reading 25% of the rows takes between 3.5 s and 5.0 s for Pandas, depending on
-whether you pass a list of rows or a range query.</p>
+<p>Reading a quarter of the rows with a range query (<code class="docutils literal notranslate"><span class="pre">before</span></code>, <code class="docutils literal notranslate"><span class="pre">after</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">between</span></code>) takes 0.32–0.36 s, about a quarter of the 1.3 s full read, because
+only the partitions that overlap the range are opened. Passing a list of
+2,500,000 row labels instead takes 1.4 s, no faster than a full read.</p>
+<a class="reference internal image-reference" href="_images/read_cols_internal.png"><img alt="_images/read_cols_internal.png" class="align-center" src="_images/read_cols_internal.png" style="width: 750px;" />
+</a>
+<p>Column selection mostly pays off with memory mapping. Without <code class="docutils literal notranslate"><span class="pre">mmap</span></code>, reading a
+quarter of the columns saves at most 20% compared with a full read. With
+<code class="docutils literal notranslate"><span class="pre">mmap=True</span></code>, Pandas reads drop from 1.4 s to 0.57 s and Polars reads from
+0.89 s to 0.28 s. Arrow reads take 0.28 s whether you select columns or not.</p>
 <p>It should be noted that the performance when filtering rows is dependent
 on the partition size used. Smaller partitions allow us to skip more rows
 when reading, with the trade-off being slower performance when doing full table
-reads and writes. In these benchmarks, the default 128 MB was used as the
-partition size.</p>
+reads and writes.</p>
 </section>
 </section>
 </section>
@@ -519,6 +544,7 @@ partition size.</p>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#test-setup">Test setup</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compared-with-other-libraries">Compared with other libraries</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#first-dataset">First dataset</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#second-dataset">Second dataset</a></li>
